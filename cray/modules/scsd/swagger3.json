@@ -1,0 +1,1497 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "version": "0.1",
+        "title": "System Configuration Service",
+        "description": "COTS BMCs and HPE-built controllers will at times need to have various information set on them such as NTP server, syslog server, SSH keys, access credentials.  These things are set at auto-discovery time.\nThere are also times when this information needs to be set outside of auto-discovery.   The System Configuration Service Daemon (SCSD) provides a way to set this information on multiple targets in one operation.\nThe REST API provides the following functions:\n* Set or get network protocol parameters (NTP and syslog servers, SSH keys) for specified targets (Xnames or groups)\n* Set Redfish access credentials for specified targets\n* Check service health\n## Resources\n### /bmc/dumpcfg\nGet NTP and syslog server and SSH keys on a set of controllers.\n### /bmc/loadcfg\nSet NTP and syslog server and SSH keys on a set of controllers.\n### /bmc/cfg/{xname}\nGet or set NTP and syslog server and SSH keys on a single controller.\n### /bmc/discreetcreds\nSet access discreet credentials on target BMCs or controllers.\n### /bmc/creds/{xname}\nSet access credentials on a single BMC or controller.\n### /bmc/globalcreds\nSet the same access credentials on multiple BMCs or controllers.\n### /health\nGet the current health state of the service.\n### /liveness\nGet the current liveness status of the service.\n### /readiness\nGet the current readiness status of the service.\n## Workflows\n### Get Syslog and NTP server and/or SSH key information on multiple or a single target\n#### POST /bmc/dumpcfg\nSend a JSON payload with targets to retrieve.  Targets can be Xnames of BMCs or controllers, or group IDs. Returns a JSON payload containing NTP server info on specified targets.\n#### GET /bmc/cfg/{xname}?params=NTPServer+SyslogServer\nReturns a JSON payload containing only NTP and Syslog server info from a single target.\n### Set Syslog and NTP server and/or SSH key information on multiple or a single target\n#### POST /bmc/loadcfg\nSend a JSON payload with parameters to set and a list of targets.  Targets  can be Xnames of BMCs or controllers, or group IDs. Returns a JSON payload with the results of the operation.\n#### POST /bmc/cfg/{xname}?params=NTPServer+SSHKey\nReturns a JSON payload containing NTP and SSH key info from a single target.\n### Set login credentials on controllers\n#### POST /bmc/discreetcreds\nSets login credentials on a set of controllers.  Targets can be Xnames of controllers or group IDs.",
+        "license": {
+            "name": "Cray Proprietary"
+        }
+    },
+    "tags": [
+        {
+            "name": "NWP",
+            "description": "Endpoints that set or get Redfish Network Protocol information"
+        },
+        {
+            "name": "Creds",
+            "description": "Endpoints that set Redfish access credentials"
+        },
+        {
+            "name": "Misc",
+            "description": "Endpoints that perform health and version checks"
+        }
+    ],
+    "servers": [
+        {
+            "url": "http://api-gw-service-nmn.local/apis/scsd/v1",
+            "description": "Production SCSD API service.  Access from outside the service mesh."
+        },
+        {
+            "url": "http://cray-scsd/v1",
+            "description": "Access from inside the service mesh."
+        }
+    ],
+    "paths": {
+        "/bmc/dumpcfg": {
+            "post": {
+                "tags": [
+                    "NWP",
+                    "cli_from_file"
+                ],
+                "summary": "Get the Redfish Network Protocol data for a set of targets",
+                "description": "Get the Redfish Network Protocol data (NTP server, Syslog Server, SSH key)  for a set of targets.  The POST payload contains the parameters to retrieve  along with a list of targets.",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "Targets"
+                                ],
+                                "properties": {
+                                    "Targets": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "pattern": "^s0$|^d([0-9]+)$|^x([0-9]{1,4})d([0-1])$|^x([0-9]{1,4})m([0-3])$|^x([0-9]{1,4})m([0-3])p([0-7])$|^x([0-9]{1,4})m([0-3])i([0-3])$|^x([0-9]{1,4})m([0-3])p([0-7])j([1-9][0-9]*)$|^x([0-9]{1,4})e([0-1])$|^x([0-9]{1,4})$|^x([0-9]{1,4})b([0])$|^x([0-9]{1,4})c([0-7])$|^x([0-9]{1,4})c([0-7])b([0])$|^x([0-9]{1,4})c([0-7])f([0])$|^x([0-9]{1,4})c([0-7])t([0-2])$|^x([0-9]{1,4})c([0-7])s([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)f([0])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)e([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)j([1-2])$|^x([0-9]{1,4})c([0-7])r([0-9]+)e([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)h([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)a([0-7])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)d([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)p([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)$|^x([0-9]{1,4})c([0-7])r([0-9]+)f([01])$|^x([0-9]{1,4})c([0-7])r([0-9]+)t([0-9]+)f([0-1])$|^x([0-9]{1,4})c([0-7])r([0-9]+)b([0-9]+)$|^x([0-9]{1,4})c([0-7])r([0-9]+)b([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)a([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)j([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])r([0-9]+)j([1-9][0-9]*)p([012])$|^x([0-9]{1,4})c([0-7])r([0-9]+)a([0-3])l([0-9]+)$|^x([0-9]{1,4})c([0-7])w([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])w([0-9]+)j([1-9][0-9]*)$",
+                                            "description": "The xname of this piece of hardware",
+                                            "example": "x0c0s0b0"
+                                        }
+                                    },
+                                    "Params": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "description": "Redfish Network Protocol parameter names",
+                                            "example": "NTPServerInfo"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK.  The data was succesfully retrieved",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "Targets": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "required": [
+                                                    "StatusCode",
+                                                    "StatusMsg",
+                                                    "Xname"
+                                                ],
+                                                "properties": {
+                                                    "StatusCode": {
+                                                        "type": "integer"
+                                                    },
+                                                    "StatusMsg": {
+                                                        "type": "string"
+                                                    },
+                                                    "Xname": {
+                                                        "type": "string",
+                                                        "pattern": "^s0$|^d([0-9]+)$|^x([0-9]{1,4})d([0-1])$|^x([0-9]{1,4})m([0-3])$|^x([0-9]{1,4})m([0-3])p([0-7])$|^x([0-9]{1,4})m([0-3])i([0-3])$|^x([0-9]{1,4})m([0-3])p([0-7])j([1-9][0-9]*)$|^x([0-9]{1,4})e([0-1])$|^x([0-9]{1,4})$|^x([0-9]{1,4})b([0])$|^x([0-9]{1,4})c([0-7])$|^x([0-9]{1,4})c([0-7])b([0])$|^x([0-9]{1,4})c([0-7])f([0])$|^x([0-9]{1,4})c([0-7])t([0-2])$|^x([0-9]{1,4})c([0-7])s([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)f([0])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)e([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)j([1-2])$|^x([0-9]{1,4})c([0-7])r([0-9]+)e([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)h([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)a([0-7])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)d([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)p([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)$|^x([0-9]{1,4})c([0-7])r([0-9]+)f([01])$|^x([0-9]{1,4})c([0-7])r([0-9]+)t([0-9]+)f([0-1])$|^x([0-9]{1,4})c([0-7])r([0-9]+)b([0-9]+)$|^x([0-9]{1,4})c([0-7])r([0-9]+)b([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)a([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)j([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])r([0-9]+)j([1-9][0-9]*)p([012])$|^x([0-9]{1,4})c([0-7])r([0-9]+)a([0-3])l([0-9]+)$|^x([0-9]{1,4})c([0-7])w([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])w([0-9]+)j([1-9][0-9]*)$",
+                                                        "description": "The xname of this piece of hardware",
+                                                        "example": "x0c0s0b0"
+                                                    },
+                                                    "Params": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "NTPServerInfo": {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "NTPServers": {
+                                                                        "type": "string",
+                                                                        "description": "NTP service server name",
+                                                                        "example": "sms-ncn-w001"
+                                                                    },
+                                                                    "Port": {
+                                                                        "type": "integer"
+                                                                    },
+                                                                    "ProtocolEnabled": {
+                                                                        "type": "boolean"
+                                                                    }
+                                                                }
+                                                            },
+                                                            "SyslogServerInfo": {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "SyslogServers": {
+                                                                        "type": "string",
+                                                                        "description": "Syslog service server name",
+                                                                        "example": "sms-ncn-w001"
+                                                                    },
+                                                                    "Port": {
+                                                                        "type": "integer"
+                                                                    },
+                                                                    "ProtocolEnabled": {
+                                                                        "type": "boolean"
+                                                                    }
+                                                                }
+                                                            },
+                                                            "SSHKey": {
+                                                                "type": "string",
+                                                                "example": "xyzabc123..."
+                                                            },
+                                                            "SSHConsoleKey": {
+                                                                "type": "string",
+                                                                "example": "xyzabc123..."
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Endpoint not found"
+                    },
+                    "405": {
+                        "description": "Invalid method, only POST is allowed"
+                    }
+                }
+            }
+        },
+        "/bmc/loadcfg": {
+            "post": {
+                "tags": [
+                    "NWP",
+                    "cli_from_file"
+                ],
+                "summary": "Set the Redfish Network Protocol data for a set of targets",
+                "description": "Set the Redfish Network Protocol data (NTP server, Syslog Server, SSH key)  for a set of targets.  The POST payload contains the parameters to set  along with a list of targets.",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "Targets"
+                                ],
+                                "properties": {
+                                    "Force": {
+                                        "type": "boolean"
+                                    },
+                                    "Targets": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "pattern": "^s0$|^d([0-9]+)$|^x([0-9]{1,4})d([0-1])$|^x([0-9]{1,4})m([0-3])$|^x([0-9]{1,4})m([0-3])p([0-7])$|^x([0-9]{1,4})m([0-3])i([0-3])$|^x([0-9]{1,4})m([0-3])p([0-7])j([1-9][0-9]*)$|^x([0-9]{1,4})e([0-1])$|^x([0-9]{1,4})$|^x([0-9]{1,4})b([0])$|^x([0-9]{1,4})c([0-7])$|^x([0-9]{1,4})c([0-7])b([0])$|^x([0-9]{1,4})c([0-7])f([0])$|^x([0-9]{1,4})c([0-7])t([0-2])$|^x([0-9]{1,4})c([0-7])s([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)f([0])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)e([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)j([1-2])$|^x([0-9]{1,4})c([0-7])r([0-9]+)e([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)h([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)a([0-7])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)d([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)p([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)$|^x([0-9]{1,4})c([0-7])r([0-9]+)f([01])$|^x([0-9]{1,4})c([0-7])r([0-9]+)t([0-9]+)f([0-1])$|^x([0-9]{1,4})c([0-7])r([0-9]+)b([0-9]+)$|^x([0-9]{1,4})c([0-7])r([0-9]+)b([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)a([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)j([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])r([0-9]+)j([1-9][0-9]*)p([012])$|^x([0-9]{1,4})c([0-7])r([0-9]+)a([0-3])l([0-9]+)$|^x([0-9]{1,4})c([0-7])w([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])w([0-9]+)j([1-9][0-9]*)$",
+                                            "description": "The xname of this piece of hardware",
+                                            "example": "x0c0s0b0"
+                                        }
+                                    },
+                                    "Params": {
+                                        "type": "object",
+                                        "properties": {
+                                            "NTPServer": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "NTPServers": {
+                                                        "type": "string",
+                                                        "description": "NTP service server name",
+                                                        "example": "sms-ncn-w001"
+                                                    },
+                                                    "Port": {
+                                                        "type": "integer"
+                                                    },
+                                                    "ProtocolEnabled": {
+                                                        "type": "boolean"
+                                                    }
+                                                }
+                                            },
+                                            "SyslogServer": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "SyslogServers": {
+                                                        "type": "string",
+                                                        "description": "Syslog service server name",
+                                                        "example": "sms-ncn-w001"
+                                                    },
+                                                    "Port": {
+                                                        "type": "integer"
+                                                    },
+                                                    "ProtocolEnabled": {
+                                                        "type": "boolean"
+                                                    }
+                                                }
+                                            },
+                                            "SSHKey": {
+                                                "type": "string",
+                                                "example": "xyzabc123..."
+                                            },
+                                            "SSHConsoleKey": {
+                                                "type": "string",
+                                                "example": "xyzabc123..."
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK.  The data was succesfully retrieved",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "Targets": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "Xname": {
+                                                        "type": "string",
+                                                        "pattern": "^s0$|^d([0-9]+)$|^x([0-9]{1,4})d([0-1])$|^x([0-9]{1,4})m([0-3])$|^x([0-9]{1,4})m([0-3])p([0-7])$|^x([0-9]{1,4})m([0-3])i([0-3])$|^x([0-9]{1,4})m([0-3])p([0-7])j([1-9][0-9]*)$|^x([0-9]{1,4})e([0-1])$|^x([0-9]{1,4})$|^x([0-9]{1,4})b([0])$|^x([0-9]{1,4})c([0-7])$|^x([0-9]{1,4})c([0-7])b([0])$|^x([0-9]{1,4})c([0-7])f([0])$|^x([0-9]{1,4})c([0-7])t([0-2])$|^x([0-9]{1,4})c([0-7])s([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)f([0])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)e([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)j([1-2])$|^x([0-9]{1,4})c([0-7])r([0-9]+)e([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)h([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)a([0-7])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)d([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)p([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)$|^x([0-9]{1,4})c([0-7])r([0-9]+)f([01])$|^x([0-9]{1,4})c([0-7])r([0-9]+)t([0-9]+)f([0-1])$|^x([0-9]{1,4})c([0-7])r([0-9]+)b([0-9]+)$|^x([0-9]{1,4})c([0-7])r([0-9]+)b([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)a([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)j([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])r([0-9]+)j([1-9][0-9]*)p([012])$|^x([0-9]{1,4})c([0-7])r([0-9]+)a([0-3])l([0-9]+)$|^x([0-9]{1,4})c([0-7])w([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])w([0-9]+)j([1-9][0-9]*)$",
+                                                        "description": "The xname of this piece of hardware",
+                                                        "example": "x0c0s0b0"
+                                                    },
+                                                    "StatusCode": {
+                                                        "type": "integer",
+                                                        "example": 200
+                                                    },
+                                                    "StatusMsg": {
+                                                        "type": "string",
+                                                        "example": "OK"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Endpoint not found"
+                    },
+                    "405": {
+                        "description": "Invalid method, only POST is allowed"
+                    }
+                }
+            }
+        },
+        "/bmc/cfg/{xname}": {
+            "parameters": [
+                {
+                    "in": "path",
+                    "name": "xname",
+                    "required": true,
+                    "schema": {
+                        "type": "string",
+                        "pattern": "^s0$|^d([0-9]+)$|^x([0-9]{1,4})d([0-1])$|^x([0-9]{1,4})m([0-3])$|^x([0-9]{1,4})m([0-3])p([0-7])$|^x([0-9]{1,4})m([0-3])i([0-3])$|^x([0-9]{1,4})m([0-3])p([0-7])j([1-9][0-9]*)$|^x([0-9]{1,4})e([0-1])$|^x([0-9]{1,4})$|^x([0-9]{1,4})b([0])$|^x([0-9]{1,4})c([0-7])$|^x([0-9]{1,4})c([0-7])b([0])$|^x([0-9]{1,4})c([0-7])f([0])$|^x([0-9]{1,4})c([0-7])t([0-2])$|^x([0-9]{1,4})c([0-7])s([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)f([0])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)e([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)j([1-2])$|^x([0-9]{1,4})c([0-7])r([0-9]+)e([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)h([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)a([0-7])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)d([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)p([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)$|^x([0-9]{1,4})c([0-7])r([0-9]+)f([01])$|^x([0-9]{1,4})c([0-7])r([0-9]+)t([0-9]+)f([0-1])$|^x([0-9]{1,4})c([0-7])r([0-9]+)b([0-9]+)$|^x([0-9]{1,4})c([0-7])r([0-9]+)b([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)a([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)j([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])r([0-9]+)j([1-9][0-9]*)p([012])$|^x([0-9]{1,4})c([0-7])r([0-9]+)a([0-3])l([0-9]+)$|^x([0-9]{1,4})c([0-7])w([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])w([0-9]+)j([1-9][0-9]*)$",
+                        "description": "The xname of this piece of hardware",
+                        "example": "x0c0s0b0"
+                    }
+                },
+                {
+                    "in": "query",
+                    "name": "param",
+                    "schema": {
+                        "type": "string",
+                        "anyOf": [
+                            {
+                                "type": "string",
+                                "description": "NTP server",
+                                "example": "NTPServerInfo"
+                            },
+                            {
+                                "type": "string",
+                                "description": "Syslog server",
+                                "example": "SyslogServerInfo"
+                            },
+                            {
+                                "type": "string",
+                                "description": "SSH key",
+                                "example": "SSHKey"
+                            },
+                            {
+                                "type": "string",
+                                "description": "SSH console key",
+                                "example": "SSHConsoleKey"
+                            }
+                        ],
+                        "description": "Specification of network protocol parameters.  NTPServerInfo,SyslogServerInfo,SSHKey,SSHConsoleKey"
+                    }
+                }
+            ],
+            "get": {
+                "tags": [
+                    "NWP"
+                ],
+                "summary": "Get Redfish Network Protocol data for a single target",
+                "description": "Get selected Redfish Network Protocol data for a single target.   Caller can select any of NTP server, Syslog server, or SSH key. If nothing is specified, all Redfish Network Protocol parameters are returned.",
+                "responses": {
+                    "200": {
+                        "description": "OK.  The data was succesfully retrieved",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "Force": {
+                                            "type": "boolean"
+                                        },
+                                        "Params": {
+                                            "type": "object",
+                                            "properties": {
+                                                "NTPServerInfo": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "NTPServers": {
+                                                            "type": "string",
+                                                            "description": "NTP service server name",
+                                                            "example": "sms-ncn-w001"
+                                                        },
+                                                        "Port": {
+                                                            "type": "integer"
+                                                        },
+                                                        "ProtocolEnabled": {
+                                                            "type": "boolean"
+                                                        }
+                                                    }
+                                                },
+                                                "SyslogServerInfo": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "SyslogServers": {
+                                                            "type": "string",
+                                                            "description": "Syslog service server name",
+                                                            "example": "sms-ncn-w001"
+                                                        },
+                                                        "Port": {
+                                                            "type": "integer"
+                                                        },
+                                                        "ProtocolEnabled": {
+                                                            "type": "boolean"
+                                                        }
+                                                    }
+                                                },
+                                                "SSHKey": {
+                                                    "type": "string",
+                                                    "example": "xyzabc123..."
+                                                },
+                                                "SSHConsoleKey": {
+                                                    "type": "string",
+                                                    "example": "xyzabc123..."
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Endpoint not found"
+                    },
+                    "405": {
+                        "description": "Invalid method, only GET,POST is allowed"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "NWP"
+                ],
+                "summary": "Set Redfish Network Protocol data for a single target",
+                "description": "Set selected Redfish Network Protocol data for a single target.   Payload body specifies which of NTP server, Syslog server, or SSH key.",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "Force": {
+                                        "type": "boolean"
+                                    },
+                                    "Params": {
+                                        "type": "object",
+                                        "properties": {
+                                            "NTPServerInfo": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "NTPServers": {
+                                                        "type": "string",
+                                                        "description": "NTP service server name",
+                                                        "example": "sms-ncn-w001"
+                                                    },
+                                                    "Port": {
+                                                        "type": "integer"
+                                                    },
+                                                    "ProtocolEnabled": {
+                                                        "type": "boolean"
+                                                    }
+                                                }
+                                            },
+                                            "SyslogServerInfo": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "SyslogServers": {
+                                                        "type": "string",
+                                                        "description": "Syslog service server name",
+                                                        "example": "sms-ncn-w001"
+                                                    },
+                                                    "Port": {
+                                                        "type": "integer"
+                                                    },
+                                                    "ProtocolEnabled": {
+                                                        "type": "boolean"
+                                                    }
+                                                }
+                                            },
+                                            "SSHKey": {
+                                                "type": "string",
+                                                "example": "xyzabc123..."
+                                            },
+                                            "SSHConsoleKey": {
+                                                "type": "string",
+                                                "example": "xyzabc123..."
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK.  The data was succesfully set",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "StatusMsg": {
+                                            "type": "string",
+                                            "example": "OK"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Endpoint not found"
+                    },
+                    "405": {
+                        "description": "Invalid method, only GET,POST is allowed"
+                    }
+                }
+            }
+        },
+        "/bmc/discreetcreds": {
+            "post": {
+                "tags": [
+                    "Creds",
+                    "cli_from_file"
+                ],
+                "summary": "Set the controller login credentials for a set of targets",
+                "description": "Set the controller login credentials for a set of targets.  The POST  payload contains the parameters to set along with a list of targets.",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "Force": {
+                                        "type": "boolean"
+                                    },
+                                    "Targets": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "Xname": {
+                                                    "type": "string",
+                                                    "pattern": "^s0$|^d([0-9]+)$|^x([0-9]{1,4})d([0-1])$|^x([0-9]{1,4})m([0-3])$|^x([0-9]{1,4})m([0-3])p([0-7])$|^x([0-9]{1,4})m([0-3])i([0-3])$|^x([0-9]{1,4})m([0-3])p([0-7])j([1-9][0-9]*)$|^x([0-9]{1,4})e([0-1])$|^x([0-9]{1,4})$|^x([0-9]{1,4})b([0])$|^x([0-9]{1,4})c([0-7])$|^x([0-9]{1,4})c([0-7])b([0])$|^x([0-9]{1,4})c([0-7])f([0])$|^x([0-9]{1,4})c([0-7])t([0-2])$|^x([0-9]{1,4})c([0-7])s([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)f([0])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)e([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)j([1-2])$|^x([0-9]{1,4})c([0-7])r([0-9]+)e([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)h([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)a([0-7])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)d([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)p([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)$|^x([0-9]{1,4})c([0-7])r([0-9]+)f([01])$|^x([0-9]{1,4})c([0-7])r([0-9]+)t([0-9]+)f([0-1])$|^x([0-9]{1,4})c([0-7])r([0-9]+)b([0-9]+)$|^x([0-9]{1,4})c([0-7])r([0-9]+)b([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)a([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)j([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])r([0-9]+)j([1-9][0-9]*)p([012])$|^x([0-9]{1,4})c([0-7])r([0-9]+)a([0-3])l([0-9]+)$|^x([0-9]{1,4})c([0-7])w([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])w([0-9]+)j([1-9][0-9]*)$",
+                                                    "description": "The xname of this piece of hardware",
+                                                    "example": "x0c0s0b0"
+                                                },
+                                                "Creds": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "Username": {
+                                                            "type": "string",
+                                                            "example": "admin-user"
+                                                        },
+                                                        "Password": {
+                                                            "type": "string",
+                                                            "example": "admin-pw"
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK.  The data was succesfully set",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "Targets": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "Xname": {
+                                                        "type": "string",
+                                                        "pattern": "^s0$|^d([0-9]+)$|^x([0-9]{1,4})d([0-1])$|^x([0-9]{1,4})m([0-3])$|^x([0-9]{1,4})m([0-3])p([0-7])$|^x([0-9]{1,4})m([0-3])i([0-3])$|^x([0-9]{1,4})m([0-3])p([0-7])j([1-9][0-9]*)$|^x([0-9]{1,4})e([0-1])$|^x([0-9]{1,4})$|^x([0-9]{1,4})b([0])$|^x([0-9]{1,4})c([0-7])$|^x([0-9]{1,4})c([0-7])b([0])$|^x([0-9]{1,4})c([0-7])f([0])$|^x([0-9]{1,4})c([0-7])t([0-2])$|^x([0-9]{1,4})c([0-7])s([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)f([0])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)e([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)j([1-2])$|^x([0-9]{1,4})c([0-7])r([0-9]+)e([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)h([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)a([0-7])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)d([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)p([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)$|^x([0-9]{1,4})c([0-7])r([0-9]+)f([01])$|^x([0-9]{1,4})c([0-7])r([0-9]+)t([0-9]+)f([0-1])$|^x([0-9]{1,4})c([0-7])r([0-9]+)b([0-9]+)$|^x([0-9]{1,4})c([0-7])r([0-9]+)b([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)a([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)j([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])r([0-9]+)j([1-9][0-9]*)p([012])$|^x([0-9]{1,4})c([0-7])r([0-9]+)a([0-3])l([0-9]+)$|^x([0-9]{1,4})c([0-7])w([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])w([0-9]+)j([1-9][0-9]*)$",
+                                                        "description": "The xname of this piece of hardware",
+                                                        "example": "x0c0s0b0"
+                                                    },
+                                                    "StatusCode": {
+                                                        "type": "integer",
+                                                        "example": 200
+                                                    },
+                                                    "StatusMsg": {
+                                                        "type": "string",
+                                                        "example": "OK"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Endpoint not found"
+                    },
+                    "405": {
+                        "description": "Invalid method, only POST is allowed"
+                    }
+                }
+            }
+        },
+        "/bmc/creds/{xname}": {
+            "parameters": [
+                {
+                    "in": "path",
+                    "name": "xname",
+                    "required": true,
+                    "schema": {
+                        "type": "string",
+                        "pattern": "^s0$|^d([0-9]+)$|^x([0-9]{1,4})d([0-1])$|^x([0-9]{1,4})m([0-3])$|^x([0-9]{1,4})m([0-3])p([0-7])$|^x([0-9]{1,4})m([0-3])i([0-3])$|^x([0-9]{1,4})m([0-3])p([0-7])j([1-9][0-9]*)$|^x([0-9]{1,4})e([0-1])$|^x([0-9]{1,4})$|^x([0-9]{1,4})b([0])$|^x([0-9]{1,4})c([0-7])$|^x([0-9]{1,4})c([0-7])b([0])$|^x([0-9]{1,4})c([0-7])f([0])$|^x([0-9]{1,4})c([0-7])t([0-2])$|^x([0-9]{1,4})c([0-7])s([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)f([0])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)e([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)j([1-2])$|^x([0-9]{1,4})c([0-7])r([0-9]+)e([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)h([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)a([0-7])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)d([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)p([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)$|^x([0-9]{1,4})c([0-7])r([0-9]+)f([01])$|^x([0-9]{1,4})c([0-7])r([0-9]+)t([0-9]+)f([0-1])$|^x([0-9]{1,4})c([0-7])r([0-9]+)b([0-9]+)$|^x([0-9]{1,4})c([0-7])r([0-9]+)b([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)a([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)j([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])r([0-9]+)j([1-9][0-9]*)p([012])$|^x([0-9]{1,4})c([0-7])r([0-9]+)a([0-3])l([0-9]+)$|^x([0-9]{1,4})c([0-7])w([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])w([0-9]+)j([1-9][0-9]*)$",
+                        "description": "The xname of this piece of hardware",
+                        "example": "x0c0s0b0"
+                    }
+                }
+            ],
+            "post": {
+                "tags": [
+                    "Creds"
+                ],
+                "summary": "Set controller login credentials for a single target",
+                "description": "Set controller login credentials  for a single target.  The POST  payload contains the parameters to set along with a list of targets.",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "Force": {
+                                        "type": "boolean"
+                                    },
+                                    "Creds": {
+                                        "type": "object",
+                                        "properties": {
+                                            "Username": {
+                                                "type": "string",
+                                                "example": "admin-user"
+                                            },
+                                            "Password": {
+                                                "type": "string",
+                                                "example": "admin-pw"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK.  The data was succesfully set",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "StatusMsg": {
+                                            "type": "string",
+                                            "example": "OK"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Endpoint not found"
+                    },
+                    "405": {
+                        "description": "Invalid method, only GET,POST is allowed"
+                    }
+                }
+            }
+        },
+        "/bmc/globalcreds": {
+            "post": {
+                "tags": [
+                    "Creds",
+                    "cli_from_file"
+                ],
+                "summary": "Set the the same controller login credentials on a set of targets",
+                "description": "Set controller login credentials for a set of targets.  The POST  payload contains the parameters to set along with a list of targets. The same credentials are set on all targets.",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "Force": {
+                                        "type": "boolean"
+                                    },
+                                    "Username": {
+                                        "type": "string"
+                                    },
+                                    "Password": {
+                                        "type": "string"
+                                    },
+                                    "Targets": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "pattern": "^s0$|^d([0-9]+)$|^x([0-9]{1,4})d([0-1])$|^x([0-9]{1,4})m([0-3])$|^x([0-9]{1,4})m([0-3])p([0-7])$|^x([0-9]{1,4})m([0-3])i([0-3])$|^x([0-9]{1,4})m([0-3])p([0-7])j([1-9][0-9]*)$|^x([0-9]{1,4})e([0-1])$|^x([0-9]{1,4})$|^x([0-9]{1,4})b([0])$|^x([0-9]{1,4})c([0-7])$|^x([0-9]{1,4})c([0-7])b([0])$|^x([0-9]{1,4})c([0-7])f([0])$|^x([0-9]{1,4})c([0-7])t([0-2])$|^x([0-9]{1,4})c([0-7])s([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)f([0])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)e([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)j([1-2])$|^x([0-9]{1,4})c([0-7])r([0-9]+)e([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)h([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)a([0-7])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)d([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)p([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)$|^x([0-9]{1,4})c([0-7])r([0-9]+)f([01])$|^x([0-9]{1,4})c([0-7])r([0-9]+)t([0-9]+)f([0-1])$|^x([0-9]{1,4})c([0-7])r([0-9]+)b([0-9]+)$|^x([0-9]{1,4})c([0-7])r([0-9]+)b([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)a([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)j([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])r([0-9]+)j([1-9][0-9]*)p([012])$|^x([0-9]{1,4})c([0-7])r([0-9]+)a([0-3])l([0-9]+)$|^x([0-9]{1,4})c([0-7])w([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])w([0-9]+)j([1-9][0-9]*)$",
+                                            "description": "The xname of this piece of hardware",
+                                            "example": "x0c0s0b0"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK.  The data was succesfully set",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "Targets": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "Xname": {
+                                                        "type": "string",
+                                                        "pattern": "^s0$|^d([0-9]+)$|^x([0-9]{1,4})d([0-1])$|^x([0-9]{1,4})m([0-3])$|^x([0-9]{1,4})m([0-3])p([0-7])$|^x([0-9]{1,4})m([0-3])i([0-3])$|^x([0-9]{1,4})m([0-3])p([0-7])j([1-9][0-9]*)$|^x([0-9]{1,4})e([0-1])$|^x([0-9]{1,4})$|^x([0-9]{1,4})b([0])$|^x([0-9]{1,4})c([0-7])$|^x([0-9]{1,4})c([0-7])b([0])$|^x([0-9]{1,4})c([0-7])f([0])$|^x([0-9]{1,4})c([0-7])t([0-2])$|^x([0-9]{1,4})c([0-7])s([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)f([0])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)e([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)j([1-2])$|^x([0-9]{1,4})c([0-7])r([0-9]+)e([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)h([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)a([0-7])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)d([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)p([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)$|^x([0-9]{1,4})c([0-7])r([0-9]+)f([01])$|^x([0-9]{1,4})c([0-7])r([0-9]+)t([0-9]+)f([0-1])$|^x([0-9]{1,4})c([0-7])r([0-9]+)b([0-9]+)$|^x([0-9]{1,4})c([0-7])r([0-9]+)b([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)a([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)j([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])r([0-9]+)j([1-9][0-9]*)p([012])$|^x([0-9]{1,4})c([0-7])r([0-9]+)a([0-3])l([0-9]+)$|^x([0-9]{1,4})c([0-7])w([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])w([0-9]+)j([1-9][0-9]*)$",
+                                                        "description": "The xname of this piece of hardware",
+                                                        "example": "x0c0s0b0"
+                                                    },
+                                                    "StatusCode": {
+                                                        "type": "integer",
+                                                        "example": 200
+                                                    },
+                                                    "StatusMsg": {
+                                                        "type": "string",
+                                                        "example": "OK"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Endpoint not found"
+                    },
+                    "405": {
+                        "description": "Invalid method, only POST is allowed"
+                    }
+                }
+            }
+        },
+        "/version": {
+            "get": {
+                "tags": [
+                    "Misc"
+                ],
+                "summary": "Get service version information",
+                "description": "Get service version information.  Version is returned in vmaj.min.bld format",
+                "responses": {
+                    "200": {
+                        "description": "Information retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "Version": {
+                                            "type": "string",
+                                            "example": "v1.2.3"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Endpoint not found"
+                    },
+                    "405": {
+                        "description": "Invalid method, only GET,POST is allowed"
+                    }
+                }
+            }
+        },
+        "/liveness": {
+            "get": {
+                "tags": [
+                    "Misc",
+                    "cli_ignore"
+                ],
+                "summary": "Get liveness status of the service",
+                "description": "Get liveness status of the service",
+                "responses": {
+                    "204": {
+                        "description": "[No Content](http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.5) Network API call success"
+                    },
+                    "503": {
+                        "description": "The service is not taking HTTP requests"
+                    }
+                }
+            }
+        },
+        "/readiness": {
+            "get": {
+                "tags": [
+                    "Misc",
+                    "cli_ignore"
+                ],
+                "summary": "Get readiness status of the service",
+                "description": "Get readiness status of the service",
+                "responses": {
+                    "204": {
+                        "description": "[No Content](http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.5) Network API call success"
+                    },
+                    "503": {
+                        "description": "The service is not taking HTTP requests"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "xname": {
+                "type": "string",
+                "pattern": "^s0$|^d([0-9]+)$|^x([0-9]{1,4})d([0-1])$|^x([0-9]{1,4})m([0-3])$|^x([0-9]{1,4})m([0-3])p([0-7])$|^x([0-9]{1,4})m([0-3])i([0-3])$|^x([0-9]{1,4})m([0-3])p([0-7])j([1-9][0-9]*)$|^x([0-9]{1,4})e([0-1])$|^x([0-9]{1,4})$|^x([0-9]{1,4})b([0])$|^x([0-9]{1,4})c([0-7])$|^x([0-9]{1,4})c([0-7])b([0])$|^x([0-9]{1,4})c([0-7])f([0])$|^x([0-9]{1,4})c([0-7])t([0-2])$|^x([0-9]{1,4})c([0-7])s([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)f([0])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)e([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)j([1-2])$|^x([0-9]{1,4})c([0-7])r([0-9]+)e([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)h([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)a([0-7])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)d([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)p([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)$|^x([0-9]{1,4})c([0-7])r([0-9]+)f([01])$|^x([0-9]{1,4})c([0-7])r([0-9]+)t([0-9]+)f([0-1])$|^x([0-9]{1,4})c([0-7])r([0-9]+)b([0-9]+)$|^x([0-9]{1,4})c([0-7])r([0-9]+)b([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)a([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)j([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])r([0-9]+)j([1-9][0-9]*)p([012])$|^x([0-9]{1,4})c([0-7])r([0-9]+)a([0-3])l([0-9]+)$|^x([0-9]{1,4})c([0-7])w([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])w([0-9]+)j([1-9][0-9]*)$",
+                "description": "The xname of this piece of hardware",
+                "example": "x0c0s0b0"
+            },
+            "ntp_server_info_kw": {
+                "type": "string",
+                "description": "NTP server",
+                "example": "NTPServerInfo"
+            },
+            "syslog_server_info_kw": {
+                "type": "string",
+                "description": "Syslog server",
+                "example": "SyslogServerInfo"
+            },
+            "sshkey_kw": {
+                "type": "string",
+                "description": "SSH key",
+                "example": "SSHKey"
+            },
+            "sshconkey_kw": {
+                "type": "string",
+                "description": "SSH console key",
+                "example": "SSHConsoleKey"
+            },
+            "cfg_types": {
+                "type": "string",
+                "description": "Redfish Network Protocol parameter names",
+                "example": "NTPServerInfo"
+            },
+            "target_ntp_server": {
+                "type": "object",
+                "properties": {
+                    "NTPServers": {
+                        "type": "string",
+                        "description": "NTP service server name",
+                        "example": "sms-ncn-w001"
+                    },
+                    "Port": {
+                        "type": "integer"
+                    },
+                    "ProtocolEnabled": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "target_syslog_server": {
+                "type": "object",
+                "properties": {
+                    "SyslogServers": {
+                        "type": "string",
+                        "description": "Syslog service server name",
+                        "example": "sms-ncn-w001"
+                    },
+                    "Port": {
+                        "type": "integer"
+                    },
+                    "ProtocolEnabled": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "target_ssh_key": {
+                "type": "string",
+                "example": "xyzabc123..."
+            },
+            "params": {
+                "type": "object",
+                "properties": {
+                    "NTPServerInfo": {
+                        "type": "object",
+                        "properties": {
+                            "NTPServers": {
+                                "type": "string",
+                                "description": "NTP service server name",
+                                "example": "sms-ncn-w001"
+                            },
+                            "Port": {
+                                "type": "integer"
+                            },
+                            "ProtocolEnabled": {
+                                "type": "boolean"
+                            }
+                        }
+                    },
+                    "SyslogServerInfo": {
+                        "type": "object",
+                        "properties": {
+                            "SyslogServers": {
+                                "type": "string",
+                                "description": "Syslog service server name",
+                                "example": "sms-ncn-w001"
+                            },
+                            "Port": {
+                                "type": "integer"
+                            },
+                            "ProtocolEnabled": {
+                                "type": "boolean"
+                            }
+                        }
+                    },
+                    "SSHKey": {
+                        "type": "string",
+                        "example": "xyzabc123..."
+                    },
+                    "SSHConsoleKey": {
+                        "type": "string",
+                        "example": "xyzabc123..."
+                    }
+                }
+            },
+            "target_cfg_item": {
+                "type": "object",
+                "required": [
+                    "StatusCode",
+                    "StatusMsg",
+                    "Xname"
+                ],
+                "properties": {
+                    "StatusCode": {
+                        "type": "integer"
+                    },
+                    "StatusMsg": {
+                        "type": "string"
+                    },
+                    "Xname": {
+                        "type": "string",
+                        "pattern": "^s0$|^d([0-9]+)$|^x([0-9]{1,4})d([0-1])$|^x([0-9]{1,4})m([0-3])$|^x([0-9]{1,4})m([0-3])p([0-7])$|^x([0-9]{1,4})m([0-3])i([0-3])$|^x([0-9]{1,4})m([0-3])p([0-7])j([1-9][0-9]*)$|^x([0-9]{1,4})e([0-1])$|^x([0-9]{1,4})$|^x([0-9]{1,4})b([0])$|^x([0-9]{1,4})c([0-7])$|^x([0-9]{1,4})c([0-7])b([0])$|^x([0-9]{1,4})c([0-7])f([0])$|^x([0-9]{1,4})c([0-7])t([0-2])$|^x([0-9]{1,4})c([0-7])s([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)f([0])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)e([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)j([1-2])$|^x([0-9]{1,4})c([0-7])r([0-9]+)e([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)h([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)a([0-7])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)d([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)p([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)$|^x([0-9]{1,4})c([0-7])r([0-9]+)f([01])$|^x([0-9]{1,4})c([0-7])r([0-9]+)t([0-9]+)f([0-1])$|^x([0-9]{1,4})c([0-7])r([0-9]+)b([0-9]+)$|^x([0-9]{1,4})c([0-7])r([0-9]+)b([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)a([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)j([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])r([0-9]+)j([1-9][0-9]*)p([012])$|^x([0-9]{1,4})c([0-7])r([0-9]+)a([0-3])l([0-9]+)$|^x([0-9]{1,4})c([0-7])w([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])w([0-9]+)j([1-9][0-9]*)$",
+                        "description": "The xname of this piece of hardware",
+                        "example": "x0c0s0b0"
+                    },
+                    "Params": {
+                        "type": "object",
+                        "properties": {
+                            "NTPServerInfo": {
+                                "type": "object",
+                                "properties": {
+                                    "NTPServers": {
+                                        "type": "string",
+                                        "description": "NTP service server name",
+                                        "example": "sms-ncn-w001"
+                                    },
+                                    "Port": {
+                                        "type": "integer"
+                                    },
+                                    "ProtocolEnabled": {
+                                        "type": "boolean"
+                                    }
+                                }
+                            },
+                            "SyslogServerInfo": {
+                                "type": "object",
+                                "properties": {
+                                    "SyslogServers": {
+                                        "type": "string",
+                                        "description": "Syslog service server name",
+                                        "example": "sms-ncn-w001"
+                                    },
+                                    "Port": {
+                                        "type": "integer"
+                                    },
+                                    "ProtocolEnabled": {
+                                        "type": "boolean"
+                                    }
+                                }
+                            },
+                            "SSHKey": {
+                                "type": "string",
+                                "example": "xyzabc123..."
+                            },
+                            "SSHConsoleKey": {
+                                "type": "string",
+                                "example": "xyzabc123..."
+                            }
+                        }
+                    }
+                }
+            },
+            "cfg_get_single": {
+                "type": "object",
+                "properties": {
+                    "Force": {
+                        "type": "boolean"
+                    },
+                    "Params": {
+                        "type": "object",
+                        "properties": {
+                            "NTPServerInfo": {
+                                "type": "object",
+                                "properties": {
+                                    "NTPServers": {
+                                        "type": "string",
+                                        "description": "NTP service server name",
+                                        "example": "sms-ncn-w001"
+                                    },
+                                    "Port": {
+                                        "type": "integer"
+                                    },
+                                    "ProtocolEnabled": {
+                                        "type": "boolean"
+                                    }
+                                }
+                            },
+                            "SyslogServerInfo": {
+                                "type": "object",
+                                "properties": {
+                                    "SyslogServers": {
+                                        "type": "string",
+                                        "description": "Syslog service server name",
+                                        "example": "sms-ncn-w001"
+                                    },
+                                    "Port": {
+                                        "type": "integer"
+                                    },
+                                    "ProtocolEnabled": {
+                                        "type": "boolean"
+                                    }
+                                }
+                            },
+                            "SSHKey": {
+                                "type": "string",
+                                "example": "xyzabc123..."
+                            },
+                            "SSHConsoleKey": {
+                                "type": "string",
+                                "example": "xyzabc123..."
+                            }
+                        }
+                    }
+                }
+            },
+            "cfg_post_single": {
+                "type": "object",
+                "properties": {
+                    "Force": {
+                        "type": "boolean"
+                    },
+                    "Params": {
+                        "type": "object",
+                        "properties": {
+                            "NTPServerInfo": {
+                                "type": "object",
+                                "properties": {
+                                    "NTPServers": {
+                                        "type": "string",
+                                        "description": "NTP service server name",
+                                        "example": "sms-ncn-w001"
+                                    },
+                                    "Port": {
+                                        "type": "integer"
+                                    },
+                                    "ProtocolEnabled": {
+                                        "type": "boolean"
+                                    }
+                                }
+                            },
+                            "SyslogServerInfo": {
+                                "type": "object",
+                                "properties": {
+                                    "SyslogServers": {
+                                        "type": "string",
+                                        "description": "Syslog service server name",
+                                        "example": "sms-ncn-w001"
+                                    },
+                                    "Port": {
+                                        "type": "integer"
+                                    },
+                                    "ProtocolEnabled": {
+                                        "type": "boolean"
+                                    }
+                                }
+                            },
+                            "SSHKey": {
+                                "type": "string",
+                                "example": "xyzabc123..."
+                            },
+                            "SSHConsoleKey": {
+                                "type": "string",
+                                "example": "xyzabc123..."
+                            }
+                        }
+                    }
+                }
+            },
+            "cfg_rsp_status": {
+                "type": "object",
+                "properties": {
+                    "StatusMsg": {
+                        "type": "string",
+                        "example": "OK"
+                    }
+                }
+            },
+            "bmc_dumpcfg_request": {
+                "type": "object",
+                "required": [
+                    "Targets"
+                ],
+                "properties": {
+                    "Targets": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "pattern": "^s0$|^d([0-9]+)$|^x([0-9]{1,4})d([0-1])$|^x([0-9]{1,4})m([0-3])$|^x([0-9]{1,4})m([0-3])p([0-7])$|^x([0-9]{1,4})m([0-3])i([0-3])$|^x([0-9]{1,4})m([0-3])p([0-7])j([1-9][0-9]*)$|^x([0-9]{1,4})e([0-1])$|^x([0-9]{1,4})$|^x([0-9]{1,4})b([0])$|^x([0-9]{1,4})c([0-7])$|^x([0-9]{1,4})c([0-7])b([0])$|^x([0-9]{1,4})c([0-7])f([0])$|^x([0-9]{1,4})c([0-7])t([0-2])$|^x([0-9]{1,4})c([0-7])s([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)f([0])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)e([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)j([1-2])$|^x([0-9]{1,4})c([0-7])r([0-9]+)e([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)h([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)a([0-7])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)d([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)p([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)$|^x([0-9]{1,4})c([0-7])r([0-9]+)f([01])$|^x([0-9]{1,4})c([0-7])r([0-9]+)t([0-9]+)f([0-1])$|^x([0-9]{1,4})c([0-7])r([0-9]+)b([0-9]+)$|^x([0-9]{1,4})c([0-7])r([0-9]+)b([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)a([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)j([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])r([0-9]+)j([1-9][0-9]*)p([012])$|^x([0-9]{1,4})c([0-7])r([0-9]+)a([0-3])l([0-9]+)$|^x([0-9]{1,4})c([0-7])w([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])w([0-9]+)j([1-9][0-9]*)$",
+                            "description": "The xname of this piece of hardware",
+                            "example": "x0c0s0b0"
+                        }
+                    },
+                    "Params": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "description": "Redfish Network Protocol parameter names",
+                            "example": "NTPServerInfo"
+                        }
+                    }
+                }
+            },
+            "multi_post_response_elem": {
+                "type": "object",
+                "properties": {
+                    "Xname": {
+                        "type": "string",
+                        "pattern": "^s0$|^d([0-9]+)$|^x([0-9]{1,4})d([0-1])$|^x([0-9]{1,4})m([0-3])$|^x([0-9]{1,4})m([0-3])p([0-7])$|^x([0-9]{1,4})m([0-3])i([0-3])$|^x([0-9]{1,4})m([0-3])p([0-7])j([1-9][0-9]*)$|^x([0-9]{1,4})e([0-1])$|^x([0-9]{1,4})$|^x([0-9]{1,4})b([0])$|^x([0-9]{1,4})c([0-7])$|^x([0-9]{1,4})c([0-7])b([0])$|^x([0-9]{1,4})c([0-7])f([0])$|^x([0-9]{1,4})c([0-7])t([0-2])$|^x([0-9]{1,4})c([0-7])s([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)f([0])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)e([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)j([1-2])$|^x([0-9]{1,4})c([0-7])r([0-9]+)e([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)h([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)a([0-7])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)d([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)p([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)$|^x([0-9]{1,4})c([0-7])r([0-9]+)f([01])$|^x([0-9]{1,4})c([0-7])r([0-9]+)t([0-9]+)f([0-1])$|^x([0-9]{1,4})c([0-7])r([0-9]+)b([0-9]+)$|^x([0-9]{1,4})c([0-7])r([0-9]+)b([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)a([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)j([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])r([0-9]+)j([1-9][0-9]*)p([012])$|^x([0-9]{1,4})c([0-7])r([0-9]+)a([0-3])l([0-9]+)$|^x([0-9]{1,4})c([0-7])w([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])w([0-9]+)j([1-9][0-9]*)$",
+                        "description": "The xname of this piece of hardware",
+                        "example": "x0c0s0b0"
+                    },
+                    "StatusCode": {
+                        "type": "integer",
+                        "example": 200
+                    },
+                    "StatusMsg": {
+                        "type": "string",
+                        "example": "OK"
+                    }
+                }
+            },
+            "multi_post_response": {
+                "type": "object",
+                "properties": {
+                    "Targets": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "Xname": {
+                                    "type": "string",
+                                    "pattern": "^s0$|^d([0-9]+)$|^x([0-9]{1,4})d([0-1])$|^x([0-9]{1,4})m([0-3])$|^x([0-9]{1,4})m([0-3])p([0-7])$|^x([0-9]{1,4})m([0-3])i([0-3])$|^x([0-9]{1,4})m([0-3])p([0-7])j([1-9][0-9]*)$|^x([0-9]{1,4})e([0-1])$|^x([0-9]{1,4})$|^x([0-9]{1,4})b([0])$|^x([0-9]{1,4})c([0-7])$|^x([0-9]{1,4})c([0-7])b([0])$|^x([0-9]{1,4})c([0-7])f([0])$|^x([0-9]{1,4})c([0-7])t([0-2])$|^x([0-9]{1,4})c([0-7])s([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)f([0])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)e([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)j([1-2])$|^x([0-9]{1,4})c([0-7])r([0-9]+)e([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)h([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)a([0-7])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)d([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)p([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)$|^x([0-9]{1,4})c([0-7])r([0-9]+)f([01])$|^x([0-9]{1,4})c([0-7])r([0-9]+)t([0-9]+)f([0-1])$|^x([0-9]{1,4})c([0-7])r([0-9]+)b([0-9]+)$|^x([0-9]{1,4})c([0-7])r([0-9]+)b([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)a([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)j([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])r([0-9]+)j([1-9][0-9]*)p([012])$|^x([0-9]{1,4})c([0-7])r([0-9]+)a([0-3])l([0-9]+)$|^x([0-9]{1,4})c([0-7])w([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])w([0-9]+)j([1-9][0-9]*)$",
+                                    "description": "The xname of this piece of hardware",
+                                    "example": "x0c0s0b0"
+                                },
+                                "StatusCode": {
+                                    "type": "integer",
+                                    "example": 200
+                                },
+                                "StatusMsg": {
+                                    "type": "string",
+                                    "example": "OK"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "bmc_dumpcfg_response": {
+                "type": "object",
+                "properties": {
+                    "Targets": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "required": [
+                                "StatusCode",
+                                "StatusMsg",
+                                "Xname"
+                            ],
+                            "properties": {
+                                "StatusCode": {
+                                    "type": "integer"
+                                },
+                                "StatusMsg": {
+                                    "type": "string"
+                                },
+                                "Xname": {
+                                    "type": "string",
+                                    "pattern": "^s0$|^d([0-9]+)$|^x([0-9]{1,4})d([0-1])$|^x([0-9]{1,4})m([0-3])$|^x([0-9]{1,4})m([0-3])p([0-7])$|^x([0-9]{1,4})m([0-3])i([0-3])$|^x([0-9]{1,4})m([0-3])p([0-7])j([1-9][0-9]*)$|^x([0-9]{1,4})e([0-1])$|^x([0-9]{1,4})$|^x([0-9]{1,4})b([0])$|^x([0-9]{1,4})c([0-7])$|^x([0-9]{1,4})c([0-7])b([0])$|^x([0-9]{1,4})c([0-7])f([0])$|^x([0-9]{1,4})c([0-7])t([0-2])$|^x([0-9]{1,4})c([0-7])s([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)f([0])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)e([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)j([1-2])$|^x([0-9]{1,4})c([0-7])r([0-9]+)e([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)h([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)a([0-7])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)d([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)p([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)$|^x([0-9]{1,4})c([0-7])r([0-9]+)f([01])$|^x([0-9]{1,4})c([0-7])r([0-9]+)t([0-9]+)f([0-1])$|^x([0-9]{1,4})c([0-7])r([0-9]+)b([0-9]+)$|^x([0-9]{1,4})c([0-7])r([0-9]+)b([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)a([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)j([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])r([0-9]+)j([1-9][0-9]*)p([012])$|^x([0-9]{1,4})c([0-7])r([0-9]+)a([0-3])l([0-9]+)$|^x([0-9]{1,4})c([0-7])w([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])w([0-9]+)j([1-9][0-9]*)$",
+                                    "description": "The xname of this piece of hardware",
+                                    "example": "x0c0s0b0"
+                                },
+                                "Params": {
+                                    "type": "object",
+                                    "properties": {
+                                        "NTPServerInfo": {
+                                            "type": "object",
+                                            "properties": {
+                                                "NTPServers": {
+                                                    "type": "string",
+                                                    "description": "NTP service server name",
+                                                    "example": "sms-ncn-w001"
+                                                },
+                                                "Port": {
+                                                    "type": "integer"
+                                                },
+                                                "ProtocolEnabled": {
+                                                    "type": "boolean"
+                                                }
+                                            }
+                                        },
+                                        "SyslogServerInfo": {
+                                            "type": "object",
+                                            "properties": {
+                                                "SyslogServers": {
+                                                    "type": "string",
+                                                    "description": "Syslog service server name",
+                                                    "example": "sms-ncn-w001"
+                                                },
+                                                "Port": {
+                                                    "type": "integer"
+                                                },
+                                                "ProtocolEnabled": {
+                                                    "type": "boolean"
+                                                }
+                                            }
+                                        },
+                                        "SSHKey": {
+                                            "type": "string",
+                                            "example": "xyzabc123..."
+                                        },
+                                        "SSHConsoleKey": {
+                                            "type": "string",
+                                            "example": "xyzabc123..."
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "bmc_loadcfg_request": {
+                "type": "object",
+                "required": [
+                    "Targets"
+                ],
+                "properties": {
+                    "Force": {
+                        "type": "boolean"
+                    },
+                    "Targets": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "pattern": "^s0$|^d([0-9]+)$|^x([0-9]{1,4})d([0-1])$|^x([0-9]{1,4})m([0-3])$|^x([0-9]{1,4})m([0-3])p([0-7])$|^x([0-9]{1,4})m([0-3])i([0-3])$|^x([0-9]{1,4})m([0-3])p([0-7])j([1-9][0-9]*)$|^x([0-9]{1,4})e([0-1])$|^x([0-9]{1,4})$|^x([0-9]{1,4})b([0])$|^x([0-9]{1,4})c([0-7])$|^x([0-9]{1,4})c([0-7])b([0])$|^x([0-9]{1,4})c([0-7])f([0])$|^x([0-9]{1,4})c([0-7])t([0-2])$|^x([0-9]{1,4})c([0-7])s([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)f([0])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)e([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)j([1-2])$|^x([0-9]{1,4})c([0-7])r([0-9]+)e([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)h([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)a([0-7])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)d([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)p([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)$|^x([0-9]{1,4})c([0-7])r([0-9]+)f([01])$|^x([0-9]{1,4})c([0-7])r([0-9]+)t([0-9]+)f([0-1])$|^x([0-9]{1,4})c([0-7])r([0-9]+)b([0-9]+)$|^x([0-9]{1,4})c([0-7])r([0-9]+)b([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)a([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)j([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])r([0-9]+)j([1-9][0-9]*)p([012])$|^x([0-9]{1,4})c([0-7])r([0-9]+)a([0-3])l([0-9]+)$|^x([0-9]{1,4})c([0-7])w([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])w([0-9]+)j([1-9][0-9]*)$",
+                            "description": "The xname of this piece of hardware",
+                            "example": "x0c0s0b0"
+                        }
+                    },
+                    "Params": {
+                        "type": "object",
+                        "properties": {
+                            "NTPServer": {
+                                "type": "object",
+                                "properties": {
+                                    "NTPServers": {
+                                        "type": "string",
+                                        "description": "NTP service server name",
+                                        "example": "sms-ncn-w001"
+                                    },
+                                    "Port": {
+                                        "type": "integer"
+                                    },
+                                    "ProtocolEnabled": {
+                                        "type": "boolean"
+                                    }
+                                }
+                            },
+                            "SyslogServer": {
+                                "type": "object",
+                                "properties": {
+                                    "SyslogServers": {
+                                        "type": "string",
+                                        "description": "Syslog service server name",
+                                        "example": "sms-ncn-w001"
+                                    },
+                                    "Port": {
+                                        "type": "integer"
+                                    },
+                                    "ProtocolEnabled": {
+                                        "type": "boolean"
+                                    }
+                                }
+                            },
+                            "SSHKey": {
+                                "type": "string",
+                                "example": "xyzabc123..."
+                            },
+                            "SSHConsoleKey": {
+                                "type": "string",
+                                "example": "xyzabc123..."
+                            }
+                        }
+                    }
+                }
+            },
+            "creds_data": {
+                "type": "object",
+                "properties": {
+                    "Username": {
+                        "type": "string",
+                        "example": "admin-user"
+                    },
+                    "Password": {
+                        "type": "string",
+                        "example": "admin-pw"
+                    }
+                }
+            },
+            "creds_target": {
+                "type": "object",
+                "properties": {
+                    "Xname": {
+                        "type": "string",
+                        "pattern": "^s0$|^d([0-9]+)$|^x([0-9]{1,4})d([0-1])$|^x([0-9]{1,4})m([0-3])$|^x([0-9]{1,4})m([0-3])p([0-7])$|^x([0-9]{1,4})m([0-3])i([0-3])$|^x([0-9]{1,4})m([0-3])p([0-7])j([1-9][0-9]*)$|^x([0-9]{1,4})e([0-1])$|^x([0-9]{1,4})$|^x([0-9]{1,4})b([0])$|^x([0-9]{1,4})c([0-7])$|^x([0-9]{1,4})c([0-7])b([0])$|^x([0-9]{1,4})c([0-7])f([0])$|^x([0-9]{1,4})c([0-7])t([0-2])$|^x([0-9]{1,4})c([0-7])s([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)f([0])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)e([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)j([1-2])$|^x([0-9]{1,4})c([0-7])r([0-9]+)e([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)h([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)a([0-7])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)d([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)p([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)$|^x([0-9]{1,4})c([0-7])r([0-9]+)f([01])$|^x([0-9]{1,4})c([0-7])r([0-9]+)t([0-9]+)f([0-1])$|^x([0-9]{1,4})c([0-7])r([0-9]+)b([0-9]+)$|^x([0-9]{1,4})c([0-7])r([0-9]+)b([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)a([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)j([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])r([0-9]+)j([1-9][0-9]*)p([012])$|^x([0-9]{1,4})c([0-7])r([0-9]+)a([0-3])l([0-9]+)$|^x([0-9]{1,4})c([0-7])w([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])w([0-9]+)j([1-9][0-9]*)$",
+                        "description": "The xname of this piece of hardware",
+                        "example": "x0c0s0b0"
+                    },
+                    "Creds": {
+                        "type": "object",
+                        "properties": {
+                            "Username": {
+                                "type": "string",
+                                "example": "admin-user"
+                            },
+                            "Password": {
+                                "type": "string",
+                                "example": "admin-pw"
+                            }
+                        }
+                    }
+                }
+            },
+            "creds_components": {
+                "type": "object",
+                "properties": {
+                    "Force": {
+                        "type": "boolean"
+                    },
+                    "Targets": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "Xname": {
+                                    "type": "string",
+                                    "pattern": "^s0$|^d([0-9]+)$|^x([0-9]{1,4})d([0-1])$|^x([0-9]{1,4})m([0-3])$|^x([0-9]{1,4})m([0-3])p([0-7])$|^x([0-9]{1,4})m([0-3])i([0-3])$|^x([0-9]{1,4})m([0-3])p([0-7])j([1-9][0-9]*)$|^x([0-9]{1,4})e([0-1])$|^x([0-9]{1,4})$|^x([0-9]{1,4})b([0])$|^x([0-9]{1,4})c([0-7])$|^x([0-9]{1,4})c([0-7])b([0])$|^x([0-9]{1,4})c([0-7])f([0])$|^x([0-9]{1,4})c([0-7])t([0-2])$|^x([0-9]{1,4})c([0-7])s([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)f([0])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)e([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)j([1-2])$|^x([0-9]{1,4})c([0-7])r([0-9]+)e([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)h([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)a([0-7])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)d([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)p([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)$|^x([0-9]{1,4})c([0-7])r([0-9]+)f([01])$|^x([0-9]{1,4})c([0-7])r([0-9]+)t([0-9]+)f([0-1])$|^x([0-9]{1,4})c([0-7])r([0-9]+)b([0-9]+)$|^x([0-9]{1,4})c([0-7])r([0-9]+)b([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)a([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)j([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])r([0-9]+)j([1-9][0-9]*)p([012])$|^x([0-9]{1,4})c([0-7])r([0-9]+)a([0-3])l([0-9]+)$|^x([0-9]{1,4})c([0-7])w([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])w([0-9]+)j([1-9][0-9]*)$",
+                                    "description": "The xname of this piece of hardware",
+                                    "example": "x0c0s0b0"
+                                },
+                                "Creds": {
+                                    "type": "object",
+                                    "properties": {
+                                        "Username": {
+                                            "type": "string",
+                                            "example": "admin-user"
+                                        },
+                                        "Password": {
+                                            "type": "string",
+                                            "example": "admin-pw"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "creds_single": {
+                "type": "object",
+                "properties": {
+                    "Force": {
+                        "type": "boolean"
+                    },
+                    "Creds": {
+                        "type": "object",
+                        "properties": {
+                            "Username": {
+                                "type": "string",
+                                "example": "admin-user"
+                            },
+                            "Password": {
+                                "type": "string",
+                                "example": "admin-pw"
+                            }
+                        }
+                    }
+                }
+            },
+            "creds_global": {
+                "type": "object",
+                "properties": {
+                    "Force": {
+                        "type": "boolean"
+                    },
+                    "Username": {
+                        "type": "string"
+                    },
+                    "Password": {
+                        "type": "string"
+                    },
+                    "Targets": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "pattern": "^s0$|^d([0-9]+)$|^x([0-9]{1,4})d([0-1])$|^x([0-9]{1,4})m([0-3])$|^x([0-9]{1,4})m([0-3])p([0-7])$|^x([0-9]{1,4})m([0-3])i([0-3])$|^x([0-9]{1,4})m([0-3])p([0-7])j([1-9][0-9]*)$|^x([0-9]{1,4})e([0-1])$|^x([0-9]{1,4})$|^x([0-9]{1,4})b([0])$|^x([0-9]{1,4})c([0-7])$|^x([0-9]{1,4})c([0-7])b([0])$|^x([0-9]{1,4})c([0-7])f([0])$|^x([0-9]{1,4})c([0-7])t([0-2])$|^x([0-9]{1,4})c([0-7])s([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)f([0])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)e([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)j([1-2])$|^x([0-9]{1,4})c([0-7])r([0-9]+)e([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)h([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)a([0-7])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)d([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)p([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)$|^x([0-9]{1,4})c([0-7])r([0-9]+)f([01])$|^x([0-9]{1,4})c([0-7])r([0-9]+)t([0-9]+)f([0-1])$|^x([0-9]{1,4})c([0-7])r([0-9]+)b([0-9]+)$|^x([0-9]{1,4})c([0-7])r([0-9]+)b([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)a([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)j([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])r([0-9]+)j([1-9][0-9]*)p([012])$|^x([0-9]{1,4})c([0-7])r([0-9]+)a([0-3])l([0-9]+)$|^x([0-9]{1,4})c([0-7])w([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])w([0-9]+)j([1-9][0-9]*)$",
+                            "description": "The xname of this piece of hardware",
+                            "example": "x0c0s0b0"
+                        }
+                    }
+                }
+            },
+            "version": {
+                "type": "object",
+                "properties": {
+                    "Version": {
+                        "type": "string",
+                        "example": "v1.2.3"
+                    }
+                }
+            },
+            "health": {
+                "type": "object",
+                "properties": {
+                    "TaskRunnerStatus": {
+                        "type": "string",
+                        "example": "OK"
+                    },
+                    "TaskRunnerMode": {
+                        "type": "string",
+                        "enum": [
+                            "Local",
+                            "Worker"
+                        ]
+                    }
+                }
+            },
+            "Problem7807": {
+                "description": "RFC 7807 compliant error payload.  All fields are optional except the 'type' field.",
+                "type": "object",
+                "required": [
+                    "type"
+                ],
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "example": "about:blank"
+                    },
+                    "detail": {
+                        "type": "string",
+                        "example": "Detail about this specific problem occurrence. See RFC7807"
+                    },
+                    "instance": {
+                        "type": "string",
+                        "example": ""
+                    },
+                    "status": {
+                        "type": "number",
+                        "format": "int32",
+                        "example": 400
+                    },
+                    "title": {
+                        "type": "string",
+                        "example": "Description of HTTP Status code, e.g. 400"
+                    }
+                }
+            }
+        }
+    }
+}

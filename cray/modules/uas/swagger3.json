@@ -1,0 +1,1666 @@
+{
+    "openapi": "3.0.2",
+    "info": {
+        "title": "User Access Service",
+        "description": "The User Access Service (UAS) creates and deletes\nUser Access Instances (UAIs). The UAI is a containerized\nSSHd environment, built using a specific OS as a base, and\ncontains libraries, commands, and utilities necessary for application\ndevelopment.\n\nA user may ssh to a UAI in order to build, run, and debug applications.\nThe available images and volumes are configured by a system administrator.\nThe UAI runs on a non-compute node.\n\n\n## Resources\n\n\n### /images\n\nAn image, identified by its *imagename*, is a UAI container image.\nThere is potential for different containerized images to be available,\neach built using different components/versions.\n\n### /mgr-info\n\nReturn the version of this service.\n\n### /uas\n\nCreate, delete, or list the User Access Instance(s).\nWhen a user requests a new UAI, the UAS service returns status and\nconnection information to the newly created UAI.\n\n### /uais\n\nList or delete User Access Instance(s).\n\n### /volumes\n\nVolumes are mounted within the UAI for user access for the\nduration of the UAI.\n\n### /admin/config/images\n\nThis is where an administrator can list, create, get or delete UAI\nimage entries in the list of available container image names.\n\n### /admin/config/volumes\n\nThis is where an administrator can list, create, get, modify, or\ndelete entries in the list of available volumes.\n\n## Workflows\n\n\n### Single User Workflow\n\nAs an individual user, create a UAI for your own use and delete it when\nno longer needed.\n\n#### GET /uas\n\nGet the list of available, user-specific UAIs.\n\n#### POST /uas\n\nRequest to create a new User Access Instance (UAI).\nWhen an authenticated user requests a new UAI, the User Access\nService returns status and connection information for the newly\ncreated UAI, which will be available via ssh.\nMost properties of UAI are static for the life of a UAI.\nUAIs are not shared - they do not have multiple owners.\n\n#### ssh to the new UAI\n\nBuild, run, debug applications.\n\n#### DELETE /uas\n\nCleanup your own UAI.  This operation is restricted to owner of the UAI.\n\n### Admin Workflow\n\nAs an administrator, establish the system-wide configuration, in\nterms of images and volumes, used for UAI creation. Subsequently\ncreated UAIs will contain the specified /image and all configured\n/volumes.  Note that the configuration applies to UAIs\nsubsequently created.  When the system-wide configuration changes,\nthose changes do not affect pre-existing UAIs.\n\nThese operations are available under the /admin/config prefix.\nCurrently supported paths under /admin/config are /admin/config/images and\n/admin/config/volumes.\n\n#### GET /uas\n\nGet a list of all available UAIs on the system.\n\n#### GET /images\n\nGet a list of container images available for use by a UAI.\n\n#### GET /images/{imagename}\n\nGet information about a specific UAI container image - not implemented.\n\n#### GET /volumes - not implemented\n\nGet a list of volumes available for use by UAIs.\n\n#### GET /volumes/{volumename} or GET /admin/config/volumes/{volumname}\n\nGet information about a specific volume available for use by UAIs - not implemented\n\n#### GET /admin/config/volumes\n\nGet a list of volumes available for use by UAIs\n\n#### GET /admin/config/images\n\nGet a list of images available for creating UAIs\n\n#### POST /admin/config/volumes\n\nAdd a volume to the list of volumes that will be mounted in new UAIs.\n\n#### POST /admin/config/images\n\nAdd image name to list of valid images.\n\n#### POST /uas\n\nRequest to create new UAI, having the specified image.  All\nvolumes listed in the configuration are assigned to a new UAI, but\nonly the specified ports are assigned in addition to the SSH port,\nand then only if they are in the set 80, 443 and 8888.\n\n#### GET /admin/config/images/{image_id}\n\nGet information about a specific image available for making UAIs.\n\n#### GET /admin/config/volumes/{volume-id}\n\nGet information about a specific volume used in UAIs\n\n#### PATCH /admin/config/images/{image_id}\n\nUpdate the entry for the specified image in the list of UAI\ncontainer images.\n\n#### PATCH /admin/config/volumes/{volume_id}\n\nUpdate the entry for the specified volume in the list of volumes\nmounted in UAI containers.\n\n#### DELETE /admin/config/images/{image_id}\n\nDelete the specified image from the list of available UAI\ncontainer images.\n\n#### DELETE /admin/config/volumes/{volume_id}\n\nDelete the specified volume from the list of available volumes.\n",
+        "version": "1.8.0"
+    },
+    "servers": [
+        {
+            "url": "/apis/uas-mgr/v1"
+        }
+    ],
+    "paths": {
+        "/": {
+            "get": {
+                "summary": "Return supported UAS API versions",
+                "description": "Return supported UAS API versions.",
+                "operationId": "root_get",
+                "tags": [
+                    "versions",
+                    "cli_ignore"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Version response"
+                    }
+                },
+                "x-openapi-router-controller": "swagger_server.controllers.versions_controller"
+            }
+        },
+        "/uas": {
+            "get": {
+                "summary": "List UAIs",
+                "description": "List all available UAIs for username.",
+                "operationId": "get_uais_for_user",
+                "tags": [
+                    "uas"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "uai_name": {
+                                                "type": "string"
+                                            },
+                                            "username": {
+                                                "type": "string"
+                                            },
+                                            "publickey": {
+                                                "type": "string"
+                                            },
+                                            "uai_img": {
+                                                "type": "string"
+                                            },
+                                            "uai_status": {
+                                                "type": "string"
+                                            },
+                                            "uai_msg": {
+                                                "type": "string"
+                                            },
+                                            "uai_connect_string": {
+                                                "type": "string"
+                                            },
+                                            "uai_portmap": {
+                                                "type": "object",
+                                                "additionalProperties": {
+                                                    "type": "integer"
+                                                }
+                                            },
+                                            "uai_host": {
+                                                "type": "string"
+                                            },
+                                            "uai_age": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "example": {
+                                            "uai_id": "user-uai-uai_image",
+                                            "username": "user_name",
+                                            "publickey": "/Users/user/.ssh/id_rsa.pub",
+                                            "uai_img": "uai_img",
+                                            "uai_status": "Running",
+                                            "uai_reason": "Deploying",
+                                            "uai_host": "ncn-w001",
+                                            "uai_age": "13d8h"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "x-openapi-router-controller": "swagger_server.controllers.uas_controller"
+            },
+            "post": {
+                "summary": "Create a UAI",
+                "description": "Create a new UAI using the specified image.  It will be accessable via ssh, and projected onto ports, if ports are specified.",
+                "operationId": "create_uai",
+                "tags": [
+                    "uas"
+                ],
+                "parameters": [
+                    {
+                        "name": "imagename",
+                        "in": "query",
+                        "description": "Image to use for UAI",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "docker.local/cray/cray-uas-sles15sp1:latest"
+                    },
+                    {
+                        "name": "ports",
+                        "in": "query",
+                        "description": "Additional ports to project from the UAI besides ssh. Restricted to ports 80, 443 and 8888.",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "80,443"
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "publickey": {
+                                        "description": "File containing public ssh key for the user",
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "UAI created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Unable to create UAI",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "x-openapi-router-controller": "swagger_server.controllers.uas_controller"
+            },
+            "delete": {
+                "summary": "Delete a UAI",
+                "description": "Delete specified UAI(s). Takes a list of UAI names and deletes the associated UAI(s).\n",
+                "operationId": "delete_uai_by_name",
+                "tags": [
+                    "uas"
+                ],
+                "parameters": [
+                    {
+                        "name": "uai_list",
+                        "description": "comma separated list of UAI names",
+                        "in": "query",
+                        "required": true,
+                        "style": "form",
+                        "explode": false,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "example": [
+                            "uai-asdfgh098",
+                            "uai-qwerty123"
+                        ]
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "UAIs deleted"
+                    },
+                    "404": {
+                        "description": "Failed to delete UAI with {uai_id}"
+                    }
+                },
+                "x-openapi-router-controller": "swagger_server.controllers.uas_controller"
+            }
+        },
+        "/images": {
+            "get": {
+                "summary": "List UAS images",
+                "description": "List all available UAS images.",
+                "operationId": "get_uas_images",
+                "tags": [
+                    "images"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "UAS Image List",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "default_image": {
+                                            "type": "string"
+                                        },
+                                        "image_list": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "UAS Images not found"
+                    }
+                },
+                "x-openapi-router-controller": "swagger_server.controllers.uas_controller"
+            },
+            "post": {
+                "summary": "Deprecated and never implemented  - see /admin/config/images",
+                "description": "Deprecated and never implemented",
+                "operationId": "create_uas_image_deprecated",
+                "tags": [
+                    "images",
+                    "cli_hidden"
+                ],
+                "parameters": [
+                    {
+                        "name": "imagename",
+                        "in": "query",
+                        "description": "Image to create",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "docker.local/cray/cray-uas-sles15sp1:latest"
+                    },
+                    {
+                        "name": "default",
+                        "in": "query",
+                        "description": "default image (true/false)",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean",
+                            "default": false
+                        },
+                        "example": false
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Image added",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "304": {
+                        "description": "Image not added",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "x-openapi-router-controller": "swagger_server.controllers.uas_controller"
+            }
+        },
+        "/images/{imagename}": {
+            "delete": {
+                "summary": "Deprecated and never implemented - see /admin/config/images/{imagename}",
+                "description": "Deprecated and never implemented",
+                "operationId": "delete_uas_image_deprecated",
+                "tags": [
+                    "images",
+                    "cli_hidden"
+                ],
+                "parameters": [
+                    {
+                        "name": "imagename",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "docker.local/cray/cray-uas-sles15sp1:latest"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Image removed"
+                    },
+                    "404": {
+                        "description": "Failed to delete image {image_id}"
+                    }
+                },
+                "x-openapi-router-controller": "swagger_server.controllers.uas_controller"
+            },
+            "patch": {
+                "summary": "Deprecated and never implemented  - see /admin/config/images/{imagename}",
+                "description": "Deprecated and never implemented",
+                "operationId": "update_uas_image_deprecated",
+                "tags": [
+                    "images",
+                    "cli_hidden"
+                ],
+                "parameters": [
+                    {
+                        "name": "imagename",
+                        "in": "path",
+                        "description": "Image to update",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "docker.local/cray/cray-uas-sles15sp1:latest"
+                    },
+                    {
+                        "name": "default",
+                        "in": "query",
+                        "description": "default image (true/false)",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean",
+                            "default": false
+                        },
+                        "example": false
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Image updated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "304": {
+                        "description": "No changes made",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "x-openapi-router-controller": "swagger_server.controllers.uas_controller"
+            },
+            "get": {
+                "summary": "Get image info - not implemented",
+                "description": "Not yet implemented.",
+                "operationId": "get_uas_image_deprecated",
+                "tags": [
+                    "images",
+                    "cli_hidden"
+                ],
+                "parameters": [
+                    {
+                        "name": "imagename",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "docker.local/cray/cray-uas-sles15sp1:latest"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "UAS Image",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "UAS Image {imagename} not found"
+                    }
+                },
+                "x-openapi-router-controller": "swagger_server.controllers.uas_controller"
+            }
+        },
+        "/volumes": {
+            "get": {
+                "summary": "Deprecated and never implemented",
+                "description": "Deprecated and never implemented.",
+                "operationId": "get_uas_volumes_deprecated",
+                "tags": [
+                    "volumes",
+                    "cli_hidden"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "UAS Volume list",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "UAS Volumes not found"
+                    }
+                },
+                "x-openapi-router-controller": "swagger_server.controllers.uas_controller"
+            },
+            "post": {
+                "summary": "Deprecated and never implemented - see /admin/config/volumes",
+                "description": "Deprecated and never implemented",
+                "operationId": "create_uas_volume_deprecated",
+                "tags": [
+                    "volumes",
+                    "cli_hidden"
+                ],
+                "parameters": [
+                    {
+                        "name": "volumename",
+                        "in": "query",
+                        "description": "Volume to create",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "my-mount"
+                    },
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "description": "Valid k8s host_path subtypes: DirectoryOrCreate, Directory, FileOrCreate, File, Socket, CharDevice, BlockDevice",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "DirectoryOrCreate"
+                        },
+                        "example": "DirectoryOrCreate"
+                    },
+                    {
+                        "name": "mount_path",
+                        "in": "query",
+                        "description": "Mount path inside the UAI",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "/mnt/test"
+                    },
+                    {
+                        "name": "host_path",
+                        "in": "query",
+                        "description": "Mount path on the host",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "/opt/host/path"
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Volume added",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "304": {
+                        "description": "Volume not added",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid type for host, volume not added",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "x-openapi-router-controller": "swagger_server.controllers.uas_controller"
+            }
+        },
+        "/volumes/{volumename}": {
+            "delete": {
+                "summary": "Deprecated and never implemented - see /admin/config/volumes/{volumename}",
+                "description": "Deprecated and never implemented",
+                "operationId": "delete_uas_volume_deprecated",
+                "tags": [
+                    "volumes",
+                    "cli_hidden"
+                ],
+                "parameters": [
+                    {
+                        "name": "volumename",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "my-mount"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Volume removed from list"
+                    },
+                    "404": {
+                        "description": "Failed to delete volume {volume_id}"
+                    }
+                },
+                "x-openapi-router-controller": "swagger_server.controllers.uas_controller"
+            },
+            "patch": {
+                "summary": "Deprecated and never implemented - see /admin/config/volumes/{volumename}",
+                "description": "Deprecated and never implemented",
+                "operationId": "update_uas_volume_deprecated",
+                "tags": [
+                    "volumes",
+                    "cli_hidden"
+                ],
+                "parameters": [
+                    {
+                        "name": "volumename",
+                        "in": "path",
+                        "description": "Volume to update",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "my-mount"
+                    },
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "description": "Valid types: DirectoryOrCreate, Directory, FileOrCreate, File, Socket, CharDevice, BlockDevice",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "DirectoryOrCreate"
+                        },
+                        "example": "DirectoryOrCreate"
+                    },
+                    {
+                        "name": "mount_path",
+                        "in": "query",
+                        "description": "Mount path inside the UAI",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "/mnt/test"
+                    },
+                    {
+                        "name": "host_path",
+                        "in": "query",
+                        "description": "Mount path on the host",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "/opt/host/path"
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Volume updated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "304": {
+                        "description": "No changes made",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid type for host, volume not updated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "x-openapi-router-controller": "swagger_server.controllers.uas_controller"
+            },
+            "get": {
+                "summary": "Deprecated and never implemented",
+                "description": "Deprecated and never implemented.",
+                "operationId": "get_uas_volume_deprecated",
+                "tags": [
+                    "volumes",
+                    "cli_hidden"
+                ],
+                "parameters": [
+                    {
+                        "name": "volumename",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "my-mount"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "UAS Volume",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "UAS Volume {volumename} not found"
+                    }
+                },
+                "x-openapi-router-controller": "swagger_server.controllers.uas_controller"
+            }
+        },
+        "/mgr-info": {
+            "get": {
+                "summary": "List UAS info",
+                "description": "Return User Access Service information.",
+                "operationId": "get_uas_mgr_info",
+                "tags": [
+                    "mgr-info"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "UAS-MGR Info",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "service_name": {
+                                            "type": "string"
+                                        },
+                                        "version": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "example": {
+                                        "service_name": "cray-uas-mgr",
+                                        "version": "version"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "UAS-MGR Info not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "x-openapi-router-controller": "swagger_server.controllers.uas_controller"
+            }
+        },
+        "/uais": {
+            "get": {
+                "summary": "List UAIs",
+                "description": "List all UAIs on the system.",
+                "operationId": "get_all_uais",
+                "tags": [
+                    "uais"
+                ],
+                "parameters": [
+                    {
+                        "name": "username",
+                        "in": "query",
+                        "description": "List all UAIs matching this username",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "uastest"
+                    },
+                    {
+                        "name": "host",
+                        "in": "query",
+                        "description": "List all UAIs running on this host",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "ncn-w001"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "UAI List",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No UAIs found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "x-openapi-router-controller": "swagger_server.controllers.uas_controller"
+            },
+            "delete": {
+                "summary": "Delete UAIs",
+                "description": "Delete all UAIs on the system.",
+                "operationId": "delete_all_uais",
+                "tags": [
+                    "uais",
+                    "cli_danger$This will delete all running UAIs, Are you sure?"
+                ],
+                "parameters": [
+                    {
+                        "name": "username",
+                        "in": "query",
+                        "description": "delete all UAIs matching this username",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "uastest"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "All UAIs Deleted"
+                    },
+                    "404": {
+                        "description": "No UAIs found"
+                    }
+                },
+                "x-openapi-router-controller": "swagger_server.controllers.uas_controller"
+            }
+        },
+        "/admin/config": {
+            "delete": {
+                "summary": "Remove local configuration and revert to default configuration",
+                "description": "Remove any locally applied configuration (configuration applied through\nthe admin/config API) and revert to the default configuration that\nis installed in the system.  This can be used both to reset to\nfactory defaults and to move to a new set of defaults if the existing\none is replaced.  All locally applied configuration will be lost if\nwith this request.\n",
+                "operationId": "delete_local_config_admin",
+                "tags": [
+                    "config",
+                    "cli_danger$This will delete all locally applied configuration, Are you sure?"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Local configuration reset to defaults"
+                    }
+                },
+                "x-openapi-router-controller": "swagger_server.controllers.uas_controller"
+            }
+        },
+        "/admin/config/images": {
+            "post": {
+                "summary": "Add an image",
+                "description": "Add valid image name to configuration. Does not create or\nupload container image.  Optionally, set default.\n",
+                "operationId": "create_uas_image_admin",
+                "tags": [
+                    "images",
+                    "config"
+                ],
+                "parameters": [
+                    {
+                        "name": "imagename",
+                        "in": "query",
+                        "description": "Image to create",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "docker.local/cray/cray-uas-sles15sp1:latest"
+                    },
+                    {
+                        "name": "default",
+                        "in": "query",
+                        "description": "default image (true/false)",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean",
+                            "default": false
+                        },
+                        "example": false
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Image added",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "image_id": {
+                                            "type": "string"
+                                        },
+                                        "imagename": {
+                                            "type": "string"
+                                        },
+                                        "default": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "example": {
+                                        "image_id": "af4e59ab-6275-47f9-8f4a-90911eba3f9c",
+                                        "imagename": "node.local/uas-sles15:latest",
+                                        "default": false
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "304": {
+                        "description": "Image not added",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                },
+                "x-openapi-router-controller": "swagger_server.controllers.uas_controller"
+            },
+            "get": {
+                "summary": "List UAS images",
+                "description": "List all available UAS images.",
+                "operationId": "get_uas_images_admin",
+                "tags": [
+                    "images",
+                    "config"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "UAS Image List",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "image_id": {
+                                                "type": "string"
+                                            },
+                                            "imagename": {
+                                                "type": "string"
+                                            },
+                                            "default": {
+                                                "type": "boolean"
+                                            }
+                                        },
+                                        "example": {
+                                            "image_id": "af4e59ab-6275-47f9-8f4a-90911eba3f9c",
+                                            "imagename": "node.local/uas-sles15:latest",
+                                            "default": false
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "UAS Images not found"
+                    }
+                },
+                "x-openapi-router-controller": "swagger_server.controllers.uas_controller"
+            }
+        },
+        "/admin/config/images/{image_id}": {
+            "get": {
+                "summary": "Get image info",
+                "description": "Get a description of the named image",
+                "operationId": "get_uas_image_admin",
+                "tags": [
+                    "images",
+                    "config"
+                ],
+                "parameters": [
+                    {
+                        "name": "image_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "The image identifier (UUID) of the image to be retrieved from the\nconfiguration.\n",
+                        "example": "af4e59ab-6275-47f9-8f4a-90911eba3f9c"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "UAS Image",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "image_id": {
+                                            "type": "string"
+                                        },
+                                        "imagename": {
+                                            "type": "string"
+                                        },
+                                        "default": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "example": {
+                                        "image_id": "af4e59ab-6275-47f9-8f4a-90911eba3f9c",
+                                        "imagename": "node.local/uas-sles15:latest",
+                                        "default": false
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "UAS Image {image_id} not found"
+                    }
+                },
+                "x-openapi-router-controller": "swagger_server.controllers.uas_controller"
+            },
+            "patch": {
+                "summary": "Update an image",
+                "description": "Update an image, specifically this can set or unset the 'default' flag.",
+                "operationId": "update_uas_image_admin",
+                "tags": [
+                    "images",
+                    "config"
+                ],
+                "parameters": [
+                    {
+                        "name": "image_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "The image identifier (UUID) of the image to be updated in the\nconfiguration.\n",
+                        "example": "af4e59ab-6275-47f9-8f4a-90911eba3f9c"
+                    },
+                    {
+                        "name": "imagename",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "The image name to be used by instances based on this UAI\ninstance.\n",
+                        "example": "docker.local/cray/cray-uas-sles15sp1:latest"
+                    },
+                    {
+                        "name": "default",
+                        "in": "query",
+                        "description": "default image (true/false)",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean",
+                            "default": false
+                        },
+                        "example": false
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Image updated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "image_id": {
+                                            "type": "string"
+                                        },
+                                        "imagename": {
+                                            "type": "string"
+                                        },
+                                        "default": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "example": {
+                                        "image_id": "af4e59ab-6275-47f9-8f4a-90911eba3f9c",
+                                        "imagename": "node.local/uas-sles15:latest",
+                                        "default": false
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "304": {
+                        "description": "No changes made",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "image_id": {
+                                            "type": "string"
+                                        },
+                                        "imagename": {
+                                            "type": "string"
+                                        },
+                                        "default": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "example": {
+                                        "image_id": "af4e59ab-6275-47f9-8f4a-90911eba3f9c",
+                                        "imagename": "node.local/uas-sles15:latest",
+                                        "default": false
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "x-openapi-router-controller": "swagger_server.controllers.uas_controller"
+            },
+            "delete": {
+                "summary": "Remove the imagename from set of valid images",
+                "description": "Delete the named image from the set of valid UAI container images.",
+                "operationId": "delete_uas_image_admin",
+                "tags": [
+                    "images",
+                    "config"
+                ],
+                "parameters": [
+                    {
+                        "name": "image_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "The image identifier (UUID) of the image to be updated in the\nconfiguration.\n",
+                        "example": "af4e59ab-6275-47f9-8f4a-90911eba3f9c"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Image removed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "image_id": {
+                                            "type": "string"
+                                        },
+                                        "imagename": {
+                                            "type": "string"
+                                        },
+                                        "default": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "example": {
+                                        "image_id": "af4e59ab-6275-47f9-8f4a-90911eba3f9c",
+                                        "imagename": "node.local/uas-sles15:latest",
+                                        "default": false
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Failed to delete image {image_id}"
+                    }
+                },
+                "x-openapi-router-controller": "swagger_server.controllers.uas_controller"
+            }
+        },
+        "/admin/config/volumes": {
+            "post": {
+                "summary": "Add a volume",
+                "description": "Add a volume to the volume list in the configuration.  The\nvolume list is used during UAI creation, so this request only\napplies to UAIs subsequently created.  Modifying the volume\nlist does not affect existing UAIs.\n",
+                "operationId": "create_uas_volume_admin",
+                "tags": [
+                    "volumes",
+                    "config"
+                ],
+                "parameters": [
+                    {
+                        "name": "volumename",
+                        "in": "query",
+                        "description": "Volume to create",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "my-mount"
+                    },
+                    {
+                        "name": "mount_path",
+                        "in": "query",
+                        "description": "Mount path inside the UAI",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "/mnt/test"
+                    },
+                    {
+                        "name": "volume_description",
+                        "in": "query",
+                        "description": "JSON description of a Kubernetes volume to be\nmounted in UAI containers.  This is the JSON\nequivalent of whatever YAML you would normally\napply to Kubernetes to attach the kind of volume\nyou want to a pod.  There are many kinds of\nvolumes, the examples given here illustrate some\noptions:\n\n{\n  \"host_path\": {\n    \"path\": \"/data\",\n    \"type\": \"DirectoryOrCreate\"\n  }\n}\n\nor\n {\n  \"secret\": {\n    \"secretName\": \"my-secret\"\n  }\n}\nor\n {\n  \"config_map\": {\n    \"name\": \"my-configmap\",\n    \"items\": {\n      \"key\": \"flaps\",\n      \"path\": \"flaps\"\n    }\n  }\n}\n",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "{ \"config_map\": { \"name\": \"my-configmap\" } }"
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Volume added",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "volume_id": {
+                                            "type": "string"
+                                        },
+                                        "volumename": {
+                                            "type": "string"
+                                        },
+                                        "mount_path": {
+                                            "type": "string"
+                                        },
+                                        "volume_description": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "example": {
+                                        "volume_id": "e2918379-7df1-4086-92fe-e3ec777a9b2e",
+                                        "volumename": "my-mount",
+                                        "mount_path": "/mnt/test",
+                                        "volume_description": "{\"host_path\":{\"path\": \"/opt/host/path\", \"type\": \"DirectoryOrCreate\"}}\n"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "304": {
+                        "description": "Volume not added",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid type for host, volume not added",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                },
+                "x-openapi-router-controller": "swagger_server.controllers.uas_controller"
+            },
+            "get": {
+                "summary": "List volumes",
+                "description": "The volume list in the configuration is used during UAI creation.\nThis list does not necessarily relate to UAIs previously created.\nThis call does not affect the k8s volume itself.\n",
+                "operationId": "get_uas_volumes_admin",
+                "tags": [
+                    "volumes",
+                    "config"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "UAS Volume list",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "volume_id": {
+                                                "type": "string"
+                                            },
+                                            "volumename": {
+                                                "type": "string"
+                                            },
+                                            "mount_path": {
+                                                "type": "string"
+                                            },
+                                            "volume_description": {
+                                                "type": "object"
+                                            }
+                                        },
+                                        "example": {
+                                            "volume_id": "e2918379-7df1-4086-92fe-e3ec777a9b2e",
+                                            "volumename": "my-mount",
+                                            "mount_path": "/mnt/test",
+                                            "volume_description": "{\"host_path\":{\"path\": \"/opt/host/path\", \"type\": \"DirectoryOrCreate\"}}\n"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "UAS Volumes not found"
+                    }
+                },
+                "x-openapi-router-controller": "swagger_server.controllers.uas_controller"
+            }
+        },
+        "/admin/config/volumes/{volume_id}": {
+            "get": {
+                "summary": "Get volume info for volume_id",
+                "description": "Get volume info for volume_id",
+                "operationId": "get_uas_volume_admin",
+                "tags": [
+                    "volumes",
+                    "config"
+                ],
+                "parameters": [
+                    {
+                        "name": "volume_id",
+                        "in": "path",
+                        "description": "The volume identifier (UUID) of the volume to retrieve\nfrom the configuration.\n",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "e2918379-7df1-4086-92fe-e3ec777a9b2e"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "UAS Volume",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "volume_id": {
+                                            "type": "string"
+                                        },
+                                        "volumename": {
+                                            "type": "string"
+                                        },
+                                        "mount_path": {
+                                            "type": "string"
+                                        },
+                                        "volume_description": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "example": {
+                                        "volume_id": "e2918379-7df1-4086-92fe-e3ec777a9b2e",
+                                        "volumename": "my-mount",
+                                        "mount_path": "/mnt/test",
+                                        "volume_description": "{\"host_path\":{\"path\": \"/opt/host/path\", \"type\": \"DirectoryOrCreate\"}}\n"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "UAS Volume {volumename} not found"
+                    }
+                },
+                "x-openapi-router-controller": "swagger_server.controllers.uas_controller"
+            },
+            "patch": {
+                "summary": "Update a volume",
+                "description": "Update a volume to be mounted in UAS images. This has no\neffect on running UAIs and does not change the volume itself\nin any way, but it can modify the relationship between\nfuture UAI containers and the volume.\n",
+                "operationId": "update_uas_volume_admin",
+                "tags": [
+                    "volumes",
+                    "config"
+                ],
+                "parameters": [
+                    {
+                        "name": "volume_id",
+                        "in": "path",
+                        "description": "The volume identifier (UUID) of the volume to update\nin the configuration.\n",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "e2918379-7df1-4086-92fe-e3ec777a9b2e"
+                    },
+                    {
+                        "name": "volumename",
+                        "in": "query",
+                        "description": "The name of the volume as it is applied to the UAI\nKubernetes pod.  Must conform to Kubernetes volume\nnaming conventions (see Kuberneted documentation for\ndetails).\n",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "my-mount"
+                    },
+                    {
+                        "name": "mount_path",
+                        "in": "query",
+                        "description": "Mount path for the volume inside the UAI",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "/mnt/test"
+                    },
+                    {
+                        "name": "volume_description",
+                        "in": "query",
+                        "description": "JSON description of a Kubernetes volume to be\nmounted in UAI containers.  This is the JSON\nequivalent of whatever YAML you would normally\napply to Kubernetes to attach the kind of volume\nyou want to a pod.  There are many kinds of\nvolumes, the examples given here illustrate some\noptions:\n\n{\n  \"host_path\": {\n    \"path\": \"/data\",\n    \"type\": \"DirectoryOrCreate\"\n  }\n}\n\nor\n {\n  \"secret\": {\n    \"secretName\": \"my-secret\"\n  }\n}\nor\n {\n  \"config_map\": {\n    \"name\": \"my-configmap\",\n    \"items\": {\n      \"key\": \"flaps\",\n      \"path\": \"flaps\"\n    }\n  }\n}\n",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "{ \"config_map\": { \"name\": \"my-configmap\" } }"
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Volume updated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "volume_id": {
+                                            "type": "string"
+                                        },
+                                        "volumename": {
+                                            "type": "string"
+                                        },
+                                        "mount_path": {
+                                            "type": "string"
+                                        },
+                                        "volume_description": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "example": {
+                                        "volume_id": "e2918379-7df1-4086-92fe-e3ec777a9b2e",
+                                        "volumename": "my-mount",
+                                        "mount_path": "/mnt/test",
+                                        "volume_description": "{\"host_path\":{\"path\": \"/opt/host/path\", \"type\": \"DirectoryOrCreate\"}}\n"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "304": {
+                        "description": "No changes made",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "volume_id": {
+                                            "type": "string"
+                                        },
+                                        "volumename": {
+                                            "type": "string"
+                                        },
+                                        "mount_path": {
+                                            "type": "string"
+                                        },
+                                        "volume_description": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "example": {
+                                        "volume_id": "e2918379-7df1-4086-92fe-e3ec777a9b2e",
+                                        "volumename": "my-mount",
+                                        "mount_path": "/mnt/test",
+                                        "volume_description": "{\"host_path\":{\"path\": \"/opt/host/path\", \"type\": \"DirectoryOrCreate\"}}\n"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid type for host, volume not updated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                },
+                "x-openapi-router-controller": "swagger_server.controllers.uas_controller"
+            },
+            "delete": {
+                "summary": "Remove volume from the volume list",
+                "description": "Does not affect existing UAIs.\nRemove the volume from the list of valid volumes.\nThe actual volume itself is not affected in any way.\n",
+                "operationId": "delete_uas_volume_admin",
+                "tags": [
+                    "volumes",
+                    "config"
+                ],
+                "parameters": [
+                    {
+                        "name": "volume_id",
+                        "in": "path",
+                        "description": "The volume identifier (UUID) of the volume to delete\nfrom the configuration.\n",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "e2918379-7df1-4086-92fe-e3ec777a9b2e"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Volume removed from list",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "volume_id": {
+                                            "type": "string"
+                                        },
+                                        "volumename": {
+                                            "type": "string"
+                                        },
+                                        "mount_path": {
+                                            "type": "string"
+                                        },
+                                        "volume_description": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "example": {
+                                        "volume_id": "e2918379-7df1-4086-92fe-e3ec777a9b2e",
+                                        "volumename": "my-mount",
+                                        "mount_path": "/mnt/test",
+                                        "volume_description": "{\"host_path\":{\"path\": \"/opt/host/path\", \"type\": \"DirectoryOrCreate\"}}\n"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Failed to delete volume {volume_id}"
+                    }
+                },
+                "x-openapi-router-controller": "swagger_server.controllers.uas_controller"
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "UAI": {
+                "type": "object",
+                "properties": {
+                    "uai_name": {
+                        "type": "string"
+                    },
+                    "username": {
+                        "type": "string"
+                    },
+                    "publickey": {
+                        "type": "string"
+                    },
+                    "uai_img": {
+                        "type": "string"
+                    },
+                    "uai_status": {
+                        "type": "string"
+                    },
+                    "uai_msg": {
+                        "type": "string"
+                    },
+                    "uai_connect_string": {
+                        "type": "string"
+                    },
+                    "uai_portmap": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "integer"
+                        }
+                    },
+                    "uai_host": {
+                        "type": "string"
+                    },
+                    "uai_age": {
+                        "type": "string"
+                    }
+                },
+                "example": {
+                    "uai_id": "user-uai-uai_image",
+                    "username": "user_name",
+                    "publickey": "/Users/user/.ssh/id_rsa.pub",
+                    "uai_img": "uai_img",
+                    "uai_status": "Running",
+                    "uai_reason": "Deploying",
+                    "uai_host": "ncn-w001",
+                    "uai_age": "13d8h"
+                }
+            },
+            "Volume": {
+                "type": "object",
+                "properties": {
+                    "volume_id": {
+                        "type": "string"
+                    },
+                    "volumename": {
+                        "type": "string"
+                    },
+                    "mount_path": {
+                        "type": "string"
+                    },
+                    "volume_description": {
+                        "type": "object"
+                    }
+                },
+                "example": {
+                    "volume_id": "e2918379-7df1-4086-92fe-e3ec777a9b2e",
+                    "volumename": "my-mount",
+                    "mount_path": "/mnt/test",
+                    "volume_description": "{\"host_path\":{\"path\": \"/opt/host/path\", \"type\": \"DirectoryOrCreate\"}}\n"
+                }
+            },
+            "Image": {
+                "type": "object",
+                "properties": {
+                    "image_id": {
+                        "type": "string"
+                    },
+                    "imagename": {
+                        "type": "string"
+                    },
+                    "default": {
+                        "type": "boolean"
+                    }
+                },
+                "example": {
+                    "image_id": "af4e59ab-6275-47f9-8f4a-90911eba3f9c",
+                    "imagename": "node.local/uas-sles15:latest",
+                    "default": false
+                }
+            },
+            "Image_list": {
+                "type": "object",
+                "properties": {
+                    "default_image": {
+                        "type": "string"
+                    },
+                    "image_list": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "UAS_mgr_info": {
+                "type": "object",
+                "properties": {
+                    "service_name": {
+                        "type": "string"
+                    },
+                    "version": {
+                        "type": "string"
+                    }
+                },
+                "example": {
+                    "service_name": "cray-uas-mgr",
+                    "version": "version"
+                }
+            }
+        }
+    }
+}

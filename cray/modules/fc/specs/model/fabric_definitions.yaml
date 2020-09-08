@@ -1,0 +1,325 @@
+definitions:
+  ControllerStatus:
+    type: object
+    required:
+      - configured
+    properties:
+      configured:
+        type: boolean
+  Group:
+    type: object
+    required: [groupId, switches]
+    properties:
+      groupId:
+        type: integer
+      switches:
+        type: array
+        items:
+         $ref: '#/definitions/Switch'
+  Switch:
+    type: object
+    required: [switchNum, switchProperties]
+    properties:
+      switchNum:
+        type: integer
+      switchProperties:
+        $ref: '#/definitions/SwitchProperties'
+  Port:
+  # TODO link Switch with port, extend port object to 
+  # contain port properties such as mtu, status, mac etc..
+    type: object
+    required: [portNum]
+    properties:
+      portNum:
+        type: integer
+  StatsGroup:
+    type: object
+    required: [name, stat]
+    properties:
+      name:
+        type: string
+      stat:
+        type: array
+        items:
+          $ref: '#/definitions/Stat'
+  Stat:
+    type: object
+    required: [name, value]
+    properties:
+      name:
+        type: string
+      value:
+        type: string
+  PortStatistics:
+    type: object
+    required: [port, stats]
+    properties:
+      port:
+        $ref: '#/definitions/Port'
+      stats:
+        $ref: '#/definitions/StatsGroup'
+  PortFlowControl:
+    type: object
+    required: [port, flowcontrol]
+    properties:
+      port:
+        $ref: '#/definitions/Port'
+      flowcontrol:
+        $ref: '#/definitions/FlowControlParams'
+  SwitchProperties:
+  # This can be expanded in the future to contain
+  # more properties such as mtu, ports etc...
+    type: object
+    required: [xname, switchId, groupId]
+    properties:
+      xname:
+        type: string
+      switchId:
+        type: integer
+      groupId:
+        type: integer
+  PortStatus:
+    type: object
+    required: [portid, status]
+    properties:
+        portId:
+          type: integer
+        status:
+          $ref: '#/definitions/StatusParams'
+  PortEnableState:
+    type: object
+    required:
+      - enable
+    properties:
+      enable:
+        description: Port state
+        type: boolean
+  MTU:
+    type: object
+    description: Maximum transmition unit
+    required:
+        - value
+    properties:
+        value:
+          type: integer
+          minimum: 1
+  AutonegEnable:
+    type: object
+    required:
+      - enable
+    properties:
+      enable:
+        description: Autoneg enable/disable
+        type: boolean
+  AutonegParams:
+    type: object
+    properties:
+      speed:
+        type: string
+      autoneg:
+        type: string
+  StatusParams:
+    type: object
+    required: [status, speed, autoneg, ptype, subtype]
+    properties:
+      status:
+        type: boolean
+      speed:
+        type: string
+      autoneg:
+        type: string
+      mtu:
+        type: integer
+      mac:
+        type: string
+      mactype:
+        type: string
+      ptype:
+        type: string
+      subtype:
+        type: string
+      loopback:
+        type: string
+  Speed:
+     type: object
+     required:
+       - speed
+     properties:
+       speed:
+         type: string
+  AlgoMacAddrParams:
+      type: object
+      required: [address, maxNumPortsPerSwitch, maxNumSwitchesPerGroup, numGroups]
+      properties:
+        address:
+          type: string
+        inband:
+          type: string
+        maxNumPortsPerSwitch:
+          type: integer
+          minimum: 1
+        maxNumSwitchesPerGroup:
+          type: integer
+          minimum: 1
+        numGroups:
+          type: integer
+          minimum: 1
+  FlowControlParams:
+      type: object
+      properties:
+        rx:
+          type: boolean
+        tx:
+          type: boolean
+  RoutingInitInfo:
+    type: object
+    required: [switches, links, swcId, numGroups, maxNumLocalSwitches]
+    properties:
+      switches:
+        description: Switches in the topology template
+        type: array
+        items:
+          type: object
+          properties:
+            grpId:
+              type: integer
+            swcNum:
+              type: integer
+      links:
+        description: Links in the topology template
+        type: array
+        items:
+          type: object
+          properties:
+            srcGrpId:
+              type: integer
+            srcSwcNum:
+              type: integer
+            srcPortNum:
+              type: integer
+            dstGrpId:
+              type: integer
+            dstSwcNum:
+              type: integer
+            dstPortNum:
+              type: integer
+      swcId:
+        description: Switch ID of the switch the Agent is running on
+        type: object
+        required: [grpId, swcNum]
+        properties:
+          grpId:
+            type: integer
+          swcNum:
+            type: integer
+      edgePorts:
+        description: Edge ports in the topology template
+        type: array
+        items:
+          type: integer
+      IP:
+        description: Endpoint address for the agent
+        type: string
+      numGroups:
+        description: Total number of groups in the topology template
+        type: integer
+      maxNumLocalSwitches:
+        description: Maximum number of switche in a group in the topology template
+        type: integer
+  RoutingUpdateInfo:
+    type: object
+    required: [switches, links]
+    properties:
+      switches:
+        description: Switches in the topology map
+        type: array
+        items:
+          type: object
+          properties:
+            grpId:
+              type: integer
+            swcNum:
+              type: integer
+      links:
+        description: Links in the topology map
+        type: array
+        items:
+          type: object
+          properties:
+            srcGrpId:
+              type: integer
+            srcSwcNum:
+              type: integer
+            srcPortNum:
+              type: integer
+            dstGrpId:
+              type: integer
+            dstSwcNum:
+              type: integer
+            dstPortNum:
+              type: integer
+  Links:
+    type: object
+    required: [ SwitchXName ]
+    properties:
+      SwitchXName:
+        type: string
+      #This should be a 1-1 correspondance
+      PortToXnameDevice:
+        type: array
+        items:
+          type: object
+          properties:
+            port:
+              type: integer
+            XnameDevice:
+              type: string
+  ControllerRoutingInfo:
+    type: object
+    required: [switches, links, numGroups, maxNumLocalSwitches]
+    properties:
+      switches:
+        description: Switches in the topology template
+        type: array
+        items:
+          type: object
+          required: [grpId, swcNum, edgePorts, IP]
+          properties:
+            grpId:
+              type: integer
+            swcNum:
+              type: integer
+            edgePorts:
+              type: array
+              items:
+                type: integer
+            fabricPorts:
+              type: array
+              items:
+                type: integer
+            IP:
+              type: string
+      links:
+        description: Links in the topology template
+        type: array
+        items:
+          type: object
+          properties:
+            srcGrpId:
+              type: integer
+            srcSwcNum:
+              type: integer
+            srcPortNum:
+              type: integer
+            dstGrpId:
+              type: integer
+            dstSwcNum:
+              type: integer
+            dstPortNum:
+              type: integer
+      numGroups:
+        description: Total number of groups in the topology template
+        type: integer
+      maxNumLocalSwitches:
+        description: Maximum number of switche in a group in the topology template
+        type: integer

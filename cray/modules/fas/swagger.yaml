@@ -1,0 +1,1349 @@
+openapi: "3.0.0"
+info:
+  title: Firmware Action Service
+  version: "1.0"
+  description: >-
+    The Firmware Action Service (FAS) provides a common interface for managing the firmware versions of 
+    hardware in a system via Redfish. FAS tracks and performs actions like upgrade, downgrade, 
+    creating or restoring snapshots for system firmware. FAS processes an *image list*, which is a json file containing firmware
+    versions for each component on a node. 
+
+
+    The firmware RPM's are provided by HPE and installed during installation. The firmware
+    RPM contains the firmware image and the image list.
+    FAS uses the fw-loader script to automatically 
+    upload firmware images from the RPMs to the artifact repository S3 and the image list to FAS during installation. 
+    Note that FAS is a successor to FUS (firmware update service) that was available with earlier versions and offers several enhancements over FUS.
+
+
+    ## Resources
+
+    ### /images
+
+    Maintain the image list.
+    Use this resource to update, replace, or return
+    the image list.
+
+    ### /service/status, /service/version, /service/status/details
+
+    Return status and version information for the Firmware Action
+    Service itself.
+
+    ### /actions
+
+    Initiate a firmware action. An action is a collection of operations initiated by user 
+    request to update the firmware images on a set of hardware. 
+    Example: Update the gigabyte BMC targets to the latest version.
+
+    ### /snapshots
+
+    Stores current version information for all nodes or restores targets to the
+    stored version level. A snapshot is a point-in-time record of what firmware images were 
+    running on the system (a device's targets), constrained by user defined parameters (xname, model/manufacturer, etc).
+    Snapshots can be used to restore the system back to specific firmware versions.
+
+    ## Parameters
+
+     * *xname* refers to the node.
+     * *target* is a component on a node and is case sensitive.
+     * *tag* is a label applied to firmware images, it is part of the unique identifier for an image; deviceType, manufacturer, model, target, semanticFirmwareVersion, tag.
+
+
+    ## Workflow
+
+    ### Update firmware for all targets at xname and check status
+
+    #### POST /actions
+
+    Before updating firmware, administrator must consider firmware dependencies between different components 
+    and determine the update sequence. For example, firmware of one component may need to be 
+    updated before firmware for another component can be updated.
+
+    Upgrade/downgrade/set firmware to an explicit version for all components on the node identified by xname.
+    Upon success, the string response contains an action ID
+    which can be used to query the status of the firmware action.
+
+    For example, the response to a successful POST /actions provides actionID:
+
+        {"actionID": "fcac1eec-e93b-4549-90aa-6a59fda0f4c6",
+         "overrideDryrun": false,
+        }
+
+
+    The actionID is used to submit a request for the status
+    of the action:
+
+        GET .../v1/actions/fcac1eec-e93b-4549-90aa-6a59fda0f4c6
+
+    #### GET /actions/{ID}
+
+    Using the response from the update, retrieve status for
+    a specific ID. The firmware update may take some time depending on your update request payload.
+
+    ## Interactions with Other APIs
+
+    FAS receives information from the Hardware State Manager (HSM)
+    for each xname.
+
+servers:
+  - url: https://rocket-ncn-w001.us.cray.com/apis/fas/v1
+  - url: http://localhost:28800/v1
+  - url: http://localhost:28800/
+
+paths:
+  /actions:
+    get:
+      summary: Retrieve all firmware action sets with summary information
+      description: |
+        Retrieve all valid IDs along with start time, and
+        end time for completed and in-progress actions.
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActionSummarys'
+      tags:
+        - actions
+    post:
+      summary: Update firmware on the system
+      description: |
+        Perform a firmware action across the system.
+        Upon success, the string response contains an action ID which can be used to
+        query the status of the update.
+
+        For example, the response to a successful POST /actions is
+        the following:
+          {"actionID": "fcac1eec-e93b-4549-90aa-6a59fda0f4c6", "overrideDryrun": false}, actionID is the ID to reference the action;
+        performing a GET .../v1/actions/fcac1eec-e93b-4549-90aa-6a59fda0f4c6  will return status
+        information on the action and its collection of operations
+
+        The parameters are logically AND'd. The parameters are broken into: location, type, level.
+        The command parameters will FORCE an action or override a dryrun.
+
+        stateComponentFilter: -> determines the xnames to run on
+          * xnames
+          * partitions
+          * groups
+          * deviceType
+
+
+        inventoryHardwareFilter: -> determines the xnames to run on by comparison of the 'type' information
+          * manufacturer
+          * model
+
+        targetFilter:  -> determines the targets to run on
+          * targets
+
+        imageFilter:   -> can specify a specific image uuid to use.
+          * imageID
+
+        commands:
+          * overrideDryrun ->  option to perform an update.  By default this will be false, which will cause a dryrun to
+             be executed, This will check if a newer firmware version exists without actually performing the update operation.
+             Note that leaving this blank or misspelling true is considered false resulting in an dryrun update to be performed.
+          * restoreNotPossibleOverride -> override to force update for hardware that does not have an identified FROM image and therefore cannot be rolled back to.
+          * tag -> the tag associated with the images to update to. `default` is the default tag.
+          * timeLimit -> time in seconds to let any operation execute
+          * description
+          * version - latest, earliest, explicit (used in conjunction with imageFilter)
+
+      requestBody:
+        description: Optional description in *Markdown*
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ActionParameters'
+
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActionID'
+        '404':
+          description: action set not found
+          content:
+            application/error:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+      tags:
+        - actions
+        - cli_from_file
+
+  /actions/{actionID}:
+    get:
+      summary: Retrieve detailed information for a firmware action set
+      description: |
+        Retrieve detailed information for a firmware action set specified by actionID.
+
+      parameters:
+        - name: actionID
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Action'
+        '404':
+          description: action set not found
+          content:
+            application/error:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+      tags:
+        - actions
+
+    delete:
+      summary: Delete all information about a completed firmware action set
+      description: Delete all information about a completed firmware action set.
+      parameters:
+        - name: actionID
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Deleted  - no content
+        '400':
+          description: cannot delete a running action
+          content:
+            application/error:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+        '404':
+          description: action set not found
+          content:
+            application/error:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+      tags:
+        - actions
+
+  /actions/{actionID}/instance:
+    delete:
+      summary: Abort a running firmware action set
+      description: Abort a running firmware action set. Stops all actions in progress (will not rollback)
+      parameters:
+        - name: actionID
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Action already finalized
+        '202':
+          description: Aborting action
+        '404':
+          description: action set not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+      tags:
+        - actions
+  /actions/{actionID}/operations/{operationID}:
+    get:
+      summary: Retrieve detailed information of a firmware action set
+      description: Retrieve detailed information of a firmware action set.
+      parameters:
+        - name: actionID
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: operationID
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Operation'
+        '404':
+          description: action set not found
+          content:
+            application/error:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+      tags:
+        - actions
+
+  /images:
+    post:
+      summary: Create a new image record
+      description: |
+        Create a new image record
+      requestBody:
+        description: a firmware image record
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ImageCreate'
+
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImageID'
+        '400':
+          description: Bad request
+          content:
+            application/error:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+        409:
+          description: Imaage Record Already Exists
+          content:
+            application/error:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+      tags:
+        - images
+    get:
+      summary: Retrieve a list of images known to the system
+      description: Retrieve a list of images that are known to the system.
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImageList'
+      tags:
+        - images
+
+
+
+  /images/{imageID}:
+    put:
+      summary: Update the image record
+      description: |
+        Modify or update an existing image record.
+      parameters:
+        - name: imageID
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        description: image record
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ImageCreate'
+      responses:
+        200:
+          description: Updated
+        201:
+          description: Created
+        400:
+          description: Bad Request
+          content:
+            application/error:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+      tags:
+        - images
+    get:
+      summary: Retrieve the image record
+      description: Retrieve the image record that is associated with the imageID.
+      parameters:
+        - name: imageID
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImageGet'
+        400:
+          description: Bad Request
+          content:
+            application/error:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+      tags:
+        - images
+
+    delete:
+      summary: Delete an image record
+      description: Deletes an image record from the FAS datastore. Does not delete the actual image from S3.
+      parameters:
+        - name: imageID
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        204:
+          description: Successful delete
+
+        400:
+          description: Bad Request
+          content:
+            application/error:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+      tags:
+        - images
+
+
+
+
+  /service/status:
+    get:
+      summary: Retrieve service status
+      description: Retrieve the status of the Firmware Action Service.
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceStatus'
+
+        500:
+          description: Internal Server Error
+          content:
+            application/error:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+
+      tags:
+        - service
+  /service/status/details:
+    get:
+      summary: Retrieve service status details
+      description: Retrieve the status of the Firmware Action Service. HSM, ETCD, Service Status and Version are returned.
+
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceStatus'
+
+        500:
+          description: Internal Server Error
+          content:
+            application/error:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+      tags:
+        - service
+
+
+  /service/version:
+    get:
+      summary: Retrieve the service version
+      description: Retrieve the internal version of FAS.
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceVersion'
+        500:
+          description: Internal Server Error
+          content:
+            application/error:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+      tags:
+        - service
+
+  /snapshots:
+    get:
+      summary: Return summary of all stored snapshots
+      description: Return summary of all stored snapshots
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SnapshotAll'
+        500:
+          description: Internal server error
+          content:
+            application/error:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+
+      tags:
+        - snapshots
+
+    post:
+      summary: Create a system snapshot
+      description: |
+        Records a snapshot of the firmware versions for every target for every device that matches the query parameters.
+
+
+      requestBody:
+        description: Optional description in *Markdown*
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SnapshotParameters'
+      responses:
+        '202':
+          description: OK
+          headers:
+            Location:
+              schema:
+                type: string
+              description: location of snapshot
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SnapshotID'
+        '409':
+          description: Duplicate, key already exists
+          content:
+            application/error:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+
+      tags:
+        - snapshots
+        - cli_from_file
+
+  /snapshots/{name}:
+    get:
+      summary: Retrieve a snapshot
+      description: Retrieve a snapshot of the system
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Snapshot'
+        404:
+          description: Not found
+          content:
+            application/error:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+      tags:
+        - snapshots
+
+    put:
+      summary: Load a snapshot record
+      description: |
+        Load a snapshot record. Before performing this operation, it is important to ensure that the imageID
+        is applicable to the specific device that is being updated.
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+
+        - name: confirm
+          in: query
+          required: true
+          schema:
+            type: string
+            example: "yes"
+
+      requestBody:
+        description: snapshot record
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Snapshot'
+      responses:
+        200:
+          description: Updatecd
+        201:
+          description: Created
+        400:
+          description: Bad Request
+          content:
+            application/error:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+      tags:
+        - snapshots
+
+
+    delete:
+      summary: Delete a snapshot
+      description: Delete a snapshot of the system. Does not delete any firmware images from S3.
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        204:
+          description: Successful delete
+        404:
+          description: Not found
+          content:
+            application/error:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+      tags:
+        - snapshots
+  /snapshots/{name}/restore:
+
+    post:
+      summary: Restore system snapshot
+      description: Restore a snapshot by replacing each component (device + target) with the stored version. Note that you are prompted for a confirmation.
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: overrideDryrun
+          in: query
+          required: false
+          description: Note that leaving this blank or misspelling true is considered false resulting in a dryrun restore action to be performed. You must specify true to force an actual update
+          schema:
+            type: boolean
+        - name: confirm
+          in: query
+          required: true
+          schema:
+            type: string
+            example: "yes"
+        - name: timeLimit
+          in: query
+          required: false
+          description: time limit in seconds that any operation for a firmware action may be allowed to attempt to complete.
+          schema:
+            type: integer
+      responses:
+        '202':
+          description: request to restore accepted. Creating firmware action set
+          headers:
+            Location:
+              schema:
+                type: string
+                format: uuid
+              description: ID of the created firmware action set
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActionID'
+
+        '400':
+          description: Bad Request
+          content:
+            application/error:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+        '404':
+          description: Snapshot name not found
+          content:
+            application/error:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+      tags:
+        - snapshots
+
+components:
+  schemas:
+    ActionSummary:
+      type: object
+      properties:
+        actionID:
+          type: string
+          format: uuid
+        snapshotID:
+          type: string
+          format: uuid
+        overrideDryrun:
+          type: boolean
+        startTime:
+          type: string
+          format: date-time
+        endTime:
+          type: string
+          format: date-time
+        state:
+          type: string
+          description:  >-
+            The state of the action -
+              *new* - not yet started
+              *configured* - configured, but not yet started
+              *blocked* - configured, but cannot run because another action is executing
+              *running* - started
+              *completed* - the action has completed all operations
+              *abortSignaled* - the action has been instructed to STOP all running operations
+              *aborted* - the action has stopped all operations
+        operationCounts:
+          $ref: '#/components/schemas/OperationCounts'
+        description:
+          type: string
+        blockedBy:
+          type: array
+          items:
+            type: string
+            format: uuid
+    ActionSummarys:
+      type: object
+      properties:
+        actions:
+          type: array
+          items:
+            $ref: '#/components/schemas/ActionSummary'
+    Action:
+      type: object
+      properties:
+        actionID:
+          type: string
+          format: uuid
+        snapshotID:
+          type: string
+          format: uuid
+        startTime:
+          type: string
+          format: date-time
+        endTime:
+          type: string
+          format: date-time
+        state:
+          type: string
+          example: running
+        description:
+          type: string
+        operationSummary:
+          $ref: '#/components/schemas/OperationSummary'
+        overrideDryrun:
+          type: boolean
+        parameters:
+          $ref: "#/components/schemas/ActionParameters"
+        blockedBy:
+          type: array
+          items:
+            type: string
+            format: uuid
+    ActionID:
+      type: object
+      properties:
+        actionID:
+          type: string
+          format: uuid
+        overrideDryrun:
+          type: boolean
+          description: this field represents if the automatic dryrun was overridden by command.
+    ActionParameters:
+      type: object
+      properties:
+        stateComponentFilter:
+          $ref: '#/components/schemas/ActionParameters_StateComponentFilter'
+        inventoryHardwareFilter:
+          $ref: '#/components/schemas/ActionParameters_HardwareFilter'
+        imageFilter:
+          $ref: '#/components/schemas/ActionParameters_ImageFilter'
+        targetFilter:
+          $ref: '#/components/schemas/ActionParameters_TargetFilter'
+        command:
+          $ref: '#/components/schemas/ActionParameters_Command'
+    ActionParameters_StateComponentFilter:
+      type: object
+      properties:
+        xnames:
+          type: array
+          items:
+            type: string
+          example: ["x0c0s0b0","x0c0s2b0"]
+        partitions:
+          type: array
+          items:
+            type: string
+          example: ["p1"]
+        groups:
+          type: array
+          items:
+            type: string
+          example: ["red", "blue"]
+        deviceTypes:
+          type: array
+          items:
+            type: string
+          example: ["nodeBMC"]
+    ActionParameters_HardwareFilter:
+      type: object
+      properties:
+        manufacturer:
+          type: string
+          example: intel
+        model:
+          type: string
+          example: c5000
+    ActionParameters_TargetFilter:
+      type: object
+      properties:
+        targets:
+          type: array
+          items:
+            type: string
+          example: ["BIOS","BMC"]
+    ActionParameters_ImageFilter:
+      type: object
+      properties:
+        imageID:
+          type: string
+          format: uuid
+    ActionParameters_Command:
+      type: object
+      properties:
+        version:
+          type: string
+          enum: ["latest","earliest","explicit"]
+          example: latest
+          description: Go to the latest, earliest semantic version, or explicitly set a specific version as per the imageID.
+        tag:
+          type: string
+          example: default
+        overrideDryrun:
+          type: boolean
+          description: causes the action to be executed instead of simulated.  False by default. Checks to see if there are images available to update device firmware as desired.
+        restoreNotPossibleOverride:
+          type: boolean
+          description: Force the action, even if the `fromFirmwareVersion` cannot be found.
+        timeLimit:
+          type: integer
+          description: time limit for any operation in seconds
+          example: 10000
+        description:
+          type: string
+          example: update cabinet xxxx
+    DeviceFirmware:
+      type: object
+      properties:
+        xname:
+          type: string
+          example: "x0c0s2b0"
+        targets:
+          type: array
+          items:
+            $ref: '#/components/schemas/Target'
+        error:
+          type: string
+          description: any error that was encoutered while populating device information
+    ImageCreate:
+      type: object
+      properties:
+        deviceType:
+          type: string
+          description: node type
+          example: nodeBMC
+        manufacturer:
+          type: string
+          example: intel
+        models:
+          type: array
+          items:
+            type: string
+            example: [c5000, c5001]
+        target:
+          type: string
+          description: node target
+          example: BIOS
+        tags:
+          type: array
+          items:
+            type: string
+            example: [recovery, default]
+        firmwareVersion:
+          type: string
+          example: 'f1.123.24xz'
+        semanticFirmwareVersion:
+          type: string
+          example: 1.2.252
+        updateURI:
+          type: string
+          description: where to point the update at
+        needManualReboot:
+          type: boolean
+          description: whether or not FAS needs to initiate a manual reboot after the update command has been issued
+        waitTimeBeforeManualRebootSeconds:
+          type: integer
+          description: amount of time to wait after an update to perform a manual reboot
+        waitTimeAfterRebootSeconds:
+          type: integer
+          description: amount of time to wait after a manual reboot before proceeding to verification step
+        pollingSpeedSeconds:
+          type: integer
+          description: amount of time to wait between requests to the device to avoid overloading it
+        forceResetType:
+          type: string
+          description: the command to issue to the redfish device to force a reboot
+        s3URL:
+          type: string
+          example: s3://firmware/f1.1123.24.xz.iso
+        allowableDeviceStates:
+          type: array
+          items:
+            type: string
+            example: ON
+      required:
+        - deviceType
+        - target
+        - manufacturer
+        - models
+        - firmwareVersion
+        - semanticFirmwareVersion
+        - tags
+        - s3URL
+    ImageGet:
+      type: object
+      properties:
+        imageID:
+          type: string
+          format: uuid
+        createTime:
+          type: string
+          format: date-time
+        deviceType:
+          type: string
+          description: node type
+          example: nodeBMC
+        manufacturer:
+          type: string
+          example: intel
+        models:
+          type: array
+          items:
+            type: string
+            example: c5000
+        target:
+          type: string
+          description: node target
+          example: BIOS
+        tags:
+          type: array
+          items:
+            type: string
+            example: [recovery, default]
+        firmwareVersion:
+          type: string
+          example: 'f1.123.24xz'
+        semanticFirmwareVersion:
+          type: string
+          example: 1.2.252
+        updateURI:
+          type: string
+          description: where to point the update at
+        needManualReboot:
+          type: boolean
+          description: whether or not FAS needs to initiate a manual reboot after the update command has been issued
+        waitTimeBeforeManualRebootSeconds:
+          type: integer
+          description: amount of time to wait after an update to perform a manual reboot
+        waitTimeAfterRebootSeconds:
+          type: integer
+          description: amount of time to wait after a manual reboot before proceeding to verification step
+        pollingSpeedSeconds:
+          type: integer
+          description: amount of time to wait between requests to the device to avoid overloading it
+        forceResetType:
+          type: string
+          description: the command to issue to the redfish device to force a reboot
+        s3URL:
+          type: string
+          example: s3://firmware/f1.1123.24.xz.iso
+        allowableDeviceStates:
+          type: array
+          items:
+            type: string
+            example: ON
+      required:
+        - type
+        - target
+        - firmware
+    ImageID:
+      type: object
+      properties:
+        imageID:
+          type: string
+          format: uuid
+          example: "00000000-0000-0000-0000-000000000000"
+    ImageList:
+      type: object
+      properties:
+        images:
+          items:
+            $ref: '#/components/schemas/ImageGet'
+    Operation:
+      type: object
+      properties:
+        operationID:
+          type: string
+          format: uuid
+        actionID:
+          type: string
+          format: uuid
+        startTime:
+          type: string
+          format: date-time
+        endTime:
+          type: string
+          format: date-time
+        state:
+          type: string
+        error:
+          type: string
+        xname:
+          type: string
+          example: x0c0s2b0
+        deviceType:
+          type: string
+          example: nodeBMC
+        target:
+          type: string
+          example: bmc
+        manufacturer:
+          type: string
+          example: intel
+        model:
+          type: string
+          example: c5000
+        fromFirmwareVersion:
+          type: string
+          example: fw123.873US
+        fromSemanticFirmwareVersion:
+          type: string
+          example: 1.25.10
+        fromImageURL:
+          type: string
+          example: s3://fw-update/01ca4727-27d7-43a6-9c5b-f9dfcf805ded/filename.bin
+        fromTag:
+          type: string
+          example: default
+        toFirmwareVersion:
+          type: string
+          example: fw456
+        toSemanticFirmwareVersion:
+          type: string
+          example: 1.35.0
+        toImageURL:
+          type: string
+          example: s3://fw-update/3586af8d-0fba-4bfa-8fc5-782764d335e8/filename-1.0.bin
+        toTag:
+          type: string
+          example: recovery
+    OperationCounts:
+      type: object
+      properties:
+        total:
+          type: integer
+          description: total count of all operations
+          example: 100
+        initial:
+          description: count of operations that have not yet been configured
+          type: integer
+          example: 0
+        configured:
+          description: count of operations that have been configured but not started
+          type: integer
+          example: 0
+        blocked:
+          description: count of operations that have been configured, but cannot yet launch because another operation is pending on the same xname
+          type: integer
+          example: 0
+        needsVerified:
+          description: count of operations that have been started, but need final verification to determine if the operation was successful
+          type: integer
+          example: 0
+        verifying:
+          description: count of operations that have started verification, but are not finished verification.
+          type: integer
+          example: 0
+        inProgress:
+          description: count of operations that have been started, but have not reach the verification stage.
+          type: integer
+          example: 32
+        failed:
+          description: count of operations that have failed to compelete firmware task
+          type: integer
+          example: 10
+        success:
+          description: count of operations that have succeeded in completing firmware task
+          type: integer
+          example: 58
+        noSolution:
+          description: count of operations that have no viable solution to satisfy the request.  This is usally because no suitable imabe exists.
+          type: integer
+          example: 4
+        noOperation:
+          description: count of operations that do not need to be executed, because the desired end state is already achieved.
+          type: integer
+          example: 6
+        aborted:
+          description: count of operations that have been aborted.  It is in-determinate if their firmware task was executed.
+          type: integer
+          example: 0
+        unknown:
+          description: count of unknown states -> should not be present.
+          type: integer
+          example: 0
+    OperationSummary:
+      type: object
+      properties:
+
+        initial:
+          description: count of operations that have not yet been configured
+          type: array
+          items:
+            $ref: '#/components/schemas/OperationKey'
+        configured:
+          description: count of operations that have been configured but not started
+          type: array
+          items:
+            $ref: '#/components/schemas/OperationKey'
+        blocked:
+          description: count of operations that have been configured, but cannot yet launch because another operation is pending on the same xname
+          type: array
+          items:
+            $ref: '#/components/schemas/OperationKey'
+        needsVerified:
+          description: count of operations that have been started, but need final verification to determine if the operation was successful
+          type: array
+          items:
+            $ref: '#/components/schemas/OperationKey'
+        verifying:
+          description: count of operations that have started verification, but are not finished verification.
+          type: array
+          items:
+            $ref: '#/components/schemas/OperationKey'
+        inProgress:
+          description: count of operations that have been started, but have not reach the verification stage.
+          type: array
+          items:
+            $ref: '#/components/schemas/OperationKey'
+        failed:
+          description: count of operations that have failed to compelete firmware task
+          type: array
+          items:
+            $ref: '#/components/schemas/OperationKey'
+        success:
+          description: count of operations that have succeeded in completing firmware task
+          type: array
+          items:
+            $ref: '#/components/schemas/OperationKey'
+        noSolution:
+          description: count of operations that have no viable solution to satisfy the request.  This is usally because no suitable imabe exists.
+          type: array
+          items:
+            $ref: '#/components/schemas/OperationKey'
+        noOperation:
+          description: count of operations that do not need to be executed, because the desired end state is already achieved.
+          type: array
+          items:
+            $ref: '#/components/schemas/OperationKey'
+        aborted:
+          description: count of operations that have been aborted.  It is in-determinate if their firmware task was executed.
+          type: array
+          items:
+            $ref: '#/components/schemas/OperationKey'
+        unknown:
+          description: count of unknown states -> should not be present.
+          type: array
+          items:
+            $ref: '#/components/schemas/OperationKey'
+    OperationKey:
+      type: object
+      properties:
+        operationID:
+          type: string
+          format: uuid
+        xname:
+          type: string
+        target:
+          type: string
+        fromFirmwareVersion:
+          type: string
+          description: the currently identified firmware version on the xname/target before attempting an update. May be empty.
+        stateHelper:
+          type: string
+          description: a helper string that might further explain the current state.
+    Problem7807:
+      description: >-
+        RFC 7807 compliant error payload.  All fields are optional except the
+        'type' field.
+      type: object
+      required:
+        - type
+      properties:
+        type:
+          type: string
+          example: 'about:blank'
+        detail:
+          type: string
+          example: Detail about this specific problem occurrence. See RFC7807
+        instance:
+          type: string
+          example: ''
+        status:
+          type: number
+          format: int32
+          example: 400
+        title:
+          type: string
+          example: 'Description of HTTP Status code, e.g. 400'
+    RelatedSnapshotActions:
+      type: object
+      properties:
+        actionID:
+          type: string
+          format: uuid
+        startTime:
+          type: string
+          format: date-time
+        endTime:
+          type: string
+          format: date-time
+        state:
+          type: string
+          example: "completed"
+    ServiceStatus:
+      type: object
+      properties:
+        fw-update-status:
+          type: string
+          example: running
+    ServiceVersion:
+      type: object
+      properties:
+        fw-update-version:
+          type: string
+          example: 1.2.0
+    Snapshot:
+      type: object
+      properties:
+        name:
+          type: string
+        captureTime:
+          type: string
+          format: date-time
+        expirationTime:
+          type: string
+          format: date-time
+        ready:
+          type: boolean
+          default: false
+          description: whether or not the snapshot has completed
+        relatedActions:
+          type: array
+          items:
+            $ref: '#/components/schemas/RelatedSnapshotActions'
+        devices:
+          type: array
+          items:
+            $ref: '#/components/schemas/DeviceFirmware'
+        parameters:
+          $ref: "#/components/schemas/SnapshotParameters"
+    SnapshotAll:
+      type: object
+      properties:
+        snapshots:
+          type: array
+          items:
+            $ref: '#/components/schemas/SnapshotSummary'
+    SnapshotID:
+      type: object
+      properties:
+        name:
+          type: string
+          example: 20200402_all_xnames
+    SnapshotParameters:
+      type: object
+      properties:
+        name:
+          type: string
+          example: 20200402_all_xnames
+        expirationTime:
+          type: string
+          format: date-time
+          description: time at which the snapshot expires and is automatically Deleted
+        stateComponentFilter:
+          $ref: '#/components/schemas/ActionParameters_StateComponentFilter'
+        inventoryHardwareFilter:
+          $ref: '#/components/schemas/ActionParameters_HardwareFilter'
+        targetFilter:
+          $ref: '#/components/schemas/ActionParameters_TargetFilter'
+    SnapshotSummary:
+      type: object
+      properties:
+        name:
+          type: string
+          example: pre_system_upgrade
+        captureTime:
+          type: string
+          format: date-time
+        expirationTime:
+          type: string
+          format: date-time
+        ready:
+          type: boolean
+          default: false
+          description: whether or not the snapshot has completed
+        relatedActions:
+          type: array
+          items:
+            $ref: '#/components/schemas/RelatedSnapshotActions'
+        uniqueDeviceCount:
+          type: integer
+          description: count of unique xnames associated with the snapshot
+    Target:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "BIOS"
+        firmwareVersion:
+          type: string
+          example: "fw123.8s"
+        imageID:
+          type: string
+          format: uuid
+        error:
+          type: string
+          description: any error that was encoutered while populating target information
