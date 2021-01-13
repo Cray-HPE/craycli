@@ -1,0 +1,15 @@
+[run]
+branch = True
+timid = True
+
+[report]
+fail_under = 95
+show_missing = True
+exclude_lines =
+    # Re-enable the standard pragma
+    pragma: NO COVER
+    pragma: no cover
+    # Ignore debug-only repr
+    def __repr__
+    # Ignore abstract methods
+    raise NotImplementedError

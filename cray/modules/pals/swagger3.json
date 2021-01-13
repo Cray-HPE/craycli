@@ -1,0 +1,3226 @@
+{
+    "openapi": "3.0.2",
+    "info": {
+        "title": "Parallel Application Launch Service",
+        "version": "0.5.0",
+        "description": "The Parallel Application Launch Service (PALS) coordinates parallel\napplication execution over many compute nodes.\n\n\nThe REST API provides access to application launch, query, and\nsignaling functionality.  The PALS launch service\nruns on a non-compute node and communicates with a PALS launch daemon\nrunning on compute nodes to execute user applications.\n\n\nPALS supports the Cray PMI (Process Management Interface),\nused by Cray MPI, SHMEM, and UPC.\nPALS is intended to be used by a workload manager.\nPALS is not intended to be used interactively.\n\n## Resources\n\n### /apps\n\nSet up the runtime environment for application execution.\nTransfer related files to compute nodes in preparation for launch.\nInitiate application launch.\nRemove transferred files after the application completes.\n\n## Workflow\n\n### Launch an Application\n\n#### POST /apps\n\nSet up an application runtime environment.\nUpon successful return, response includes\nthe application id (apid) which is used in subsequent calls.\nThe application is not running yet.\n\n#### POST /apps/{apid}/files\n\nTransfer executable files or debugging-related files\ninto place on the compute node(s) associated with the specified apid.\n\n#### GET /apps/{apid}/stdio\n\nThis request opens a WebSocket connection within which to send\nand receive RPC messages.\nAssume that the WebSocket is established\nunless this request returns with an error.\n\n\nWhen a WebSocket has been established,\nuse bidirectional JSON RPC over a single WebSocket connection\nto run the application and capture output.\nBidirectional, read-write streaming RPCs send requests and read\na sequence of returned messages.\n\n\nUse RPC protocol to send *START* to run the application.\nThe application sends output as RPC to client.\nThe WebSocket is closed when application ranks\nare finished.\nFor a description of the JSON RPC Protocol, see \"RPC Protocol for PALS\".\n"
+    },
+    "servers": [
+        {
+            "url": "http://api-gw-service-nmn.local/apis/pals/v1"
+        }
+    ],
+    "paths": {
+        "/apps": {
+            "get": {
+                "summary": "Retrieve an array of running applications",
+                "tags": [
+                    "apps"
+                ],
+                "parameters": [
+                    {
+                        "name": "usernames",
+                        "in": "query",
+                        "description": "A comma separated list of usernames to use as a filter.\n",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "examples": {
+                            "oneUsername": {
+                                "summary": "Example using a single username",
+                                "value": "johndoe"
+                            },
+                            "multipleUsernames": {
+                                "summary": "Example using multiple usernames",
+                                "value": "johndoe,janedoe"
+                            }
+                        }
+                    },
+                    {
+                        "name": "nodes",
+                        "in": "query",
+                        "description": "A comma separated list of nodes to use as a filter.\n",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "examples": {
+                            "oneNode": {
+                                "summary": "Example using a single node",
+                                "value": "nid000001"
+                            },
+                            "multipleNodes": {
+                                "summary": "Example using multiple nodes",
+                                "value": "nid000001,nid000002"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "description": "A container for an array of application objects",
+                                    "type": "object",
+                                    "properties": {
+                                        "applications": {
+                                            "description": "An array of application objects",
+                                            "type": "array",
+                                            "items": {
+                                                "description": "An application object",
+                                                "type": "object",
+                                                "required": [
+                                                    "hosts"
+                                                ],
+                                                "properties": {
+                                                    "apid": {
+                                                        "description": "Application ID, randomly generated",
+                                                        "type": "string",
+                                                        "example": "5b8c1e4b-2dbd-4801-ba34-5917a7fbd80a",
+                                                        "readOnly": true
+                                                    },
+                                                    "nodes": {
+                                                        "description": "Array of compute nodes to run the application on\n\nThe array is calculated from the array used to launch the job.\n",
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "string"
+                                                        },
+                                                        "example": [
+                                                            "nid000001",
+                                                            "nid000002"
+                                                        ],
+                                                        "readOnly": true
+                                                    },
+                                                    "placement": {
+                                                        "description": "Index into the nodes array for each rank",
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "integer"
+                                                        },
+                                                        "example": [
+                                                            0,
+                                                            1
+                                                        ],
+                                                        "readOnly": true
+                                                    },
+                                                    "argv": {
+                                                        "description": "Argument array for the command to execute, if not provided in cmds\n",
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "string"
+                                                        },
+                                                        "example": [
+                                                            "hostname",
+                                                            "--fqdn"
+                                                        ]
+                                                    },
+                                                    "wdir": {
+                                                        "description": "Application working directory, if not provided in cmds",
+                                                        "type": "string",
+                                                        "example": "/home/users/seymour"
+                                                    },
+                                                    "hosts": {
+                                                        "description": "Array of hosts to run the application on.\n\nThe array is the unprocessed version of what was provided to the launch\nAPI call. The array can contain literal hostnames and hostname selector patterns.\nA hostname selector pattern is an easy way to specify a range of hostnames using a\nconcise format.\n\nThe pattern format consists of a partial node name followed by a pair of square brackets\nthat contain the selection criteria. The selection criteria is a comma-separated list of\nnumbers or number ranges. Numbers in a number range can be padded with zeros that will\nbe included in the expanded hosts array.\n\nSome examples:\n| Pattern         | Expands to                                  |\n|-----------------|---------------------------------------------|\n| nid00000[1,2,3] | nid000001,nid000002,nid000003               |\n| nid00000[1-3]   | nid000001,nid000002,nid000003               |\n| nid00000[1,4-6] | nid000001,nid000004,nid000005,nid000006     |\n| nid00000[08-11] | nid0000008,nid0000009,nid0000010,nid0000011 |\n",
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "string"
+                                                        },
+                                                        "example": [
+                                                            "nid000001",
+                                                            "nid000002"
+                                                        ]
+                                                    },
+                                                    "nranks": {
+                                                        "description": "Number of ranks of the application, if not provided in cmds\n",
+                                                        "type": "integer",
+                                                        "default": 1,
+                                                        "example": 64
+                                                    },
+                                                    "ppn": {
+                                                        "description": "Ranks per node",
+                                                        "type": "integer",
+                                                        "default": 0,
+                                                        "example": 8
+                                                    },
+                                                    "depth": {
+                                                        "description": "CPUs to allocate per-rank",
+                                                        "type": "integer",
+                                                        "default": 1,
+                                                        "example": 3
+                                                    },
+                                                    "environment": {
+                                                        "description": "Array of environment variables in VAR=value format",
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "string"
+                                                        },
+                                                        "example": [
+                                                            "PATH=/bin",
+                                                            "USER=seymour"
+                                                        ],
+                                                        "writeOnly": true
+                                                    },
+                                                    "umask": {
+                                                        "description": "File creation mask for application, if not provided in cmds\n",
+                                                        "type": "string",
+                                                        "default": "0022",
+                                                        "example": "0420"
+                                                    },
+                                                    "envalias": {
+                                                        "description": "Dictionary of application-specific environment aliases",
+                                                        "type": "object",
+                                                        "example": {
+                                                            "APRUN_APP_ID": "PALS_APID"
+                                                        }
+                                                    },
+                                                    "fanout": {
+                                                        "description": "Fanout tree width",
+                                                        "type": "integer",
+                                                        "example": 128,
+                                                        "default": 128
+                                                    },
+                                                    "cpubind": {
+                                                        "description": "CPU binding for application.\n\nFormatted as [verbose,]\\<keyword\\>\n\nKeywords:\n* none -\nNo CPU binding\n\n* One of <numa, socket, core, thread> -\nBind ranks to every thread on either numa, socket, core, or thread.\n\n* depth -\nBind ranks to number of threads in 'depth' argument (default 1).\n\n* list:<colon-separated-range-lists> -\nBind ranks to colon-separated rangelists of CPUs.\n\n* mask:<comma-separated-masks> -\nBind ranks to comma-separated bitmasks of CPUs.\n",
+                                                        "type": "string",
+                                                        "default": "thread",
+                                                        "pattern": "^(verbose)|(verbose,)?(none|numa|socket|core|thread|depth|list(:[\\d,-]+)+|mask(:(0x)*([\\da-fA-f]+)+)+)+$",
+                                                        "example": "verbose,list:0-3:4-7"
+                                                    },
+                                                    "membind": {
+                                                        "description": "Memory (NUMA node) binding for application.\n\nFormatted as [verbose,]\\<keyword\\>\n\nKeywords:\n* none -\nNo memory binding\n\n* local -\nRestrict each rank to use only its own NUMA node memory\n\n* list:<colon-separated-range-lists> -\nBind ranks to colon-separated rangelists of NUMA nodes.\n\n* mask:<comma-separated-masks> -\nBind ranks to comma-separated bitmasks of NUMA nodes.\n",
+                                                        "type": "string",
+                                                        "default": "none",
+                                                        "pattern": "^(verbose)|(verbose,)?(none|local|list(:[\\d,-]+)+|mask(:(0x)*([\\da-fA-f]+)+)+)+$",
+                                                        "example": "verbose,list:0:0-1"
+                                                    },
+                                                    "pmi_port": {
+                                                        "description": "Compute node port number used for PMI communication.\n\nA free port is found when the application is launched.\n",
+                                                        "type": "integer",
+                                                        "example": 1979,
+                                                        "readOnly": true
+                                                    },
+                                                    "username": {
+                                                        "description": "Owner of the application.\n\nThis is obtained from Keycloak when validating the token used to create\nthe application.\n",
+                                                        "type": "string",
+                                                        "example": "jdoe",
+                                                        "readOnly": true
+                                                    },
+                                                    "uid": {
+                                                        "description": "User ID of the application's owner.\n\nThis is obtained from Keycloak when validating the token used to create\nthe application. The application is running as this uid.\n",
+                                                        "type": "integer",
+                                                        "example": 1001,
+                                                        "readOnly": true
+                                                    },
+                                                    "gid": {
+                                                        "description": "Group ID of the application's owner.\n\nThis is obtained from Keycloak when validating the token used to create\nthe application. The application is running as this gid.\n",
+                                                        "type": "integer",
+                                                        "example": 1001,
+                                                        "readOnly": true
+                                                    },
+                                                    "include_tasks": {
+                                                        "description": "Array of user-controllable ATOM tasks to execute.",
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "string"
+                                                        },
+                                                        "example": [
+                                                            "clear_lustre_caches",
+                                                            "compact_memory"
+                                                        ],
+                                                        "readOnly": true
+                                                    },
+                                                    "exclude_tasks": {
+                                                        "description": "Array of user-controllable ATOM tasks to not execute.",
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "string"
+                                                        },
+                                                        "example": [
+                                                            "clear_lustre_caches",
+                                                            "compact_memory"
+                                                        ],
+                                                        "readOnly": true
+                                                    },
+                                                    "exclusive": {
+                                                        "description": "Exclusive setting for the application.\n\nIf true, application requires exclusive access to compute nodes.\n",
+                                                        "type": "boolean",
+                                                        "example": true
+                                                    },
+                                                    "line_buffered": {
+                                                        "description": "Whether to use unbuffered vs line buffered stdout and stderr\n",
+                                                        "type": "boolean",
+                                                        "example": true
+                                                    },
+                                                    "cmds": {
+                                                        "description": "Array of MPMD command objects",
+                                                        "type": "array",
+                                                        "items": {
+                                                            "description": "Multiple Program Multiple Data (MPMD) command object",
+                                                            "type": "object",
+                                                            "required": [
+                                                                "argv"
+                                                            ],
+                                                            "properties": {
+                                                                "argv": {
+                                                                    "description": "Argument array for the command to execute",
+                                                                    "type": "array",
+                                                                    "items": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "example": [
+                                                                        "hostname",
+                                                                        "--fqdn"
+                                                                    ]
+                                                                },
+                                                                "wdir": {
+                                                                    "description": "Command working directory",
+                                                                    "type": "string",
+                                                                    "example": "/home/users/seymour"
+                                                                },
+                                                                "umask": {
+                                                                    "description": "File creation mask for command processes",
+                                                                    "type": "integer",
+                                                                    "default": 22,
+                                                                    "example": 420
+                                                                },
+                                                                "nranks": {
+                                                                    "description": "Number of ranks for this command\n",
+                                                                    "type": "integer",
+                                                                    "default": 1,
+                                                                    "example": 64
+                                                                }
+                                                            }
+                                                        }
+                                                    },
+                                                    "cmdidxs": {
+                                                        "description": "Index into cmds array for each rank",
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "integer"
+                                                        },
+                                                        "example": [
+                                                            0,
+                                                            1
+                                                        ],
+                                                        "readOnly": true
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "Error",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "description": "Contains error information in RFC 7807 format",
+                                    "type": "object",
+                                    "properties": {
+                                        "status": {
+                                            "description": "The HTTP status code generated by the origin server for this occurrence of the problem",
+                                            "type": "integer",
+                                            "example": 400
+                                        },
+                                        "detail": {
+                                            "description": "A human-readable explanation specific to this occurrence of the problem",
+                                            "type": "string",
+                                            "example": "Missing required placement parameter"
+                                        },
+                                        "title": {
+                                            "description": "A short, human-readable summary of the problem type",
+                                            "type": "string",
+                                            "example": "Bad Request"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Initiate application launch",
+                "tags": [
+                    "apps",
+                    "cli_from_file"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "description": "An application object",
+                                "type": "object",
+                                "required": [
+                                    "hosts"
+                                ],
+                                "properties": {
+                                    "apid": {
+                                        "description": "Application ID, randomly generated",
+                                        "type": "string",
+                                        "example": "5b8c1e4b-2dbd-4801-ba34-5917a7fbd80a",
+                                        "readOnly": true
+                                    },
+                                    "nodes": {
+                                        "description": "Array of compute nodes to run the application on\n\nThe array is calculated from the array used to launch the job.\n",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "example": [
+                                            "nid000001",
+                                            "nid000002"
+                                        ],
+                                        "readOnly": true
+                                    },
+                                    "placement": {
+                                        "description": "Index into the nodes array for each rank",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        },
+                                        "example": [
+                                            0,
+                                            1
+                                        ],
+                                        "readOnly": true
+                                    },
+                                    "argv": {
+                                        "description": "Argument array for the command to execute, if not provided in cmds\n",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "example": [
+                                            "hostname",
+                                            "--fqdn"
+                                        ]
+                                    },
+                                    "wdir": {
+                                        "description": "Application working directory, if not provided in cmds",
+                                        "type": "string",
+                                        "example": "/home/users/seymour"
+                                    },
+                                    "hosts": {
+                                        "description": "Array of hosts to run the application on.\n\nThe array is the unprocessed version of what was provided to the launch\nAPI call. The array can contain literal hostnames and hostname selector patterns.\nA hostname selector pattern is an easy way to specify a range of hostnames using a\nconcise format.\n\nThe pattern format consists of a partial node name followed by a pair of square brackets\nthat contain the selection criteria. The selection criteria is a comma-separated list of\nnumbers or number ranges. Numbers in a number range can be padded with zeros that will\nbe included in the expanded hosts array.\n\nSome examples:\n| Pattern         | Expands to                                  |\n|-----------------|---------------------------------------------|\n| nid00000[1,2,3] | nid000001,nid000002,nid000003               |\n| nid00000[1-3]   | nid000001,nid000002,nid000003               |\n| nid00000[1,4-6] | nid000001,nid000004,nid000005,nid000006     |\n| nid00000[08-11] | nid0000008,nid0000009,nid0000010,nid0000011 |\n",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "example": [
+                                            "nid000001",
+                                            "nid000002"
+                                        ]
+                                    },
+                                    "nranks": {
+                                        "description": "Number of ranks of the application, if not provided in cmds\n",
+                                        "type": "integer",
+                                        "default": 1,
+                                        "example": 64
+                                    },
+                                    "ppn": {
+                                        "description": "Ranks per node",
+                                        "type": "integer",
+                                        "default": 0,
+                                        "example": 8
+                                    },
+                                    "depth": {
+                                        "description": "CPUs to allocate per-rank",
+                                        "type": "integer",
+                                        "default": 1,
+                                        "example": 3
+                                    },
+                                    "environment": {
+                                        "description": "Array of environment variables in VAR=value format",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "example": [
+                                            "PATH=/bin",
+                                            "USER=seymour"
+                                        ],
+                                        "writeOnly": true
+                                    },
+                                    "umask": {
+                                        "description": "File creation mask for application, if not provided in cmds\n",
+                                        "type": "string",
+                                        "default": "0022",
+                                        "example": "0420"
+                                    },
+                                    "envalias": {
+                                        "description": "Dictionary of application-specific environment aliases",
+                                        "type": "object",
+                                        "example": {
+                                            "APRUN_APP_ID": "PALS_APID"
+                                        }
+                                    },
+                                    "fanout": {
+                                        "description": "Fanout tree width",
+                                        "type": "integer",
+                                        "example": 128,
+                                        "default": 128
+                                    },
+                                    "cpubind": {
+                                        "description": "CPU binding for application.\n\nFormatted as [verbose,]\\<keyword\\>\n\nKeywords:\n* none -\nNo CPU binding\n\n* One of <numa, socket, core, thread> -\nBind ranks to every thread on either numa, socket, core, or thread.\n\n* depth -\nBind ranks to number of threads in 'depth' argument (default 1).\n\n* list:<colon-separated-range-lists> -\nBind ranks to colon-separated rangelists of CPUs.\n\n* mask:<comma-separated-masks> -\nBind ranks to comma-separated bitmasks of CPUs.\n",
+                                        "type": "string",
+                                        "default": "thread",
+                                        "pattern": "^(verbose)|(verbose,)?(none|numa|socket|core|thread|depth|list(:[\\d,-]+)+|mask(:(0x)*([\\da-fA-f]+)+)+)+$",
+                                        "example": "verbose,list:0-3:4-7"
+                                    },
+                                    "membind": {
+                                        "description": "Memory (NUMA node) binding for application.\n\nFormatted as [verbose,]\\<keyword\\>\n\nKeywords:\n* none -\nNo memory binding\n\n* local -\nRestrict each rank to use only its own NUMA node memory\n\n* list:<colon-separated-range-lists> -\nBind ranks to colon-separated rangelists of NUMA nodes.\n\n* mask:<comma-separated-masks> -\nBind ranks to comma-separated bitmasks of NUMA nodes.\n",
+                                        "type": "string",
+                                        "default": "none",
+                                        "pattern": "^(verbose)|(verbose,)?(none|local|list(:[\\d,-]+)+|mask(:(0x)*([\\da-fA-f]+)+)+)+$",
+                                        "example": "verbose,list:0:0-1"
+                                    },
+                                    "pmi_port": {
+                                        "description": "Compute node port number used for PMI communication.\n\nA free port is found when the application is launched.\n",
+                                        "type": "integer",
+                                        "example": 1979,
+                                        "readOnly": true
+                                    },
+                                    "username": {
+                                        "description": "Owner of the application.\n\nThis is obtained from Keycloak when validating the token used to create\nthe application.\n",
+                                        "type": "string",
+                                        "example": "jdoe",
+                                        "readOnly": true
+                                    },
+                                    "uid": {
+                                        "description": "User ID of the application's owner.\n\nThis is obtained from Keycloak when validating the token used to create\nthe application. The application is running as this uid.\n",
+                                        "type": "integer",
+                                        "example": 1001,
+                                        "readOnly": true
+                                    },
+                                    "gid": {
+                                        "description": "Group ID of the application's owner.\n\nThis is obtained from Keycloak when validating the token used to create\nthe application. The application is running as this gid.\n",
+                                        "type": "integer",
+                                        "example": 1001,
+                                        "readOnly": true
+                                    },
+                                    "include_tasks": {
+                                        "description": "Array of user-controllable ATOM tasks to execute.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "example": [
+                                            "clear_lustre_caches",
+                                            "compact_memory"
+                                        ],
+                                        "readOnly": true
+                                    },
+                                    "exclude_tasks": {
+                                        "description": "Array of user-controllable ATOM tasks to not execute.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "example": [
+                                            "clear_lustre_caches",
+                                            "compact_memory"
+                                        ],
+                                        "readOnly": true
+                                    },
+                                    "exclusive": {
+                                        "description": "Exclusive setting for the application.\n\nIf true, application requires exclusive access to compute nodes.\n",
+                                        "type": "boolean",
+                                        "example": true
+                                    },
+                                    "line_buffered": {
+                                        "description": "Whether to use unbuffered vs line buffered stdout and stderr\n",
+                                        "type": "boolean",
+                                        "example": true
+                                    },
+                                    "cmds": {
+                                        "description": "Array of MPMD command objects",
+                                        "type": "array",
+                                        "items": {
+                                            "description": "Multiple Program Multiple Data (MPMD) command object",
+                                            "type": "object",
+                                            "required": [
+                                                "argv"
+                                            ],
+                                            "properties": {
+                                                "argv": {
+                                                    "description": "Argument array for the command to execute",
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    },
+                                                    "example": [
+                                                        "hostname",
+                                                        "--fqdn"
+                                                    ]
+                                                },
+                                                "wdir": {
+                                                    "description": "Command working directory",
+                                                    "type": "string",
+                                                    "example": "/home/users/seymour"
+                                                },
+                                                "umask": {
+                                                    "description": "File creation mask for command processes",
+                                                    "type": "integer",
+                                                    "default": 22,
+                                                    "example": 420
+                                                },
+                                                "nranks": {
+                                                    "description": "Number of ranks for this command\n",
+                                                    "type": "integer",
+                                                    "default": 1,
+                                                    "example": 64
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "cmdidxs": {
+                                        "description": "Index into cmds array for each rank",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        },
+                                        "example": [
+                                            0,
+                                            1
+                                        ],
+                                        "readOnly": true
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "description": "An application object",
+                                    "type": "object",
+                                    "required": [
+                                        "hosts"
+                                    ],
+                                    "properties": {
+                                        "apid": {
+                                            "description": "Application ID, randomly generated",
+                                            "type": "string",
+                                            "example": "5b8c1e4b-2dbd-4801-ba34-5917a7fbd80a",
+                                            "readOnly": true
+                                        },
+                                        "nodes": {
+                                            "description": "Array of compute nodes to run the application on\n\nThe array is calculated from the array used to launch the job.\n",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            },
+                                            "example": [
+                                                "nid000001",
+                                                "nid000002"
+                                            ],
+                                            "readOnly": true
+                                        },
+                                        "placement": {
+                                            "description": "Index into the nodes array for each rank",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "integer"
+                                            },
+                                            "example": [
+                                                0,
+                                                1
+                                            ],
+                                            "readOnly": true
+                                        },
+                                        "argv": {
+                                            "description": "Argument array for the command to execute, if not provided in cmds\n",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            },
+                                            "example": [
+                                                "hostname",
+                                                "--fqdn"
+                                            ]
+                                        },
+                                        "wdir": {
+                                            "description": "Application working directory, if not provided in cmds",
+                                            "type": "string",
+                                            "example": "/home/users/seymour"
+                                        },
+                                        "hosts": {
+                                            "description": "Array of hosts to run the application on.\n\nThe array is the unprocessed version of what was provided to the launch\nAPI call. The array can contain literal hostnames and hostname selector patterns.\nA hostname selector pattern is an easy way to specify a range of hostnames using a\nconcise format.\n\nThe pattern format consists of a partial node name followed by a pair of square brackets\nthat contain the selection criteria. The selection criteria is a comma-separated list of\nnumbers or number ranges. Numbers in a number range can be padded with zeros that will\nbe included in the expanded hosts array.\n\nSome examples:\n| Pattern         | Expands to                                  |\n|-----------------|---------------------------------------------|\n| nid00000[1,2,3] | nid000001,nid000002,nid000003               |\n| nid00000[1-3]   | nid000001,nid000002,nid000003               |\n| nid00000[1,4-6] | nid000001,nid000004,nid000005,nid000006     |\n| nid00000[08-11] | nid0000008,nid0000009,nid0000010,nid0000011 |\n",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            },
+                                            "example": [
+                                                "nid000001",
+                                                "nid000002"
+                                            ]
+                                        },
+                                        "nranks": {
+                                            "description": "Number of ranks of the application, if not provided in cmds\n",
+                                            "type": "integer",
+                                            "default": 1,
+                                            "example": 64
+                                        },
+                                        "ppn": {
+                                            "description": "Ranks per node",
+                                            "type": "integer",
+                                            "default": 0,
+                                            "example": 8
+                                        },
+                                        "depth": {
+                                            "description": "CPUs to allocate per-rank",
+                                            "type": "integer",
+                                            "default": 1,
+                                            "example": 3
+                                        },
+                                        "environment": {
+                                            "description": "Array of environment variables in VAR=value format",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            },
+                                            "example": [
+                                                "PATH=/bin",
+                                                "USER=seymour"
+                                            ],
+                                            "writeOnly": true
+                                        },
+                                        "umask": {
+                                            "description": "File creation mask for application, if not provided in cmds\n",
+                                            "type": "string",
+                                            "default": "0022",
+                                            "example": "0420"
+                                        },
+                                        "envalias": {
+                                            "description": "Dictionary of application-specific environment aliases",
+                                            "type": "object",
+                                            "example": {
+                                                "APRUN_APP_ID": "PALS_APID"
+                                            }
+                                        },
+                                        "fanout": {
+                                            "description": "Fanout tree width",
+                                            "type": "integer",
+                                            "example": 128,
+                                            "default": 128
+                                        },
+                                        "cpubind": {
+                                            "description": "CPU binding for application.\n\nFormatted as [verbose,]\\<keyword\\>\n\nKeywords:\n* none -\nNo CPU binding\n\n* One of <numa, socket, core, thread> -\nBind ranks to every thread on either numa, socket, core, or thread.\n\n* depth -\nBind ranks to number of threads in 'depth' argument (default 1).\n\n* list:<colon-separated-range-lists> -\nBind ranks to colon-separated rangelists of CPUs.\n\n* mask:<comma-separated-masks> -\nBind ranks to comma-separated bitmasks of CPUs.\n",
+                                            "type": "string",
+                                            "default": "thread",
+                                            "pattern": "^(verbose)|(verbose,)?(none|numa|socket|core|thread|depth|list(:[\\d,-]+)+|mask(:(0x)*([\\da-fA-f]+)+)+)+$",
+                                            "example": "verbose,list:0-3:4-7"
+                                        },
+                                        "membind": {
+                                            "description": "Memory (NUMA node) binding for application.\n\nFormatted as [verbose,]\\<keyword\\>\n\nKeywords:\n* none -\nNo memory binding\n\n* local -\nRestrict each rank to use only its own NUMA node memory\n\n* list:<colon-separated-range-lists> -\nBind ranks to colon-separated rangelists of NUMA nodes.\n\n* mask:<comma-separated-masks> -\nBind ranks to comma-separated bitmasks of NUMA nodes.\n",
+                                            "type": "string",
+                                            "default": "none",
+                                            "pattern": "^(verbose)|(verbose,)?(none|local|list(:[\\d,-]+)+|mask(:(0x)*([\\da-fA-f]+)+)+)+$",
+                                            "example": "verbose,list:0:0-1"
+                                        },
+                                        "pmi_port": {
+                                            "description": "Compute node port number used for PMI communication.\n\nA free port is found when the application is launched.\n",
+                                            "type": "integer",
+                                            "example": 1979,
+                                            "readOnly": true
+                                        },
+                                        "username": {
+                                            "description": "Owner of the application.\n\nThis is obtained from Keycloak when validating the token used to create\nthe application.\n",
+                                            "type": "string",
+                                            "example": "jdoe",
+                                            "readOnly": true
+                                        },
+                                        "uid": {
+                                            "description": "User ID of the application's owner.\n\nThis is obtained from Keycloak when validating the token used to create\nthe application. The application is running as this uid.\n",
+                                            "type": "integer",
+                                            "example": 1001,
+                                            "readOnly": true
+                                        },
+                                        "gid": {
+                                            "description": "Group ID of the application's owner.\n\nThis is obtained from Keycloak when validating the token used to create\nthe application. The application is running as this gid.\n",
+                                            "type": "integer",
+                                            "example": 1001,
+                                            "readOnly": true
+                                        },
+                                        "include_tasks": {
+                                            "description": "Array of user-controllable ATOM tasks to execute.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            },
+                                            "example": [
+                                                "clear_lustre_caches",
+                                                "compact_memory"
+                                            ],
+                                            "readOnly": true
+                                        },
+                                        "exclude_tasks": {
+                                            "description": "Array of user-controllable ATOM tasks to not execute.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            },
+                                            "example": [
+                                                "clear_lustre_caches",
+                                                "compact_memory"
+                                            ],
+                                            "readOnly": true
+                                        },
+                                        "exclusive": {
+                                            "description": "Exclusive setting for the application.\n\nIf true, application requires exclusive access to compute nodes.\n",
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "line_buffered": {
+                                            "description": "Whether to use unbuffered vs line buffered stdout and stderr\n",
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "cmds": {
+                                            "description": "Array of MPMD command objects",
+                                            "type": "array",
+                                            "items": {
+                                                "description": "Multiple Program Multiple Data (MPMD) command object",
+                                                "type": "object",
+                                                "required": [
+                                                    "argv"
+                                                ],
+                                                "properties": {
+                                                    "argv": {
+                                                        "description": "Argument array for the command to execute",
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "string"
+                                                        },
+                                                        "example": [
+                                                            "hostname",
+                                                            "--fqdn"
+                                                        ]
+                                                    },
+                                                    "wdir": {
+                                                        "description": "Command working directory",
+                                                        "type": "string",
+                                                        "example": "/home/users/seymour"
+                                                    },
+                                                    "umask": {
+                                                        "description": "File creation mask for command processes",
+                                                        "type": "integer",
+                                                        "default": 22,
+                                                        "example": 420
+                                                    },
+                                                    "nranks": {
+                                                        "description": "Number of ranks for this command\n",
+                                                        "type": "integer",
+                                                        "default": 1,
+                                                        "example": 64
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        "cmdidxs": {
+                                            "description": "Index into cmds array for each rank",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "integer"
+                                            },
+                                            "example": [
+                                                0,
+                                                1
+                                            ],
+                                            "readOnly": true
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "Error",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "description": "Contains error information in RFC 7807 format",
+                                    "type": "object",
+                                    "properties": {
+                                        "status": {
+                                            "description": "The HTTP status code generated by the origin server for this occurrence of the problem",
+                                            "type": "integer",
+                                            "example": 400
+                                        },
+                                        "detail": {
+                                            "description": "A human-readable explanation specific to this occurrence of the problem",
+                                            "type": "string",
+                                            "example": "Missing required placement parameter"
+                                        },
+                                        "title": {
+                                            "description": "A short, human-readable summary of the problem type",
+                                            "type": "string",
+                                            "example": "Bad Request"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/apps/{apid}": {
+            "parameters": [
+                {
+                    "name": "apid",
+                    "in": "path",
+                    "description": "Application ID",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    }
+                }
+            ],
+            "get": {
+                "summary": "Retrieve a running application by apid",
+                "tags": [
+                    "apps"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "description": "An application object",
+                                    "type": "object",
+                                    "required": [
+                                        "hosts"
+                                    ],
+                                    "properties": {
+                                        "apid": {
+                                            "description": "Application ID, randomly generated",
+                                            "type": "string",
+                                            "example": "5b8c1e4b-2dbd-4801-ba34-5917a7fbd80a",
+                                            "readOnly": true
+                                        },
+                                        "nodes": {
+                                            "description": "Array of compute nodes to run the application on\n\nThe array is calculated from the array used to launch the job.\n",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            },
+                                            "example": [
+                                                "nid000001",
+                                                "nid000002"
+                                            ],
+                                            "readOnly": true
+                                        },
+                                        "placement": {
+                                            "description": "Index into the nodes array for each rank",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "integer"
+                                            },
+                                            "example": [
+                                                0,
+                                                1
+                                            ],
+                                            "readOnly": true
+                                        },
+                                        "argv": {
+                                            "description": "Argument array for the command to execute, if not provided in cmds\n",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            },
+                                            "example": [
+                                                "hostname",
+                                                "--fqdn"
+                                            ]
+                                        },
+                                        "wdir": {
+                                            "description": "Application working directory, if not provided in cmds",
+                                            "type": "string",
+                                            "example": "/home/users/seymour"
+                                        },
+                                        "hosts": {
+                                            "description": "Array of hosts to run the application on.\n\nThe array is the unprocessed version of what was provided to the launch\nAPI call. The array can contain literal hostnames and hostname selector patterns.\nA hostname selector pattern is an easy way to specify a range of hostnames using a\nconcise format.\n\nThe pattern format consists of a partial node name followed by a pair of square brackets\nthat contain the selection criteria. The selection criteria is a comma-separated list of\nnumbers or number ranges. Numbers in a number range can be padded with zeros that will\nbe included in the expanded hosts array.\n\nSome examples:\n| Pattern         | Expands to                                  |\n|-----------------|---------------------------------------------|\n| nid00000[1,2,3] | nid000001,nid000002,nid000003               |\n| nid00000[1-3]   | nid000001,nid000002,nid000003               |\n| nid00000[1,4-6] | nid000001,nid000004,nid000005,nid000006     |\n| nid00000[08-11] | nid0000008,nid0000009,nid0000010,nid0000011 |\n",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            },
+                                            "example": [
+                                                "nid000001",
+                                                "nid000002"
+                                            ]
+                                        },
+                                        "nranks": {
+                                            "description": "Number of ranks of the application, if not provided in cmds\n",
+                                            "type": "integer",
+                                            "default": 1,
+                                            "example": 64
+                                        },
+                                        "ppn": {
+                                            "description": "Ranks per node",
+                                            "type": "integer",
+                                            "default": 0,
+                                            "example": 8
+                                        },
+                                        "depth": {
+                                            "description": "CPUs to allocate per-rank",
+                                            "type": "integer",
+                                            "default": 1,
+                                            "example": 3
+                                        },
+                                        "environment": {
+                                            "description": "Array of environment variables in VAR=value format",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            },
+                                            "example": [
+                                                "PATH=/bin",
+                                                "USER=seymour"
+                                            ],
+                                            "writeOnly": true
+                                        },
+                                        "umask": {
+                                            "description": "File creation mask for application, if not provided in cmds\n",
+                                            "type": "string",
+                                            "default": "0022",
+                                            "example": "0420"
+                                        },
+                                        "envalias": {
+                                            "description": "Dictionary of application-specific environment aliases",
+                                            "type": "object",
+                                            "example": {
+                                                "APRUN_APP_ID": "PALS_APID"
+                                            }
+                                        },
+                                        "fanout": {
+                                            "description": "Fanout tree width",
+                                            "type": "integer",
+                                            "example": 128,
+                                            "default": 128
+                                        },
+                                        "cpubind": {
+                                            "description": "CPU binding for application.\n\nFormatted as [verbose,]\\<keyword\\>\n\nKeywords:\n* none -\nNo CPU binding\n\n* One of <numa, socket, core, thread> -\nBind ranks to every thread on either numa, socket, core, or thread.\n\n* depth -\nBind ranks to number of threads in 'depth' argument (default 1).\n\n* list:<colon-separated-range-lists> -\nBind ranks to colon-separated rangelists of CPUs.\n\n* mask:<comma-separated-masks> -\nBind ranks to comma-separated bitmasks of CPUs.\n",
+                                            "type": "string",
+                                            "default": "thread",
+                                            "pattern": "^(verbose)|(verbose,)?(none|numa|socket|core|thread|depth|list(:[\\d,-]+)+|mask(:(0x)*([\\da-fA-f]+)+)+)+$",
+                                            "example": "verbose,list:0-3:4-7"
+                                        },
+                                        "membind": {
+                                            "description": "Memory (NUMA node) binding for application.\n\nFormatted as [verbose,]\\<keyword\\>\n\nKeywords:\n* none -\nNo memory binding\n\n* local -\nRestrict each rank to use only its own NUMA node memory\n\n* list:<colon-separated-range-lists> -\nBind ranks to colon-separated rangelists of NUMA nodes.\n\n* mask:<comma-separated-masks> -\nBind ranks to comma-separated bitmasks of NUMA nodes.\n",
+                                            "type": "string",
+                                            "default": "none",
+                                            "pattern": "^(verbose)|(verbose,)?(none|local|list(:[\\d,-]+)+|mask(:(0x)*([\\da-fA-f]+)+)+)+$",
+                                            "example": "verbose,list:0:0-1"
+                                        },
+                                        "pmi_port": {
+                                            "description": "Compute node port number used for PMI communication.\n\nA free port is found when the application is launched.\n",
+                                            "type": "integer",
+                                            "example": 1979,
+                                            "readOnly": true
+                                        },
+                                        "username": {
+                                            "description": "Owner of the application.\n\nThis is obtained from Keycloak when validating the token used to create\nthe application.\n",
+                                            "type": "string",
+                                            "example": "jdoe",
+                                            "readOnly": true
+                                        },
+                                        "uid": {
+                                            "description": "User ID of the application's owner.\n\nThis is obtained from Keycloak when validating the token used to create\nthe application. The application is running as this uid.\n",
+                                            "type": "integer",
+                                            "example": 1001,
+                                            "readOnly": true
+                                        },
+                                        "gid": {
+                                            "description": "Group ID of the application's owner.\n\nThis is obtained from Keycloak when validating the token used to create\nthe application. The application is running as this gid.\n",
+                                            "type": "integer",
+                                            "example": 1001,
+                                            "readOnly": true
+                                        },
+                                        "include_tasks": {
+                                            "description": "Array of user-controllable ATOM tasks to execute.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            },
+                                            "example": [
+                                                "clear_lustre_caches",
+                                                "compact_memory"
+                                            ],
+                                            "readOnly": true
+                                        },
+                                        "exclude_tasks": {
+                                            "description": "Array of user-controllable ATOM tasks to not execute.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            },
+                                            "example": [
+                                                "clear_lustre_caches",
+                                                "compact_memory"
+                                            ],
+                                            "readOnly": true
+                                        },
+                                        "exclusive": {
+                                            "description": "Exclusive setting for the application.\n\nIf true, application requires exclusive access to compute nodes.\n",
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "line_buffered": {
+                                            "description": "Whether to use unbuffered vs line buffered stdout and stderr\n",
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "cmds": {
+                                            "description": "Array of MPMD command objects",
+                                            "type": "array",
+                                            "items": {
+                                                "description": "Multiple Program Multiple Data (MPMD) command object",
+                                                "type": "object",
+                                                "required": [
+                                                    "argv"
+                                                ],
+                                                "properties": {
+                                                    "argv": {
+                                                        "description": "Argument array for the command to execute",
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "string"
+                                                        },
+                                                        "example": [
+                                                            "hostname",
+                                                            "--fqdn"
+                                                        ]
+                                                    },
+                                                    "wdir": {
+                                                        "description": "Command working directory",
+                                                        "type": "string",
+                                                        "example": "/home/users/seymour"
+                                                    },
+                                                    "umask": {
+                                                        "description": "File creation mask for command processes",
+                                                        "type": "integer",
+                                                        "default": 22,
+                                                        "example": 420
+                                                    },
+                                                    "nranks": {
+                                                        "description": "Number of ranks for this command\n",
+                                                        "type": "integer",
+                                                        "default": 1,
+                                                        "example": 64
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        "cmdidxs": {
+                                            "description": "Index into cmds array for each rank",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "integer"
+                                            },
+                                            "example": [
+                                                0,
+                                                1
+                                            ],
+                                            "readOnly": true
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "Error",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "description": "Contains error information in RFC 7807 format",
+                                    "type": "object",
+                                    "properties": {
+                                        "status": {
+                                            "description": "The HTTP status code generated by the origin server for this occurrence of the problem",
+                                            "type": "integer",
+                                            "example": 400
+                                        },
+                                        "detail": {
+                                            "description": "A human-readable explanation specific to this occurrence of the problem",
+                                            "type": "string",
+                                            "example": "Missing required placement parameter"
+                                        },
+                                        "title": {
+                                            "description": "A short, human-readable summary of the problem type",
+                                            "type": "string",
+                                            "example": "Bad Request"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "summary": "Cancel a pending or running application",
+                "tags": [
+                    "apps"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "description": "An application object",
+                                    "type": "object",
+                                    "required": [
+                                        "hosts"
+                                    ],
+                                    "properties": {
+                                        "apid": {
+                                            "description": "Application ID, randomly generated",
+                                            "type": "string",
+                                            "example": "5b8c1e4b-2dbd-4801-ba34-5917a7fbd80a",
+                                            "readOnly": true
+                                        },
+                                        "nodes": {
+                                            "description": "Array of compute nodes to run the application on\n\nThe array is calculated from the array used to launch the job.\n",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            },
+                                            "example": [
+                                                "nid000001",
+                                                "nid000002"
+                                            ],
+                                            "readOnly": true
+                                        },
+                                        "placement": {
+                                            "description": "Index into the nodes array for each rank",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "integer"
+                                            },
+                                            "example": [
+                                                0,
+                                                1
+                                            ],
+                                            "readOnly": true
+                                        },
+                                        "argv": {
+                                            "description": "Argument array for the command to execute, if not provided in cmds\n",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            },
+                                            "example": [
+                                                "hostname",
+                                                "--fqdn"
+                                            ]
+                                        },
+                                        "wdir": {
+                                            "description": "Application working directory, if not provided in cmds",
+                                            "type": "string",
+                                            "example": "/home/users/seymour"
+                                        },
+                                        "hosts": {
+                                            "description": "Array of hosts to run the application on.\n\nThe array is the unprocessed version of what was provided to the launch\nAPI call. The array can contain literal hostnames and hostname selector patterns.\nA hostname selector pattern is an easy way to specify a range of hostnames using a\nconcise format.\n\nThe pattern format consists of a partial node name followed by a pair of square brackets\nthat contain the selection criteria. The selection criteria is a comma-separated list of\nnumbers or number ranges. Numbers in a number range can be padded with zeros that will\nbe included in the expanded hosts array.\n\nSome examples:\n| Pattern         | Expands to                                  |\n|-----------------|---------------------------------------------|\n| nid00000[1,2,3] | nid000001,nid000002,nid000003               |\n| nid00000[1-3]   | nid000001,nid000002,nid000003               |\n| nid00000[1,4-6] | nid000001,nid000004,nid000005,nid000006     |\n| nid00000[08-11] | nid0000008,nid0000009,nid0000010,nid0000011 |\n",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            },
+                                            "example": [
+                                                "nid000001",
+                                                "nid000002"
+                                            ]
+                                        },
+                                        "nranks": {
+                                            "description": "Number of ranks of the application, if not provided in cmds\n",
+                                            "type": "integer",
+                                            "default": 1,
+                                            "example": 64
+                                        },
+                                        "ppn": {
+                                            "description": "Ranks per node",
+                                            "type": "integer",
+                                            "default": 0,
+                                            "example": 8
+                                        },
+                                        "depth": {
+                                            "description": "CPUs to allocate per-rank",
+                                            "type": "integer",
+                                            "default": 1,
+                                            "example": 3
+                                        },
+                                        "environment": {
+                                            "description": "Array of environment variables in VAR=value format",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            },
+                                            "example": [
+                                                "PATH=/bin",
+                                                "USER=seymour"
+                                            ],
+                                            "writeOnly": true
+                                        },
+                                        "umask": {
+                                            "description": "File creation mask for application, if not provided in cmds\n",
+                                            "type": "string",
+                                            "default": "0022",
+                                            "example": "0420"
+                                        },
+                                        "envalias": {
+                                            "description": "Dictionary of application-specific environment aliases",
+                                            "type": "object",
+                                            "example": {
+                                                "APRUN_APP_ID": "PALS_APID"
+                                            }
+                                        },
+                                        "fanout": {
+                                            "description": "Fanout tree width",
+                                            "type": "integer",
+                                            "example": 128,
+                                            "default": 128
+                                        },
+                                        "cpubind": {
+                                            "description": "CPU binding for application.\n\nFormatted as [verbose,]\\<keyword\\>\n\nKeywords:\n* none -\nNo CPU binding\n\n* One of <numa, socket, core, thread> -\nBind ranks to every thread on either numa, socket, core, or thread.\n\n* depth -\nBind ranks to number of threads in 'depth' argument (default 1).\n\n* list:<colon-separated-range-lists> -\nBind ranks to colon-separated rangelists of CPUs.\n\n* mask:<comma-separated-masks> -\nBind ranks to comma-separated bitmasks of CPUs.\n",
+                                            "type": "string",
+                                            "default": "thread",
+                                            "pattern": "^(verbose)|(verbose,)?(none|numa|socket|core|thread|depth|list(:[\\d,-]+)+|mask(:(0x)*([\\da-fA-f]+)+)+)+$",
+                                            "example": "verbose,list:0-3:4-7"
+                                        },
+                                        "membind": {
+                                            "description": "Memory (NUMA node) binding for application.\n\nFormatted as [verbose,]\\<keyword\\>\n\nKeywords:\n* none -\nNo memory binding\n\n* local -\nRestrict each rank to use only its own NUMA node memory\n\n* list:<colon-separated-range-lists> -\nBind ranks to colon-separated rangelists of NUMA nodes.\n\n* mask:<comma-separated-masks> -\nBind ranks to comma-separated bitmasks of NUMA nodes.\n",
+                                            "type": "string",
+                                            "default": "none",
+                                            "pattern": "^(verbose)|(verbose,)?(none|local|list(:[\\d,-]+)+|mask(:(0x)*([\\da-fA-f]+)+)+)+$",
+                                            "example": "verbose,list:0:0-1"
+                                        },
+                                        "pmi_port": {
+                                            "description": "Compute node port number used for PMI communication.\n\nA free port is found when the application is launched.\n",
+                                            "type": "integer",
+                                            "example": 1979,
+                                            "readOnly": true
+                                        },
+                                        "username": {
+                                            "description": "Owner of the application.\n\nThis is obtained from Keycloak when validating the token used to create\nthe application.\n",
+                                            "type": "string",
+                                            "example": "jdoe",
+                                            "readOnly": true
+                                        },
+                                        "uid": {
+                                            "description": "User ID of the application's owner.\n\nThis is obtained from Keycloak when validating the token used to create\nthe application. The application is running as this uid.\n",
+                                            "type": "integer",
+                                            "example": 1001,
+                                            "readOnly": true
+                                        },
+                                        "gid": {
+                                            "description": "Group ID of the application's owner.\n\nThis is obtained from Keycloak when validating the token used to create\nthe application. The application is running as this gid.\n",
+                                            "type": "integer",
+                                            "example": 1001,
+                                            "readOnly": true
+                                        },
+                                        "include_tasks": {
+                                            "description": "Array of user-controllable ATOM tasks to execute.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            },
+                                            "example": [
+                                                "clear_lustre_caches",
+                                                "compact_memory"
+                                            ],
+                                            "readOnly": true
+                                        },
+                                        "exclude_tasks": {
+                                            "description": "Array of user-controllable ATOM tasks to not execute.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            },
+                                            "example": [
+                                                "clear_lustre_caches",
+                                                "compact_memory"
+                                            ],
+                                            "readOnly": true
+                                        },
+                                        "exclusive": {
+                                            "description": "Exclusive setting for the application.\n\nIf true, application requires exclusive access to compute nodes.\n",
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "line_buffered": {
+                                            "description": "Whether to use unbuffered vs line buffered stdout and stderr\n",
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "cmds": {
+                                            "description": "Array of MPMD command objects",
+                                            "type": "array",
+                                            "items": {
+                                                "description": "Multiple Program Multiple Data (MPMD) command object",
+                                                "type": "object",
+                                                "required": [
+                                                    "argv"
+                                                ],
+                                                "properties": {
+                                                    "argv": {
+                                                        "description": "Argument array for the command to execute",
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "string"
+                                                        },
+                                                        "example": [
+                                                            "hostname",
+                                                            "--fqdn"
+                                                        ]
+                                                    },
+                                                    "wdir": {
+                                                        "description": "Command working directory",
+                                                        "type": "string",
+                                                        "example": "/home/users/seymour"
+                                                    },
+                                                    "umask": {
+                                                        "description": "File creation mask for command processes",
+                                                        "type": "integer",
+                                                        "default": 22,
+                                                        "example": 420
+                                                    },
+                                                    "nranks": {
+                                                        "description": "Number of ranks for this command\n",
+                                                        "type": "integer",
+                                                        "default": 1,
+                                                        "example": 64
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        "cmdidxs": {
+                                            "description": "Index into cmds array for each rank",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "integer"
+                                            },
+                                            "example": [
+                                                0,
+                                                1
+                                            ],
+                                            "readOnly": true
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "Error",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "description": "Contains error information in RFC 7807 format",
+                                    "type": "object",
+                                    "properties": {
+                                        "status": {
+                                            "description": "The HTTP status code generated by the origin server for this occurrence of the problem",
+                                            "type": "integer",
+                                            "example": 400
+                                        },
+                                        "detail": {
+                                            "description": "A human-readable explanation specific to this occurrence of the problem",
+                                            "type": "string",
+                                            "example": "Missing required placement parameter"
+                                        },
+                                        "title": {
+                                            "description": "A short, human-readable summary of the problem type",
+                                            "type": "string",
+                                            "example": "Bad Request"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/apps/{apid}/stdio": {
+            "servers": [
+                {
+                    "url": "ws://api-gw-service-nmn.local/apis/pals/v1"
+                }
+            ],
+            "parameters": [
+                {
+                    "name": "apid",
+                    "in": "path",
+                    "description": "Application ID",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    }
+                }
+            ],
+            "get": {
+                "summary": "Initiate WebSocket to stream I/O",
+                "description": "Open a WebSocket connection to send\nand receive RPC messages.\n\nWhen a WebSocket has been established,\nuse bidirectional JSON RPC over a single WebSocket connection\nto run the application and capture output.\nBidirectional, read-write streaming RPCs send requests and read\na sequence of returned messages.\n\nAssume that the WebSocket is established\nunless this request returns an error.\nThe WebSocket ping/pong may be used\nto verify the WebSocket connection.\n\nSend start RPC to start an application.\nThe application sends output as RPC to client.\nSend stdin, signals through RPCs.\n\nWhen the application completes, the transferred files are removed\nand the WebSocket connection is closed.\n",
+                "tags": [
+                    "cli_hidden",
+                    "apps"
+                ],
+                "responses": {
+                    "101": {
+                        "description": "Switching Protocols"
+                    },
+                    "default": {
+                        "description": "Error",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "description": "Contains error information in RFC 7807 format",
+                                    "type": "object",
+                                    "properties": {
+                                        "status": {
+                                            "description": "The HTTP status code generated by the origin server for this occurrence of the problem",
+                                            "type": "integer",
+                                            "example": 400
+                                        },
+                                        "detail": {
+                                            "description": "A human-readable explanation specific to this occurrence of the problem",
+                                            "type": "string",
+                                            "example": "Missing required placement parameter"
+                                        },
+                                        "title": {
+                                            "description": "A short, human-readable summary of the problem type",
+                                            "type": "string",
+                                            "example": "Bad Request"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/apps/{apid}/files": {
+            "parameters": [
+                {
+                    "name": "apid",
+                    "in": "path",
+                    "description": "Application ID",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    }
+                }
+            ],
+            "get": {
+                "summary": "Retrieve file transfer metadata",
+                "description": "Get an array of metadata for files transferred to compute nodes.",
+                "tags": [
+                    "apps"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "description": "A container for an array of file metadata",
+                                    "type": "object",
+                                    "properties": {
+                                        "files": {
+                                            "description": "An array of file metadata objects",
+                                            "type": "array",
+                                            "items": {
+                                                "description": "Metadata for a file transferred to compute nodes",
+                                                "type": "object",
+                                                "properties": {
+                                                    "name": {
+                                                        "description": "File name for this file",
+                                                        "type": "string",
+                                                        "example": "a.out"
+                                                    },
+                                                    "mode": {
+                                                        "description": "File mode for this file",
+                                                        "type": "string",
+                                                        "example": "0644"
+                                                    },
+                                                    "path": {
+                                                        "description": "Full path to the file on compute nodes",
+                                                        "type": "string",
+                                                        "example": "/var/run/palsd/2274c389-b2e9-43fd-afbe-c563587c35d8/a.out"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "Error",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "description": "Contains error information in RFC 7807 format",
+                                    "type": "object",
+                                    "properties": {
+                                        "status": {
+                                            "description": "The HTTP status code generated by the origin server for this occurrence of the problem",
+                                            "type": "integer",
+                                            "example": 400
+                                        },
+                                        "detail": {
+                                            "description": "A human-readable explanation specific to this occurrence of the problem",
+                                            "type": "string",
+                                            "example": "Missing required placement parameter"
+                                        },
+                                        "title": {
+                                            "description": "A short, human-readable summary of the problem type",
+                                            "type": "string",
+                                            "example": "Bad Request"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "summary": "Transfer file to compute nodes",
+                "description": "Transfer a file to compute nodes.\nThe request body is a string which contains the file contents.\nThe file is transferred to /var/run/palsd/**apid**/.\nWhen the application starts, this directory is\nsearched for the application *name*.\n",
+                "tags": [
+                    "apps"
+                ],
+                "parameters": [
+                    {
+                        "name": "name",
+                        "in": "query",
+                        "description": "Filename for the transferred file.\nIf the query parameter *name* is not specified,\na random name is generated for the transferred file.\n",
+                        "schema": {
+                            "type": "string",
+                            "example": "a.out"
+                        }
+                    },
+                    {
+                        "name": "mode",
+                        "in": "query",
+                        "description": "File mode for the transferred file",
+                        "schema": {
+                            "type": "string",
+                            "example": "0755",
+                            "default": "0700"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "File contents",
+                    "content": {
+                        "application/octet-stream": {
+                            "schema": {
+                                "type": "string",
+                                "format": "binary"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "description": "Metadata for a file transferred to compute nodes",
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "description": "File name for this file",
+                                            "type": "string",
+                                            "example": "a.out"
+                                        },
+                                        "mode": {
+                                            "description": "File mode for this file",
+                                            "type": "string",
+                                            "example": "0644"
+                                        },
+                                        "path": {
+                                            "description": "Full path to the file on compute nodes",
+                                            "type": "string",
+                                            "example": "/var/run/palsd/2274c389-b2e9-43fd-afbe-c563587c35d8/a.out"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "Error",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "description": "Contains error information in RFC 7807 format",
+                                    "type": "object",
+                                    "properties": {
+                                        "status": {
+                                            "description": "The HTTP status code generated by the origin server for this occurrence of the problem",
+                                            "type": "integer",
+                                            "example": 400
+                                        },
+                                        "detail": {
+                                            "description": "A human-readable explanation specific to this occurrence of the problem",
+                                            "type": "string",
+                                            "example": "Missing required placement parameter"
+                                        },
+                                        "title": {
+                                            "description": "A short, human-readable summary of the problem type",
+                                            "type": "string",
+                                            "example": "Bad Request"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/apps/{apid}/files/{name}": {
+            "parameters": [
+                {
+                    "name": "apid",
+                    "in": "path",
+                    "description": "Application ID",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    }
+                },
+                {
+                    "name": "name",
+                    "in": "path",
+                    "description": "File name",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    }
+                }
+            ],
+            "get": {
+                "summary": "Retrieve file metadata by filename",
+                "description": "Retrieve metadata for a file transferred to compute nodes.",
+                "tags": [
+                    "apps"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "description": "Metadata for a file transferred to compute nodes",
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "description": "File name for this file",
+                                            "type": "string",
+                                            "example": "a.out"
+                                        },
+                                        "mode": {
+                                            "description": "File mode for this file",
+                                            "type": "string",
+                                            "example": "0644"
+                                        },
+                                        "path": {
+                                            "description": "Full path to the file on compute nodes",
+                                            "type": "string",
+                                            "example": "/var/run/palsd/2274c389-b2e9-43fd-afbe-c563587c35d8/a.out"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "Error",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "description": "Contains error information in RFC 7807 format",
+                                    "type": "object",
+                                    "properties": {
+                                        "status": {
+                                            "description": "The HTTP status code generated by the origin server for this occurrence of the problem",
+                                            "type": "integer",
+                                            "example": 400
+                                        },
+                                        "detail": {
+                                            "description": "A human-readable explanation specific to this occurrence of the problem",
+                                            "type": "string",
+                                            "example": "Missing required placement parameter"
+                                        },
+                                        "title": {
+                                            "description": "A short, human-readable summary of the problem type",
+                                            "type": "string",
+                                            "example": "Bad Request"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "summary": "Delete file from compute nodes",
+                "description": "Delete a file from compute nodes.",
+                "tags": [
+                    "apps"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "description": "Metadata for a file transferred to compute nodes",
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "description": "File name for this file",
+                                            "type": "string",
+                                            "example": "a.out"
+                                        },
+                                        "mode": {
+                                            "description": "File mode for this file",
+                                            "type": "string",
+                                            "example": "0644"
+                                        },
+                                        "path": {
+                                            "description": "Full path to the file on compute nodes",
+                                            "type": "string",
+                                            "example": "/var/run/palsd/2274c389-b2e9-43fd-afbe-c563587c35d8/a.out"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "Error",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "description": "Contains error information in RFC 7807 format",
+                                    "type": "object",
+                                    "properties": {
+                                        "status": {
+                                            "description": "The HTTP status code generated by the origin server for this occurrence of the problem",
+                                            "type": "integer",
+                                            "example": 400
+                                        },
+                                        "detail": {
+                                            "description": "A human-readable explanation specific to this occurrence of the problem",
+                                            "type": "string",
+                                            "example": "Missing required placement parameter"
+                                        },
+                                        "title": {
+                                            "description": "A short, human-readable summary of the problem type",
+                                            "type": "string",
+                                            "example": "Bad Request"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/apps/{apid}/signal": {
+            "parameters": [
+                {
+                    "name": "apid",
+                    "in": "path",
+                    "description": "Application ID",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    }
+                }
+            ],
+            "post": {
+                "summary": "Send signal to application",
+                "description": "Send a signal to a specified application.",
+                "tags": [
+                    "apps"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "description": "Signal to send to an application",
+                                "type": "object",
+                                "properties": {
+                                    "signum": {
+                                        "description": "A signal number",
+                                        "type": "integer",
+                                        "minimum": 1,
+                                        "maximum": 31,
+                                        "example": 15,
+                                        "default": 15
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "description": "Signal to send to an application",
+                                    "type": "object",
+                                    "properties": {
+                                        "signum": {
+                                            "description": "A signal number",
+                                            "type": "integer",
+                                            "minimum": 1,
+                                            "maximum": 31,
+                                            "example": 15,
+                                            "default": 15
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "Error",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "description": "Contains error information in RFC 7807 format",
+                                    "type": "object",
+                                    "properties": {
+                                        "status": {
+                                            "description": "The HTTP status code generated by the origin server for this occurrence of the problem",
+                                            "type": "integer",
+                                            "example": 400
+                                        },
+                                        "detail": {
+                                            "description": "A human-readable explanation specific to this occurrence of the problem",
+                                            "type": "string",
+                                            "example": "Missing required placement parameter"
+                                        },
+                                        "title": {
+                                            "description": "A short, human-readable summary of the problem type",
+                                            "type": "string",
+                                            "example": "Bad Request"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/apps/{apid}/tools": {
+            "parameters": [
+                {
+                    "name": "apid",
+                    "in": "path",
+                    "description": "Application ID",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    }
+                }
+            ],
+            "post": {
+                "summary": "Launch a tool helper process alongside an application",
+                "description": "Launch a tool helper process alongside an application.",
+                "tags": [
+                    "apps"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "description": "A tool helper object",
+                                "type": "object",
+                                "required": [
+                                    "argv"
+                                ],
+                                "properties": {
+                                    "toolid": {
+                                        "description": "Tool helper ID",
+                                        "type": "string",
+                                        "example": "5b8c1e4b-2dbd-4801-ba34-5917a7fbd80a",
+                                        "readOnly": true
+                                    },
+                                    "argv": {
+                                        "description": "Argument array for the command to execute",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "example": [
+                                            "echo",
+                                            "hello"
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "description": "A tool helper object",
+                                    "type": "object",
+                                    "required": [
+                                        "argv"
+                                    ],
+                                    "properties": {
+                                        "toolid": {
+                                            "description": "Tool helper ID",
+                                            "type": "string",
+                                            "example": "5b8c1e4b-2dbd-4801-ba34-5917a7fbd80a",
+                                            "readOnly": true
+                                        },
+                                        "argv": {
+                                            "description": "Argument array for the command to execute",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            },
+                                            "example": [
+                                                "echo",
+                                                "hello"
+                                            ]
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "Error",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "description": "Contains error information in RFC 7807 format",
+                                    "type": "object",
+                                    "properties": {
+                                        "status": {
+                                            "description": "The HTTP status code generated by the origin server for this occurrence of the problem",
+                                            "type": "integer",
+                                            "example": 400
+                                        },
+                                        "detail": {
+                                            "description": "A human-readable explanation specific to this occurrence of the problem",
+                                            "type": "string",
+                                            "example": "Missing required placement parameter"
+                                        },
+                                        "title": {
+                                            "description": "A short, human-readable summary of the problem type",
+                                            "type": "string",
+                                            "example": "Bad Request"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "get": {
+                "summary": "Array of tool helpers running with this application",
+                "description": "Array of tool helpers running with this application",
+                "tags": [
+                    "apps"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "description": "A container for an array of tool helper objects",
+                                    "type": "object",
+                                    "properties": {
+                                        "tools": {
+                                            "description": "An array of tool helper objects",
+                                            "type": "array",
+                                            "items": {
+                                                "description": "A tool helper object",
+                                                "type": "object",
+                                                "required": [
+                                                    "argv"
+                                                ],
+                                                "properties": {
+                                                    "toolid": {
+                                                        "description": "Tool helper ID",
+                                                        "type": "string",
+                                                        "example": "5b8c1e4b-2dbd-4801-ba34-5917a7fbd80a",
+                                                        "readOnly": true
+                                                    },
+                                                    "argv": {
+                                                        "description": "Argument array for the command to execute",
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "string"
+                                                        },
+                                                        "example": [
+                                                            "echo",
+                                                            "hello"
+                                                        ]
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "Error",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "description": "Contains error information in RFC 7807 format",
+                                    "type": "object",
+                                    "properties": {
+                                        "status": {
+                                            "description": "The HTTP status code generated by the origin server for this occurrence of the problem",
+                                            "type": "integer",
+                                            "example": 400
+                                        },
+                                        "detail": {
+                                            "description": "A human-readable explanation specific to this occurrence of the problem",
+                                            "type": "string",
+                                            "example": "Missing required placement parameter"
+                                        },
+                                        "title": {
+                                            "description": "A short, human-readable summary of the problem type",
+                                            "type": "string",
+                                            "example": "Bad Request"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/apps/{apid}/tools/{toolid}": {
+            "parameters": [
+                {
+                    "name": "apid",
+                    "in": "path",
+                    "description": "Application ID",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    }
+                },
+                {
+                    "name": "toolid",
+                    "in": "path",
+                    "description": "Tool helper ID",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    }
+                }
+            ],
+            "get": {
+                "summary": "Retrieve information about a tool helper",
+                "description": "Get information about a tool helper",
+                "tags": [
+                    "apps"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "description": "A tool helper object",
+                                    "type": "object",
+                                    "required": [
+                                        "argv"
+                                    ],
+                                    "properties": {
+                                        "toolid": {
+                                            "description": "Tool helper ID",
+                                            "type": "string",
+                                            "example": "5b8c1e4b-2dbd-4801-ba34-5917a7fbd80a",
+                                            "readOnly": true
+                                        },
+                                        "argv": {
+                                            "description": "Argument array for the command to execute",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            },
+                                            "example": [
+                                                "echo",
+                                                "hello"
+                                            ]
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "Error",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "description": "Contains error information in RFC 7807 format",
+                                    "type": "object",
+                                    "properties": {
+                                        "status": {
+                                            "description": "The HTTP status code generated by the origin server for this occurrence of the problem",
+                                            "type": "integer",
+                                            "example": 400
+                                        },
+                                        "detail": {
+                                            "description": "A human-readable explanation specific to this occurrence of the problem",
+                                            "type": "string",
+                                            "example": "Missing required placement parameter"
+                                        },
+                                        "title": {
+                                            "description": "A short, human-readable summary of the problem type",
+                                            "type": "string",
+                                            "example": "Bad Request"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "summary": "Delete a tool helper process",
+                "description": "Kill a tool helper process on compute nodes.",
+                "tags": [
+                    "apps"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "description": "A tool helper object",
+                                    "type": "object",
+                                    "required": [
+                                        "argv"
+                                    ],
+                                    "properties": {
+                                        "toolid": {
+                                            "description": "Tool helper ID",
+                                            "type": "string",
+                                            "example": "5b8c1e4b-2dbd-4801-ba34-5917a7fbd80a",
+                                            "readOnly": true
+                                        },
+                                        "argv": {
+                                            "description": "Argument array for the command to execute",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            },
+                                            "example": [
+                                                "echo",
+                                                "hello"
+                                            ]
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "Error",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "description": "Contains error information in RFC 7807 format",
+                                    "type": "object",
+                                    "properties": {
+                                        "status": {
+                                            "description": "The HTTP status code generated by the origin server for this occurrence of the problem",
+                                            "type": "integer",
+                                            "example": 400
+                                        },
+                                        "detail": {
+                                            "description": "A human-readable explanation specific to this occurrence of the problem",
+                                            "type": "string",
+                                            "example": "Missing required placement parameter"
+                                        },
+                                        "title": {
+                                            "description": "A short, human-readable summary of the problem type",
+                                            "type": "string",
+                                            "example": "Bad Request"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/apps/{apid}/procinfo": {
+            "parameters": [
+                {
+                    "name": "apid",
+                    "in": "path",
+                    "description": "Application ID",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    }
+                }
+            ],
+            "get": {
+                "summary": "Get debugging information for this application",
+                "description": "Get a list of compute node process IDs for this application",
+                "tags": [
+                    "apps"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "description": "Application debugging information object",
+                                    "type": "object",
+                                    "properties": {
+                                        "apid": {
+                                            "description": "Application ID",
+                                            "type": "string",
+                                            "example": "56cdf7af-9cb9-43d7-8c7f-58d24a512e29"
+                                        },
+                                        "pids": {
+                                            "description": "List of process IDs, one per rank, in rankid order",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "integer",
+                                                "example": [
+                                                    123,
+                                                    234,
+                                                    345,
+                                                    456
+                                                ]
+                                            }
+                                        },
+                                        "placement": {
+                                            "description": "List of node indexes, one per rank, in rankid order",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "integer",
+                                                "example": [
+                                                    0,
+                                                    0,
+                                                    1,
+                                                    2
+                                                ]
+                                            }
+                                        },
+                                        "cmdidxs": {
+                                            "description": "List of command indexes, one per rank, in rankid order",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "integer",
+                                                "example": [
+                                                    0,
+                                                    0,
+                                                    0,
+                                                    1
+                                                ]
+                                            }
+                                        },
+                                        "nodes": {
+                                            "description": "List of application node hostnames",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "example": [
+                                                    "nid000001",
+                                                    "nid000002",
+                                                    "nid000003"
+                                                ]
+                                            }
+                                        },
+                                        "executables": {
+                                            "description": "List of command executables",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "example": [
+                                                    "/home/users/seymour/a.out",
+                                                    "/home/users/seymour/b.out"
+                                                ]
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "Error",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "description": "Contains error information in RFC 7807 format",
+                                    "type": "object",
+                                    "properties": {
+                                        "status": {
+                                            "description": "The HTTP status code generated by the origin server for this occurrence of the problem",
+                                            "type": "integer",
+                                            "example": 400
+                                        },
+                                        "detail": {
+                                            "description": "A human-readable explanation specific to this occurrence of the problem",
+                                            "type": "string",
+                                            "example": "Missing required placement parameter"
+                                        },
+                                        "title": {
+                                            "description": "A short, human-readable summary of the problem type",
+                                            "type": "string",
+                                            "example": "Bad Request"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/livez": {
+            "get": {
+                "summary": "Liveness probe",
+                "x-private": true,
+                "description": "Successful return indicates that the process is running.\n",
+                "tags": [
+                    "cli_hidden",
+                    "livez"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "503": {
+                        "description": "Service Unavailable"
+                    }
+                }
+            }
+        },
+        "/readyz": {
+            "get": {
+                "summary": "Readiness probe",
+                "x-private": true,
+                "description": "Successful return indicates that the process is ready to receive\nrequests.\n",
+                "tags": [
+                    "cli_hidden",
+                    "readyz"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "503": {
+                        "description": "Service Unavailable"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "applications": {
+                "description": "A container for an array of application objects",
+                "type": "object",
+                "properties": {
+                    "applications": {
+                        "description": "An array of application objects",
+                        "type": "array",
+                        "items": {
+                            "description": "An application object",
+                            "type": "object",
+                            "required": [
+                                "hosts"
+                            ],
+                            "properties": {
+                                "apid": {
+                                    "description": "Application ID, randomly generated",
+                                    "type": "string",
+                                    "example": "5b8c1e4b-2dbd-4801-ba34-5917a7fbd80a",
+                                    "readOnly": true
+                                },
+                                "nodes": {
+                                    "description": "Array of compute nodes to run the application on\n\nThe array is calculated from the array used to launch the job.\n",
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    },
+                                    "example": [
+                                        "nid000001",
+                                        "nid000002"
+                                    ],
+                                    "readOnly": true
+                                },
+                                "placement": {
+                                    "description": "Index into the nodes array for each rank",
+                                    "type": "array",
+                                    "items": {
+                                        "type": "integer"
+                                    },
+                                    "example": [
+                                        0,
+                                        1
+                                    ],
+                                    "readOnly": true
+                                },
+                                "argv": {
+                                    "description": "Argument array for the command to execute, if not provided in cmds\n",
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    },
+                                    "example": [
+                                        "hostname",
+                                        "--fqdn"
+                                    ]
+                                },
+                                "wdir": {
+                                    "description": "Application working directory, if not provided in cmds",
+                                    "type": "string",
+                                    "example": "/home/users/seymour"
+                                },
+                                "hosts": {
+                                    "description": "Array of hosts to run the application on.\n\nThe array is the unprocessed version of what was provided to the launch\nAPI call. The array can contain literal hostnames and hostname selector patterns.\nA hostname selector pattern is an easy way to specify a range of hostnames using a\nconcise format.\n\nThe pattern format consists of a partial node name followed by a pair of square brackets\nthat contain the selection criteria. The selection criteria is a comma-separated list of\nnumbers or number ranges. Numbers in a number range can be padded with zeros that will\nbe included in the expanded hosts array.\n\nSome examples:\n| Pattern         | Expands to                                  |\n|-----------------|---------------------------------------------|\n| nid00000[1,2,3] | nid000001,nid000002,nid000003               |\n| nid00000[1-3]   | nid000001,nid000002,nid000003               |\n| nid00000[1,4-6] | nid000001,nid000004,nid000005,nid000006     |\n| nid00000[08-11] | nid0000008,nid0000009,nid0000010,nid0000011 |\n",
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    },
+                                    "example": [
+                                        "nid000001",
+                                        "nid000002"
+                                    ]
+                                },
+                                "nranks": {
+                                    "description": "Number of ranks of the application, if not provided in cmds\n",
+                                    "type": "integer",
+                                    "default": 1,
+                                    "example": 64
+                                },
+                                "ppn": {
+                                    "description": "Ranks per node",
+                                    "type": "integer",
+                                    "default": 0,
+                                    "example": 8
+                                },
+                                "depth": {
+                                    "description": "CPUs to allocate per-rank",
+                                    "type": "integer",
+                                    "default": 1,
+                                    "example": 3
+                                },
+                                "environment": {
+                                    "description": "Array of environment variables in VAR=value format",
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    },
+                                    "example": [
+                                        "PATH=/bin",
+                                        "USER=seymour"
+                                    ],
+                                    "writeOnly": true
+                                },
+                                "umask": {
+                                    "description": "File creation mask for application, if not provided in cmds\n",
+                                    "type": "string",
+                                    "default": "0022",
+                                    "example": "0420"
+                                },
+                                "envalias": {
+                                    "description": "Dictionary of application-specific environment aliases",
+                                    "type": "object",
+                                    "example": {
+                                        "APRUN_APP_ID": "PALS_APID"
+                                    }
+                                },
+                                "fanout": {
+                                    "description": "Fanout tree width",
+                                    "type": "integer",
+                                    "example": 128,
+                                    "default": 128
+                                },
+                                "cpubind": {
+                                    "description": "CPU binding for application.\n\nFormatted as [verbose,]\\<keyword\\>\n\nKeywords:\n* none -\nNo CPU binding\n\n* One of <numa, socket, core, thread> -\nBind ranks to every thread on either numa, socket, core, or thread.\n\n* depth -\nBind ranks to number of threads in 'depth' argument (default 1).\n\n* list:<colon-separated-range-lists> -\nBind ranks to colon-separated rangelists of CPUs.\n\n* mask:<comma-separated-masks> -\nBind ranks to comma-separated bitmasks of CPUs.\n",
+                                    "type": "string",
+                                    "default": "thread",
+                                    "pattern": "^(verbose)|(verbose,)?(none|numa|socket|core|thread|depth|list(:[\\d,-]+)+|mask(:(0x)*([\\da-fA-f]+)+)+)+$",
+                                    "example": "verbose,list:0-3:4-7"
+                                },
+                                "membind": {
+                                    "description": "Memory (NUMA node) binding for application.\n\nFormatted as [verbose,]\\<keyword\\>\n\nKeywords:\n* none -\nNo memory binding\n\n* local -\nRestrict each rank to use only its own NUMA node memory\n\n* list:<colon-separated-range-lists> -\nBind ranks to colon-separated rangelists of NUMA nodes.\n\n* mask:<comma-separated-masks> -\nBind ranks to comma-separated bitmasks of NUMA nodes.\n",
+                                    "type": "string",
+                                    "default": "none",
+                                    "pattern": "^(verbose)|(verbose,)?(none|local|list(:[\\d,-]+)+|mask(:(0x)*([\\da-fA-f]+)+)+)+$",
+                                    "example": "verbose,list:0:0-1"
+                                },
+                                "pmi_port": {
+                                    "description": "Compute node port number used for PMI communication.\n\nA free port is found when the application is launched.\n",
+                                    "type": "integer",
+                                    "example": 1979,
+                                    "readOnly": true
+                                },
+                                "username": {
+                                    "description": "Owner of the application.\n\nThis is obtained from Keycloak when validating the token used to create\nthe application.\n",
+                                    "type": "string",
+                                    "example": "jdoe",
+                                    "readOnly": true
+                                },
+                                "uid": {
+                                    "description": "User ID of the application's owner.\n\nThis is obtained from Keycloak when validating the token used to create\nthe application. The application is running as this uid.\n",
+                                    "type": "integer",
+                                    "example": 1001,
+                                    "readOnly": true
+                                },
+                                "gid": {
+                                    "description": "Group ID of the application's owner.\n\nThis is obtained from Keycloak when validating the token used to create\nthe application. The application is running as this gid.\n",
+                                    "type": "integer",
+                                    "example": 1001,
+                                    "readOnly": true
+                                },
+                                "include_tasks": {
+                                    "description": "Array of user-controllable ATOM tasks to execute.",
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    },
+                                    "example": [
+                                        "clear_lustre_caches",
+                                        "compact_memory"
+                                    ],
+                                    "readOnly": true
+                                },
+                                "exclude_tasks": {
+                                    "description": "Array of user-controllable ATOM tasks to not execute.",
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    },
+                                    "example": [
+                                        "clear_lustre_caches",
+                                        "compact_memory"
+                                    ],
+                                    "readOnly": true
+                                },
+                                "exclusive": {
+                                    "description": "Exclusive setting for the application.\n\nIf true, application requires exclusive access to compute nodes.\n",
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "line_buffered": {
+                                    "description": "Whether to use unbuffered vs line buffered stdout and stderr\n",
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "cmds": {
+                                    "description": "Array of MPMD command objects",
+                                    "type": "array",
+                                    "items": {
+                                        "description": "Multiple Program Multiple Data (MPMD) command object",
+                                        "type": "object",
+                                        "required": [
+                                            "argv"
+                                        ],
+                                        "properties": {
+                                            "argv": {
+                                                "description": "Argument array for the command to execute",
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                },
+                                                "example": [
+                                                    "hostname",
+                                                    "--fqdn"
+                                                ]
+                                            },
+                                            "wdir": {
+                                                "description": "Command working directory",
+                                                "type": "string",
+                                                "example": "/home/users/seymour"
+                                            },
+                                            "umask": {
+                                                "description": "File creation mask for command processes",
+                                                "type": "integer",
+                                                "default": 22,
+                                                "example": 420
+                                            },
+                                            "nranks": {
+                                                "description": "Number of ranks for this command\n",
+                                                "type": "integer",
+                                                "default": 1,
+                                                "example": 64
+                                            }
+                                        }
+                                    }
+                                },
+                                "cmdidxs": {
+                                    "description": "Index into cmds array for each rank",
+                                    "type": "array",
+                                    "items": {
+                                        "type": "integer"
+                                    },
+                                    "example": [
+                                        0,
+                                        1
+                                    ],
+                                    "readOnly": true
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "application": {
+                "description": "An application object",
+                "type": "object",
+                "required": [
+                    "hosts"
+                ],
+                "properties": {
+                    "apid": {
+                        "description": "Application ID, randomly generated",
+                        "type": "string",
+                        "example": "5b8c1e4b-2dbd-4801-ba34-5917a7fbd80a",
+                        "readOnly": true
+                    },
+                    "nodes": {
+                        "description": "Array of compute nodes to run the application on\n\nThe array is calculated from the array used to launch the job.\n",
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "example": [
+                            "nid000001",
+                            "nid000002"
+                        ],
+                        "readOnly": true
+                    },
+                    "placement": {
+                        "description": "Index into the nodes array for each rank",
+                        "type": "array",
+                        "items": {
+                            "type": "integer"
+                        },
+                        "example": [
+                            0,
+                            1
+                        ],
+                        "readOnly": true
+                    },
+                    "argv": {
+                        "description": "Argument array for the command to execute, if not provided in cmds\n",
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "example": [
+                            "hostname",
+                            "--fqdn"
+                        ]
+                    },
+                    "wdir": {
+                        "description": "Application working directory, if not provided in cmds",
+                        "type": "string",
+                        "example": "/home/users/seymour"
+                    },
+                    "hosts": {
+                        "description": "Array of hosts to run the application on.\n\nThe array is the unprocessed version of what was provided to the launch\nAPI call. The array can contain literal hostnames and hostname selector patterns.\nA hostname selector pattern is an easy way to specify a range of hostnames using a\nconcise format.\n\nThe pattern format consists of a partial node name followed by a pair of square brackets\nthat contain the selection criteria. The selection criteria is a comma-separated list of\nnumbers or number ranges. Numbers in a number range can be padded with zeros that will\nbe included in the expanded hosts array.\n\nSome examples:\n| Pattern         | Expands to                                  |\n|-----------------|---------------------------------------------|\n| nid00000[1,2,3] | nid000001,nid000002,nid000003               |\n| nid00000[1-3]   | nid000001,nid000002,nid000003               |\n| nid00000[1,4-6] | nid000001,nid000004,nid000005,nid000006     |\n| nid00000[08-11] | nid0000008,nid0000009,nid0000010,nid0000011 |\n",
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "example": [
+                            "nid000001",
+                            "nid000002"
+                        ]
+                    },
+                    "nranks": {
+                        "description": "Number of ranks of the application, if not provided in cmds\n",
+                        "type": "integer",
+                        "default": 1,
+                        "example": 64
+                    },
+                    "ppn": {
+                        "description": "Ranks per node",
+                        "type": "integer",
+                        "default": 0,
+                        "example": 8
+                    },
+                    "depth": {
+                        "description": "CPUs to allocate per-rank",
+                        "type": "integer",
+                        "default": 1,
+                        "example": 3
+                    },
+                    "environment": {
+                        "description": "Array of environment variables in VAR=value format",
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "example": [
+                            "PATH=/bin",
+                            "USER=seymour"
+                        ],
+                        "writeOnly": true
+                    },
+                    "umask": {
+                        "description": "File creation mask for application, if not provided in cmds\n",
+                        "type": "string",
+                        "default": "0022",
+                        "example": "0420"
+                    },
+                    "envalias": {
+                        "description": "Dictionary of application-specific environment aliases",
+                        "type": "object",
+                        "example": {
+                            "APRUN_APP_ID": "PALS_APID"
+                        }
+                    },
+                    "fanout": {
+                        "description": "Fanout tree width",
+                        "type": "integer",
+                        "example": 128,
+                        "default": 128
+                    },
+                    "cpubind": {
+                        "description": "CPU binding for application.\n\nFormatted as [verbose,]\\<keyword\\>\n\nKeywords:\n* none -\nNo CPU binding\n\n* One of <numa, socket, core, thread> -\nBind ranks to every thread on either numa, socket, core, or thread.\n\n* depth -\nBind ranks to number of threads in 'depth' argument (default 1).\n\n* list:<colon-separated-range-lists> -\nBind ranks to colon-separated rangelists of CPUs.\n\n* mask:<comma-separated-masks> -\nBind ranks to comma-separated bitmasks of CPUs.\n",
+                        "type": "string",
+                        "default": "thread",
+                        "pattern": "^(verbose)|(verbose,)?(none|numa|socket|core|thread|depth|list(:[\\d,-]+)+|mask(:(0x)*([\\da-fA-f]+)+)+)+$",
+                        "example": "verbose,list:0-3:4-7"
+                    },
+                    "membind": {
+                        "description": "Memory (NUMA node) binding for application.\n\nFormatted as [verbose,]\\<keyword\\>\n\nKeywords:\n* none -\nNo memory binding\n\n* local -\nRestrict each rank to use only its own NUMA node memory\n\n* list:<colon-separated-range-lists> -\nBind ranks to colon-separated rangelists of NUMA nodes.\n\n* mask:<comma-separated-masks> -\nBind ranks to comma-separated bitmasks of NUMA nodes.\n",
+                        "type": "string",
+                        "default": "none",
+                        "pattern": "^(verbose)|(verbose,)?(none|local|list(:[\\d,-]+)+|mask(:(0x)*([\\da-fA-f]+)+)+)+$",
+                        "example": "verbose,list:0:0-1"
+                    },
+                    "pmi_port": {
+                        "description": "Compute node port number used for PMI communication.\n\nA free port is found when the application is launched.\n",
+                        "type": "integer",
+                        "example": 1979,
+                        "readOnly": true
+                    },
+                    "username": {
+                        "description": "Owner of the application.\n\nThis is obtained from Keycloak when validating the token used to create\nthe application.\n",
+                        "type": "string",
+                        "example": "jdoe",
+                        "readOnly": true
+                    },
+                    "uid": {
+                        "description": "User ID of the application's owner.\n\nThis is obtained from Keycloak when validating the token used to create\nthe application. The application is running as this uid.\n",
+                        "type": "integer",
+                        "example": 1001,
+                        "readOnly": true
+                    },
+                    "gid": {
+                        "description": "Group ID of the application's owner.\n\nThis is obtained from Keycloak when validating the token used to create\nthe application. The application is running as this gid.\n",
+                        "type": "integer",
+                        "example": 1001,
+                        "readOnly": true
+                    },
+                    "include_tasks": {
+                        "description": "Array of user-controllable ATOM tasks to execute.",
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "example": [
+                            "clear_lustre_caches",
+                            "compact_memory"
+                        ],
+                        "readOnly": true
+                    },
+                    "exclude_tasks": {
+                        "description": "Array of user-controllable ATOM tasks to not execute.",
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "example": [
+                            "clear_lustre_caches",
+                            "compact_memory"
+                        ],
+                        "readOnly": true
+                    },
+                    "exclusive": {
+                        "description": "Exclusive setting for the application.\n\nIf true, application requires exclusive access to compute nodes.\n",
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "line_buffered": {
+                        "description": "Whether to use unbuffered vs line buffered stdout and stderr\n",
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "cmds": {
+                        "description": "Array of MPMD command objects",
+                        "type": "array",
+                        "items": {
+                            "description": "Multiple Program Multiple Data (MPMD) command object",
+                            "type": "object",
+                            "required": [
+                                "argv"
+                            ],
+                            "properties": {
+                                "argv": {
+                                    "description": "Argument array for the command to execute",
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    },
+                                    "example": [
+                                        "hostname",
+                                        "--fqdn"
+                                    ]
+                                },
+                                "wdir": {
+                                    "description": "Command working directory",
+                                    "type": "string",
+                                    "example": "/home/users/seymour"
+                                },
+                                "umask": {
+                                    "description": "File creation mask for command processes",
+                                    "type": "integer",
+                                    "default": 22,
+                                    "example": 420
+                                },
+                                "nranks": {
+                                    "description": "Number of ranks for this command\n",
+                                    "type": "integer",
+                                    "default": 1,
+                                    "example": 64
+                                }
+                            }
+                        }
+                    },
+                    "cmdidxs": {
+                        "description": "Index into cmds array for each rank",
+                        "type": "array",
+                        "items": {
+                            "type": "integer"
+                        },
+                        "example": [
+                            0,
+                            1
+                        ],
+                        "readOnly": true
+                    }
+                }
+            },
+            "cmd": {
+                "description": "Multiple Program Multiple Data (MPMD) command object",
+                "type": "object",
+                "required": [
+                    "argv"
+                ],
+                "properties": {
+                    "argv": {
+                        "description": "Argument array for the command to execute",
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "example": [
+                            "hostname",
+                            "--fqdn"
+                        ]
+                    },
+                    "wdir": {
+                        "description": "Command working directory",
+                        "type": "string",
+                        "example": "/home/users/seymour"
+                    },
+                    "umask": {
+                        "description": "File creation mask for command processes",
+                        "type": "integer",
+                        "default": 22,
+                        "example": 420
+                    },
+                    "nranks": {
+                        "description": "Number of ranks for this command\n",
+                        "type": "integer",
+                        "default": 1,
+                        "example": 64
+                    }
+                }
+            },
+            "files": {
+                "description": "A container for an array of file metadata",
+                "type": "object",
+                "properties": {
+                    "files": {
+                        "description": "An array of file metadata objects",
+                        "type": "array",
+                        "items": {
+                            "description": "Metadata for a file transferred to compute nodes",
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "description": "File name for this file",
+                                    "type": "string",
+                                    "example": "a.out"
+                                },
+                                "mode": {
+                                    "description": "File mode for this file",
+                                    "type": "string",
+                                    "example": "0644"
+                                },
+                                "path": {
+                                    "description": "Full path to the file on compute nodes",
+                                    "type": "string",
+                                    "example": "/var/run/palsd/2274c389-b2e9-43fd-afbe-c563587c35d8/a.out"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "file": {
+                "description": "Metadata for a file transferred to compute nodes",
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "description": "File name for this file",
+                        "type": "string",
+                        "example": "a.out"
+                    },
+                    "mode": {
+                        "description": "File mode for this file",
+                        "type": "string",
+                        "example": "0644"
+                    },
+                    "path": {
+                        "description": "Full path to the file on compute nodes",
+                        "type": "string",
+                        "example": "/var/run/palsd/2274c389-b2e9-43fd-afbe-c563587c35d8/a.out"
+                    }
+                }
+            },
+            "signal": {
+                "description": "Signal to send to an application",
+                "type": "object",
+                "properties": {
+                    "signum": {
+                        "description": "A signal number",
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 31,
+                        "example": 15,
+                        "default": 15
+                    }
+                }
+            },
+            "tool-helpers": {
+                "description": "A container for an array of tool helper objects",
+                "type": "object",
+                "properties": {
+                    "tools": {
+                        "description": "An array of tool helper objects",
+                        "type": "array",
+                        "items": {
+                            "description": "A tool helper object",
+                            "type": "object",
+                            "required": [
+                                "argv"
+                            ],
+                            "properties": {
+                                "toolid": {
+                                    "description": "Tool helper ID",
+                                    "type": "string",
+                                    "example": "5b8c1e4b-2dbd-4801-ba34-5917a7fbd80a",
+                                    "readOnly": true
+                                },
+                                "argv": {
+                                    "description": "Argument array for the command to execute",
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    },
+                                    "example": [
+                                        "echo",
+                                        "hello"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "tool-helper": {
+                "description": "A tool helper object",
+                "type": "object",
+                "required": [
+                    "argv"
+                ],
+                "properties": {
+                    "toolid": {
+                        "description": "Tool helper ID",
+                        "type": "string",
+                        "example": "5b8c1e4b-2dbd-4801-ba34-5917a7fbd80a",
+                        "readOnly": true
+                    },
+                    "argv": {
+                        "description": "Argument array for the command to execute",
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "example": [
+                            "echo",
+                            "hello"
+                        ]
+                    }
+                }
+            },
+            "procinfo": {
+                "description": "Application debugging information object",
+                "type": "object",
+                "properties": {
+                    "apid": {
+                        "description": "Application ID",
+                        "type": "string",
+                        "example": "56cdf7af-9cb9-43d7-8c7f-58d24a512e29"
+                    },
+                    "pids": {
+                        "description": "List of process IDs, one per rank, in rankid order",
+                        "type": "array",
+                        "items": {
+                            "type": "integer",
+                            "example": [
+                                123,
+                                234,
+                                345,
+                                456
+                            ]
+                        }
+                    },
+                    "placement": {
+                        "description": "List of node indexes, one per rank, in rankid order",
+                        "type": "array",
+                        "items": {
+                            "type": "integer",
+                            "example": [
+                                0,
+                                0,
+                                1,
+                                2
+                            ]
+                        }
+                    },
+                    "cmdidxs": {
+                        "description": "List of command indexes, one per rank, in rankid order",
+                        "type": "array",
+                        "items": {
+                            "type": "integer",
+                            "example": [
+                                0,
+                                0,
+                                0,
+                                1
+                            ]
+                        }
+                    },
+                    "nodes": {
+                        "description": "List of application node hostnames",
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "example": [
+                                "nid000001",
+                                "nid000002",
+                                "nid000003"
+                            ]
+                        }
+                    },
+                    "executables": {
+                        "description": "List of command executables",
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "example": [
+                                "/home/users/seymour/a.out",
+                                "/home/users/seymour/b.out"
+                            ]
+                        }
+                    }
+                }
+            },
+            "error": {
+                "description": "Contains error information in RFC 7807 format",
+                "type": "object",
+                "properties": {
+                    "status": {
+                        "description": "The HTTP status code generated by the origin server for this occurrence of the problem",
+                        "type": "integer",
+                        "example": 400
+                    },
+                    "detail": {
+                        "description": "A human-readable explanation specific to this occurrence of the problem",
+                        "type": "string",
+                        "example": "Missing required placement parameter"
+                    },
+                    "title": {
+                        "description": "A short, human-readable summary of the problem type",
+                        "type": "string",
+                        "example": "Bad Request"
+                    }
+                }
+            }
+        }
+    }
+}
