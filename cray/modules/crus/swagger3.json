@@ -1,0 +1,603 @@
+{
+    "components": {
+        "parameters": {},
+        "schemas": {
+            "upgrade_session": {
+                "properties": {
+                    "messages": {
+                        "items": {
+                            "description": "In conjunction with 'state' there may be messages that describe either an object's progress toward 'READY' or 'DELETED' states or reasons for reaching the 'PENDING' state. The 'messages' field provides these in a list of strings.",
+                            "type": "string"
+                        },
+                        "readOnly": true,
+                        "type": "array"
+                    },
+                    "upgrade_id": {
+                        "description": "The (UUID) id of the upgrade session",
+                        "readOnly": true,
+                        "type": "string"
+                    },
+                    "starting_label": {
+                        "description": "The node label on the set of nodes to be upgraded.",
+                        "example": "slurm-nodes",
+                        "type": "string"
+                    },
+                    "state": {
+                        "description": "The state of an object vis-a-vis the configuration. Values are: 'READY', 'UPDATING', 'DELETING', 'DELETED', 'PENDING'. The 'READY' state means the configuration has been absorbed and propagated and the object is reconciled as configured. The 'UPDATING' state means the configuration has changed and the changes are still being absorbed and propagated. The 'DELETING' state means deletion of the object has been requested and is being processed but is not complete yet. The 'DELETED' state means all resources associated with the object configuration have been cleaned up and the object no longer exists. The configuration can safely be removed. The 'PENDING' state means some condition that requires manual intervention has prevented the object from reaching the 'READY' state from the 'UPDATING' or 'CREATED' state. A newly created object starts in the 'UPDATING' state.",
+                        "readOnly": true,
+                        "type": "string"
+                    },
+                    "kind": {
+                        "description": "The kind of object that the data here represent. Should always contain \"ComputeUpgradeSession\". Protects against stray data types.",
+                        "example": "ComputeUpgradeSession",
+                        "readOnly": true,
+                        "type": "string"
+                    },
+                    "completed": {
+                        "description": "A boolean indicating whether processing on this Upgrade Session has completed or not. Internally set but externally visible for convenience.",
+                        "example": false,
+                        "readOnly": true,
+                        "type": "boolean"
+                    },
+                    "upgrade_step_size": {
+                        "description": "A positive integer specifying the number of nodes to upgrade at a time.",
+                        "example": 50,
+                        "format": "int32",
+                        "type": "integer"
+                    },
+                    "upgrade_template_id": {
+                        "description": "The Boot Orchestration Service (BOS) Boot Session Template ID (UUID) used to identify the Boot Session Template used to reboot and reconfigure nodes during this rolling upgrade. The single node group label configured in this Boot Session Template must exactly match the 'upgrading_label' in this Upgrade Session.",
+                        "example": "a4cfe939-6057-4137-94b6-3de46157cb53",
+                        "type": "string"
+                    },
+                    "workload_manager_type": {
+                        "description": "The name of the workload manager controlling the nodes with the starting label. Currently supported value: 'slurm'.",
+                        "example": "slurm",
+                        "type": "string"
+                    },
+                    "failed_label": {
+                        "description": "The node label to apply to nodes that fail to upgrade.",
+                        "example": "failed-slurm-nodes",
+                        "type": "string"
+                    },
+                    "api_version": {
+                        "description": "The API version corresponding to this upgrade session's data. Will always be equal to the API version under which the data were stored in ETCD. Protects against incompatible upgrade session.",
+                        "example": "0.0.1",
+                        "readOnly": true,
+                        "type": "string"
+                    },
+                    "upgrading_label": {
+                        "description": "The node label used to identify the empty node group that will be used to boot and reconfigure each step of the rolling upgrade. This must exactly match the node label specified in the Boot Session Template configured for this upgrade.",
+                        "example": "upgrading-slurm-nodes",
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "failed_label",
+                    "starting_label",
+                    "upgrade_step_size",
+                    "upgrade_template_id",
+                    "upgrading_label",
+                    "workload_manager_type"
+                ],
+                "type": "object"
+            }
+        }
+    },
+    "info": {
+        "description": "Administrative Front End for Compute Rolling Upgrades",
+        "title": "Compute Rolling Upgrade Service",
+        "version": "0.0.3"
+    },
+    "openapi": "3.0.2",
+    "paths": {
+        "/session": {
+            "get": {
+                "description": "Get the list of Upgrade Sessions",
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "items": {
+                                        "properties": {
+                                            "messages": {
+                                                "items": {
+                                                    "description": "In conjunction with 'state' there may be messages that describe either an object's progress toward 'READY' or 'DELETED' states or reasons for reaching the 'PENDING' state. The 'messages' field provides these in a list of strings.",
+                                                    "type": "string"
+                                                },
+                                                "readOnly": true,
+                                                "type": "array"
+                                            },
+                                            "upgrade_id": {
+                                                "description": "The (UUID) id of the upgrade session",
+                                                "readOnly": true,
+                                                "type": "string"
+                                            },
+                                            "starting_label": {
+                                                "description": "The node label on the set of nodes to be upgraded.",
+                                                "example": "slurm-nodes",
+                                                "type": "string"
+                                            },
+                                            "state": {
+                                                "description": "The state of an object vis-a-vis the configuration. Values are: 'READY', 'UPDATING', 'DELETING', 'DELETED', 'PENDING'. The 'READY' state means the configuration has been absorbed and propagated and the object is reconciled as configured. The 'UPDATING' state means the configuration has changed and the changes are still being absorbed and propagated. The 'DELETING' state means deletion of the object has been requested and is being processed but is not complete yet. The 'DELETED' state means all resources associated with the object configuration have been cleaned up and the object no longer exists. The configuration can safely be removed. The 'PENDING' state means some condition that requires manual intervention has prevented the object from reaching the 'READY' state from the 'UPDATING' or 'CREATED' state. A newly created object starts in the 'UPDATING' state.",
+                                                "readOnly": true,
+                                                "type": "string"
+                                            },
+                                            "kind": {
+                                                "description": "The kind of object that the data here represent. Should always contain \"ComputeUpgradeSession\". Protects against stray data types.",
+                                                "example": "ComputeUpgradeSession",
+                                                "readOnly": true,
+                                                "type": "string"
+                                            },
+                                            "completed": {
+                                                "description": "A boolean indicating whether processing on this Upgrade Session has completed or not. Internally set but externally visible for convenience.",
+                                                "example": false,
+                                                "readOnly": true,
+                                                "type": "boolean"
+                                            },
+                                            "upgrade_step_size": {
+                                                "description": "A positive integer specifying the number of nodes to upgrade at a time.",
+                                                "example": 50,
+                                                "format": "int32",
+                                                "type": "integer"
+                                            },
+                                            "upgrade_template_id": {
+                                                "description": "The Boot Orchestration Service (BOS) Boot Session Template ID (UUID) used to identify the Boot Session Template used to reboot and reconfigure nodes during this rolling upgrade. The single node group label configured in this Boot Session Template must exactly match the 'upgrading_label' in this Upgrade Session.",
+                                                "example": "a4cfe939-6057-4137-94b6-3de46157cb53",
+                                                "type": "string"
+                                            },
+                                            "workload_manager_type": {
+                                                "description": "The name of the workload manager controlling the nodes with the starting label. Currently supported value: 'slurm'.",
+                                                "example": "slurm",
+                                                "type": "string"
+                                            },
+                                            "failed_label": {
+                                                "description": "The node label to apply to nodes that fail to upgrade.",
+                                                "example": "failed-slurm-nodes",
+                                                "type": "string"
+                                            },
+                                            "api_version": {
+                                                "description": "The API version corresponding to this upgrade session's data. Will always be equal to the API version under which the data were stored in ETCD. Protects against incompatible upgrade session.",
+                                                "example": "0.0.1",
+                                                "readOnly": true,
+                                                "type": "string"
+                                            },
+                                            "upgrading_label": {
+                                                "description": "The node label used to identify the empty node group that will be used to boot and reconfigure each step of the rolling upgrade. This must exactly match the node label specified in the Boot Session Template configured for this upgrade.",
+                                                "example": "upgrading-slurm-nodes",
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": [
+                                            "failed_label",
+                                            "starting_label",
+                                            "upgrade_step_size",
+                                            "upgrade_template_id",
+                                            "upgrading_label",
+                                            "workload_manager_type"
+                                        ],
+                                        "type": "object"
+                                    },
+                                    "type": "array"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Get the list of Upgrade Sessions"
+            },
+            "post": {
+                "description": "Create a new Upgrade Session",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "messages": {
+                                        "items": {
+                                            "description": "In conjunction with 'state' there may be messages that describe either an object's progress toward 'READY' or 'DELETED' states or reasons for reaching the 'PENDING' state. The 'messages' field provides these in a list of strings.",
+                                            "type": "string"
+                                        },
+                                        "readOnly": true,
+                                        "type": "array"
+                                    },
+                                    "upgrade_id": {
+                                        "description": "The (UUID) id of the upgrade session",
+                                        "readOnly": true,
+                                        "type": "string"
+                                    },
+                                    "starting_label": {
+                                        "description": "The node label on the set of nodes to be upgraded.",
+                                        "example": "slurm-nodes",
+                                        "type": "string"
+                                    },
+                                    "state": {
+                                        "description": "The state of an object vis-a-vis the configuration. Values are: 'READY', 'UPDATING', 'DELETING', 'DELETED', 'PENDING'. The 'READY' state means the configuration has been absorbed and propagated and the object is reconciled as configured. The 'UPDATING' state means the configuration has changed and the changes are still being absorbed and propagated. The 'DELETING' state means deletion of the object has been requested and is being processed but is not complete yet. The 'DELETED' state means all resources associated with the object configuration have been cleaned up and the object no longer exists. The configuration can safely be removed. The 'PENDING' state means some condition that requires manual intervention has prevented the object from reaching the 'READY' state from the 'UPDATING' or 'CREATED' state. A newly created object starts in the 'UPDATING' state.",
+                                        "readOnly": true,
+                                        "type": "string"
+                                    },
+                                    "kind": {
+                                        "description": "The kind of object that the data here represent. Should always contain \"ComputeUpgradeSession\". Protects against stray data types.",
+                                        "example": "ComputeUpgradeSession",
+                                        "readOnly": true,
+                                        "type": "string"
+                                    },
+                                    "completed": {
+                                        "description": "A boolean indicating whether processing on this Upgrade Session has completed or not. Internally set but externally visible for convenience.",
+                                        "example": false,
+                                        "readOnly": true,
+                                        "type": "boolean"
+                                    },
+                                    "upgrade_step_size": {
+                                        "description": "A positive integer specifying the number of nodes to upgrade at a time.",
+                                        "example": 50,
+                                        "format": "int32",
+                                        "type": "integer"
+                                    },
+                                    "upgrade_template_id": {
+                                        "description": "The Boot Orchestration Service (BOS) Boot Session Template ID (UUID) used to identify the Boot Session Template used to reboot and reconfigure nodes during this rolling upgrade. The single node group label configured in this Boot Session Template must exactly match the 'upgrading_label' in this Upgrade Session.",
+                                        "example": "a4cfe939-6057-4137-94b6-3de46157cb53",
+                                        "type": "string"
+                                    },
+                                    "workload_manager_type": {
+                                        "description": "The name of the workload manager controlling the nodes with the starting label. Currently supported value: 'slurm'.",
+                                        "example": "slurm",
+                                        "type": "string"
+                                    },
+                                    "failed_label": {
+                                        "description": "The node label to apply to nodes that fail to upgrade.",
+                                        "example": "failed-slurm-nodes",
+                                        "type": "string"
+                                    },
+                                    "api_version": {
+                                        "description": "The API version corresponding to this upgrade session's data. Will always be equal to the API version under which the data were stored in ETCD. Protects against incompatible upgrade session.",
+                                        "example": "0.0.1",
+                                        "readOnly": true,
+                                        "type": "string"
+                                    },
+                                    "upgrading_label": {
+                                        "description": "The node label used to identify the empty node group that will be used to boot and reconfigure each step of the rolling upgrade. This must exactly match the node label specified in the Boot Session Template configured for this upgrade.",
+                                        "example": "upgrading-slurm-nodes",
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "failed_label",
+                                    "starting_label",
+                                    "upgrade_step_size",
+                                    "upgrade_template_id",
+                                    "upgrading_label",
+                                    "workload_manager_type"
+                                ],
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "messages": {
+                                            "items": {
+                                                "description": "In conjunction with 'state' there may be messages that describe either an object's progress toward 'READY' or 'DELETED' states or reasons for reaching the 'PENDING' state. The 'messages' field provides these in a list of strings.",
+                                                "type": "string"
+                                            },
+                                            "readOnly": true,
+                                            "type": "array"
+                                        },
+                                        "upgrade_id": {
+                                            "description": "The (UUID) id of the upgrade session",
+                                            "readOnly": true,
+                                            "type": "string"
+                                        },
+                                        "starting_label": {
+                                            "description": "The node label on the set of nodes to be upgraded.",
+                                            "example": "slurm-nodes",
+                                            "type": "string"
+                                        },
+                                        "state": {
+                                            "description": "The state of an object vis-a-vis the configuration. Values are: 'READY', 'UPDATING', 'DELETING', 'DELETED', 'PENDING'. The 'READY' state means the configuration has been absorbed and propagated and the object is reconciled as configured. The 'UPDATING' state means the configuration has changed and the changes are still being absorbed and propagated. The 'DELETING' state means deletion of the object has been requested and is being processed but is not complete yet. The 'DELETED' state means all resources associated with the object configuration have been cleaned up and the object no longer exists. The configuration can safely be removed. The 'PENDING' state means some condition that requires manual intervention has prevented the object from reaching the 'READY' state from the 'UPDATING' or 'CREATED' state. A newly created object starts in the 'UPDATING' state.",
+                                            "readOnly": true,
+                                            "type": "string"
+                                        },
+                                        "kind": {
+                                            "description": "The kind of object that the data here represent. Should always contain \"ComputeUpgradeSession\". Protects against stray data types.",
+                                            "example": "ComputeUpgradeSession",
+                                            "readOnly": true,
+                                            "type": "string"
+                                        },
+                                        "completed": {
+                                            "description": "A boolean indicating whether processing on this Upgrade Session has completed or not. Internally set but externally visible for convenience.",
+                                            "example": false,
+                                            "readOnly": true,
+                                            "type": "boolean"
+                                        },
+                                        "upgrade_step_size": {
+                                            "description": "A positive integer specifying the number of nodes to upgrade at a time.",
+                                            "example": 50,
+                                            "format": "int32",
+                                            "type": "integer"
+                                        },
+                                        "upgrade_template_id": {
+                                            "description": "The Boot Orchestration Service (BOS) Boot Session Template ID (UUID) used to identify the Boot Session Template used to reboot and reconfigure nodes during this rolling upgrade. The single node group label configured in this Boot Session Template must exactly match the 'upgrading_label' in this Upgrade Session.",
+                                            "example": "a4cfe939-6057-4137-94b6-3de46157cb53",
+                                            "type": "string"
+                                        },
+                                        "workload_manager_type": {
+                                            "description": "The name of the workload manager controlling the nodes with the starting label. Currently supported value: 'slurm'.",
+                                            "example": "slurm",
+                                            "type": "string"
+                                        },
+                                        "failed_label": {
+                                            "description": "The node label to apply to nodes that fail to upgrade.",
+                                            "example": "failed-slurm-nodes",
+                                            "type": "string"
+                                        },
+                                        "api_version": {
+                                            "description": "The API version corresponding to this upgrade session's data. Will always be equal to the API version under which the data were stored in ETCD. Protects against incompatible upgrade session.",
+                                            "example": "0.0.1",
+                                            "readOnly": true,
+                                            "type": "string"
+                                        },
+                                        "upgrading_label": {
+                                            "description": "The node label used to identify the empty node group that will be used to boot and reconfigure each step of the rolling upgrade. This must exactly match the node label specified in the Boot Session Template configured for this upgrade.",
+                                            "example": "upgrading-slurm-nodes",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "failed_label",
+                                        "starting_label",
+                                        "upgrade_step_size",
+                                        "upgrade_template_id",
+                                        "upgrading_label",
+                                        "workload_manager_type"
+                                    ],
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "description": "Created"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity"
+                    }
+                },
+                "summary": "Create a new Upgrade Session"
+            }
+        },
+        "/session/{upgrade_id}": {
+            "get": {
+                "description": "Get a specific Upgrade Session by its ID",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "upgrade_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "messages": {
+                                            "items": {
+                                                "description": "In conjunction with 'state' there may be messages that describe either an object's progress toward 'READY' or 'DELETED' states or reasons for reaching the 'PENDING' state. The 'messages' field provides these in a list of strings.",
+                                                "type": "string"
+                                            },
+                                            "readOnly": true,
+                                            "type": "array"
+                                        },
+                                        "upgrade_id": {
+                                            "description": "The (UUID) id of the upgrade session",
+                                            "readOnly": true,
+                                            "type": "string"
+                                        },
+                                        "starting_label": {
+                                            "description": "The node label on the set of nodes to be upgraded.",
+                                            "example": "slurm-nodes",
+                                            "type": "string"
+                                        },
+                                        "state": {
+                                            "description": "The state of an object vis-a-vis the configuration. Values are: 'READY', 'UPDATING', 'DELETING', 'DELETED', 'PENDING'. The 'READY' state means the configuration has been absorbed and propagated and the object is reconciled as configured. The 'UPDATING' state means the configuration has changed and the changes are still being absorbed and propagated. The 'DELETING' state means deletion of the object has been requested and is being processed but is not complete yet. The 'DELETED' state means all resources associated with the object configuration have been cleaned up and the object no longer exists. The configuration can safely be removed. The 'PENDING' state means some condition that requires manual intervention has prevented the object from reaching the 'READY' state from the 'UPDATING' or 'CREATED' state. A newly created object starts in the 'UPDATING' state.",
+                                            "readOnly": true,
+                                            "type": "string"
+                                        },
+                                        "kind": {
+                                            "description": "The kind of object that the data here represent. Should always contain \"ComputeUpgradeSession\". Protects against stray data types.",
+                                            "example": "ComputeUpgradeSession",
+                                            "readOnly": true,
+                                            "type": "string"
+                                        },
+                                        "completed": {
+                                            "description": "A boolean indicating whether processing on this Upgrade Session has completed or not. Internally set but externally visible for convenience.",
+                                            "example": false,
+                                            "readOnly": true,
+                                            "type": "boolean"
+                                        },
+                                        "upgrade_step_size": {
+                                            "description": "A positive integer specifying the number of nodes to upgrade at a time.",
+                                            "example": 50,
+                                            "format": "int32",
+                                            "type": "integer"
+                                        },
+                                        "upgrade_template_id": {
+                                            "description": "The Boot Orchestration Service (BOS) Boot Session Template ID (UUID) used to identify the Boot Session Template used to reboot and reconfigure nodes during this rolling upgrade. The single node group label configured in this Boot Session Template must exactly match the 'upgrading_label' in this Upgrade Session.",
+                                            "example": "a4cfe939-6057-4137-94b6-3de46157cb53",
+                                            "type": "string"
+                                        },
+                                        "workload_manager_type": {
+                                            "description": "The name of the workload manager controlling the nodes with the starting label. Currently supported value: 'slurm'.",
+                                            "example": "slurm",
+                                            "type": "string"
+                                        },
+                                        "failed_label": {
+                                            "description": "The node label to apply to nodes that fail to upgrade.",
+                                            "example": "failed-slurm-nodes",
+                                            "type": "string"
+                                        },
+                                        "api_version": {
+                                            "description": "The API version corresponding to this upgrade session's data. Will always be equal to the API version under which the data were stored in ETCD. Protects against incompatible upgrade session.",
+                                            "example": "0.0.1",
+                                            "readOnly": true,
+                                            "type": "string"
+                                        },
+                                        "upgrading_label": {
+                                            "description": "The node label used to identify the empty node group that will be used to boot and reconfigure each step of the rolling upgrade. This must exactly match the node label specified in the Boot Session Template configured for this upgrade.",
+                                            "example": "upgrading-slurm-nodes",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "failed_label",
+                                        "starting_label",
+                                        "upgrade_step_size",
+                                        "upgrade_template_id",
+                                        "upgrading_label",
+                                        "workload_manager_type"
+                                    ],
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                },
+                "summary": "Get a specific Upgrade Session by its ID"
+            },
+            "delete": {
+                "description": "Delete a specific Upgrade Session by its ID",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "upgrade_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "messages": {
+                                            "items": {
+                                                "description": "In conjunction with 'state' there may be messages that describe either an object's progress toward 'READY' or 'DELETED' states or reasons for reaching the 'PENDING' state. The 'messages' field provides these in a list of strings.",
+                                                "type": "string"
+                                            },
+                                            "readOnly": true,
+                                            "type": "array"
+                                        },
+                                        "upgrade_id": {
+                                            "description": "The (UUID) id of the upgrade session",
+                                            "readOnly": true,
+                                            "type": "string"
+                                        },
+                                        "starting_label": {
+                                            "description": "The node label on the set of nodes to be upgraded.",
+                                            "example": "slurm-nodes",
+                                            "type": "string"
+                                        },
+                                        "state": {
+                                            "description": "The state of an object vis-a-vis the configuration. Values are: 'READY', 'UPDATING', 'DELETING', 'DELETED', 'PENDING'. The 'READY' state means the configuration has been absorbed and propagated and the object is reconciled as configured. The 'UPDATING' state means the configuration has changed and the changes are still being absorbed and propagated. The 'DELETING' state means deletion of the object has been requested and is being processed but is not complete yet. The 'DELETED' state means all resources associated with the object configuration have been cleaned up and the object no longer exists. The configuration can safely be removed. The 'PENDING' state means some condition that requires manual intervention has prevented the object from reaching the 'READY' state from the 'UPDATING' or 'CREATED' state. A newly created object starts in the 'UPDATING' state.",
+                                            "readOnly": true,
+                                            "type": "string"
+                                        },
+                                        "kind": {
+                                            "description": "The kind of object that the data here represent. Should always contain \"ComputeUpgradeSession\". Protects against stray data types.",
+                                            "example": "ComputeUpgradeSession",
+                                            "readOnly": true,
+                                            "type": "string"
+                                        },
+                                        "completed": {
+                                            "description": "A boolean indicating whether processing on this Upgrade Session has completed or not. Internally set but externally visible for convenience.",
+                                            "example": false,
+                                            "readOnly": true,
+                                            "type": "boolean"
+                                        },
+                                        "upgrade_step_size": {
+                                            "description": "A positive integer specifying the number of nodes to upgrade at a time.",
+                                            "example": 50,
+                                            "format": "int32",
+                                            "type": "integer"
+                                        },
+                                        "upgrade_template_id": {
+                                            "description": "The Boot Orchestration Service (BOS) Boot Session Template ID (UUID) used to identify the Boot Session Template used to reboot and reconfigure nodes during this rolling upgrade. The single node group label configured in this Boot Session Template must exactly match the 'upgrading_label' in this Upgrade Session.",
+                                            "example": "a4cfe939-6057-4137-94b6-3de46157cb53",
+                                            "type": "string"
+                                        },
+                                        "workload_manager_type": {
+                                            "description": "The name of the workload manager controlling the nodes with the starting label. Currently supported value: 'slurm'.",
+                                            "example": "slurm",
+                                            "type": "string"
+                                        },
+                                        "failed_label": {
+                                            "description": "The node label to apply to nodes that fail to upgrade.",
+                                            "example": "failed-slurm-nodes",
+                                            "type": "string"
+                                        },
+                                        "api_version": {
+                                            "description": "The API version corresponding to this upgrade session's data. Will always be equal to the API version under which the data were stored in ETCD. Protects against incompatible upgrade session.",
+                                            "example": "0.0.1",
+                                            "readOnly": true,
+                                            "type": "string"
+                                        },
+                                        "upgrading_label": {
+                                            "description": "The node label used to identify the empty node group that will be used to boot and reconfigure each step of the rolling upgrade. This must exactly match the node label specified in the Boot Session Template configured for this upgrade.",
+                                            "example": "upgrading-slurm-nodes",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "failed_label",
+                                        "starting_label",
+                                        "upgrade_step_size",
+                                        "upgrade_template_id",
+                                        "upgrading_label",
+                                        "workload_manager_type"
+                                    ],
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                },
+                "summary": "Delete a specific Upgrade Session by its ID"
+            }
+        }
+    },
+    "servers": [
+        {
+            "description": "Cluster External API access",
+            "url": "/apis/crus"
+        },
+        {
+            "description": "Cluster Internal API access",
+            "url": "/"
+        }
+    ],
+    "tags": []
+}

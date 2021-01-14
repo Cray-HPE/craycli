@@ -1,0 +1,990 @@
+---
+openapi: 3.0.0
+info:
+  version: "0.1"
+  title: "System Layout Service"
+  description: |
+    System Layout Service (SLS) holds information on the complete, designed system.
+    SLS gets this information from an input file on the system.
+    Besides information like what hardware should be present in a system, SLS
+    also stores information about what network connections exist and what power
+    connections exist. SLS details the physical locations of network hardware,
+    compute nodes and cabinets. Further, it stores information about the network,
+    such as which port on which switch should be connected to each compute node.
+    The API allows updating this information as well.
+    
+    
+    Note that SLS is not responsible for verifying that the system is set up
+    correctly. It only lets the Shasta system know what the system should be
+    configured with. SLS does not store the details of the actual
+    hardware like hardware identifiers. Instead it stores a generalized abstraction
+    of the system that other services may use. SLS thus does not need to change as
+    hardware within the system is replaced. Interaction with SLS is required if
+    the system setup changes – for example, if system cabling is altered or during 
+    installation, expansion or reduction. SLS does not interact with the hardware.
+   
+    Each object in SLS has the following basic properties:
+    * Parent – Each object in SLS has a parent object except the system root (s0).
+    * Children – Objects may have children.
+    * xname – Every object has an xname – a unique identifier for that object.
+    * Type – a hardware type like "comptype_ncard", "comptype_cabinet".
+    * Class – kind of hardware like "River" or "Mountain"
+    * TypeString – a human readable type like "Cabinet"
+    
+    Some objects may have additional properties depending on their type. For example, additional
+    properties for cabinets include "Network", "IP6Prefix", "IP4Base", "MACprefix" etc.
+
+
+    ## Resources
+
+    ### /hardware
+
+    Create hardware entries in SLS. This resource can be used when you add new
+    components or expand your system. Interaction with this resource is not required if a
+    component is removed or replaced.
+
+    ### /hardware/{xname}
+
+    Retrieve, update, or delete information about specific xnames.
+
+
+    ### /search/hardware
+    
+    Uses HTTP query parameters to find hardware entries with matching properties. Returns a
+    JSON list of xnames. If multiple query parameters are passed, any returned hardware must
+    match all parameters.
+
+    For example, a query string of "?parent=x0" would return a list of all children of cabinet
+    x0. A query string of "?type=comptype_node" would return a list of all compute
+    nodes.
+
+    Valid query parameters are: xname, parent, class, type, power_connector, node_nics, networks, peers.
+    
+    
+    ### /search/networks
+    
+    Uses HTTP query parameters to find network entries with matching properties.
+
+    ### /networks
+    
+    Create new network objects or retrieve networks available in the system.
+    
+    ### /dumpstate
+    
+    Dumps the current database state of the service. This may be useful
+    when you are backing up the system or planning a reinstall of the system.
+    
+    ### /loadstate
+
+    Upload and overwrite the current database with the contents of the posted data. The posted
+    data should be a state dump from /dumpstate. This may be useful to restore the SLS database
+    after you have reinstalled the system.
+    
+    
+    ## Workflows
+    
+    ### Backup and Restore the SLS Database for Reinstallation
+    
+    #### POST /dumpstate
+    
+    Perform a dump of the current state of the SLS data along with credentials. This should
+    be done before reinstalling the system. The database dump is a JSON blob in an SLS-specific format.
+    When doing POST /dumpstate, it is required that an RSA public key be provided to encrypt
+    the credentials that are pulled from the SLS database. The recommended tool for generating
+    a keypair is OpenSSL: 
+    
+    
+    openssl rsa -in private.pem -outform PEM -pubout -out public.pem
+    
+    #### POST /loadstate
+    
+    Reimport the dump from /dumpstate and restore the SLS database after reinstall. When doing
+    POST /loadstate, it is required that an RSA private key be provided to encrypt the credentials
+    pulled from the SLS database. It must be the one that was generated with the public key
+    used to dump state. The recommended tool for generating a keypair is OpenSSL:
+    
+    
+    openssl rsa -in private.pem -outform PEM -pubout -out public.pem
+        
+    ### Expand System
+    
+    #### POST /hardware
+    
+    Add the new hardware objects.
+    
+    #### GET /hardware/{xname}
+    
+    Review hardware properties of the xname from the JSON array.
+    
+    ### Remove Hardware
+    
+    #### DELETE /hardware
+    
+    Remove hardware from SLS
+    
+    ### Modify Hardware Properties
+    
+    #### PATCH /hardware
+    
+    Modify hardware properties in SLS. Only additional properties can be modified. Basic properties
+    like xname, parent, children, type, class, typestring cannot be modified. 
+                 
+  license:
+    name: "Cray Proprietary"
+tags:
+  - name: "hardware"
+    description: "Endpoints which request information about hardware"
+  - name: "search"
+    description: "Endpoints having to do with searching for hardware"
+  - name: "dumpstate"
+    description: "Endpoints that handle debug or state management"
+  - name: "misc"
+    description: "Other endpoints"
+
+servers:
+  - url: https://api-gw-service-nmn.local/apis/sls/v1
+    description: The production SLS API server. Access from outside the mesh.
+  - url: http://cray-sls
+    description: Access from inside the mesh.
+
+paths:
+  /health:
+    get:
+      tags:
+        - misc
+      summary: Query the health of the service
+      description: >-
+        The `health` resource returns health information about the SLS service
+        and its dependencies.  This actively checks the connection between 
+        SLS and the following:
+          * Vault
+          * Database
+
+
+        This is primarily intended as a diagnostic tool to investigate the
+        functioning of the SLS service.
+      responses:
+        '200':
+          description: >-
+            [OK](http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1)
+            Network API call success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Vault:
+                    description: Status of the Vault.
+                    type: string
+                  DBConnection:
+                    description: Status of the connection with the database.
+                    type: string
+                example:
+                  Vault: 'Enabled and initialized'
+                  DBConnection: 'Ready'
+                required:
+                  - Vault
+                  - DBConnection
+        '405':
+          description: >-
+            Operation Not Permitted.  For /health, only GET operations are allowed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+
+  /liveness:
+    get:
+      tags:
+        - misc
+        - cli_ignore
+      summary: Kubernetes liveness endpoint to monitor service health
+      x-private: true
+      description: >-
+        The `liveness` resource works in conjunction with the Kubernetes liveness
+        probe to determine when the service is no longer responding to
+        requests.  Too many failures of the liveness probe will result in the
+        service being shut down and restarted.  
+
+
+        This is primarily an endpoint for the automated Kubernetes system.
+      responses:
+        '204':
+          description: >-
+            [No Content](http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.5)
+            Network API call success
+        '405':
+          description: >-
+            Operation Not Permitted.  For /liveness, only GET operations are allowed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+
+  /readiness:
+    get:
+      tags:
+        - misc
+        - cli_ignore
+      summary: Kubernetes readiness endpoint to monitor service health
+      x-private: true
+      description: >-
+        The `readiness` resource works in conjunction with the Kubernetes readiness
+        probe to determine when the service is no longer healthy and able to respond
+        correctly to requests.  Too many failures of the readiness probe will result
+        in the traffic being routed away from this service and eventually the service
+        will be shut down and restarted if in an unready state for too long.
+
+
+        This is primarily an endpoint for the automated Kubernetes system.
+      responses:
+        '204':
+          description: >-
+            [No Content](http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.5)
+            Network API call success
+        '405':
+          description: >-
+            Operation Not Permitted.  For /readiness, only GET operations are allowed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+
+  /version:
+    get:
+      tags:
+        - misc
+      summary: "Retrieve versioning information on the information in SLS"
+      description: >-
+        Retrieve the current version of the SLS mapping.
+        Information returned is a JSON array with two keys:
+
+        * Counter: A monotonically increasing counter. This counter is incremented every time
+          a change is made to the map stored in SLS. This shall be 0 if no data is uploaded to SLS
+        * LastUpdated: An ISO 8601 datetime representing the time of the last change to SLS. 
+          This shall be set to the Unix Epoch if no data has ever been stored in SLS.
+      responses:
+        200:
+          description: "Information retrieved successfully"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/versionResponse'
+        500:
+          description: "An error occurred, see text of response for more information"
+  /hardware:
+    get:
+      tags: ["hardware"]
+      summary: "Retrieve a list of hardware in the system."
+      description: >-
+        Retrieve a JSON list of the networks available in the system.  Return value
+        is an array of hardware objects representing all the hardware in the system.
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/hardware'
+    post:
+      tags: ["hardware"]
+      summary: "Create a new hardware object"
+      description: "Create a new hardware object."
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/hardware'
+            example:
+              xname: "x0c1s2b0n1"
+              class: "River"
+      responses:
+        201:
+          description: "Created. Item successfully created"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/hardware'
+        400:
+          description: "Bad request.  See body for details"
+        409:
+          description: "Conflict.  The requested resource already exists"
+  /hardware/{xname}:
+    parameters:
+      - in: path
+        name: xname
+        required: true
+        schema:
+          $ref: '#/components/schemas/xname'
+        description: "The xname to look up or alter."
+    get:
+      tags: ["hardware"]
+      summary: "Retrieve information about the requested xname"
+      description: >-
+        Retrieve information about the requested xname. All properties
+        are returned as a JSON array.
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/hardware'
+    put:
+      tags: ["hardware"]
+      summary: "Update a hardware object"
+      description: "Update a hardware object.  Parent objects will be created, if possible."
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/hardware'
+            example:
+              xname: "x0c1s2b0n1"
+              class: "River"
+      responses:
+        200:
+          description: "Update. Item successfully updated in database"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/hardware'
+        400:
+          description: "Bad request.  See body for details"
+        409:
+          description: "Conflict.  The requested resource already exists"
+    delete:
+      tags: ["hardware"]
+      summary: "Delete the xname"
+      description: >-
+        Delete the requested xname from SLS. Note that if you delete a
+        parent object, then the children are also deleted from SLS. If the child object happens
+        to be a parent, then the deletion can cascade down levels.
+        If you delete a child object, it does not affect the parent.
+      responses:
+        200:
+          description: "OK. xname removed"
+        404:
+          description: "Xname not found"
+        409:
+          description: "Conflict. The xname probably still had children."
+  /search/hardware:
+    get:
+      tags: ["search"]
+      summary: "Search for nodes matching a set of criteria"
+      description: >-
+        Search for nodes matching a set of criteria. Any of the
+        properties of any entry in the database may be used as search keys.
+      parameters:
+        - in: query
+          name: xname
+          required: false
+          schema:
+            $ref: '#/components/schemas/xname'
+          description: "Matches the specified xname"
+        - in: query
+          name: parent
+          required: false
+          schema:
+            $ref: '#/components/schemas/xname'
+          description: "Matches all objects that are direct children of the given xname"
+        - in: query
+          name: class
+          required: false
+          schema:
+            $ref: '#/components/schemas/hwclass'
+          description: "Matches all objects of the given class"
+        - in: query
+          name: type
+          required: false
+          schema:
+            $ref: '#/components/schemas/hwtype'
+          description: "Matches all objects of the given type"
+        - in: query
+          name: power_connector
+          required: false
+          schema:
+            $ref: '#/components/schemas/xname'
+          description: "Matches all objects with the given xname in their power_connector property"
+        - in: query
+          name: object
+          required: false
+          schema:
+            $ref: '#/components/schemas/xname'
+          description: "Matches all objects with the given xname in their object property."
+        - in: query
+          name: node_nics
+          required: false
+          schema:
+            $ref: '#/components/schemas/xname'
+          description: "Matches all objects with the given xname in thier node_nics property"
+        - in: query
+          name: networks
+          required: false
+          schema:
+            type: string
+          description: "Matches all objects with the given xname in their networks property"
+        - in: query
+          name: peers
+          required: false
+          schema:
+            $ref: '#/components/schemas/xname'
+          description: "Matches all objects with the given xname in their peers property"
+      responses:
+        200:
+          description: "Search completed successfully.  The return is an array of xnames that match the search criteria."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/hardware'
+  /search/networks:
+    get:
+      tags: ["search"]
+      summary: "Perform a search for networks matching a set of criteria."
+      description: "Perform a search for networks matching a set of criteria.  Any of the properties of any entry in the database may be used as search keys."
+      parameters:
+        - in: query
+          name: name
+          required: false
+          schema:
+            type: string
+          description: "Matches the specified network name"
+        - in: query
+          name: full_name
+          required: false
+          schema:
+            type: string
+          description: "Matches the specified network full name"
+        - in: query
+          name: type
+          required: false
+          schema:
+            $ref: '#/components/schemas/network_type'
+          description: "Matches the specified network type"
+        - in: query
+          name: ip_address
+          required: false
+          schema:
+            $ref: '#/components/schemas/network_ip_range'
+          description: "Matches all networks that could contain the specified IP address in their IP ranges"
+      responses:
+        404:
+          description: "Search did not find any matching networks."
+        200:
+          description: "Search completed successfully.  Return is an array of networks matching the search criteria."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/network'
+
+  /networks:
+    get:
+      tags: ["network"]
+      summary: "Retrieve a list of networks in the system"
+      description: |
+       Retrieve a JSON list of the networks available in the system.  Return value
+       is an array of strings with each string representing the name field of the network object.
+      responses:
+        200:
+          description: "Request successful"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/network'
+    put:
+      tags: ["network"]
+      summary: "Update a network object"
+      description: "Update a network object.  Parent objects will be created, if possible."
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/network'
+            example:
+              Name: "HSN"
+              FullName: "High Speed Network"
+      responses:
+        200:
+          description: "Update. Item successfully updated in database"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/network'
+        400:
+          description: "Bad request.  See body for details"
+        409:
+          description: "Conflict.  The requested resource already exists"
+    post:
+      tags: ["network"]
+      summary: "Create a new network"
+      description: Create a new network. Must include all fields at the time of upload.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/network'
+      responses:
+        201:
+          description: "Network created"
+        400:
+          description: "Bad request. See body for details"
+        409:
+          description: "Network with that name already exists"
+  /networks/{network}:
+    parameters:
+      - in: path
+        name: network
+        required: true
+        schema:
+          type: string
+        description: "The network to look up or alter."
+    get:
+      tags: ["network"]
+      summary: "Retrieve a network item"
+      description: "Retrieve the specific network."
+      responses:
+        200:
+          description: "Request successful"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/network'
+        404:
+          description: "No network item found with requested name"
+    patch:
+      tags:
+        - network
+        - cli_ignore
+      summary: "Update the named network"
+      description: "Update the network.  All values except \"Name\" may be altered."
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/network'
+      responses:
+        200:
+          description: "OK. The object was successfully  updated"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/network'
+        404:
+          description: "Not found. The requested network doesn't exist"
+        409:
+          description: "Conflict. The object couldn't be updated, see body for details."
+    delete:
+      tags: ["network"]
+      summary: "Delete the named network"
+      description: "Delete the specific network from SLS."
+      responses:
+        200:
+          description: "OK. Network removed"
+        404:
+          description: "Network not found"
+
+  /dumpstate:
+    get:
+      tags: ["dumpstate"]
+      summary: "Retrieve a dump of current service state"
+      description: "Get a dump of current service state. The format of this is implementation-specific."
+      responses:
+        200:
+          description: "State dumped successfully"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  oneOf:
+                    - $ref: '#/components/schemas/slsState'
+        500:
+          description: "An error occurred in state dumping.  See body for details"
+    post:
+      tags: ["dumpstate"]
+      summary: "Retrieve a dump of current service state with credentials"
+      description: >-
+        "Get a dump of current service state. The format of this is implementation-specific.
+        When doing POST /dumpstate, it is required that an RSA public key be provided to encrypt
+        the credentials that are pulled from the SLS database.
+        The recommended tool for generating a keypair is OpenSSL:
+        `openssl rsa -in private.pem -outform PEM -pubout -out public.pem`"
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                public_key:
+                  type: string
+      responses:
+        200:
+          description: "State dumped successfully"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  oneOf:
+                    - $ref: '#/components/schemas/slsState'
+        500:
+          description: "An error occurred in state dumping.  See body for details"
+  /loadstate:
+    post:
+      tags:
+        - dumpstate
+        - cli_from_file
+      summary: "Load services state and overwrite current service state"
+      description: >-
+        "Load services state and overwrite current service state. The format of
+        the upload is implementation specific. When doing POST /loadstate, it is required
+        that an RSA private key be provided to encrypt the credentials pulled from the SLS database.
+        It must be the one that was generated with the public key used to dump state.
+        The recommended tool for generating a keypair is OpenSSL:
+        `openssl rsa -in private.pem -outform PEM -pubout -out public.pem`"
+      responses:
+        201:
+          description: "State loaded successfully"
+        400:
+          description: "Loading state failed.  See body for error"
+      requestBody:
+        description: "A JSON dictionary, where each item has a key equal to the xname of the object it contains.  Each value is a JSON representation of an object SLS should maintain."
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                private_key:
+                  type: string
+                sls_dump:
+                  $ref: '#/components/schemas/slsState'
+
+components:
+  schemas:
+    versionResponse:
+      type: object
+      properties:
+        counter:
+          type: integer
+          description: "A monotonically increasing counter that increases every time a change is made to SLS"
+        last_updated:
+          type: string
+          format: date-time
+          description: "An ISO-8601 datetime representing when a change was last made to SLS"
+
+
+    network:
+      type: object
+      properties:
+        Name:
+          type: string
+          pattern: "[^ ]+"
+          example: "HSN"
+        FullName:
+          type: string
+          example: "High Speed Network"
+        IPRanges:
+          type: array
+          items:
+            $ref: '#/components/schemas/network_ip_range'
+        Type:
+          $ref: '#/components/schemas/network_type'
+        LastUpdated:
+          $ref: '#/components/schemas/last_updated'
+        LastUpdatedTime:
+          $ref: '#/components/schemas/last_updated_time'
+        ExtraProperties:
+          # The properties for a network aren't well defined and are intended mostly for use by the DHCP service.
+          type: object
+    network_ip_range:
+      type: string
+      pattern: "[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}/[0-9]{1,2}|[0-9a-fA-F:]+/[0-9]{1,3}"
+    network_type:
+      type: string
+      pattern: "sligshot10|cassini|ethernet|OPA|infiniband|mixed"
+      example: "slingshot10"
+
+
+    xname:
+      type: string
+      # This string should be generated using the command "grep regexp.MustCompile pkg/base/hmstypes.go | grep -v -e 'INVALID' -e 'all_*' -e '\^p' -e '\^sms' | awk -F'"' '{print $2}' | tr '\n' '|'" from the root of the hsm-common repository whenever the hmstypes.go file is updated
+      pattern: "^s0$|^d([0-9]+)$|^x([0-9]{1,4})d([0-1])$|^x([0-9]{1,4})m([0-3])$|^x([0-9]{1,4})m([0-3])p([0-7])$|^x([0-9]{1,4})m([0-3])i([0-3])$|^x([0-9]{1,4})m([0-3])p([0-7])j([1-9][0-9]*)$|^x([0-9]{1,4})e([0-1])$|^x([0-9]{1,4})$|^x([0-9]{1,4})b([0])$|^x([0-9]{1,4})c([0-7])$|^x([0-9]{1,4})c([0-7])b([0])$|^x([0-9]{1,4})c([0-7])f([0])$|^x([0-9]{1,4})c([0-7])t([0-2])$|^x([0-9]{1,4})c([0-7])s([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)f([0])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)e([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)j([1-2])$|^x([0-9]{1,4})c([0-7])r([0-9]+)e([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)h([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)a([0-7])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)d([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)p([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)$|^x([0-9]{1,4})c([0-7])r([0-9]+)f([01])$|^x([0-9]{1,4})c([0-7])r([0-9]+)t([0-9]+)f([0-1])$|^x([0-9]{1,4})c([0-7])r([0-9]+)b([0-9]+)$|^x([0-9]{1,4})c([0-7])r([0-9]+)b([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)a([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)j([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])r([0-9]+)j([1-9][0-9]*)p([012])$|^x([0-9]{1,4})c([0-7])r([0-9]+)a([0-3])l([0-9]+)$|^x([0-9]{1,4})c([0-7])w([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])w([0-9]+)j([1-9][0-9]*)$"
+      description: "The xname of this piece of hardware"
+      example: "x0c0s0b0"
+    hwtype:
+      type: string
+      # Regenerate thispattern by running "grep "HMSType = " pkg/base/hmstypes.go | awk '{print "^" $4 "$"}' | tr -d '"' | grep -v -e INVALID -e 'All*' -e Partition | tr '\n' '|'"
+      pattern: "^CDU$|^CabinetCDU$|^Cabinet$|^CabinetBMC$|^CabinetPDUController$|^CabinetPDU$|^CabinetPDUNic$|^CabinetPDUOutlet$|^Chassis$|^ChassisBMC$|^CMMRectifier$|^CMMFpga$|^CEC$|^ComputeModule$|^RouterModule$|^NodeBMC$|^NodeBMCNic$|^NodeEnclosure$|^NodePowerConnector$|^Node$|^Processor$|^NodeNIC$|^NodeHsnNIC$|^Memory$|^NodeAccel$|^NodeFpga$|^HSNAsic$|^RouterFpga$|^RouterTORFpga$|^RouterBMC$|^RouterBMCNic$|^HSNBoard$|^HSNLink$|^HSNConnector$|^HSNConnectorPort$|^MgmtSwitch$|^MgmtSwitchConnector$|^SMSBox$|^System$"
+      description: "The type of this piece of hardware.  This is an optional hint during upload; it will be ignored if it does not match the xname"
+      example: "comptype_ncard"
+    hwclass:
+      type: string
+      enum: ["River", "Mountain"]
+      description: "A hint as to whether this is River or Mountain hardware. May be ignored during upload.  If omitted, will attempt to intuit from parent hardware"
+      example: "Mountain"
+    last_updated:
+      type: integer
+      description: "The unix timestamp of the last time this entry was created or updated"
+    last_updated_time:
+      type: string
+      description: "The human-readable time this object was last created or updated."
+
+    hardware_dump:
+      type: object
+      required: ["Xname"]
+      properties:
+        Parent:
+          $ref: '#/components/schemas/xname'
+        Xname:
+          $ref: '#/components/schemas/xname'
+        Children:
+          type: array
+          items:
+            $ref: '#/components/schemas/xname'
+        Type:
+          $ref: '#/components/schemas/hwtype'
+        TypeString:
+          type: string
+        Class:
+          $ref: '#/components/schemas/hwclass'
+        ExtraProperties:
+          oneOf:
+            - $ref: '#/components/schemas/hardware_comptype_hsn_connector'
+            - $ref: '#/components/schemas/hardware_pwr_connector'
+            - $ref: '#/components/schemas/hardware_mgmt_switch_connector'
+            - $ref: '#/components/schemas/hardware_comptype_rtr_bmc'
+            - $ref: '#/components/schemas/hardware_comptype_bmc_nic'
+            - $ref: '#/components/schemas/hardware_nic'
+            - $ref: '#/components/schemas/hardware_comptype_rtmod'
+            - $ref: '#/components/schemas/hardware_comptype_mgmt_switch'
+            - $ref: '#/components/schemas/hardware_comptype_compmod'
+            - $ref: '#/components/schemas/hardware_comptype_cab_pdu'
+            - $ref: '#/components/schemas/hardware_comptype_node'
+            - $ref: '#/components/schemas/hardware_comptype_nodecard'
+    hardware:
+      type: object
+      required: ["Xname"]
+      properties:
+        Parent:
+          $ref: '#/components/schemas/xname'
+        Xname:
+          $ref: '#/components/schemas/xname'
+        Children:
+          type: array
+          items:
+            $ref: '#/components/schemas/xname'
+        Type:
+          $ref: '#/components/schemas/hwtype'
+        TypeString:
+          type: string
+        Class:
+          $ref: '#/components/schemas/hwclass'
+        LastUpdated:
+          $ref: '#/components/schemas/last_updated'
+        LastUpdatedTime:
+          $ref: '#/components/schemas/last_updated_time'
+        ExtraProperties:
+          oneOf:
+            - $ref: '#/components/schemas/hardware_comptype_hsn_connector'
+            - $ref: '#/components/schemas/hardware_pwr_connector'
+            - $ref: '#/components/schemas/hardware_mgmt_switch_connector'
+            - $ref: '#/components/schemas/hardware_comptype_rtr_bmc'
+            - $ref: '#/components/schemas/hardware_comptype_bmc_nic'
+            - $ref: '#/components/schemas/hardware_nic'
+            - $ref: '#/components/schemas/hardware_comptype_rtmod'
+            - $ref: '#/components/schemas/hardware_comptype_mgmt_switch'
+            - $ref: '#/components/schemas/hardware_comptype_compmod'
+            - $ref: '#/components/schemas/hardware_comptype_cab_pdu'
+            - $ref: '#/components/schemas/hardware_comptype_node'
+            - $ref: '#/components/schemas/hardware_comptype_nodecard'
+    hardware_bmc:
+      type: object
+      required: ["IP6addr", "IP4addr"]
+      properties:
+        IP6addr:
+          type: string
+          description: "The ipv6 address that should be assigned to this BMC, or \"DHCPv6\".  If omitted, \"DHCPv6\" is assumed."
+          example: "DHCPv6"
+        IP4addr:
+          type: string
+          description: "The ipv4 address that should be assigned to this BMC, or \"DHCPv4\".  If omitted, \"DHCPv4\" is assumed."
+          example: "10.1.1.1"
+        Username:
+          type: string
+          description: "The username that should be used to access the device (or be assigned to the device)"
+          example: "user_name"
+        Password:
+          type: string
+          description: "The password that should be used to access the device (or be assigned to the device)"
+          example: "vault://tok"
+    hardware_ip_and_creds_optional:
+      type: object
+      properties:
+        IP6addr:
+          type: string
+          description: "The ipv6 address that should be assigned to this BMC, or \"DHCPv6\".  If omitted, \"DHCPv6\" is assumed."
+          example: "DHCPv6"
+        IP4addr:
+          type: string
+          description: "The ipv4 address that should be assigned to this BMC, or \"DHCPv4\".  If omitted, \"DHCPv4\" is assumed."
+          example: "10.1.1.1"
+        Username:
+          type: string
+          description: "The username that should be used to access the device (or be assigned to the device)"
+          example: "user_name"
+        Password:
+          type: string
+          description: "The password that should be used to access the device (or be assigned to the device)"
+          example: "vault://tok"
+    hardware_powered_device:
+      type: object
+      required: ["PowerConnector"]
+      properties:
+        PowerConnector:
+          type: array
+          items:
+            $ref: '#/components/schemas/xname'
+          description: "An array of xnames, where each xname has type==*_pwr_connector.  Empty for Mountain switch cards"
+    hardware_comptype_hsn_connector:
+      type: object
+      required: ["Object"]
+      properties:
+        Object:
+          type: array
+          items:
+            $ref: '#/components/schemas/xname'
+          description: "An array of xnames that this connector is connected to.  All xnames should have type==comptype_hsn_connector_port"
+    hardware_pwr_connector:
+      type: object
+      required: ["PoweredBy"]
+      properties:
+        PoweredBy:
+          $ref: '#/components/schemas/xname'
+          description: "The hardware this cable is connected to.  May be any type of object.  Parent is excluded"
+    hardware_mgmt_switch_connector:
+      type: object
+      required: ["NodeNics"]
+      properties:
+        NodeNics:
+          type: array
+          items:
+            $ref: '#/components/schemas/xname'
+          description: "An array of Xnames that the hardware_mgmt_switch_connector is connected to.  Excludes the parent."
+        VendorName:
+          type: string
+          description: "The vendor-assigned name for this port, as it appears in the switch management software.  Typically this is something like \"GigabitEthernet 1/31\" (berkley-style names), but may be any string."
+    hardware_comptype_rtr_bmc:
+      $ref: '#/components/schemas/hardware_bmc'
+    hardware_comptype_bmc_nic:
+      $ref: '#/components/schemas/hardware_nic'
+    hardware_nic:
+      type: object
+      required: ["Networks", "Peers"]
+      properties:
+        Networks:
+          type: array
+          items:
+            $ref: '#/components/schemas/xname'
+          description: "An array of network names that this nic is connected to"
+        Peers:
+          type: array
+          items:
+            $ref: '#/components/schemas/xname'
+          description: 'An array of xnames this nic is connected directly to.  These ideally connector xnames, not switches'
+    hardware_comptype_rtmod:
+      $ref: '#/components/schemas/hardware_powered_device'
+    hardware_comptype_mgmt_switch:
+      $ref: '#/components/schemas/hardware_powered_device'
+    hardware_comptype_compmod:
+      $ref: '#/components/schemas/hardware_powered_device'
+    hardware_comptype_cab_pdu:
+      type: object
+      required: ["IP6addr", "IP4addr", "Username", "Password"]
+      properties:
+        IP6addr:
+          type: string
+          description: "The ipv6 address that should be assigned to this BMC, or \"DHCPv6\". If omitted, \"DHCPv6\" is assumed."
+          example: "DHCPv6"
+        IP4addr:
+          type: string
+          description: "The ipv4 address that should be assigned to this BMC, or \"DHCPv4\".  If omitted, \"DHCPv4\" is assumed."
+          example: "10.1.1.1"
+        Username:
+          type: string
+          description: "The username that should be used to access the device (or be assigned to the device)"
+          example: "user_name"
+        Password:
+          type: string
+          format: password
+          description: "The password that should be used to access the device"
+          example: "vault://tok"
+    hardware_comptype_node:
+      type: object
+      required: ["NodeType"]
+      properties:
+        NodeType:
+          type: string
+          enum: ["Compute", "System", "Application", "Storage", "Management"]
+          description: "The role type assigned to this node."
+          example: "Compute"
+        nid:
+          type: integer
+          minimum: 0
+          example: "2"
+    hardware_comptype_nodecard:
+      $ref: '#/components/schemas/hardware_ip_and_creds_optional'
+
+
+    slsState:
+      type: object
+      properties:
+        Hardware:
+          type: array
+          items:
+            $ref: '#/components/schemas/hardware'
+        Networks:
+          type: array
+          items:
+            $ref: '#/components/schemas/network'
+
+    Problem7807:
+      description: >-
+        RFC 7807 compliant error payload.  All fields are optional except the
+        'type' field.
+      type: object
+      required:
+        - type
+      properties:
+        type:
+          type: string
+          example: 'about:blank'
+        detail:
+          type: string
+          example: Detail about this specific problem occurrence. See RFC7807
+        instance:
+          type: string
+          example: ''
+        status:
+          type: number
+          format: int32
+          example: 400
+        title:
+          type: string
+          example: 'Description of HTTP Status code, e.g. 400'

@@ -1,0 +1,207 @@
+swagger: '2.0'
+info:
+  version: 2.0.0
+  title: Fabric Controller Rest API
+  description: Fabric Controller Rest API
+  contact:
+    name: Silicon Software Design, Cray Inc.
+    email: sieng_sw@cray.com
+host: localhost:8081
+basePath: /fabric/v2
+schemes:
+  - http
+consumes:
+  - application/json
+produces:
+  - application/json
+paths:
+  /templates:
+    get:
+      summary: Return name and description of all templates
+      description: Return list (.name, and .description) of available templates
+      operationId: getTemplates
+      tags:
+        - FabricController
+      responses:
+        '200':
+          description: Success
+          schema:
+            type: array
+            items:
+              $ref: '../../model/fabric_template_definitions.yaml#/definitions/TemplateInfo'
+        default:
+          description: Error getting templates
+          schema:
+            $ref: '../../model/generic_definitions.yaml#/definitions/Error'
+  /templates/{name}:
+    get:
+      summary: Return named template
+      description: Return named template (.name, .description, .data)
+      operationId: getTemplate
+      tags:
+        - FabricController
+      parameters:
+        - in: path
+          name: name
+          description: Example "brs-test"
+          required: true
+          type: string
+          pattern: '[A-Za-z0-9,.-]+'
+          #schema:
+          #  $ref: '../../model/fabric_template_definitions.yaml#/definitions/TemplateName'
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '../../model/fabric_template_definitions.yaml#/definitions/Template'
+        default:
+          description: Error getting template
+          schema:
+            $ref: '../../model/generic_definitions.yaml#/definitions/Error'
+  /templates/{name}/description:
+    get:
+      summary: Return named template's description
+      description: Return named template's description
+      operationId: getTemplateDescription
+      tags:
+        - FabricController
+      parameters:
+        - in: path
+          name: name
+          description: Example "brs-test"
+          required: true
+          type: string
+          pattern: '[A-Za-z0-9,.-]+'
+          #schema:
+          #  $ref: '../../model/fabric_template_definitions.yaml#/definitions/TemplateName'
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '../../model/fabric_template_definitions.yaml#/definitions/TemplateDescription'
+        default:
+          description: Error getting template description
+          schema:
+            $ref: '../../model/generic_definitions.yaml#/definitions/Error'
+  /templates/{name}/data:
+    get:
+      summary: Return named template's data
+      description: Return named template's data
+      operationId: getTemplateData
+      tags:
+        - FabricController
+      parameters:
+        - in: path
+          name: name
+          description: "Example 'brs-test'"
+          required: true
+          type: string
+          pattern: '[A-Za-z0-9,.-]+'
+          #schema:
+          #  $ref: '../../model/fabric_template_definitions.yaml#/definitions/TemplateName'
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '../../model/fabric_template_definitions.yaml#/definitions/TemplateData'
+        default:
+          description: Error getting template data
+          schema:
+            $ref: '../../model/generic_definitions.yaml#/definitions/Error'
+  /active-template:
+    put:
+      summary: Select active template
+      description: Select active template via its name
+      operationId: setActiveTemplate
+      tags:
+        - FabricController
+      parameters:
+        - in: body
+          name: name
+          description: "Example: 'brs-test'"
+          required: true
+          schema:
+            $ref: '../../model/fabric_template_definitions.yaml#/definitions/TemplateName'
+      responses:
+        '200':
+          description: Success
+        default:
+          description: Error setting active template
+          schema:
+            $ref: '../../model/generic_definitions.yaml#/definitions/Error'
+    get:
+      summary: Return active template
+      description: Return active template (.name, .description, .data)
+      operationId: getActiveTemplate
+      tags:
+        - FabricController
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '../../model/fabric_template_definitions.yaml#/definitions/Template'
+        default:
+          description: Error getting active template
+          schema:
+            $ref: '../../model/generic_definitions.yaml#/definitions/Error'
+    delete:
+      summary: De-instantiate active template
+      description: De-instatiate active template (template will not be deleted)
+      operationId: deleteActiveTemplate
+      tags:
+        - FabricController
+      responses:
+        '200':
+          description: Success
+        default:
+          description: Error de-instantiating active template
+          schema:
+            $ref: '../../model/generic_definitions.yaml#/definitions/Error'
+  /active-template/name:
+    get:
+      summary: Return active template's name
+      description: Return active template's name
+      operationId: getActiveTemplateName
+      tags:
+        - FabricController
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '../../model/fabric_template_definitions.yaml#/definitions/TemplateName'
+        default:
+          description: Error getting template description
+          schema:
+            $ref: '../../model/generic_definitions.yaml#/definitions/Error'
+  /active-template/description:
+    get:
+      summary: Return active template's description
+      description: Return active template's description
+      operationId: getActiveTemplateDescription
+      tags:
+        - FabricController
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '../../model/fabric_template_definitions.yaml#/definitions/TemplateDescription'
+        default:
+          description: Error getting active template description
+          schema:
+            $ref: '../../model/generic_definitions.yaml#/definitions/Error'
+  /active-template/data:
+    get:
+      summary: Return active template's data
+      description: Return active template's data
+      operationId: getActiveTemplateData
+      tags:
+        - FabricController
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '../../model/fabric_template_definitions.yaml#/definitions/TemplateData'
+        default:
+          description: Error getting active template data
+          schema:
+            $ref: '../../model/generic_definitions.yaml#/definitions/Error'

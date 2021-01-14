@@ -1,0 +1,8 @@
+virtualenv
+nox
+mock
+pytest
+pytest-cov
+names
+requests-mock
+six>=1.11.0
