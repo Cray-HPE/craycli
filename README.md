@@ -20,8 +20,6 @@
 1. [Usage](#Usage)
 1. [Environment variables](#Environment-variables)
 1. [Configuration files](#Configuration-files)
-1. [Installing Podman wrapper script](#installing-podman-wrapper-script)
-1. [Running Podman wrapper script](#running-podman-wrapper-script)
 1. [TODO](#TODO)
 
 ## Overview
@@ -98,20 +96,6 @@ configuration name to use for each command.
 
 If you have more than one system that you intend to work with, the cli can store multiple configuration files.  To create a second, third, or more, use `cray init --configuration mynewconfig`
 
-## Installing Podman wrapper script
-
-The Podman wrapper script, which runs the CLI in a container, is installed using a separate RPM. To install, run the following command:
-
-    zypper -n install --auto-agree-with-licenses craycli-wrapper
-
-## Running Podman wrapper script
-
-To run the CLI using the the Podman container wrapper, use the following command:
-
-    /usr/sbin/craycli-podman.sh [craycli arguments]
-
-The arguments given to the shell script will be passed to the CLI command running in the container.
-
 ## TODO
 
 The following are not yet implemented:
@@ -121,4 +105,3 @@ The following are not yet implemented:
 - Advanced filters to ignore endpoints, etc.
 - Run the parsers at build time, allowing to link external swagger files (git).
 - Create a functional test generator
-- Create dockerfile with cli installed
