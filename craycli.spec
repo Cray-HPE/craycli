@@ -1,6 +1,6 @@
 BuildRequires: systemd-rpm-macros
 Name: craycli
-License: Cray Software License Agreement
+License: MIT License
 Summary: Cray Command Line Tool
 Version: %(cat .version)
 Release: %(echo ${BUILD_METADATA})
@@ -33,6 +33,7 @@ mkdir -p %{buildroot}%{_sbindir}
 install -m 755 craycli-podman.sh %{buildroot}%{_sbindir}/cray
 
 %files
+%license LICENSE
 %{_bindir}/cray
 
 %changelog
