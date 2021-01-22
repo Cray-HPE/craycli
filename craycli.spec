@@ -29,20 +29,8 @@ pyinstaller --clean -y \
 mkdir -p %{buildroot}%{_bindir}
 install -m 755 dist/cray %{buildroot}%{_bindir}/cray
 
-mkdir -p %{buildroot}%{_sbindir}
-install -m 755 craycli-podman.sh %{buildroot}%{_sbindir}/cray
-
 %files
 %license LICENSE
 %{_bindir}/cray
 
 %changelog
-
-%package wrapper
-Summary: Cray Command Line Wrapper for Podman
-
-%description wrapper
-A CLI tool to interact with a cray system.
-
-%files wrapper
-%{_sbindir}/cray
