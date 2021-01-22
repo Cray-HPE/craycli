@@ -24,5 +24,6 @@ rpmBuild(
     slack_notify: ['FAILURE'],
     product: "csm",
     arch: "noarch",
-    target_node: "ncn,cn"
+    target_node: "ncn,cn",
+    githubPushRepo: "Cray-HPE/craycli"
 )
