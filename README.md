@@ -1,10 +1,10 @@
-# Cray CLI
+# Cray-HPE Shasta CLI
 
-## Company Internal
+## Invitation to Collaborate
 
+The Shasta CLI is designed to facilitate interaction and management of the Cray-HPE supercomputer in a manner common to most IaaS/Cloud platforms.
 
-> __This is a work in progress. Feedback is greatly encouraged and appreciated.__
-> For internal use at Cray Inc Only
+This CLI package is a work in progress and feedback as well as contributions are greatly encouraged and appreciated.
 
 ## Detailed Documentation
 
@@ -24,7 +24,7 @@
 
 ## Overview
 
-The Cray CLI is a framework created to integrate all of the system management
+The Shasta CLI is a framework created to integrate all of the system management
 REST APIs into one, easily usable, CLI for customers to interact with.
 
 The framework itself is relatively lightweight and implements the basic
