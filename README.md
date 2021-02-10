@@ -1,10 +1,8 @@
-# Cray CLI
+# Cray-HPE Shasta CSM CLI
 
-## Company Internal
+## Greetings
 
-
-> __This is a work in progress. Feedback is greatly encouraged and appreciated.__
-> For internal use at Cray Inc Only
+The Shasta CSM CLI is intended to provide you with an industry standard approach to managing the Shasta HPC environment via it's API plane. The CLI is a work in progress, and feedback as well as PR's are always welcom and sincerely appreciated. Please see the To-Do section at the bottom of this file for open items that offer opportunities for contribution and input.
 
 ## Detailed Documentation
 
@@ -96,9 +94,8 @@ configuration name to use for each command.
 
 If you have more than one system that you intend to work with, the cli can store multiple configuration files.  To create a second, third, or more, use `cray init --configuration mynewconfig`
 
-## TODO
+## TODO / Roadmap Items
 
-The following are not yet implemented:
 
 - Self updating feature.
 - Ask the api gateway what modules should be installed.
