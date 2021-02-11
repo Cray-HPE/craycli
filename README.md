@@ -94,10 +94,17 @@ configuration name to use for each command.
 
 If you have more than one system that you intend to work with, the cli can store multiple configuration files.  To create a second, third, or more, use `cray init --configuration mynewconfig`
 
-## TODO / Roadmap Items
+## Roadmap Items
 
+THe Shasta CSM CLI has many opportunities for enhancements. Over the course of Phase 1 of the Open Sourcing of the CSM tooling we will be refining the roadmap and priorities for the tool. Please be sure to review this document on a periodic basis for new roadmap items, and the appropriate working group in the Cray/HPE OSS community for dicsussions of the future of the CLI and all other CSM components.
+
+High Priority Items:
 
 - Self updating feature.
+- OS specific packaging.
+
+Medium Priority Items:
+
 - Ask the api gateway what modules should be installed.
 - Advanced filters to ignore endpoints, etc.
 - Run the parsers at build time, allowing to link external swagger files (git).
