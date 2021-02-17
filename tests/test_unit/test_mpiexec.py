@@ -99,6 +99,11 @@ def test_get_hostlist():
     assert mpiexec.get_hostlist(None, hostfile) == ["a", "b"]
     hostfile.close()
 
+    # Hosts should override hostfile
+    hostfile = io.StringIO(u"\n# comment line\na\nb\n")
+    assert mpiexec.get_hostlist("c,d", hostfile) == ["c", "d"]
+    hostfile.close()
+
 
 def test_get_launch_env():
     """ Test launch environment """
