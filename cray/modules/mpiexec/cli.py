@@ -109,10 +109,10 @@ def validate_umask(ctx, param, value):
 def get_hostlist(hosts, hostfile):
     """ Given command-line arguments, produce a host list """
     hostlist = []
-    if hostfile:
-        hostlist = parse_hostfile(hostfile)
-    elif hosts:
+    if hosts:
         hostlist = hosts.split(",")
+    elif hostfile:
+        hostlist = parse_hostfile(hostfile)
     else:
         hostlist = [socket.gethostname()]  # pylint: disable=no-member
 
