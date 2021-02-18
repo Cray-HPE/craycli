@@ -1,4 +1,4 @@
-# Copyright 2019-2020 Hewlett Packard Enterprise Development LP
+# Copyright 2019-2021 Hewlett Packard Enterprise Development LP
 # Cray Boot Orchestration Service (BOS) API Specification
 openapi: "3.0.2"
 
@@ -827,6 +827,21 @@ paths:
           description: The session template was deleted.
         404:
           $ref: '#/components/responses/sessionTemplateNotFound'
+
+  /v1/sessiontemplatetemplate:
+    get:
+      summary: Get an example session template.
+      description: |
+        Returns a skeleton of a session template, which can be
+        used as a starting point for users creating their own
+        session templates.
+      tags:
+        - sessiontemplate
+      x-openapi-router-controller: bos.controllers.v1.sessiontemplate
+      operationId: get_v1_sessiontemplatetemplate
+      responses:
+        200:
+          $ref: '#/components/responses/v1SessionTemplateDetails'
 
   /v1/session:
     post:

@@ -2577,6 +2577,197 @@
                 }
             }
         },
+        "/v1/sessiontemplatetemplate": {
+            "get": {
+                "summary": "Get an example session template.",
+                "description": "Returns a skeleton of a session template, which can be\nused as a starting point for users creating their own\nsession templates.\n",
+                "tags": [
+                    "sessiontemplate"
+                ],
+                "x-openapi-router-controller": "bos.controllers.v1.sessiontemplate",
+                "operationId": "get_v1_sessiontemplatetemplate",
+                "responses": {
+                    "200": {
+                        "description": "Session template details",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "description": "A Session Template object represents a collection of resources and metadata.\nA session template is used to create a Session which when combined with an\naction (i.e. boot, reconfigure, reboot, shutdown) will create a K8s BOA job\nto complete the required tasks for the operation.\n\nA Session Template can be created from a JSON structure.  It will return\na SessionTemplate name if successful.\nThis name is required when creating a Session.\n\n## Link Relationships\n\n* self : The session object\n",
+                                    "properties": {
+                                        "templateUrl": {
+                                            "type": "string",
+                                            "description": "The URL to the resource providing the session template data.\nSpecify either a templateURL, or the other session\ntemplate parameters (excluding templateBody).\n"
+                                        },
+                                        "templateBody": {
+                                            "type": "string",
+                                            "description": "Do not use. To be removed.\n"
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Name of the SessionTemplate. The length of the name is restricted to 45 characters.",
+                                            "example": "cle-1.0.0",
+                                            "minLength": 1,
+                                            "maxLength": 45,
+                                            "pattern": "[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*"
+                                        },
+                                        "description": {
+                                            "type": "string",
+                                            "description": "An optional description for the session template.\n"
+                                        },
+                                        "cfs_url": {
+                                            "type": "string",
+                                            "description": "The url for the repository providing the configuration. DEPRECATED\n"
+                                        },
+                                        "cfs_branch": {
+                                            "type": "string",
+                                            "description": "The name of the branch containing the configuration that you want to\napply to the nodes.  DEPRECATED.\n"
+                                        },
+                                        "enable_cfs": {
+                                            "type": "boolean",
+                                            "description": "Whether to enable the Configuration Framework Service (CFS).\nChoices: true/false\n",
+                                            "default": true
+                                        },
+                                        "cfs": {
+                                            "type": "object",
+                                            "description": "CFS Parameters is the collection of parameters that are passed to the Configuration\nFramework Service when configuration is enabled.\n",
+                                            "properties": {
+                                                "clone_url": {
+                                                    "type": "string",
+                                                    "description": "The clone url for the repository providing the configuration. (DEPRECATED)\n"
+                                                },
+                                                "branch": {
+                                                    "type": "string",
+                                                    "description": "The name of the branch containing the configuration that you want to\napply to the nodes. Mutually exclusive with commit. (DEPRECATED)\n"
+                                                },
+                                                "commit": {
+                                                    "type": "string",
+                                                    "description": "The commit id of the configuration that you want to\napply to the nodes. Mutually exclusive with branch. (DEPRECATED)\n"
+                                                },
+                                                "playbook": {
+                                                    "type": "string",
+                                                    "description": "The name of the playbook to run for configuration. The file path must be specified\nrelative to the base directory of the config repo. (DEPRECATED)\n"
+                                                },
+                                                "configuration": {
+                                                    "type": "string",
+                                                    "description": "The name of configuration to be applied.\n"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "partition": {
+                                            "type": "string",
+                                            "description": "The machine partition to operate on.\n"
+                                        },
+                                        "boot_sets": {
+                                            "type": "object",
+                                            "additionalProperties": {
+                                                "description": "A boot set defines a collection of nodes and the information about the\nboot artifacts and parameters to be sent to each node over the specified\nnetwork to enable these nodes to boot. When multiple boot sets are used\nin a session template, the boot_ordinal and shtudown_ordinal indicate\nthe order in which boot sets need to be acted upon. Boot sets sharing\nthe same ordinal number will be addressed at the same time.\n",
+                                                "type": "object",
+                                                "properties": {
+                                                    "name": {
+                                                        "type": "string",
+                                                        "description": "The Boot Set name.\n"
+                                                    },
+                                                    "boot_ordinal": {
+                                                        "type": "integer",
+                                                        "minimum": 0,
+                                                        "description": "The boot ordinal. This will establish the order for boot set operations.\nBoot sets boot in order from the lowest to highest boot_ordinal.\n"
+                                                    },
+                                                    "shutdown_ordinal": {
+                                                        "type": "integer",
+                                                        "minimum": 0,
+                                                        "description": "The shutdown ordinal. This will establish the order for boot set\nshutdown operations. Sets shutdown from low to high shutdown_ordinal.\n"
+                                                    },
+                                                    "path": {
+                                                        "type": "string",
+                                                        "description": "A path identifying the metadata describing the components of the boot image. This could be a URI, URL, etc.\nIt will be processed based on the type attribute.\n"
+                                                    },
+                                                    "type": {
+                                                        "type": "string",
+                                                        "description": "The mime type of the metadata describing the components of the boot image. This type controls how BOS processes the path attribute.\n"
+                                                    },
+                                                    "etag": {
+                                                        "type": "string",
+                                                        "description": "This is the 'entity tag'. It helps verify the version of metadata describing the components of the boot image we are working with.\n"
+                                                    },
+                                                    "kernel_parameters": {
+                                                        "type": "string",
+                                                        "description": "The kernel parameters to use to boot the nodes.\n"
+                                                    },
+                                                    "network": {
+                                                        "type": "string",
+                                                        "description": "The network over which the node will boot from.\nChoices:  NMN -- Node Management Network\npattern: '^(?i)nmn$'\n"
+                                                    },
+                                                    "node_list": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "string"
+                                                        },
+                                                        "minItems": 1,
+                                                        "description": "The node list. This is an explicit mapping against hardware xnames.\n"
+                                                    },
+                                                    "node_roles_groups": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "string"
+                                                        },
+                                                        "minItems": 1,
+                                                        "description": "The node roles list. Allows actions against nodes with associated roles. Roles are defined in SMD.\n"
+                                                    },
+                                                    "node_groups": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "string"
+                                                        },
+                                                        "minItems": 1,
+                                                        "description": "The node groups list. Allows actions against associated nodes by logical groupings. Logical groups are user defined groups in SMD.\n"
+                                                    },
+                                                    "rootfs_provider": {
+                                                        "type": "string",
+                                                        "description": "The root file system provider.\n"
+                                                    },
+                                                    "rootfs_provider_passthrough": {
+                                                        "type": "string",
+                                                        "description": "The root file system provider passthrough.\nThese are additional kernel parameters that will be appended to\nthe 'rootfs=<protocol>' kernel parameter\n"
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "required": [
+                                                    "path",
+                                                    "type"
+                                                ]
+                                            }
+                                        },
+                                        "links": {
+                                            "type": "array",
+                                            "readOnly": true,
+                                            "items": {
+                                                "description": "Link to other resources",
+                                                "type": "object",
+                                                "properties": {
+                                                    "rel": {
+                                                        "type": "string"
+                                                    },
+                                                    "href": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "name"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/v1/session": {
             "post": {
                 "summary": "Create a session",

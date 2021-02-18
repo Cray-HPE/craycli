@@ -2,7 +2,7 @@
 
 MIT License
 
-(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+(C) Copyright [2020-2021] Hewlett Packard Enterprise Development LP
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -208,6 +208,36 @@ def test_cray_bos_sessiontemplate_create_missing_required(cli_runner, rest_mock)
     result = runner.invoke(cli, ['bos', 'v1', 'sessiontemplate', 'create'])
     assert result.exit_code == 2
     assert '--name' in result.output
+
+# pylint: disable=redefined-outer-name
+def test_cray_bos_sessiontemplateteplate_list(cli_runner, rest_mock):
+    """ Test cray bos sessiontemplatetemplate list """
+    runner, cli, config = cli_runner
+    result = runner.invoke(
+        cli,
+        ['bos', 'sessiontemplatetemplate', 'list']
+    )
+    assert result.exit_code == 0
+    data = json.loads(result.output)
+    assert data['method'] == 'GET'
+    assert data['url'] == '{}/apis/bos/v1/sessiontemplatetemplate'.format(
+        config['default']['hostname']
+    )
+
+# pylint: disable=redefined-outer-name
+def test_cray_bos_v1_sessiontemplateteplate_list(cli_runner, rest_mock):
+    """ Test cray bos v1 sessiontemplatetemplate list """
+    runner, cli, config = cli_runner
+    result = runner.invoke(
+        cli,
+        ['bos', 'v1', 'sessiontemplatetemplate', 'list']
+    )
+    assert result.exit_code == 0
+    data = json.loads(result.output)
+    assert data['method'] == 'GET'
+    assert data['url'] == '{}/apis/bos/v1/sessiontemplatetemplate'.format(
+        config['default']['hostname']
+    )
 
 # pylint: disable=redefined-outer-name
 def test_cray_bos_session_base(cli_runner, rest_mock):
