@@ -1,4 +1,6 @@
-FROM alpine:node8 as base
+FROM alpine:3.13.2 as base
+
+RUN apk add --update npm
 
 RUN mkdir -p /converter
 
