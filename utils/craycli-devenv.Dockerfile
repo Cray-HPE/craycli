@@ -1,10 +1,9 @@
-FROM alpine as app
+FROM alpine:3.13.2 as app
 
 RUN apk add --no-cache bash
-RUN apk add --no-cache python
-RUN apk add --no-cache python2-dev
 RUN apk add --no-cache python3
 RUN apk add --no-cache python3-dev
+RUN apk add --no-cache py3-pip
 RUN apk add --no-cache build-base
 RUN apk add --no-cache docker
 RUN apk add --no-cache --repository http://nl.alpinelinux.org/alpine/edge/main libuv
