@@ -50,8 +50,8 @@ def cli():
 def config_activate(ctx, config):
     """Activate a configuration. This sets the default configuration to use."""
     # Load config to make sure it exists.
-    Config(ctx.obj['config_dir'], config, True)
-    ctx.obj['config'].set_active(config)
+    new_config = Config(ctx.obj['config_dir'], config, True)
+    new_config.set_active()
     return _print_active(config)
 
 
