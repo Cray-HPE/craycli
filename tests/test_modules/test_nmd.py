@@ -25,6 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 # pylint: disable=invalid-name
 # pylint: disable=too-many-arguments, unused-argument
 import json
+import urllib
 
 from ..utils.runner import cli_runner  # pylint: disable=unused-import
 from ..utils.rest import rest_mock  # pylint: disable=unused-import
@@ -74,7 +75,7 @@ def test_cray_nmd_dumps_create(cli_runner, rest_mock):
     """ Test `cray nmd dumps create` with valid params """
 
     runner, cli, config = cli_runner
-    xname = 'x0c0s34b0n0'
+    xname = ['x0c0s34b0n0']
     sys_restart = 'halt'
     dump_level = 27
     args = [
@@ -89,7 +90,7 @@ def test_cray_nmd_dumps_create(cli_runner, rest_mock):
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'POST'
-    assert data['url'] == '{}/apis/v2/nmd/dumps'.format(config['default']['hostname'])
+    assert data['url'] == f'{config["default"]["hostname"]}/apis/v2/nmd/dumps'
     assert data['body'] == {
         'xname': xname,
         'sysrestart': sys_restart,
@@ -107,7 +108,7 @@ def test_cray_nmd_dumps_delete(cli_runner, rest_mock):
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'DELETE'
-    url = '{0}/apis/v2/nmd/dumps/{1}'.format(config['default']['hostname'], req_id)
+    url = f'{config["default"]["hostname"]}/apis/v2/nmd/dumps/{req_id}'
     assert data['url'] == url
 
 
@@ -121,7 +122,7 @@ def test_cray_nmd_dumps_describe(cli_runner, rest_mock):
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'GET'
-    url = '{0}/apis/v2/nmd/dumps/{1}'.format(config['default']['hostname'], req_id)
+    url = f'{config["default"]["hostname"]}/apis/v2/nmd/dumps/{req_id}'
     assert data['url'] == url
 
 
@@ -129,12 +130,14 @@ def test_cray_nmd_dumps_describe(cli_runner, rest_mock):
 def test_cray_nmd_dumps_list(cli_runner, rest_mock):
     """ Test `cray nmd dumps list` with valid params """
 
+    sid = 'e887d15b-9ca1-11eb-9483-663d48613468'
     runner, cli, config = cli_runner
-    result = runner.invoke(cli, ['nmd', 'dumps', 'list'])
+    result = runner.invoke(cli, ['nmd', 'dumps', 'list', '--sessionid', sid])
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'GET'
-    url = '{}/apis/v2/nmd/dumps'.format(config['default']['hostname'])
+    qs = urllib.parse.urlencode({"sessionid": sid})
+    url = f'{config["default"]["hostname"]}/apis/v2/nmd/dumps?{qs}'
     assert data['url'] == url
 
 
@@ -198,12 +201,12 @@ def test_cray_nmd_sdf_dump_discover_list(cli_runner, rest_mock):
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'GET'
-    url = '{}/apis/v2/nmd/sdf/dump/discover'.format(config['default']['hostname'])
+    url = f'{config["default"]["hostname"]}/apis/v2/nmd/sdf/dump/discover'
     assert data['url'].startswith(url)
-    assert 'session_id={}'.format(session_id) in data['url']
+    assert f'session_id={session_id}' in data['url']
     assert 'allow_unsafe=False' in data['url']
-    assert 'start_time={}'.format(start_time.split(':')[0]) in data['url']
-    assert 'end_time={}'.format(end_time.split(':')[0]) in data['url']
+    assert f'start_time={start_time.split(":")[0]}' in data['url']
+    assert f'end_time={end_time.split(":")[0]}' in data['url']
     assert 'component_ids=xname' in data['url']
 
 
@@ -257,6 +260,7 @@ def test_cray_nmd_status(cli_runner, rest_mock):
         "delete",
         "describe",
         "update",
+        "list",
         "cli nmd status [OPTIONS] COMMAND [ARGS]..."
         ]
     for out in outputs:
@@ -273,7 +277,20 @@ def test_cray_nmd_status_delete(cli_runner, rest_mock):
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'DELETE'
-    url = '{0}/apis/v2/nmd/status/{1}'.format(config['default']['hostname'], xname)
+    url = f'{config["default"]["hostname"]}/apis/v2/nmd/status/{xname}'
+    assert data['url'] == url
+
+
+# pylint: disable=redefined-outer-name
+def test_cray_nmd_status_list(cli_runner, rest_mock):
+    """ Test `cray nmd status list` with valid params """
+
+    runner, cli, config = cli_runner
+    result = runner.invoke(cli, ['nmd', 'status', 'list'])
+    assert result.exit_code == 0
+    data = json.loads(result.output)
+    assert data['method'] == 'GET'
+    url = f'{config["default"]["hostname"]}/apis/v2/nmd/status'
     assert data['url'] == url
 
 
@@ -287,7 +304,7 @@ def test_cray_nmd_status_describe(cli_runner, rest_mock):
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'GET'
-    url = '{0}/apis/v2/nmd/status/{1}'.format(config['default']['hostname'], xname)
+    url = f'{config["default"]["hostname"]}/apis/v2/nmd/status/{xname}'
     assert data['url'] == url
 
 
@@ -312,7 +329,7 @@ def test_cray_nmd_status_update(cli_runner, rest_mock):
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'PUT'
-    url = '{0}/apis/v2/nmd/status/{1}'.format(config['default']['hostname'], xname)
+    url = f'{config["default"]["hostname"]}/apis/v2/nmd/status/{xname}'
     assert data['url'].startswith(url)
     assert image == data['body']['image']
     assert etag == data['body']['etag']

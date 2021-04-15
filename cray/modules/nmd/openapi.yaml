@@ -1,8 +1,8 @@
-# Copyright 2019-2020 Cray Inc.
+# Copyright 2019-2021 Hewlett Packard Enterprise Development, LP
 openapi: 3.0.2
 info:
   title: Node Memory Dump Service
-  version: 2.0.0
+  version: 2.1.0
   description: >-
     The Node Memory Dump (NMD) service requests and retrieves node memory
     dumps.  The dumps retrieved by the NMD will be gathered by the System Dump
@@ -32,6 +32,12 @@ paths:
           schema:
             type: string
           description: Unique identifier of the node that was dumped
+        - in: query
+          name: sessionid
+          required: false
+          schema:
+            type: string
+          description: Dump session identifier used for multiple node dumps.  The session identifier is found in the dump request response data.
       responses:
         '200':
           $ref: '#/components/responses/DumpInfoArray'
@@ -52,7 +58,7 @@ paths:
               $ref: '#/components/schemas/DumpRequest'
       responses:
         '202':
-          $ref: '#/components/responses/DumpInfo'
+          $ref: '#/components/responses/DumpRequestResponseArray'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -224,7 +230,6 @@ paths:
           required: false
           schema:
             type: boolean
-            format: boolean
             default: false
       responses:
         '200':
@@ -261,6 +266,17 @@ paths:
           $ref: '#/components/responses/DumpTargetResouceResponse'
         '404':
           $ref: '#/components/responses/NotFound'
+  /status:
+    get:
+      summary: Retrieve the status data of crashed nodes
+      description: Get the short status data of crashed nodes.
+      tags:
+        - crash status
+      responses:
+        '200':
+          $ref: '#/components/responses/CrashStatusListDataArray'
+        '401':
+          $ref: "#/components/responses/Unauthorized"
   '/status/{xname}':
     parameters:
       - in: path
@@ -371,6 +387,24 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/RequestInfo'
+    DumpRequestResponseArray:
+      description: >-
+        Array of dump metadata for all requests, optionally filtered by node
+        xname
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/RequestResponse'
+    CrashStatusListDataArray:
+      description: Array of crash status response
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/CrashStatusListData'
     CrashStatusResponse:
       description: Crash status response
       content:
@@ -486,15 +520,70 @@ components:
           description: >-
             Request UUID for a dump. The request UUID is a dump request id that
             was set when when the dump was requested.
-          example: 66dee4bf-e3f3-4769-8bd3-d56888e8b140
+          example: 65dee4bf-e3f3-4769-8bd3-d56888e8b140
           format: uuid
           pattern: >-
             ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
         info:
           $ref: '#/components/schemas/DumpInfo'
+    RequestResponse:
+      type: object
+      description: Create dumps request response metadata
+      properties:
+        requestID:
+          type: string
+          description: >-
+            Request UUID for a dump. The request UUID is a dump request id that
+            was set when when the dump was requested.
+          example: 65dee4bf-e3f3-4769-8bd3-d56888e8b140
+          format: uuid
+          pattern: >-
+            ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        error:
+          type: string
+          description: Error message for why this dump failed
+        info:
+          $ref: '#/components/schemas/DumpInfo'
     DumpRequest:
       type: object
       description: Dump request data
+      required:
+        - xname
+      properties:
+        xname:
+          description: Unique identifier of the node to be dumped (comma separated xnames for a list of nodes)
+          type: array
+          items:
+            type: string
+          default: []
+        dumplevel:
+          type: integer
+          description: Dump level used to filter dump data.  Valid range is 0-31.
+          example: 31
+          default: 31
+        sysrestart:
+          type: string
+          description: >-
+            This option sets the node state after the dump completes. Halt stops
+            execution of the kernel.  Continue in kdump mode - node is still
+            down.
+          example: halt
+          default: halt
+          enum:
+            - halt
+            - continue
+        sessionid:
+          type: string
+          description: >-
+            Specify sessionID when you wish to group multiple node dumps into
+            one session.
+          format: uuid
+          pattern: >-
+            ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+          example: 66dee4bf-e3f3-4769-8bd3-d56888e8b140
+    DumpConfig:
+      type: object
+      description: Dump config data
       required:
         - xname
       properties:
@@ -528,6 +617,39 @@ components:
           pattern: >-
             ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
           example: 66dee4bf-e3f3-4769-8bd3-d56888e8b140
+    CrashStatusListData:
+      type: object
+      description: Crashed node dump status data
+      properties:
+        xname:
+          type: string
+          description: Unique identifier of the node that was dumped
+          example: x0c0s34b0n0
+        timestamp:
+          type: string
+          description: >-
+            The crash timestamp that is reported by the node.  This value is
+            used for generating the object key prefix to access data file.  The
+            dump data object key format is
+            /<year>/<month>/<date>/<hour>/<min>/<sec>/<request-uuid>/<xname>/. 
+            In the dump storage, all dumps and logs are stored in this prefix.
+          example: 2018-07-28T03:26:01.234Z
+          format: date-time
+        state:
+          type: string
+          description: 'Dump state: waiting, dump, done, error, or cancel'
+          enum:
+            - waiting
+            - dump
+            - done
+            - error
+            - cancel
+          example: done
+        progress:
+          type: integer
+          description: Dump progress percentage
+          example: 100
+          default: 0
     CrashStatusData:
       type: object
       description: Crashed node dump status data
@@ -640,7 +762,6 @@ components:
           default: management.service.nmd
         enabled:
           description: Determines if callback is enabled (performed) during dump operation
-          format: boolean
           type: boolean
           default: true
     CallbackRegistrationData:
