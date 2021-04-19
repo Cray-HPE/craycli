@@ -2,7 +2,7 @@
     "openapi": "3.0.2",
     "info": {
         "title": "Node Memory Dump Service",
-        "version": "2.0.0",
+        "version": "2.1.0",
         "description": "The Node Memory Dump (NMD) service requests and retrieves node memory dumps.  The dumps retrieved by the NMD will be gathered by the System Dump Framework (SDF) via a registered callback API.\n\nGeneral workflow:\n\n  * POST /dumps - request a dump\n  * GET /dumps/{requestID} - retrieve dump metadata"
     },
     "servers": [
@@ -28,6 +28,15 @@
                             "type": "string"
                         },
                         "description": "Unique identifier of the node that was dumped"
+                    },
+                    {
+                        "in": "query",
+                        "name": "sessionid",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "Dump session identifier used for multiple node dumps.  The session identifier is found in the dump request response data."
                     }
                 ],
                 "responses": {
@@ -44,7 +53,7 @@
                                             "requestID": {
                                                 "type": "string",
                                                 "description": "Request UUID for a dump. The request UUID is a dump request id that was set when when the dump was requested.",
-                                                "example": "66dee4bf-e3f3-4769-8bd3-d56888e8b140",
+                                                "example": "65dee4bf-e3f3-4769-8bd3-d56888e8b140",
                                                 "format": "uuid",
                                                 "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
                                             },
@@ -175,8 +184,12 @@
                                 ],
                                 "properties": {
                                     "xname": {
-                                        "type": "string",
-                                        "description": "Unique identifier of the node to be dumped"
+                                        "description": "Unique identifier of the node to be dumped (comma separated xnames for a list of nodes)",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "default": []
                                     },
                                     "dumplevel": {
                                         "type": "integer",
@@ -194,9 +207,9 @@
                                             "continue"
                                         ]
                                     },
-                                    "requestid": {
+                                    "sessionid": {
                                         "type": "string",
-                                        "description": "Specify requestID when you wish to group multiple node dumps into one requestID instead of auto-generating a requestID for individual dumps.  To auto-generate a requestID for the dump, do not specify requestID.",
+                                        "description": "Specify sessionID when you wish to group multiple node dumps into one session.",
                                         "format": "uuid",
                                         "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
                                         "example": "66dee4bf-e3f3-4769-8bd3-d56888e8b140"
@@ -208,77 +221,84 @@
                 },
                 "responses": {
                     "202": {
-                        "description": "Metadata for a specific dump request",
+                        "description": "Array of dump metadata for all requests, optionally filtered by node xname",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object",
-                                    "description": "Dump request metadata",
-                                    "properties": {
-                                        "requestID": {
-                                            "type": "string",
-                                            "description": "Request UUID for a dump. The request UUID is a dump request id that was set when when the dump was requested.",
-                                            "example": "66dee4bf-e3f3-4769-8bd3-d56888e8b140",
-                                            "format": "uuid",
-                                            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
-                                        },
-                                        "info": {
-                                            "type": "object",
-                                            "description": "Node dump metadata",
-                                            "properties": {
-                                                "xname": {
-                                                    "type": "string",
-                                                    "description": "Unique identifier of the node that was dumped",
-                                                    "example": "x0c0s34b0n0"
-                                                },
-                                                "created": {
-                                                    "type": "string",
-                                                    "description": "Time when the dump was created",
-                                                    "example": "2018-07-28T03:26:01.234Z",
-                                                    "format": "date-time"
-                                                },
-                                                "requestid": {
-                                                    "type": "string",
-                                                    "description": "Request UUID for this dump",
-                                                    "example": "66dee4bf-e3f3-4769-8bd3-d56888e8b140",
-                                                    "format": "uuid",
-                                                    "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
-                                                },
-                                                "sessionid": {
-                                                    "type": "string",
-                                                    "description": "SDF session UUID",
-                                                    "example": "66dee4bf-e3f3-4769-8bd3-d56888e8b140",
-                                                    "format": "uuid",
-                                                    "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
-                                                },
-                                                "state": {
-                                                    "type": "string",
-                                                    "description": "The current state of the dump process on the node. The value can be either 'waiting', 'dump', 'done', 'error' or 'cancel'. If 'dump', then the dump is not finished yet and not ready for download.",
-                                                    "example": "done",
-                                                    "enum": [
-                                                        "waiting",
-                                                        "dump",
-                                                        "done",
-                                                        "error",
-                                                        "cancel"
-                                                    ]
-                                                },
-                                                "image": {
-                                                    "type": "string",
-                                                    "description": "Rootfs image used for booting the node",
-                                                    "example": "s3://boot-images/7a1f22c8-4aea-4f3c-8954-8aa1690f1e04/rootfs"
-                                                },
-                                                "etag": {
-                                                    "type": "string",
-                                                    "description": "Rootfs image etag",
-                                                    "example": "bd5860ebb278902f3d03b008032e564c-180"
-                                                },
-                                                "objectkeys": {
-                                                    "description": "An array of S3 key strings for downloading the dump files",
-                                                    "type": "array",
-                                                    "items": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "description": "Create dumps request response metadata",
+                                        "properties": {
+                                            "requestID": {
+                                                "type": "string",
+                                                "description": "Request UUID for a dump. The request UUID is a dump request id that was set when when the dump was requested.",
+                                                "example": "65dee4bf-e3f3-4769-8bd3-d56888e8b140",
+                                                "format": "uuid",
+                                                "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+                                            },
+                                            "error": {
+                                                "type": "string",
+                                                "description": "Error message for why this dump failed"
+                                            },
+                                            "info": {
+                                                "type": "object",
+                                                "description": "Node dump metadata",
+                                                "properties": {
+                                                    "xname": {
                                                         "type": "string",
-                                                        "example": "2019/08/22/12/66dee4bf-e3f3-4769-8bd3-d56888e8b140/x0c0s16b0n0/x0c0s16b0n0-66dee4bf-e3f3-4769-8bd3-d56888e8b140.ckdump"
+                                                        "description": "Unique identifier of the node that was dumped",
+                                                        "example": "x0c0s34b0n0"
+                                                    },
+                                                    "created": {
+                                                        "type": "string",
+                                                        "description": "Time when the dump was created",
+                                                        "example": "2018-07-28T03:26:01.234Z",
+                                                        "format": "date-time"
+                                                    },
+                                                    "requestid": {
+                                                        "type": "string",
+                                                        "description": "Request UUID for this dump",
+                                                        "example": "66dee4bf-e3f3-4769-8bd3-d56888e8b140",
+                                                        "format": "uuid",
+                                                        "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+                                                    },
+                                                    "sessionid": {
+                                                        "type": "string",
+                                                        "description": "SDF session UUID",
+                                                        "example": "66dee4bf-e3f3-4769-8bd3-d56888e8b140",
+                                                        "format": "uuid",
+                                                        "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+                                                    },
+                                                    "state": {
+                                                        "type": "string",
+                                                        "description": "The current state of the dump process on the node. The value can be either 'waiting', 'dump', 'done', 'error' or 'cancel'. If 'dump', then the dump is not finished yet and not ready for download.",
+                                                        "example": "done",
+                                                        "enum": [
+                                                            "waiting",
+                                                            "dump",
+                                                            "done",
+                                                            "error",
+                                                            "cancel"
+                                                        ]
+                                                    },
+                                                    "image": {
+                                                        "type": "string",
+                                                        "description": "Rootfs image used for booting the node",
+                                                        "example": "s3://boot-images/7a1f22c8-4aea-4f3c-8954-8aa1690f1e04/rootfs"
+                                                    },
+                                                    "etag": {
+                                                        "type": "string",
+                                                        "description": "Rootfs image etag",
+                                                        "example": "bd5860ebb278902f3d03b008032e564c-180"
+                                                    },
+                                                    "objectkeys": {
+                                                        "description": "An array of S3 key strings for downloading the dump files",
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "string",
+                                                            "example": "2019/08/22/12/66dee4bf-e3f3-4769-8bd3-d56888e8b140/x0c0s16b0n0/x0c0s16b0n0-66dee4bf-e3f3-4769-8bd3-d56888e8b140.ckdump"
+                                                        }
                                                     }
                                                 }
                                             }
@@ -487,7 +507,7 @@
                                         "requestID": {
                                             "type": "string",
                                             "description": "Request UUID for a dump. The request UUID is a dump request id that was set when when the dump was requested.",
-                                            "example": "66dee4bf-e3f3-4769-8bd3-d56888e8b140",
+                                            "example": "65dee4bf-e3f3-4769-8bd3-d56888e8b140",
                                             "format": "uuid",
                                             "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
                                         },
@@ -1022,7 +1042,6 @@
                         "required": false,
                         "schema": {
                             "type": "boolean",
-                            "format": "boolean",
                             "default": false
                         }
                     }
@@ -1379,6 +1398,103 @@
                     },
                     "404": {
                         "description": "Specified resource was not found.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "description": "Error response for RFC 7807 problem details",
+                                    "type": "object",
+                                    "properties": {
+                                        "detail": {
+                                            "description": "Human-readable explanation specific to this occurrence of the problem. Focus on helping correct the problem, rather than giving debugging information.",
+                                            "type": "string"
+                                        },
+                                        "errors": {
+                                            "description": "Object denoting field-specific errors. Only present on error responses when field input is specified for the request.",
+                                            "type": "object"
+                                        },
+                                        "instance": {
+                                            "description": "Relative URI reference that identifies the specific occurrence of the problem",
+                                            "format": "uri",
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "description": "HTTP status code",
+                                            "example": 400,
+                                            "type": "integer"
+                                        },
+                                        "title": {
+                                            "description": "Short, human-readable summary of the problem, should not change by occurrence",
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "default": "about:blank",
+                                            "description": "Relative URI reference to the type of problem which includes human readable documentation",
+                                            "format": "uri",
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/status": {
+            "get": {
+                "summary": "Retrieve the status data of crashed nodes",
+                "description": "Get the short status data of crashed nodes.",
+                "tags": [
+                    "crash status"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of crash status response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "description": "Crashed node dump status data",
+                                        "properties": {
+                                            "xname": {
+                                                "type": "string",
+                                                "description": "Unique identifier of the node that was dumped",
+                                                "example": "x0c0s34b0n0"
+                                            },
+                                            "timestamp": {
+                                                "type": "string",
+                                                "description": "The crash timestamp that is reported by the node.  This value is used for generating the object key prefix to access data file.  The dump data object key format is /<year>/<month>/<date>/<hour>/<min>/<sec>/<request-uuid>/<xname>/.  In the dump storage, all dumps and logs are stored in this prefix.",
+                                                "example": "2018-07-28T03:26:01.234Z",
+                                                "format": "date-time"
+                                            },
+                                            "state": {
+                                                "type": "string",
+                                                "description": "Dump state: waiting, dump, done, error, or cancel",
+                                                "enum": [
+                                                    "waiting",
+                                                    "dump",
+                                                    "done",
+                                                    "error",
+                                                    "cancel"
+                                                ],
+                                                "example": "done"
+                                            },
+                                            "progress": {
+                                                "type": "integer",
+                                                "description": "Dump progress percentage",
+                                                "example": 100,
+                                                "default": 0
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1932,7 +2048,7 @@
                                 "requestID": {
                                     "type": "string",
                                     "description": "Request UUID for a dump. The request UUID is a dump request id that was set when when the dump was requested.",
-                                    "example": "66dee4bf-e3f3-4769-8bd3-d56888e8b140",
+                                    "example": "65dee4bf-e3f3-4769-8bd3-d56888e8b140",
                                     "format": "uuid",
                                     "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
                                 },
@@ -2015,7 +2131,7 @@
                                     "requestID": {
                                         "type": "string",
                                         "description": "Request UUID for a dump. The request UUID is a dump request id that was set when when the dump was requested.",
-                                        "example": "66dee4bf-e3f3-4769-8bd3-d56888e8b140",
+                                        "example": "65dee4bf-e3f3-4769-8bd3-d56888e8b140",
                                         "format": "uuid",
                                         "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
                                     },
@@ -2079,6 +2195,139 @@
                                                 }
                                             }
                                         }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "DumpRequestResponseArray": {
+                "description": "Array of dump metadata for all requests, optionally filtered by node xname",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "description": "Create dumps request response metadata",
+                                "properties": {
+                                    "requestID": {
+                                        "type": "string",
+                                        "description": "Request UUID for a dump. The request UUID is a dump request id that was set when when the dump was requested.",
+                                        "example": "65dee4bf-e3f3-4769-8bd3-d56888e8b140",
+                                        "format": "uuid",
+                                        "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+                                    },
+                                    "error": {
+                                        "type": "string",
+                                        "description": "Error message for why this dump failed"
+                                    },
+                                    "info": {
+                                        "type": "object",
+                                        "description": "Node dump metadata",
+                                        "properties": {
+                                            "xname": {
+                                                "type": "string",
+                                                "description": "Unique identifier of the node that was dumped",
+                                                "example": "x0c0s34b0n0"
+                                            },
+                                            "created": {
+                                                "type": "string",
+                                                "description": "Time when the dump was created",
+                                                "example": "2018-07-28T03:26:01.234Z",
+                                                "format": "date-time"
+                                            },
+                                            "requestid": {
+                                                "type": "string",
+                                                "description": "Request UUID for this dump",
+                                                "example": "66dee4bf-e3f3-4769-8bd3-d56888e8b140",
+                                                "format": "uuid",
+                                                "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+                                            },
+                                            "sessionid": {
+                                                "type": "string",
+                                                "description": "SDF session UUID",
+                                                "example": "66dee4bf-e3f3-4769-8bd3-d56888e8b140",
+                                                "format": "uuid",
+                                                "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+                                            },
+                                            "state": {
+                                                "type": "string",
+                                                "description": "The current state of the dump process on the node. The value can be either 'waiting', 'dump', 'done', 'error' or 'cancel'. If 'dump', then the dump is not finished yet and not ready for download.",
+                                                "example": "done",
+                                                "enum": [
+                                                    "waiting",
+                                                    "dump",
+                                                    "done",
+                                                    "error",
+                                                    "cancel"
+                                                ]
+                                            },
+                                            "image": {
+                                                "type": "string",
+                                                "description": "Rootfs image used for booting the node",
+                                                "example": "s3://boot-images/7a1f22c8-4aea-4f3c-8954-8aa1690f1e04/rootfs"
+                                            },
+                                            "etag": {
+                                                "type": "string",
+                                                "description": "Rootfs image etag",
+                                                "example": "bd5860ebb278902f3d03b008032e564c-180"
+                                            },
+                                            "objectkeys": {
+                                                "description": "An array of S3 key strings for downloading the dump files",
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string",
+                                                    "example": "2019/08/22/12/66dee4bf-e3f3-4769-8bd3-d56888e8b140/x0c0s16b0n0/x0c0s16b0n0-66dee4bf-e3f3-4769-8bd3-d56888e8b140.ckdump"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "CrashStatusListDataArray": {
+                "description": "Array of crash status response",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "description": "Crashed node dump status data",
+                                "properties": {
+                                    "xname": {
+                                        "type": "string",
+                                        "description": "Unique identifier of the node that was dumped",
+                                        "example": "x0c0s34b0n0"
+                                    },
+                                    "timestamp": {
+                                        "type": "string",
+                                        "description": "The crash timestamp that is reported by the node.  This value is used for generating the object key prefix to access data file.  The dump data object key format is /<year>/<month>/<date>/<hour>/<min>/<sec>/<request-uuid>/<xname>/.  In the dump storage, all dumps and logs are stored in this prefix.",
+                                        "example": "2018-07-28T03:26:01.234Z",
+                                        "format": "date-time"
+                                    },
+                                    "state": {
+                                        "type": "string",
+                                        "description": "Dump state: waiting, dump, done, error, or cancel",
+                                        "enum": [
+                                            "waiting",
+                                            "dump",
+                                            "done",
+                                            "error",
+                                            "cancel"
+                                        ],
+                                        "example": "done"
+                                    },
+                                    "progress": {
+                                        "type": "integer",
+                                        "description": "Dump progress percentage",
+                                        "example": 100,
+                                        "default": 0
                                     }
                                 }
                             }
@@ -2705,9 +2954,87 @@
                     "requestID": {
                         "type": "string",
                         "description": "Request UUID for a dump. The request UUID is a dump request id that was set when when the dump was requested.",
-                        "example": "66dee4bf-e3f3-4769-8bd3-d56888e8b140",
+                        "example": "65dee4bf-e3f3-4769-8bd3-d56888e8b140",
                         "format": "uuid",
                         "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+                    },
+                    "info": {
+                        "type": "object",
+                        "description": "Node dump metadata",
+                        "properties": {
+                            "xname": {
+                                "type": "string",
+                                "description": "Unique identifier of the node that was dumped",
+                                "example": "x0c0s34b0n0"
+                            },
+                            "created": {
+                                "type": "string",
+                                "description": "Time when the dump was created",
+                                "example": "2018-07-28T03:26:01.234Z",
+                                "format": "date-time"
+                            },
+                            "requestid": {
+                                "type": "string",
+                                "description": "Request UUID for this dump",
+                                "example": "66dee4bf-e3f3-4769-8bd3-d56888e8b140",
+                                "format": "uuid",
+                                "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+                            },
+                            "sessionid": {
+                                "type": "string",
+                                "description": "SDF session UUID",
+                                "example": "66dee4bf-e3f3-4769-8bd3-d56888e8b140",
+                                "format": "uuid",
+                                "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+                            },
+                            "state": {
+                                "type": "string",
+                                "description": "The current state of the dump process on the node. The value can be either 'waiting', 'dump', 'done', 'error' or 'cancel'. If 'dump', then the dump is not finished yet and not ready for download.",
+                                "example": "done",
+                                "enum": [
+                                    "waiting",
+                                    "dump",
+                                    "done",
+                                    "error",
+                                    "cancel"
+                                ]
+                            },
+                            "image": {
+                                "type": "string",
+                                "description": "Rootfs image used for booting the node",
+                                "example": "s3://boot-images/7a1f22c8-4aea-4f3c-8954-8aa1690f1e04/rootfs"
+                            },
+                            "etag": {
+                                "type": "string",
+                                "description": "Rootfs image etag",
+                                "example": "bd5860ebb278902f3d03b008032e564c-180"
+                            },
+                            "objectkeys": {
+                                "description": "An array of S3 key strings for downloading the dump files",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "example": "2019/08/22/12/66dee4bf-e3f3-4769-8bd3-d56888e8b140/x0c0s16b0n0/x0c0s16b0n0-66dee4bf-e3f3-4769-8bd3-d56888e8b140.ckdump"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "RequestResponse": {
+                "type": "object",
+                "description": "Create dumps request response metadata",
+                "properties": {
+                    "requestID": {
+                        "type": "string",
+                        "description": "Request UUID for a dump. The request UUID is a dump request id that was set when when the dump was requested.",
+                        "example": "65dee4bf-e3f3-4769-8bd3-d56888e8b140",
+                        "format": "uuid",
+                        "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+                    },
+                    "error": {
+                        "type": "string",
+                        "description": "Error message for why this dump failed"
                     },
                     "info": {
                         "type": "object",
@@ -2780,6 +3107,46 @@
                 ],
                 "properties": {
                     "xname": {
+                        "description": "Unique identifier of the node to be dumped (comma separated xnames for a list of nodes)",
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "default": []
+                    },
+                    "dumplevel": {
+                        "type": "integer",
+                        "description": "Dump level used to filter dump data.  Valid range is 0-31.",
+                        "example": 31,
+                        "default": 31
+                    },
+                    "sysrestart": {
+                        "type": "string",
+                        "description": "This option sets the node state after the dump completes. Halt stops execution of the kernel.  Continue in kdump mode - node is still down.",
+                        "example": "halt",
+                        "default": "halt",
+                        "enum": [
+                            "halt",
+                            "continue"
+                        ]
+                    },
+                    "sessionid": {
+                        "type": "string",
+                        "description": "Specify sessionID when you wish to group multiple node dumps into one session.",
+                        "format": "uuid",
+                        "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+                        "example": "66dee4bf-e3f3-4769-8bd3-d56888e8b140"
+                    }
+                }
+            },
+            "DumpConfig": {
+                "type": "object",
+                "description": "Dump config data",
+                "required": [
+                    "xname"
+                ],
+                "properties": {
+                    "xname": {
                         "type": "string",
                         "description": "Unique identifier of the node to be dumped"
                     },
@@ -2805,6 +3172,41 @@
                         "format": "uuid",
                         "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
                         "example": "66dee4bf-e3f3-4769-8bd3-d56888e8b140"
+                    }
+                }
+            },
+            "CrashStatusListData": {
+                "type": "object",
+                "description": "Crashed node dump status data",
+                "properties": {
+                    "xname": {
+                        "type": "string",
+                        "description": "Unique identifier of the node that was dumped",
+                        "example": "x0c0s34b0n0"
+                    },
+                    "timestamp": {
+                        "type": "string",
+                        "description": "The crash timestamp that is reported by the node.  This value is used for generating the object key prefix to access data file.  The dump data object key format is /<year>/<month>/<date>/<hour>/<min>/<sec>/<request-uuid>/<xname>/.  In the dump storage, all dumps and logs are stored in this prefix.",
+                        "example": "2018-07-28T03:26:01.234Z",
+                        "format": "date-time"
+                    },
+                    "state": {
+                        "type": "string",
+                        "description": "Dump state: waiting, dump, done, error, or cancel",
+                        "enum": [
+                            "waiting",
+                            "dump",
+                            "done",
+                            "error",
+                            "cancel"
+                        ],
+                        "example": "done"
+                    },
+                    "progress": {
+                        "type": "integer",
+                        "description": "Dump progress percentage",
+                        "example": 100,
+                        "default": 0
                     }
                 }
             },
@@ -2932,7 +3334,6 @@
                     },
                     "enabled": {
                         "description": "Determines if callback is enabled (performed) during dump operation",
-                        "format": "boolean",
                         "type": "boolean",
                         "default": true
                     }
@@ -2993,7 +3394,6 @@
                             },
                             "enabled": {
                                 "description": "Determines if callback is enabled (performed) during dump operation",
-                                "format": "boolean",
                                 "type": "boolean",
                                 "default": true
                             }
