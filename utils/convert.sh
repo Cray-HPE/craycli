@@ -43,6 +43,6 @@ if [ ! -z $APP ]; then
     $APP $OPTS -o $DIRNAME/swagger3.json
     cd $CUR
 else
-    docker pull dtr.dev.cray.com/rbezdicek/swagger2openapi:latest
-    docker run -v $DIRNAME:/converter dtr.dev.cray.com/rbezdicek/swagger2openapi:latest $OPTS -o swagger3.json
+    docker pull arti.dev.cray.com/csm-internal-docker-stable-local/craycli/swagger2openapi:latest
+    docker run -v $DIRNAME:/converter arti.dev.cray.com/csm-internal-docker-stable-local/craycli/swagger2openapi:latest $OPTS -o swagger3.json
 fi
