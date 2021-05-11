@@ -4817,10 +4817,470 @@
                     "snapshots"
                 ]
             }
+        },
+        "/loader": {
+            "post": {
+                "summary": "Upload a file to be processed by the loader",
+                "description": "Upload a file for the loader to add to S3 and create a FAS compatible image record",
+                "requestBody": {
+                    "content": {
+                        "application/octet-stream": {
+                            "schema": {
+                                "type": "string",
+                                "format": "binary"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "loaderRunID": {
+                                            "type": "string",
+                                            "format": "uuid"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request - No file found",
+                        "content": {
+                            "application/error": {
+                                "schema": {
+                                    "description": "RFC 7807 compliant error payload.  All fields are optional except the 'type' field.",
+                                    "type": "object",
+                                    "required": [
+                                        "type"
+                                    ],
+                                    "properties": {
+                                        "type": {
+                                            "type": "string",
+                                            "example": "about:blank"
+                                        },
+                                        "detail": {
+                                            "type": "string",
+                                            "example": "Detail about this specific problem occurrence. See RFC7807"
+                                        },
+                                        "instance": {
+                                            "type": "string",
+                                            "example": ""
+                                        },
+                                        "status": {
+                                            "type": "number",
+                                            "format": "int32",
+                                            "example": 400
+                                        },
+                                        "title": {
+                                            "type": "string",
+                                            "example": "Description of HTTP Status code, e.g. 400"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "415": {
+                        "description": "Unsupported Media Type",
+                        "content": {
+                            "application/error": {
+                                "schema": {
+                                    "description": "RFC 7807 compliant error payload.  All fields are optional except the 'type' field.",
+                                    "type": "object",
+                                    "required": [
+                                        "type"
+                                    ],
+                                    "properties": {
+                                        "type": {
+                                            "type": "string",
+                                            "example": "about:blank"
+                                        },
+                                        "detail": {
+                                            "type": "string",
+                                            "example": "Detail about this specific problem occurrence. See RFC7807"
+                                        },
+                                        "instance": {
+                                            "type": "string",
+                                            "example": ""
+                                        },
+                                        "status": {
+                                            "type": "number",
+                                            "format": "int32",
+                                            "example": 400
+                                        },
+                                        "title": {
+                                            "type": "string",
+                                            "example": "Description of HTTP Status code, e.g. 400"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Loader busy, try again later",
+                        "content": {
+                            "application/error": {
+                                "schema": {
+                                    "description": "RFC 7807 compliant error payload.  All fields are optional except the 'type' field.",
+                                    "type": "object",
+                                    "required": [
+                                        "type"
+                                    ],
+                                    "properties": {
+                                        "type": {
+                                            "type": "string",
+                                            "example": "about:blank"
+                                        },
+                                        "detail": {
+                                            "type": "string",
+                                            "example": "Detail about this specific problem occurrence. See RFC7807"
+                                        },
+                                        "instance": {
+                                            "type": "string",
+                                            "example": ""
+                                        },
+                                        "status": {
+                                            "type": "number",
+                                            "format": "int32",
+                                            "example": 400
+                                        },
+                                        "title": {
+                                            "type": "string",
+                                            "example": "Description of HTTP Status code, e.g. 400"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Inernal Server Error",
+                        "content": {
+                            "application/error": {
+                                "schema": {
+                                    "description": "RFC 7807 compliant error payload.  All fields are optional except the 'type' field.",
+                                    "type": "object",
+                                    "required": [
+                                        "type"
+                                    ],
+                                    "properties": {
+                                        "type": {
+                                            "type": "string",
+                                            "example": "about:blank"
+                                        },
+                                        "detail": {
+                                            "type": "string",
+                                            "example": "Detail about this specific problem occurrence. See RFC7807"
+                                        },
+                                        "instance": {
+                                            "type": "string",
+                                            "example": ""
+                                        },
+                                        "status": {
+                                            "type": "number",
+                                            "format": "int32",
+                                            "example": 400
+                                        },
+                                        "title": {
+                                            "type": "string",
+                                            "example": "Description of HTTP Status code, e.g. 400"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "loader"
+                ]
+            },
+            "get": {
+                "summary": "Return the loader status and list of loader runs",
+                "description": "Return the loader status and list loader runs",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "loaderStatus": {
+                                            "type": "string",
+                                            "enum": [
+                                                "busy",
+                                                "ready"
+                                            ]
+                                        },
+                                        "loaderRunList": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "format": "uuid"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "loader"
+                ]
+            }
+        },
+        "/loader/{loaderRunID}": {
+            "get": {
+                "summary": "Return the resutls of a loader run",
+                "description": "Return the results of a loader run",
+                "parameters": [
+                    {
+                        "name": "loaderRunID",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "loaderRunOutput": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "content": {
+                            "application/error": {
+                                "schema": {
+                                    "description": "RFC 7807 compliant error payload.  All fields are optional except the 'type' field.",
+                                    "type": "object",
+                                    "required": [
+                                        "type"
+                                    ],
+                                    "properties": {
+                                        "type": {
+                                            "type": "string",
+                                            "example": "about:blank"
+                                        },
+                                        "detail": {
+                                            "type": "string",
+                                            "example": "Detail about this specific problem occurrence. See RFC7807"
+                                        },
+                                        "instance": {
+                                            "type": "string",
+                                            "example": ""
+                                        },
+                                        "status": {
+                                            "type": "number",
+                                            "format": "int32",
+                                            "example": 400
+                                        },
+                                        "title": {
+                                            "type": "string",
+                                            "example": "Description of HTTP Status code, e.g. 400"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "loader"
+                ]
+            },
+            "delete": {
+                "summary": "Delete a loader run",
+                "description": "Delete a loader run",
+                "parameters": [
+                    {
+                        "name": "loaderRunID",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Successful delete"
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "content": {
+                            "application/error": {
+                                "schema": {
+                                    "description": "RFC 7807 compliant error payload.  All fields are optional except the 'type' field.",
+                                    "type": "object",
+                                    "required": [
+                                        "type"
+                                    ],
+                                    "properties": {
+                                        "type": {
+                                            "type": "string",
+                                            "example": "about:blank"
+                                        },
+                                        "detail": {
+                                            "type": "string",
+                                            "example": "Detail about this specific problem occurrence. See RFC7807"
+                                        },
+                                        "instance": {
+                                            "type": "string",
+                                            "example": ""
+                                        },
+                                        "status": {
+                                            "type": "number",
+                                            "format": "int32",
+                                            "example": 400
+                                        },
+                                        "title": {
+                                            "type": "string",
+                                            "example": "Description of HTTP Status code, e.g. 400"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "loader"
+                ]
+            }
+        },
+        "/loader/nexus": {
+            "post": {
+                "summary": "loader firmware images from the Nexus library",
+                "description": "Have the loader read the firmware library from Nexus and add to S3 and create FAS compatible image records",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "loaderRunID": {
+                                            "type": "string",
+                                            "format": "uuid"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Loader busy, try again later",
+                        "content": {
+                            "application/error": {
+                                "schema": {
+                                    "description": "RFC 7807 compliant error payload.  All fields are optional except the 'type' field.",
+                                    "type": "object",
+                                    "required": [
+                                        "type"
+                                    ],
+                                    "properties": {
+                                        "type": {
+                                            "type": "string",
+                                            "example": "about:blank"
+                                        },
+                                        "detail": {
+                                            "type": "string",
+                                            "example": "Detail about this specific problem occurrence. See RFC7807"
+                                        },
+                                        "instance": {
+                                            "type": "string",
+                                            "example": ""
+                                        },
+                                        "status": {
+                                            "type": "number",
+                                            "format": "int32",
+                                            "example": 400
+                                        },
+                                        "title": {
+                                            "type": "string",
+                                            "example": "Description of HTTP Status code, e.g. 400"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "tags": [
+                    "loader"
+                ]
+            }
         }
     },
     "components": {
         "schemas": {
+            "LoaderStatus": {
+                "type": "object",
+                "properties": {
+                    "loaderStatus": {
+                        "type": "string",
+                        "enum": [
+                            "busy",
+                            "ready"
+                        ]
+                    },
+                    "loaderRunList": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                }
+            },
+            "LoaderRunID": {
+                "type": "object",
+                "properties": {
+                    "loaderRunID": {
+                        "type": "string",
+                        "format": "uuid"
+                    }
+                }
+            },
+            "LoaderRunOutput": {
+                "type": "object",
+                "properties": {
+                    "loaderRunOutput": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
             "ActionSummary": {
                 "type": "object",
                 "properties": {

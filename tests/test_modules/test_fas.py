@@ -39,6 +39,8 @@ def test_cray_fas_base(cli_runner, rest_mock):
         # "cray fas [OPTIONS] COMMAND [ARGS]...",
         "fas",
         "actions",
+        "images",
+        "loader",
         "snapshots",
         "operations",
         "service",
