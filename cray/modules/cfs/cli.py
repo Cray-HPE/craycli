@@ -12,7 +12,7 @@ a payload for passing on to the API.
 
 MIT License
 
-(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+(C) Copyright [2020-2021] Hewlett Packard Enterprise Development LP
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -53,9 +53,16 @@ cli = generate(__file__, condense=False, swagger_opts=SWAGGER_OPTS)
 cli.commands = cli.commands[CURRENT_VERSION].commands
 
 
+def setup(cfs_cli):
+    """ Sets up all cfs overrides """
+    setup_configurations_update(cfs_cli)
+    setup_sessions_create(cfs_cli)
+    setup_components_update(cfs_cli)
+
+
 # CONFIGURATIONS #
 
-def create_configurations_shim(update_callback, patch_callback):
+def create_configurations_update_shim(update_callback, patch_callback):
     """ Callback function to custom create our own payload """
     def _decorator(configuration_id, file, update_branches, **kwargs):
         file_name = file['value']
@@ -73,8 +80,8 @@ def create_configurations_shim(update_callback, patch_callback):
     return _decorator
 
 
-def setup_configuration_from_file(cfs_cli):
-    """ Adds a --file parameter for configuration creation """
+def setup_configurations_update(cfs_cli):
+    """ Adds the --file and --update-branches parameters for configuration updates """
     tmp_swagger_opts = {
         'vocabulary': {
             'patch': 'patch'
@@ -96,21 +103,13 @@ def setup_configuration_from_file(cfs_cli):
         if not param.name.startswith('layers_'):
             new_params.append(param)
     update_command.params = new_params
-    update_command.callback = create_configurations_shim(update_command.callback,
+    update_command.callback = create_configurations_update_shim(update_command.callback,
                                                          patch_command.callback)
 
     cfs_cli.commands['configurations'].commands['update'] = update_command
 
 
-setup_configuration_from_file(cli)
-
-
 # SESSIONS #
-
-GROUP_MEMBERS_PAYLOAD = 'target-groups-members'
-GROUP_NAME_PAYLOAD = 'target-groups-name'
-GROUPS_PAYLOAD = 'target-group'
-CREATE_CMD = cli.commands['sessions'].commands['create']
 
 # Update session should only be in the api as it is not user friendly and
 # is only used by CFS to update session status.
@@ -133,40 +132,18 @@ def _targets_callback(cb):
     return _cb
 
 
-# Create a new option which can handle multiple groups with individual names
-# and member lists. `option` acts as a decorator here.
-option('--'+GROUPS_PAYLOAD, nargs=2, type=click.Tuple([str, str]), multiple=True,
-       payload_name=GROUPS_PAYLOAD, callback=_targets_callback(_opt_callback),
-       metavar='GROUPNAME MEMBER1[, MEMBER2, MEMBER3, ...]',
-       help="Group members for the inventory. When the inventory definition is "
-            "'image', only one group with a single IMS image id should be "
-            "specified. Multiple groups can be specified.")(CREATE_CMD)
-
-# Remove the generated params for the group names and group member lists.
-# Add the new target-groups option.
-params = []
-for p in CREATE_CMD.params:
-    if p.payload_name in (GROUP_MEMBERS_PAYLOAD, GROUP_NAME_PAYLOAD):
-        continue
-    # Hack to force order in list in front of globals
-    # only for making the UX better
-    if p.payload_name == GROUPS_PAYLOAD:
-        params.insert(1, p)
-    else:
-        params.append(p)
-
-# Update the command with the new params
-CREATE_CMD.params = params
-
-
-def create_sessions_shim(func):
+def create_sessions_create_shim(func):
     """ Callback function to custom create our own payload """
-    def _decorator(target_definition, target_group, **kwargs):
+    def _decorator(target_definition, target_group, tags, **kwargs):
         payload = {v['name']: v['value'] for _, v in kwargs.items() if v['value'] is not None}
         payload['target'] = {
             'definition': target_definition["value"],
             'groups': target_group['value']
         }
+
+        if tags['value']:
+            payload['tags'] = {tag.split('=')[0].strip(): tag.split('=')[1].strip()
+                               for tag in tags['value'].split(',')}
 
         # Hack to tell the CLI we are passing our own payload; don't generate
         kwargs[FROM_FILE_TAG] = {'value': payload, 'name': FROM_FILE_TAG}
@@ -174,18 +151,47 @@ def create_sessions_shim(func):
     return _decorator
 
 
-# Update the create command with the callback
-CREATE_CMD.callback = create_sessions_shim(CREATE_CMD.callback)
+GROUP_MEMBERS_PAYLOAD = 'target-groups-members'
+GROUP_NAME_PAYLOAD = 'target-groups-name'
+GROUPS_PAYLOAD = 'target-group'
+
+
+def setup_sessions_create(cfs_cli):
+    """ Adds the --tags and --target-group parameters for session creates """
+    command = cfs_cli.commands['sessions'].commands['create']
+
+    # Create a new option which can handle multiple groups with individual names
+    # and member lists. `option` acts as a decorator here.
+    option('--'+GROUPS_PAYLOAD, nargs=2, type=click.Tuple([str, str]), multiple=True,
+           payload_name=GROUPS_PAYLOAD, callback=_targets_callback(_opt_callback),
+           metavar='GROUPNAME MEMBER1[, MEMBER2, MEMBER3, ...]',
+           help="Group members for the inventory. When the inventory definition is "
+                "'image', only one group with a single IMS image id should be "
+                "specified. Multiple groups can be specified.")(command)
+    option('--tags', callback=_opt_callback, required=False, type=str, metavar='TEXT',
+           help="User defined tags.  A comma separated list of key=value")(command)
+
+    # Remove the generated params for the group names and group member lists.
+    # Add the new target-groups option.
+    new_params = command.params[-2:]
+    for param in command.params[:-2]:
+        if param.payload_name not in (GROUP_MEMBERS_PAYLOAD, GROUP_NAME_PAYLOAD):
+            new_params.append(param)
+    # Update the command with the new params
+    command.params = new_params
+    command.callback = create_sessions_create_shim(command.callback)
 
 
 # COMPONENTS #
-
-def create_components_shim(func):
+def create_components_update_shim(func):
     """ Callback function to custom create our own payload """
-    def _decorator(component_id, state, **kwargs):
+    def _decorator(component_id, state, tags, **kwargs):
         payload = {v['name']: v['value'] for _, v in kwargs.items() if v['value'] is not None}
         if state['value']:
             payload['state'] = json.loads(state['value'])
+        if tags['value']:
+            payload['tags'] = {tag.split('=')[0].strip(): tag.split('=')[1].strip()
+                               for tag in tags['value'].split(',')}
 
         # Hack to tell the CLI we are passing our own payload; don't generate
         kwargs[FROM_FILE_TAG] = {'value': payload, 'name': FROM_FILE_TAG}
@@ -193,17 +199,19 @@ def create_components_shim(func):
     return _decorator
 
 
-def setup_component_state(cfs_cli):
-    """ Adds a --state parameter for component updates """
+def setup_components_update(cfs_cli):
+    """ Adds the --state and --tags parameters for component updates """
     command = cfs_cli.commands['components'].commands['update']
     option('--state', callback=_opt_callback, required=False, type=str, metavar='TEXT',
            help="The component state. Set to [] to clear.")(command)
-    new_params = [command.params[-1]]
-    for param in command.params[:-1]:
+    option('--tags', callback=_opt_callback, required=False, type=str, metavar='TEXT',
+           help="User defined tags.  A comma separated list of key=value")(command)
+    new_params = command.params[-2:]
+    for param in command.params[:-2]:
         if not param.name.startswith('state_'):
             new_params.append(param)
     command.params = new_params
-    command.callback = create_components_shim(command.callback)
+    command.callback = create_components_update_shim(command.callback)
 
 
-setup_component_state(cli)
+setup(cli)
