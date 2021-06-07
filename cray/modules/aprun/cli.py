@@ -151,7 +151,9 @@ def get_wdir(wdir):
 def get_cpubind(cpu_binding):
     """ Convert aprun-style CPU binding to PALS-style """
     # First check for keywords
-    if not cpu_binding or cpu_binding == "cpu":
+    if not cpu_binding:
+        return None
+    if cpu_binding == "cpu":
         return "thread"
     if cpu_binding == "depth":
         return "depth"
@@ -171,7 +173,7 @@ def get_membind(strict_memory_containment):
     if strict_memory_containment:
         return "local"
 
-    return "none"
+    return None
 
 
 def get_exclusive(access_mode):
@@ -221,7 +223,7 @@ def posint(val):
     return ival
 
 
-def parse_mpmd(executable, args, pes, wdir, depth):
+def parse_mpmd(executable, args, pes, wdir, depth, cpubind, membind):
     """ Parse MPMD commands from the given arguments """
 
     # Split into separate commands
@@ -230,19 +232,28 @@ def parse_mpmd(executable, args, pes, wdir, depth):
     # Create first command
     umask = get_umask()
     argv = [executable] + cmdargvs[0]
-    cmds = [dict(argv=argv, nranks=pes, umask=umask, wdir=wdir, depth=depth)]
+    cmds = [dict(argv=argv, nranks=pes, umask=umask, wdir=wdir, depth=depth, cpubind=cpubind, membind=membind)]
 
     # Create a parser for each other MPMD command
     parser = argparse.ArgumentParser(prog="", description="MPMD Command Definition")
     parser.add_argument(
         "-n", "--pes", default=1, type=posint, help="number of processes to start"
     )
+    parser.add_argument(
+        "-depth", "--depth", default=depth, type=posint, help="CPUs per process")
+    parser.add_argument(
+        "--cpu-binding", "--cc", help="CPU binding for application"
+    )
+    parser.add_argument(
+        "--cpu-binding-file", "--cp", help="specify binding in a file (ignored)"
+    )
+    parser.add_argument(
+        "--strict-memory-containment", "--ss", is_flag=True, help="restrict memory to local NUMA node"
+    )
     parser.add_argument("executable", help="executable to launch")
     parser.add_argument(
         "args", nargs=argparse.REMAINDER, help="arguments to executable"
     )
-    parser.add_argument(
-        "-depth", "--depth", default=depth, type=posint, help="CPUs per process")
 
     # Add other commands
     for cmdargv in cmdargvs[1:]:
@@ -504,15 +515,15 @@ def cli(
     """
 
     # Create a launch request from arguments
+    cpubind = get_cpubind(cpu_binding)
+    membind = get_membind(strict_memory_containment)
     launchreq = {
-        "cmds": parse_mpmd(executable, args, pes, get_wdir(wdir), cpus_per_pe),
+        "cmds": parse_mpmd(executable, args, pes, get_wdir(wdir), cpus_per_pe, cpubind, membind),
         "hosts": get_hostlist(
             node_list, node_list_file, exclude_node_list, exclude_node_list_file
         ),
         "ppn": pes_per_node,
         "environment": get_launch_env(environment_override),
-        "cpubind": get_cpubind(cpu_binding),
-        "membind": get_membind(strict_memory_containment),
         "envalias": APRUN_ENV_ALIAS,
         "abort_on_failure": abort_on_failure,
         "pmi": pmi,
@@ -527,6 +538,10 @@ def cli(
         launchreq["exclusive"] = excl
     if sync_output:
         launchreq["line_buffered"] = True
+    if cpubind:
+        launchreq["cpubind"] = cpubind
+    if membind:
+        launchreq["membind"] = membind
 
     label = int(os.getenv("APRUN_LABEL", "0"))
 

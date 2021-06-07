@@ -218,8 +218,8 @@ def test_parse_mpmd_file():
     # Good file with a bunch of different options
     os.lseek(tmpfd, 0, os.SEEK_SET)
     os.write(tmpfd, b"# comment\n\nhostname\nhostname -a\n-n 2 hostname -b\n")
-    os.write(tmpfd, b"-n 3 --wdir /tmp -umask 0222 --depth 2 hostname -c\n")
-    os.write(tmpfd, b"-n4 --wdir=/home --umask=0333 --depth=3 hostname -d\n")
+    os.write(tmpfd, b"-n 3 --wdir /tmp -umask 0222 --depth 2 --cpu-bind socket hostname -c\n")
+    os.write(tmpfd, b"-n4 --wdir=/home --umask=0333 --depth=3 --mem-bind local hostname -d\n")
     cmds = [
         {"argv": ["hostname"], "nranks": 1, "wdir": wdir, "umask": umask,
          "depth": 7},
@@ -228,9 +228,9 @@ def test_parse_mpmd_file():
         {"argv": ["hostname", "-b"], "nranks": 2, "wdir": wdir, "umask": umask,
          "depth": 7},
         {"argv": ["hostname", "-c"], "nranks": 3, "wdir": "/tmp",
-         "umask": 0o222, "depth": 2},
+         "umask": 0o222, "depth": 2, "cpubind": "socket"},
         {"argv": ["hostname", "-d"], "nranks": 4, "wdir": "/home",
-         "umask": 0o333, "depth": 3},
+         "umask": 0o333, "depth": 3, "membind":"local"},
     ]
     assert mpiexec.parse_mpmd_file(tmpfname, def_depth=7) == cmds
 

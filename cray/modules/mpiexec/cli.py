@@ -182,7 +182,7 @@ def posint(val):
     return ival
 
 
-def get_cmd(executable, args, nranks, soft, wdir, umask, depth):
+def get_cmd(executable, args, nranks, soft, wdir, umask, depth, cpubind, membind):
     """ Format a command dictionary """
     cmd = {"argv": [executable] + list(args), "nranks": soft_nprocs(soft, nranks)}
     if wdir:
@@ -191,10 +191,14 @@ def get_cmd(executable, args, nranks, soft, wdir, umask, depth):
         cmd["umask"] = umask
     if depth:
         cmd["depth"] = depth
+    if cpubind:
+        cmd["cpubind"] = cpubind
+    if membind:
+        cmd["membind"] = membind
     return cmd
 
 
-def parse_mpmd_args(argv, soft, def_depth):
+def parse_mpmd_args(argv, soft, def_depth, def_cpubind, def_membind):
     """ Parse MPMD command arguments into a command dictionary """
     parser = argparse.ArgumentParser(prog="", description="MPMD Command Definition")
     parser.add_argument(
@@ -209,6 +213,12 @@ def parse_mpmd_args(argv, soft, def_depth):
     parser.add_argument(
         "-depth", "--depth", default=def_depth, type=posint, help="CPUs per process"
     )
+    parser.add_argument(
+        "--cpu-bind", default=def_cpubind, help="CPU binding for application"
+    )
+    parser.add_argument(
+        "--mem-bind", default=def_membind, help="memory binding for application"
+    )
     parser.add_argument("executable", help="executable to launch")
     parser.add_argument(
         "args", nargs=argparse.REMAINDER, help="arguments to executable"
@@ -218,10 +228,10 @@ def parse_mpmd_args(argv, soft, def_depth):
     args = parser.parse_args(argv)
 
     # Format into a command dictionary
-    return get_cmd(args.executable, args.args, args.np, soft, args.wdir, args.umask, args.depth)
+    return get_cmd(args.executable, args.args, args.np, soft, args.wdir, args.umask, args.depth, args.cpu_bind, args.mem_bind)
 
 
-def parse_mpmd_file(configfile, soft=None, def_depth=1):
+def parse_mpmd_file(configfile, soft=None, def_depth=1, def_cpubind=None, def_membind=None):
     """ Read an MPMD config file and return a list of commands """
     try:
         cmds = []
@@ -234,7 +244,7 @@ def parse_mpmd_file(configfile, soft=None, def_depth=1):
                 if not line or line[0] == "#":
                     continue
 
-                cmds.append(parse_mpmd_args(line.split(), soft, def_depth))
+                cmds.append(parse_mpmd_args(line.split(), soft, def_depth, def_cpubind, def_membind))
 
         # Make sure we got at least one command
         if not cmds:
@@ -247,18 +257,18 @@ def parse_mpmd_file(configfile, soft=None, def_depth=1):
         )
 
 
-def parse_mpmd(executable, args, nranks, soft, wdir, umask, depth):
+def parse_mpmd(executable, args, nranks, soft, wdir, umask, depth, cpubind, membind):
     """ Parse MPMD commands from the given arguments """
 
     # Split into separate commands
     cmdargvs = split_mpmd_args(list(args))
 
     # Create first command
-    cmds = [get_cmd(executable, cmdargvs[0], nranks, soft, wdir, umask, depth)]
+    cmds = [get_cmd(executable, cmdargvs[0], nranks, soft, wdir, umask, depth, cpubind, membind)]
 
     # Add other commands
     for cmdargv in cmdargvs[1:]:
-        cmds.append(parse_mpmd_args(cmdargv, soft, depth))
+        cmds.append(parse_mpmd_args(cmdargv, soft, depth, cpubind, membind))
 
     return cmds
 
@@ -435,7 +445,6 @@ def get_rlimits(rlimits):
 @core.option(
     "--abort-on-failure/--no-abort-on-failure",
     envvar="PALS_ABORT_ON_FAILURE",
-    is_flag=True,
     default=True,
     help="abort/don't abort entire application if a rank exits with non-zero status",
 )
@@ -560,9 +569,9 @@ def cli(
 
     # Parse commands
     if configfile:
-        launchreq["cmds"] = parse_mpmd_file(executable, soft, depth)
+        launchreq["cmds"] = parse_mpmd_file(executable, soft, depth, cpu_bind, mem_bind)
     else:
-        launchreq["cmds"] = parse_mpmd(executable, args, nranks, soft, wdir, umask, depth)
+        launchreq["cmds"] = parse_mpmd(executable, args, nranks, soft, wdir, umask, depth, cpu_bind, mem_bind)
 
     # Add optional settings
     if "PBS_JOBID" in os.environ:

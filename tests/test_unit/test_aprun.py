@@ -160,7 +160,7 @@ def test_get_wdir():
 
 def test_get_cpubind():
     """ Test CPU binding translation """
-    assert aprun.get_cpubind(None) == "thread"
+    assert aprun.get_cpubind(None) == None
     assert aprun.get_cpubind("cpu") == "thread"
     assert aprun.get_cpubind("depth") == "depth"
     assert aprun.get_cpubind("numa_node") == "numa"
@@ -171,7 +171,7 @@ def test_get_cpubind():
 
 def test_get_membind():
     """ Test memory binding translation """
-    assert aprun.get_membind(False) == "none"
+    assert aprun.get_membind(False) == None
     assert aprun.get_membind(True) == "local"
 
 
