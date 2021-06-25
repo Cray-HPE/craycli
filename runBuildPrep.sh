@@ -34,17 +34,5 @@ pip3 install --upgrade --no-use-pep517 nox
 hash -r   # invalidate hash tables since we may have moved things around
 pip3 install --ignore-installed pyinstaller
 pip3 install --ignore-installed -r requirements.txt
-pip3 install --user --upgrade nox
 
 find . | grep -E "(__pycache__|\.pyc|\.pyo$)" | xargs rm -rf
-
-set -e
-
-# Remove before just to ensure a clean nox env.
-rm -rf .nox
-
-# Note we are running this all here as we want to break the build BEFORE an rpm is built.
-nox -s lint -- prod
-nox -s lint_modules tests cover
-# Remove these files again to speed up source tar for build step.
-rm -rf .nox
