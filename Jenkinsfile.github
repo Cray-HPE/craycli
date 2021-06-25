@@ -1,0 +1,49 @@
+@Library('csm-shared-library') _
+
+pipeline {
+    agent {
+        label "metal-gcp-builder"
+    }
+
+    options {
+        buildDiscarder(logRotator(numToKeepStr: "10"))
+        timestamps()
+    }
+
+    environment {
+        NAME = "craycli"
+        DESCRIPTION = "Cray CLI Tool"
+        IS_STABLE = getBuildIsStable()
+        SPEC_FILE = "craycli.spec"
+        BUILD_METADATA = getRpmRevision(isStable: env.IS_STABLE)
+    }
+
+    stages {
+        stage("Prepare") {
+            steps {
+                sh "make prepare"
+            }
+        }
+
+        stage("Build Prep") {
+            steps {
+                sh "make build_prep"
+            }
+        }
+
+        stage("Build") {
+            steps {
+                sh "make build"
+            }
+        }
+
+        stage('Publish ') {
+            steps {
+                script {
+                    publishCsmRpms(component: env.NAME, pattern: "dist/rpmbuild/RPMS/x86_64/*.rpm", arch: "x86_64", isStable: env.IS_STABLE)
+                    publishCsmRpms(component: env.NAME, pattern: "dist/rpmbuild/RPMS/*.rpm", arch: "src", isStable: env.IS_STABLE)
+                }
+            }
+        }
+    }
+}
