@@ -30,10 +30,10 @@ SPEC_VERSION ?= $(shell cat .version)
 
 SOURCE_NAME ?= ${RPM_NAME}-${SPEC_VERSION}
 BUILD_DIR ?= $(PWD)/dist/rpmbuild
-SOURCE_PATH := ${BUILD_DIR}/SOURCES/${SOURCE_NAME}.tar.bz2
+SOURCE_PATH := ${BUILD_DIR}/SOURCES/${SOURCE_NAME}.tar.gzip
 BUILD_METADATA ?= "1~development~$(shell git rev-parse --short HEAD)"
 
-build: rpm_package_source rpm_build_source rpm_build post_build post_publish
+build: rpm_package_source rpm_build_source rpm_build post_build
 
 prepare:
 		rm -rf $(BUILD_DIR)
