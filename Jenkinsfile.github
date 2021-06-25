@@ -2,7 +2,16 @@
 
 pipeline {
     agent {
-        label "metal-gcp-builder"
+        docker {
+            image "arti.dev.cray.com/dstbuildenv-docker-master-local/cray-sle15sp2_build_environment:latest"
+            args "-e PATH=/tmp/buildhome/go/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+            label "metal-gcp-builder"
+        }
+    }
+
+    options {
+        buildDiscarder(logRotator(numToKeepStr: "10"))
+        timestamps()
     }
 
     options {
