@@ -34,6 +34,7 @@ pip3 install --upgrade --no-use-pep517 nox
 hash -r   # invalidate hash tables since we may have moved things around
 pip3 install --ignore-installed pyinstaller
 pip3 install --ignore-installed -r requirements.txt
+pip3 install --user --upgrade nox
 
 find . | grep -E "(__pycache__|\.pyc|\.pyo$)" | xargs rm -rf
 
