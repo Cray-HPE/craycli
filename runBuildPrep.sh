@@ -27,39 +27,39 @@ VERSION="$(cat ./version)"
 echo $VERSION > build_version
 
 if command -v yum > /dev/null; then
-    sudo yum install -y python-devel
-    sudo yum install -y python36
-    sudo yum install -y python36-setuptools
-    sudoyum install -y python3-devel
+    yum install -y python-devel
+    yum install -y python36
+    yum install -y python36-setuptools
+    yum install -y python3-devel
 elif command -v zypper > /dev/null; then
-    sudo zypper install -y -f -l python-pip
-    sudo zypper install -y -f -l python-devel
-    sudo zypper install -y -f -l python3
-    sudo zypper install -y -f -l python3-setuptools
-    sudo zypper install -y -f -l python3-devel
+    zypper install -y -f -l python-pip
+    zypper install -y -f -l python-devel
+    zypper install -y -f -l python3
+    zypper install -y -f -l python3-setuptools
+    zypper install -y -f -l python3-devel
 else
     echo "Unsupported package manager or package manager not found -- installing nothing"
     exit 1
 fi
 
 if ! command -v pip3 > /dev/null; then
-    sudo easy_install-3.4 pip || easy_install-3.6 pip || easy_install pip
+    easy_install-3.4 pip || easy_install-3.6 pip || easy_install pip
 fi
-sudo pip3 install --upgrade pip
-sudo pip3 install --upgrade --no-use-pep517 nox
+pip3 install --upgrade pip
+pip3 install --upgrade --no-use-pep517 nox
 hash -r   # invalidate hash tables since we may have moved things around
-sudo pip3 install --ignore-installed pyinstaller
-sudo pip3 install --ignore-installed -r requirements.txt
+pip3 install --ignore-installed pyinstaller
+pip3 install --ignore-installed -r requirements.txt
 
-sudo find . | grep -E "(__pycache__|\.pyc|\.pyo$)" | xargs rm -rf
+#find . | grep -E "(__pycache__|\.pyc|\.pyo$)" | xargs rm -rf
 
 set -e
 
 # Remove before just to ensure a clean nox env.
-sudo rm -rf .nox
+rm -rf .nox
 
 # Note we are running this all here as we want to break the build BEFORE an rpm is built.
-sudo nox -s lint -- prod
-sudo nox -s lint_modules tests cover
+nox -s lint -- prod
+nox -s lint_modules tests cover
 # Remove these files again to speed up source tar for build step.
-sudo rm -rf .nox
+rm -rf .nox
