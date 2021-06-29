@@ -32,7 +32,3 @@ else
     echo "Unsupported package manager or package manager not found -- installing nothing"
     exit 1
 fi
-
-set -e
-
-sh ./smokeTests.sh

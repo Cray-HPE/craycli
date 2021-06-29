@@ -33,7 +33,8 @@ BUILD_DIR ?= $(PWD)/dist/rpmbuild
 SOURCE_PATH := ${BUILD_DIR}/SOURCES/${SOURCE_NAME}.tar.gz
 BUILD_METADATA ?= "1~development~$(shell git rev-parse --short HEAD)"
 
-build: rpm_package_source rpm_build_source rpm_build post_build
+build: rpm_package_source rpm_build_source rpm_build
+post: post_build smoke_tests
 
 prepare:
 		rm -rf $(BUILD_DIR)
@@ -54,6 +55,9 @@ rpm_build:
 
 post_build:
 		./runPostBuild.sh
+
+smoke_tests:
+        ./smokeTests.sh
 
 post_publish:
 		./runPostPublish.sh
