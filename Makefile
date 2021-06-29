@@ -21,7 +21,7 @@
 # (MIT License)
 
 NAME ?= craycli
-VERSION ?= $(shell cat .version)-local
+export VERSION ?= $(shell cat .version)-local
 
 SPEC_NAME ?= craycli
 RPM_NAME ?= craycli
@@ -29,7 +29,7 @@ SPEC_FILE ?= ${SPEC_NAME}.spec
 SPEC_VERSION ?= $(shell cat .version)
 
 SOURCE_NAME ?= ${RPM_NAME}-${SPEC_VERSION}
-BUILD_DIR ?= $(PWD)/dist/rpmbuild
+export BUILD_DIR ?= $(PWD)/dist/rpmbuild
 SOURCE_PATH := ${BUILD_DIR}/SOURCES/${SOURCE_NAME}.tar.gz
 BUILD_METADATA ?= "1~development~$(shell git rev-parse --short HEAD)"
 
