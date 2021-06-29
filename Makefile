@@ -29,7 +29,7 @@ SPEC_FILE ?= ${SPEC_NAME}.spec
 SPEC_VERSION ?= $(shell cat .version)
 
 SOURCE_NAME ?= ${RPM_NAME}-${SPEC_VERSION}
-export BUILD_DIR ?= $(PWD)/dist/rpmbuild
+BUILD_DIR ?= $(PWD)/dist/rpmbuild
 SOURCE_PATH := ${BUILD_DIR}/SOURCES/${SOURCE_NAME}.tar.gz
 BUILD_METADATA ?= "1~development~$(shell git rev-parse --short HEAD)"
 

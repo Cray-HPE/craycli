@@ -22,7 +22,7 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 
-RPM=$(ls -l $BUILD_DIR | grep rpm | grep -v src | awk '{print $NF}')
+RPM=$(ls -l SRPMS | grep rpm | grep -v src | awk '{print $NF}')
 
 if command -v yum > /dev/null; then
     yum install -y RPMS/$RPM
