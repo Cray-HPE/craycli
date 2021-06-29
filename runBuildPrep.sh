@@ -51,7 +51,7 @@ hash -r   # invalidate hash tables since we may have moved things around
 pip3 install --ignore-installed pyinstaller
 pip3 install --ignore-installed -r requirements.txt
 
-#find . | grep -E "(__pycache__|\.pyc|\.pyo$)" | xargs rm -rf
+find . | grep -E "(__pycache__|\.pyc|\.pyo$)" | xargs rm -rf
 
 set -e
 
