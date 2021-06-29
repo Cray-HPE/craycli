@@ -61,7 +61,7 @@ pipeline {
     post {
         always {
             // Own files so jenkins can clean them up later
-            sh "sudo chown -R jenkins:jenkins ${env.WORKSPACE}"
+            postChownFiles()
         }
     }
 }

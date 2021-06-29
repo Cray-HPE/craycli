@@ -22,7 +22,7 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 
-RPM_PATH="dist/rpmbuild/SRPMS"
+RPM_PATH="dist/rpmbuild/RPMS/x86_64"
 RPM=$(ls -l $RPM_PATH | grep rpm | grep -v src | awk '{print $NF}')
 
 if command -v yum > /dev/null; then
