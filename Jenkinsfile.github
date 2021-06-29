@@ -42,6 +42,12 @@ pipeline {
             }
         }
 
+        stage("Post") {
+            steps {
+                sh "make post"
+            }
+        }
+
         stage('Publish ') {
             steps {
                 script {
