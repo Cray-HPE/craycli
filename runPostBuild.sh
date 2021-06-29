@@ -26,7 +26,7 @@ RPM_PATH="dist/rpmbuild/RPMS/x86_64"
 RPM=$(ls -l $RPM_PATH | grep rpm | grep -v src | awk '{print $NF}')
 
 if command -v yum > /dev/null; then
-    yum install -y RPMS/$RPM
+    yum install -y $RPM_PATH/$RPM
 elif command -v zypper > /dev/null; then
     zypper --no-gpg-checks install -y -f -l RPMS/$RPM
 else
