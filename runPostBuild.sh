@@ -35,4 +35,4 @@ fi
 
 set -e
 
-. smokeTests.sh
+sh ./smokeTests.sh
