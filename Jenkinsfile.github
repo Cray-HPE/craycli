@@ -3,9 +3,10 @@
 pipeline {
     agent {
         docker {
-            image "arti.dev.cray.com/dstbuildenv-docker-master-local/cray-sle15sp2_build_environment:latest"
-            args "-e PATH=/tmp/buildhome/go/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
             label "metal-gcp-builder"
+            image "arti.dev.cray.com/dstbuildenv-docker-master-local/cray-sle15sp2_build_environment:latest"
+            // Run as root
+            args "-u root"
         }
     }
 
@@ -48,6 +49,13 @@ pipeline {
                     publishCsmRpms(component: env.NAME, pattern: "dist/rpmbuild/RPMS/*.rpm", arch: "src", isStable: env.IS_STABLE)
                 }
             }
+        }
+    }
+
+    post {
+        always {
+            // Own files so jenkins can clean them up later
+            sh "sudo chown -R jenkins:jenkins ${env.WORKSPACE}"
         }
     }
 }
