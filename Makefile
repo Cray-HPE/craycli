@@ -54,10 +54,10 @@ rpm_build:
 		BUILD_METADATA=$(BUILD_METADATA) rpmbuild -ba $(SPEC_FILE) --define "_topdir $(BUILD_DIR)"
 
 post_build:
-        ./runPostBuild.sh
+		./runPostBuild.sh
 
 smoke_tests:
-        ./smokeTests.sh
+		./smokeTests.sh
 
 post_publish:
-        ./runPostPublish.sh
+		./runPostPublish.sh
