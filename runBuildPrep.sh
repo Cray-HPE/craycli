@@ -53,7 +53,7 @@ pip3 install --ignore-installed -r requirements.txt
 
 find . | grep -E "(__pycache__|\.pyc|\.pyo$)" | xargs rm -rf
 
-set -e
+#set -e
 
 # Remove before just to ensure a clean nox env.
 rm -rf .nox
