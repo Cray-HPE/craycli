@@ -259,3 +259,5 @@ def delete_object(ctx, bucket, obj):
         echo(output)
     except (ClientError, s3client.exceptions.NoSuchBucket) as err:
         sys.exit(str(err))
+    except (ClientError, s3client.exceptions.NoSuchKey) as err:
+        sys.exit(str(err))
