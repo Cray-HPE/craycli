@@ -53,9 +53,7 @@ class NestedDict(dict):
         `d.get('a', {}).get('b', {}).get('c', 'bar')`
         """
         keys = key.split('.')
-        found = {}
-        for k in self.keys():
-            found[k] = self[k]
+        found = dict(self.items())
         for k in keys:
             if not isinstance(found, dict):
                 return default

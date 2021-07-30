@@ -82,7 +82,7 @@ class Config(NestedDict):
         self.update(**self._load())
 
     def _values(self):
-        return {key: self[key] for key in self.keys()}
+        return dict(self.items())
 
     def get_config_dir(self):
         """ Get the base config directory """
