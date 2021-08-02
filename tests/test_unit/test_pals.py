@@ -33,7 +33,7 @@ import tempfile
 import click
 import pytest
 
-import cray.pals as pals
+from cray import pals
 from ..utils.utils import compare_dicts
 
 
