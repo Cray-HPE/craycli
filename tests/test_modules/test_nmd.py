@@ -205,8 +205,8 @@ def test_cray_nmd_sdf_dump_discover_list(cli_runner, rest_mock):
     assert data['url'].startswith(url)
     assert f'session_id={session_id}' in data['url']
     assert 'allow_unsafe=False' in data['url']
-    assert f'start_time={start_time.split(":")[0]}' in data['url']
-    assert f'end_time={end_time.split(":")[0]}' in data['url']
+    assert f'start_time={start_time.split(":", maxsplit=1)[0]}' in data['url']
+    assert f'end_time={end_time.split(":", maxsplit=1)[0]}' in data['url']
     assert 'component_ids=xname' in data['url']
 
 

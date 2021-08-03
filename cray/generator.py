@@ -98,7 +98,7 @@ def _generate_body(body, params):
                 if param['array_item_type'] == 'object':
                     nestings.set_deep('array_objs.{}'.format(key), item)
                 else:
-                    resp[key.split('.')[0]] = item
+                    resp[key.split('.', maxsplit=1)[0]] = item
             else:
                 resp.set_deep(key, item)
     if nestings.get('array_objs'):
@@ -137,6 +137,8 @@ def _parse_data(data, base=None, **kwargs):
             continue
         for origin, params in opts.items():
             if i['name'] in params:
+                # Not sure why lint wants me to "use 'params' instead
+                # pylint: disable=unnecessary-dict-index-lookup
                 opts[origin][i['name']] = i['value']
 
     route = data['route'].format(**opts[PATH_ORIGIN])
@@ -160,6 +162,8 @@ def _parse_data(data, base=None, **kwargs):
     if opts[FILE_ORIGIN]:
         fields = {}
         for k, v in opts[FILE_ORIGIN].items():
+            # This explicitly returns an open file object, can't use 'with' here
+            # pylint: disable=consider-using-with
             fields[k] = (os.path.basename(v), open(v, 'rb'))
         args['data'] = MultipartEncoder(fields=fields)
         args.setdefault('headers', {})['Content-Type'] = args['data'].content_type
