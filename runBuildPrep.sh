@@ -26,7 +26,6 @@ VERSION="$(cat ./version)"
 
 echo $VERSION > build_version
 
-
 if command -v yum > /dev/null; then
     yum install -y python-devel
     yum install -y python36
