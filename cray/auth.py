@@ -112,7 +112,7 @@ class Auth(object):  # pylint: disable=too-many-instance-attributes
             self.set_name(name)
         token = {}
         if os.path.isfile(self._token_path):
-            with open(self._token_path) as token_file:
+            with open(self._token_path, encoding='utf-8') as token_file:
                 token = json.load(token_file)
             echo('Loaded token: {}'.format(self._token_path), ctx=self.ctx, level=LOG_RAW)
         if 'client_id' in token:
@@ -170,7 +170,7 @@ class AuthFile(Auth):
         path = os.path.dirname(token_path)
         name = os.path.basename(token_path)
         try:
-            with open(token_path) as token_file:
+            with open(token_path, encoding='utf-8') as token_file:
                 token = json.load(token_file)
         except Exception as e:
             echo('AUTH ERROR: {}'.format(e), ctx=kwargs.get('ctx'), level=LOG_RAW)

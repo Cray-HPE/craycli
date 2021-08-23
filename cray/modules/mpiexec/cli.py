@@ -225,7 +225,7 @@ def parse_mpmd_file(configfile, soft=None, def_depth=1):
     """ Read an MPMD config file and return a list of commands """
     try:
         cmds = []
-        with open(configfile) as config:
+        with open(configfile, encoding='utf-8') as config:
             content = config.read().replace("\\\n", "")
             for line in content.splitlines():
                 line = line.strip()

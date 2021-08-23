@@ -50,7 +50,7 @@ def _set_config(ctx, param, value):
         active_config_path = os.path.join(config_dir, ACTIVE_CONFIG)
         active_config = DEFAULT_CONFIG
         if os.path.isfile(active_config_path):
-            with open(active_config_path) as active_config_fp:
+            with open(active_config_path, encoding='utf-8') as active_config_fp:
                 active_config = active_config_fp.read()
         ctx.obj['globals']['active_config'] = active_config
         # If user hasn't passed in configuration, use active

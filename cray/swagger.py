@@ -418,7 +418,7 @@ def parse(path, **kwargs):
     """ Parse a Swagger/OpenAPI file and return an object that can be consumed
     by the Cray CLI Framework """
     # pylint: disable=invalid-name
-    with open(path) as filep:
+    with open(path, encoding='utf-8') as filep:
         data = json.load(filep)
     s = Swagger(data, **kwargs)
 

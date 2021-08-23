@@ -67,7 +67,7 @@ def create_configurations_update_shim(update_callback, patch_callback):
     def _decorator(configuration_id, file, update_branches, **kwargs):
         file_name = file['value']
         if file_name:  # pylint: disable=no-else-return
-            with open(file['value'], 'r') as f:
+            with open(file['value'], 'r', encoding='utf-8') as f:
                 data = json.loads(f.read())
             payload = data
             # Hack to tell the CLI we are passing our own payload; don't generate

@@ -41,7 +41,7 @@ _AUTH_DIR_NAME = 'tokens'
 def _read_file(path, frmt=toml):
     data = None
     if os.path.isfile(path):
-        with open(path, 'r') as f:
+        with open(path, 'r', encoding='utf-8') as f:
             data = frmt.load(f)
     return data
 
