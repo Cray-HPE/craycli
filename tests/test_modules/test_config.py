@@ -43,7 +43,7 @@ def test_cray_config_describe(cli_runner):
     res = json.loads(result.output)
     filep = '.config/cray/configurations/{}'.format(configname)
     assert os.path.isfile(filep)
-    with open(filep) as f:
+    with open(filep, encoding='utf-8') as f:
         data = toml.load(f)
     assert data == res
 
@@ -72,7 +72,7 @@ def test_cray_config_describe_format_toml(cli_runner):
     res = toml.loads(result.output)
     filep = '.config/cray/configurations/{}'.format(configname)
     assert os.path.isfile(filep)
-    with open(filep) as f:
+    with open(filep, encoding='utf-8') as f:
         data = toml.load(f)
     assert data == res
 
@@ -89,7 +89,7 @@ def test_cray_config_describe_w_config(cli_runner):
     res = json.loads(result.output)
     filep = '.config/cray/configurations/{}'.format(configname)
     assert os.path.isfile(filep)
-    with open(filep) as f:
+    with open(filep, encoding='utf-8') as f:
         data = toml.load(f)
     assert data == res
 
@@ -124,13 +124,13 @@ def test_cray_config_set_hostname(cli_runner):
     config = opts['default']
     configname = config['configname']
     filep = '.config/cray/configurations/{}'.format(configname)
-    with open(filep) as f:
+    with open(filep, encoding='utf-8') as f:
         original_data = toml.load(f)
     result = runner.invoke(cli, ['config', 'set', 'core',
                                  'hostname={}'.format(new_host)])
     assert result.exit_code == 0
     assert os.path.isfile(filep)
-    with open(filep) as f:
+    with open(filep, encoding='utf-8') as f:
         data = toml.load(f)
     assert data != original_data
     assert data['core']['hostname'] == new_host
@@ -144,14 +144,14 @@ def test_cray_config_set_hostname_w_config(cli_runner):
     config = opts['config']
     configname = config['configname']
     filep = '.config/cray/configurations/{}'.format(configname)
-    with open(filep) as f:
+    with open(filep, encoding='utf-8') as f:
         original_data = toml.load(f)
     result = runner.invoke(cli, ['config', 'set', 'core',
                                  'hostname={}'.format(new_host),
                                  '--configuration', configname])
     assert result.exit_code == 0
     assert os.path.isfile(filep)
-    with open(filep) as f:
+    with open(filep, encoding='utf-8') as f:
         data = toml.load(f)
     assert data != original_data
     assert data['core']['hostname'] == new_host
@@ -166,14 +166,14 @@ def test_cray_config_set_multiple(cli_runner):
     config = opts['default']
     configname = config['configname']
     filep = '.config/cray/configurations/{}'.format(configname)
-    with open(filep) as f:
+    with open(filep, encoding='utf-8') as f:
         original_data = toml.load(f)
     result = runner.invoke(cli, ['config', 'set', 'test.deep.config',
                                  'value1={}'.format(value1),
                                  'value2={}'.format(value2)])
     assert result.exit_code == 0
     assert os.path.isfile(filep)
-    with open(filep) as f:
+    with open(filep, encoding='utf-8') as f:
         data = toml.load(f)
     assert data != original_data
     assert data['test']['deep']['config'] == {'value1': value1,
@@ -189,7 +189,7 @@ def test_cray_config_set_multiple_w_config(cli_runner):
     config = opts['config']
     configname = config['configname']
     filep = '.config/cray/configurations/{}'.format(configname)
-    with open(filep) as f:
+    with open(filep, encoding='utf-8') as f:
         original_data = toml.load(f)
     result = runner.invoke(cli, ['config', 'set', 'test.deep.config',
                                  'value1={}'.format(value1),
@@ -197,7 +197,7 @@ def test_cray_config_set_multiple_w_config(cli_runner):
                                  '--configuration', configname])
     assert result.exit_code == 0
     assert os.path.isfile(filep)
-    with open(filep) as f:
+    with open(filep, encoding='utf-8') as f:
         data = toml.load(f)
     assert data != original_data
     assert data['test']['deep']['config'] == {'value1': value1,
@@ -231,12 +231,12 @@ def test_cray_config_unset(cli_runner):
     config = opts['default']
     configname = config['configname']
     filep = '.config/cray/configurations/{}'.format(configname)
-    with open(filep) as f:
+    with open(filep, encoding='utf-8') as f:
         original_data = toml.load(f)
     result = runner.invoke(cli, ['config', 'unset', 'auth.login.username'])
     assert result.exit_code == 0
     assert os.path.isfile(filep)
-    with open(filep) as f:
+    with open(filep, encoding='utf-8') as f:
         data = toml.load(f)
     assert data != original_data
     assert data['auth']['login'].get('username') is None
@@ -249,13 +249,13 @@ def test_cray_config_unset_w_config(cli_runner):
     config = opts['config']
     configname = config['configname']
     filep = '.config/cray/configurations/{}'.format(configname)
-    with open(filep) as f:
+    with open(filep, encoding='utf-8') as f:
         original_data = toml.load(f)
     result = runner.invoke(cli, ['config', 'unset', 'auth.login.username',
                                  '--configuration', configname])
     assert result.exit_code == 0
     assert os.path.isfile(filep)
-    with open(filep) as f:
+    with open(filep, encoding='utf-8') as f:
         data = toml.load(f)
     assert data != original_data
     assert data['auth']['login'].get('username') is None
@@ -268,14 +268,14 @@ def test_cray_config_unset_multiple_w_config(cli_runner):
     config = opts['config']
     configname = config['configname']
     filep = '.config/cray/configurations/{}'.format(configname)
-    with open(filep) as f:
+    with open(filep, encoding='utf-8') as f:
         original_data = toml.load(f)
     result = runner.invoke(cli, ['config', 'unset', 'auth.login.username',
                                  'core.hostname', '--configuration',
                                  configname])
     assert result.exit_code == 0
     assert os.path.isfile(filep)
-    with open(filep) as f:
+    with open(filep, encoding='utf-8') as f:
         data = toml.load(f)
     assert data != original_data
     assert data['auth']['login'].get('username') is None
