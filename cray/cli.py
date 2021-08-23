@@ -174,7 +174,7 @@ if getattr(sys, 'frozen', False):
         # Only bother opening the file if actually asking for version
         path = os.path.join(os.path.dirname(__file__), 'build_version')
         if os.path.isfile(path):
-            with open(path) as v:
+            with open(path, encoding='utf-8') as v:
                 version = v.read()
     click.version_option(version)(cli)
     cli(sys.argv[1:])

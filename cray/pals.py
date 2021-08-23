@@ -426,6 +426,10 @@ class PALSApp(object):
         if "PALS_FANOUT" in os.environ:
             launchreq["fanout"] = int(os.environ["PALS_FANOUT"])
 
+        # Set RPC timeout if requested
+        if "PALS_RPC_TIMEOUT" in os.environ:
+            launchreq["rpc_timeout"] = int(os.environ["PALS_RPC_TIMEOUT"])
+
         try:
             # Send launch request
             resp = request("POST", "apis/pals/v1/apps", json=launchreq)
