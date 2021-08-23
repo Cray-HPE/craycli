@@ -250,7 +250,7 @@ def test_scsd_bmc_loadcfg_create(cli_runner, rest_mock):
     }'''
     payload = json.loads(payload_json)
 
-    with open('test.json', 'w') as fp:
+    with open('test.json', 'w', encoding='utf-8') as fp:
         json.dump(payload, fp)
 
     result = runner.invoke(cli, ['scsd', 'bmc', 'loadcfg', 'create',
@@ -284,7 +284,7 @@ def test_scsd_bmc_dumpcfg_create(cli_runner, rest_mock):
     }'''
     payload = json.loads(payload_json)
 
-    with open('test.json', 'w') as fp:
+    with open('test.json', 'w', encoding='utf-8') as fp:
         json.dump(payload, fp)
 
     result = runner.invoke(cli, ['scsd', 'bmc', 'dumpcfg', 'create',
@@ -367,7 +367,7 @@ def test_scsd_bmc_discreetcreds_create(cli_runner, rest_mock):
     }'''
     payload = json.loads(payload_json)
 
-    with open('test.json', 'w') as fp:
+    with open('test.json', 'w', encoding='utf-8') as fp:
         json.dump(payload, fp)
 
     result = runner.invoke(cli, ['scsd', 'bmc', 'discreetcreds', 'create',
@@ -398,7 +398,7 @@ def test_scsd_bmc_globalcreds_create(cli_runner, rest_mock):
     }'''
     payload = json.loads(payload_json)
 
-    with open('test.json', 'w') as fp:
+    with open('test.json', 'w', encoding='utf-8') as fp:
         json.dump(payload, fp)
 
     result = runner.invoke(cli, ['scsd', 'bmc', 'globalcreds', 'create',
@@ -442,7 +442,7 @@ def test_scsd_bmc_createcerts_create(cli_runner, rest_mock):
     }'''
     payload = json.loads(payload_json)
 
-    with open('test.json', 'w') as fp:
+    with open('test.json', 'w', encoding='utf-8') as fp:
         json.dump(payload, fp)
 
     result = runner.invoke(cli, ['scsd', 'bmc', 'createcerts', 'create',
@@ -487,7 +487,7 @@ def test_scsd_bmc_deletecerts_delete(cli_runner, rest_mock):
     }'''
     payload = json.loads(payload_json)
 
-    with open('test.json', 'w') as fp:
+    with open('test.json', 'w', encoding='utf-8') as fp:
         json.dump(payload, fp)
 
     result = runner.invoke(cli, ['scsd', 'bmc', 'deletecerts', 'create',
@@ -532,7 +532,7 @@ def test_scsd_bmc_fetchcerts_create(cli_runner, rest_mock):
     }'''
     payload = json.loads(payload_json)
 
-    with open('test.json', 'w') as fp:
+    with open('test.json', 'w', encoding='utf-8') as fp:
         json.dump(payload, fp)
 
     result = runner.invoke(cli, ['scsd', 'bmc', 'fetchcerts', 'create',
@@ -578,7 +578,7 @@ def test_scsd_bmc_setcerts_create(cli_runner, rest_mock):
     }'''
     payload = json.loads(payload_json)
 
-    with open('test.json', 'w') as fp:
+    with open('test.json', 'w', encoding='utf-8') as fp:
         json.dump(payload, fp)
 
     result = runner.invoke(cli, ['scsd', 'bmc', 'setcerts', 'create',

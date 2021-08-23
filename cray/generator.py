@@ -192,7 +192,7 @@ def _get_type(param_type, opt):
 
 def _arg_file_cb(ctx, param, value):
     try:
-        with open(value) as payload_fp:
+        with open(value, encoding='utf-8') as payload_fp:
             data = json.load(payload_fp)
     except:  # pylint: disable=broad-except
         # pylint: disable=raise-missing-from
@@ -395,7 +395,7 @@ def _get_path(dirpath, filename):
 
 def _get_data(path, opts=None):
     opts = opts or {}
-    with open(path) as parsed_file:
+    with open(path, encoding='utf-8') as parsed_file:
         data = NestedDict(json.load(parsed_file))
     parsed = swagger.Swagger(data, **opts).parsed
     if not parsed.get(CONVERSTION_FLAG):

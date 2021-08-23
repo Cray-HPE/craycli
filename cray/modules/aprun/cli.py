@@ -88,7 +88,7 @@ def get_hostlist(node_list, node_list_file, exclude_node_list, exclude_node_list
     elif node_list_file:
         nodelist = nids_to_hosts(parse_rangelist_file(node_list_file))
     elif "PBS_NODEFILE" in os.environ:
-        with open(os.environ["PBS_NODEFILE"]) as nodefile:
+        with open(os.environ["PBS_NODEFILE"], encoding='utf-8') as nodefile:
             nodelist = parse_hostfile(nodefile)
 
     # Build exclude node list from command line arguments

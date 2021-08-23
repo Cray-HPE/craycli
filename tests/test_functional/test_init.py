@@ -51,7 +51,7 @@ def test_cray_init_no_hostname(cli_runner):
     assert "Initialization complete." in result.output
     filep = '.config/cray/configurations/{}'.format(configname)
     assert os.path.isfile(filep)
-    with open(filep) as f:
+    with open(filep, encoding='utf-8') as f:
         data = toml.load(f)
     assert data['core']['hostname'] == hostname
 
@@ -70,7 +70,7 @@ def test_cray_init(cli_runner):
     assert "Initialization complete." in result.output
     filep = '.config/cray/configurations/{}'.format(configname)
     assert os.path.isfile(filep)
-    with open(filep) as f:
+    with open(filep, encoding='utf-8') as f:
         data = toml.load(f)
     assert data['core']['hostname'] == hostname
 
@@ -106,7 +106,7 @@ def test_cray_init_w_config(cli_runner):
     assert "Initialization complete." in result.output
     filep = '.config/cray/configurations/{}'.format(configname)
     assert os.path.isfile(filep)
-    with open(filep) as f:
+    with open(filep, encoding='utf-8') as f:
         data = toml.load(f)
     assert data['core']['hostname'] == '{}'.format(hostname)
 

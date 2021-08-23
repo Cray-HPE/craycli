@@ -179,7 +179,7 @@ def test_handle_rpc():  # pylint: disable=too-many-locals
     procinfo_response = {"jsonrpc": "2.0", "result": procinfo, "id": app.procinfo_rpcid}
     app.handle_rpc(sock, procinfo_response, procinfo_file=tmpfname)
 
-    with open(tmpfname) as tmpfp:
+    with open(tmpfname, encoding='utf-8') as tmpfp:
         result = json.load(tmpfp)
     os.unlink(tmpfname)
 

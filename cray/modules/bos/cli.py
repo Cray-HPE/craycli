@@ -53,7 +53,7 @@ def create_templates_shim(func):
     def _decorator(file, name, **kwargs):
         if not file.get('value'):
             return func(name=name, **kwargs)
-        with open(file["value"], 'r') as f:
+        with open(file["value"], 'r', encoding='utf-8') as f:
             data = json.loads(f.read())
         payload = data
         if name:

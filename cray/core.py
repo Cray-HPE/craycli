@@ -220,7 +220,7 @@ class GeneratedCommands(Group):
                 '__file__': filename
             }
 
-            with open(filename) as f:
+            with open(filename, encoding='utf-8') as f:
                 code = compile(f.read(), filename, 'exec')
                 # Note: We are trusting the modules to not do bad things
                 # Since these are cray created we can consider them safe.

@@ -60,7 +60,7 @@ def create_config_file(filename, hostname, username):
     full_path = os.path.join(path, filename)
     if not os.path.exists(path):
         os.makedirs(path)
-    with open(full_path, 'w') as f:
+    with open(full_path, 'w', encoding='utf-8') as f:
         toml.dump(data, f)
 
 def strip_confirmation(output):

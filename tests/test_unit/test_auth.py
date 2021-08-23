@@ -42,7 +42,7 @@ from ..utils.runner import cli_runner
 TOKEN = {}
 TOKEN_PATH = os.path.realpath(os.path.join(os.path.dirname(
     os.path.realpath(__file__)), '../files/token'))
-with open(TOKEN_PATH) as token_file:
+with open(TOKEN_PATH, encoding='utf-8') as token_file:
     TOKEN = json.load(token_file)
 
 
@@ -81,7 +81,7 @@ def test_auth_save(cli_runner):
         """ Sub cli """
         auth_obj = auth.AuthUsername(username, hostname, ctx=ctx)
         auth_obj.save(token)
-        with open(auth_obj._token_path) as token_file:
+        with open(auth_obj._token_path, encoding='utf-8') as token_file:
             data = json.load(token_file)
         assert data['test'] == token['test']
         assert data['client_id'] == auth_obj.client_id
@@ -104,7 +104,7 @@ def test_auth_load(cli_runner):
     def cli_obj(ctx):
         """ Sub cli """
         auth_obj = auth.AuthUsername(username, hostname, ctx=ctx)
-        with open(auth_obj._token_path, 'w') as token_file:
+        with open(auth_obj._token_path, 'w', encoding='utf-8') as token_file:
             json.dump(TOKEN, token_file)
         auth_obj.load()
         assert auth_obj
@@ -168,7 +168,7 @@ def test_auth_existing(cli_runner):
         """ Sub cli """
         auth_obj = auth.AuthUsername(username, hostname, ctx=ctx)
         path = auth_obj._token_path
-        with open(path, 'w') as token_file:
+        with open(path, 'w', encoding='utf-8') as token_file:
             json.dump(TOKEN, token_file)
         auth_obj = auth.AuthFile(path, hostname, ctx=ctx)
         assert auth_obj

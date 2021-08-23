@@ -93,7 +93,7 @@ def open_atomic(path, perms=0o600):
     tmpfd, tmpfname = tempfile.mkstemp(dir=os.path.dirname(path))
     os.close(tmpfd)
 
-    with open(tmpfname, 'w') as tmpfp:
+    with open(tmpfname, 'w', encoding='utf-8') as tmpfp:
         try:
             yield tmpfp
         finally:
