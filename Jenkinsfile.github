@@ -2,12 +2,7 @@
 
 pipeline {
     agent {
-        docker {
-            label "metal-gcp-builder"
-            image "arti.dev.cray.com/dstbuildenv-docker-master-local/cray-sle15sp2_build_environment:latest"
-            // Run as root
-            args "-u root"
-        }
+        label "metal-gcp-builder"
     }
 
     options {
@@ -30,26 +25,26 @@ pipeline {
             }
         }
 
-        stage("Build Prep") {
+        stage("Build Prep and Build") {
+            agent {
+                docker {
+                    label "metal-gcp-builder"
+                    reuseNode true
+                    image "arti.dev.cray.com/dstbuildenv-docker-master-local/cray-sle15sp2_build_environment:latest"
+                    // Run as root
+                    args "-u root"
+                }
+            }
             steps {
                 sh "make build_prep"
-            }
-        }
-
-        stage("Build") {
-            steps {
                 sh "make build"
-            }
-        }
-
-        stage("Post") {
-            steps {
                 sh "make post"
             }
         }
 
         stage('Publish ') {
             steps {
+                sh "sudo chown -R jenkins:jenkins $WORKSPACE/dist/rpmbuild"
                 script {
                     publishCsmRpms(component: env.NAME, pattern: "dist/rpmbuild/RPMS/x86_64/*.rpm", arch: "x86_64", isStable: env.IS_STABLE)
                     publishCsmRpms(component: env.NAME, pattern: "dist/rpmbuild/SRPMS/*.rpm", arch: "src", isStable: env.IS_STABLE)
