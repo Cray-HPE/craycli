@@ -2,7 +2,7 @@
 
 MIT License
 
-(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+(C) Copyright [2020-2021] Hewlett Packard Enterprise Development LP
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -24,7 +24,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 """
 # pylint: disable=invalid-name
 import os
-from cray.generator import generate
+
+from cray.core import option
+from cray.generator import generate, _opt_callback
+from cray.constants import FROM_FILE_TAG
 
 SWAGGER_OPTS = {
     'vocabulary': {
@@ -35,7 +38,51 @@ SWAGGER_OPTS = {
 
 HSM_API_VERSION = os.environ.get("CRAY_HSM_API_VERSION", "v2")
 
+def setup(hsm_cli):
+    """ Sets up all HSM overrides """
+    setup_groups_partitions_create(hsm_cli, 'groups')
+    setup_groups_partitions_create(hsm_cli, 'partitions')
+
+# Groups and Partitions #
+
+def create_groups_partitions_create_shim(func):
+    """ Callback function to custom create our own payload """
+    def _decorator(members_file, members_ids, **kwargs):
+        payload = {v['name']: v['value'] for _, v in kwargs.items() if v['value'] is not None}
+        file_name = members_file['value']
+        if file_name:
+            with open(members_file['value'], 'r') as f:
+                data = f.read()
+            payload['members'] = {
+                'ids': data.strip().split(',')
+            }
+        elif members_ids['value']:
+            payload['members'] = {
+                'ids': members_ids['value']
+            }
+        # Hack to tell the CLI we are passing our own payload; don't generate
+        kwargs[FROM_FILE_TAG] = {"value": payload, "name": FROM_FILE_TAG}
+        return func(**kwargs)
+    return _decorator
+
+
+def setup_groups_partitions_create(hsm_cli, command):
+    """ Adds the --file parameter for groups create """
+    create_command = hsm_cli.commands[command].commands['create']
+
+    option('--members-file', callback=_opt_callback, type=str, metavar='TEXT',
+           help="A file containing a comma separated list of xnames to be added as members."
+           " This overrides --members-ids.")(create_command)
+    new_params = create_command.params[-1:]
+    for param in create_command.params[:-1]:
+        new_params.append(param)
+    create_command.params = new_params
+    create_command.callback = create_groups_partitions_create_shim(create_command.callback)
+
+    hsm_cli.commands[command].commands['create'] = create_command
+
 if HSM_API_VERSION == 'v1':
     cli = generate(__file__, filename='swagger3_v1.json', swagger_opts=SWAGGER_OPTS)
 else:
     cli = generate(__file__, filename='swagger3_v2.json', swagger_opts=SWAGGER_OPTS)
+    setup(cli)
