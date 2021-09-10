@@ -51,7 +51,7 @@ def create_groups_partitions_create_shim(func):
         payload = {v['name']: v['value'] for _, v in kwargs.items() if v['value'] is not None}
         file_name = members_file['value']
         if file_name:
-            with open(members_file['value'], 'r') as f:
+            with open(members_file['value'], 'r', encoding='utf-8') as f:
                 data = f.read()
             payload['members'] = {
                 'ids': data.strip().split(',')

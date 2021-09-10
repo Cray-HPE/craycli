@@ -2502,7 +2502,7 @@ def test_cray_hsmV2_groups_create_file(cli_runner, rest_mock):
     exgrp = 'foobar'
     filename = 'hsm_test.txt'
     comps = 'x0c0s0b0n0'
-    with open(filename, 'w') as f:
+    with open(filename, 'w', encoding='utf-8') as f:
         f.write(comps)
         f.close()
     result = runner.invoke(cli, ['hsm', 'groups', 'create',
@@ -2664,7 +2664,7 @@ def test_cray_hsmV2_partitions_create_file(cli_runner, rest_mock):
     desc = 'My partition'
     filename = 'hsm_test.txt'
     comps = 'x0c0s0b0n0'
-    with open(filename, 'w') as f:
+    with open(filename, 'w', encoding='utf-8') as f:
         f.write(comps)
         f.close()
     result = runner.invoke(cli, ['hsm', 'partitions', 'create',
