@@ -3,7 +3,7 @@ cli.py - mpiexec PALS CLI
 
 MIT License
 
-(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+(C) Copyright [2020-2021] Hewlett Packard Enterprise Development LP
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -452,6 +452,12 @@ def get_rlimits(rlimits):
     default="CORE,CPU",
     help="Resource limits to apply to application",
 )
+@core.option(
+    "--sstartup/--no-sstartup",
+    default=False,
+    envvar="PALS_SSTARTUP",
+    help="enable/disable scalable start up",
+)
 @core.argument("executable")
 @core.argument("args", nargs=-1)
 def cli(
@@ -482,6 +488,7 @@ def cli(
     abort_on_failure,
     pmi,
     rlimits,
+    sstartup,
     executable,
     args,
 ):
@@ -546,6 +553,7 @@ def cli(
     * PALS_ABORT_ON_FAILURE - whether to abort application on non-zero rank exit
     * PALS_PMI - default PMI wire-up setting (cray, pmix, none)
     * PALS_RLIMITS - default application resource limits
+    * PALS_SSTARTUP - whether to enable Scalable Start Up
     """
 
     # Create a launch request from arguments
@@ -579,6 +587,8 @@ def cli(
         launchreq["exclusive"] = exclusive
     if line_buffer:
         launchreq["line_buffered"] = True
+    if sstartup:
+        launchreq["sstartup"] = True
 
     # Make the launch request
     app = PALSApp()

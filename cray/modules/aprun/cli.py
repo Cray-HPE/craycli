@@ -416,6 +416,12 @@ def get_rlimits(memory_per_pe):
     default="cray",
     help="Application PMI wire-up method ('cray' default)",
 )
+@core.option(
+    "--sstartup/--no-sstartup",
+    default=False,
+    help="enable/disable Scalable Start Up",
+)
+
 @core.argument("executable")
 @core.argument("args", nargs=-1)
 def cli(
@@ -453,6 +459,7 @@ def cli(
     procinfo_file,
     abort_on_failure,
     pmi,
+    sstartup,
     executable,
     args,
 ):
@@ -527,6 +534,8 @@ def cli(
         launchreq["exclusive"] = excl
     if sync_output:
         launchreq["line_buffered"] = True
+    if sstartup:
+        launchreq["sstartup"] = True
 
     label = int(os.getenv("APRUN_LABEL", "0"))
 
