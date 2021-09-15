@@ -22,6 +22,9 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 """
 # pylint: skip-file
+
+import os
+
 from . import cli, echo
 from .core import option, group , argument, command, pass_context
 from .config import Config
@@ -35,3 +38,8 @@ __all__ = ['option', 'group', 'argument', 'command', 'Config', 'utils', 'NAME',
            'pass_context', 'echo', 'swagger', 'generator', 'request',
            'cli', 'constants', 'generate', 'errors', 'exceptions', 'logging',
            'pals']
+
+# Attempt to fix locale if user sets LC_ALL=C
+# See https://click.palletsprojects.com/en/7.x/python3
+if os.environ.get('LC_ALL') == 'C':
+    os.environ['LC_ALL'] = 'C.UTF-8'
