@@ -256,12 +256,16 @@ def delete_object(ctx, bucket, obj):
     s3client = get_s3_client()
     try:
         s3client.head_object(Bucket=bucket, Key=obj)
-    except ClientError as err:
+    except (ClientError, s3client.exceptions.NoSuchKey) as err:
         if "404" in str(err):
-            if s3client.DoesS3BucketExist(bucket):
-                print("Error: Object was not found in bucket")
-            else:
-                print("Error: Bucket does not exist")
+            try:
+                Buckets =  s3client.list_buckets().get('Buckets')
+                if bucket in [b['Name'] for b in Buckets]:
+                    print("Error: Object was not found in bucket")
+                else:
+                    print("Error: Bucket does not exist")
+            except ClientError as err:
+                sys.exit(str(err))
         sys.exit(str(err))
     try:
         output = s3client.delete_object(Bucket=bucket, Key=obj)
