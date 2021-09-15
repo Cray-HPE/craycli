@@ -168,7 +168,7 @@ def test_cray_ims_public_keys_create(cli_runner, rest_mock):
         ['ims', 'public-keys', 'create', '--name', 'foo',
          '--public-key', usersshpubkeyfile]
     )
-    with open(usersshpubkeyfile) as inf:
+    with open(usersshpubkeyfile, encoding='utf-8') as inf:
         pubkeydata = inf.read()
     assert result.exit_code == 0
     data = json.loads(result.output)

@@ -1,0 +1,62 @@
+@Library('csm-shared-library') _
+
+pipeline {
+    agent {
+        label "metal-gcp-builder"
+    }
+
+    options {
+        buildDiscarder(logRotator(numToKeepStr: "10"))
+        timestamps()
+    }
+
+    environment {
+        NAME = "craycli"
+        DESCRIPTION = "Cray CLI Tool"
+        IS_STABLE = getBuildIsStable()
+        SPEC_FILE = "craycli.spec"
+        BUILD_METADATA = getRpmRevision(isStable: env.IS_STABLE)
+    }
+
+    stages {
+        stage("Prepare") {
+            steps {
+                sh "make prepare"
+            }
+        }
+
+        stage("Build Prep and Build") {
+            agent {
+                docker {
+                    label "metal-gcp-builder"
+                    reuseNode true
+                    image "arti.dev.cray.com/dstbuildenv-docker-master-local/cray-sle15sp2_build_environment:latest"
+                    // Run as root
+                    args "-u root"
+                }
+            }
+            steps {
+                sh "make build_prep"
+                sh "make build"
+                sh "make post"
+            }
+        }
+
+        stage('Publish ') {
+            steps {
+                sh "sudo chown -R jenkins:jenkins $WORKSPACE/dist/rpmbuild"
+                script {
+                    publishCsmRpms(component: env.NAME, pattern: "dist/rpmbuild/RPMS/x86_64/*.rpm", arch: "x86_64", isStable: env.IS_STABLE)
+                    publishCsmRpms(component: env.NAME, pattern: "dist/rpmbuild/SRPMS/*.rpm", arch: "src", isStable: env.IS_STABLE)
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            // Own files so jenkins can clean them up later
+            postChownFiles()
+        }
+    }
+}

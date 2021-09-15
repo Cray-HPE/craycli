@@ -88,7 +88,7 @@ def get_hostlist(node_list, node_list_file, exclude_node_list, exclude_node_list
     elif node_list_file:
         nodelist = nids_to_hosts(parse_rangelist_file(node_list_file))
     elif "PBS_NODEFILE" in os.environ:
-        with open(os.environ["PBS_NODEFILE"]) as nodefile:
+        with open(os.environ["PBS_NODEFILE"], encoding='utf-8') as nodefile:
             nodelist = parse_hostfile(nodefile)
 
     # Build exclude node list from command line arguments
@@ -416,6 +416,12 @@ def get_rlimits(memory_per_pe):
     default="cray",
     help="Application PMI wire-up method ('cray' default)",
 )
+@core.option(
+    "--sstartup/--no-sstartup",
+    default=False,
+    help="enable/disable Scalable Start Up",
+)
+
 @core.argument("executable")
 @core.argument("args", nargs=-1)
 def cli(
@@ -453,6 +459,7 @@ def cli(
     procinfo_file,
     abort_on_failure,
     pmi,
+    sstartup,
     executable,
     args,
 ):
@@ -527,6 +534,8 @@ def cli(
         launchreq["exclusive"] = excl
     if sync_output:
         launchreq["line_buffered"] = True
+    if sstartup:
+        launchreq["sstartup"] = True
 
     label = int(os.getenv("APRUN_LABEL", "0"))
 

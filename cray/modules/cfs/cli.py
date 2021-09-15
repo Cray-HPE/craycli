@@ -67,7 +67,7 @@ def create_configurations_update_shim(update_callback, patch_callback):
     def _decorator(configuration_id, file, update_branches, **kwargs):
         file_name = file['value']
         if file_name:  # pylint: disable=no-else-return
-            with open(file['value'], 'r') as f:
+            with open(file['value'], 'r', encoding='utf-8') as f:
                 data = json.loads(f.read())
             payload = data
             # Hack to tell the CLI we are passing our own payload; don't generate
@@ -164,10 +164,10 @@ def setup_sessions_create(cfs_cli):
     # and member lists. `option` acts as a decorator here.
     option('--'+GROUPS_PAYLOAD, nargs=2, type=click.Tuple([str, str]), multiple=True,
            payload_name=GROUPS_PAYLOAD, callback=_targets_callback(_opt_callback),
-           metavar='GROUPNAME MEMBER1[, MEMBER2, MEMBER3, ...]',
-           help="Group members for the inventory. When the inventory definition is "
-                "'image', only one group with a single IMS image id should be "
-                "specified. Multiple groups can be specified.")(command)
+           metavar='GROUPNAME MEMBER1[,MEMBER2,MEMBER3,...]',
+           help="Group members for the inventory. "
+                "Multiple groups can be specified by providing this parameter more than once."
+                "")(command)
     option('--tags', callback=_opt_callback, required=False, type=str, metavar='TEXT',
            help="User defined tags.  A comma separated list of key=value")(command)
 

@@ -2,7 +2,7 @@
 
 MIT License
 
-(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+(C) Copyright [2020-2021] Hewlett Packard Enterprise Development LP
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -2459,6 +2459,75 @@ def test_cray_hsmV2_groups_list(cli_runner, rest_mock):
     )
 
 # pylint: disable=redefined-outer-name
+def test_cray_hsmV2_groups_create(cli_runner, rest_mock):
+    """ Test `cray hsm groups create` with valid params """
+
+    runner, cli, config = cli_runner
+    url_template = '/apis/smd/hsm/v2/groups'
+    label = 'blue'
+    tags = 'foo'
+    desc = 'My group'
+    exgrp = 'foobar'
+    comps = 'x0c0s0b0n0'
+    result = runner.invoke(cli, ['hsm', 'groups', 'create',
+                                 '--label', label,
+                                 '--tags', tags,
+                                 '--description', desc,
+                                 '--exclusive-group', exgrp,
+                                 '--members-ids', comps])
+    assert result.exit_code == 0
+    data = json.loads(result.output)
+    assert data['method'] == 'POST'
+    assert data['url'] == '{}{}'.format(
+        config['default']['hostname'],
+        url_template
+    )
+    assert data['body'] == {
+        'label': label,
+        'tags': [tags],
+        'description': desc,
+        'exclusiveGroup': exgrp,
+        'members': {'ids': [comps]},
+    }
+
+# pylint: disable=redefined-outer-name
+def test_cray_hsmV2_groups_create_file(cli_runner, rest_mock):
+    """ Test `cray hsm groups create` with a members file """
+
+    runner, cli, config = cli_runner
+    url_template = '/apis/smd/hsm/v2/groups'
+    label = 'blue'
+    tags = 'foo'
+    desc = 'My group'
+    exgrp = 'foobar'
+    filename = 'hsm_test.txt'
+    comps = 'x0c0s0b0n0'
+    with open(filename, 'w', encoding='utf-8') as f:
+        f.write(comps)
+        f.close()
+    result = runner.invoke(cli, ['hsm', 'groups', 'create',
+                                 '--label', label,
+                                 '--tags', tags,
+                                 '--description', desc,
+                                 '--exclusive-group', exgrp,
+                                 '--members-file', filename])
+    os.remove(filename)
+    assert result.exit_code == 0
+    data = json.loads(result.output)
+    assert data['method'] == 'POST'
+    assert data['url'] == '{}{}'.format(
+        config['default']['hostname'],
+        url_template
+    )
+    assert data['body'] == {
+        'label': label,
+        'tags': [tags],
+        'description': desc,
+        'exclusiveGroup': exgrp,
+        'members': {'ids': [comps]},
+    }
+
+# pylint: disable=redefined-outer-name
 def test_cray_hsmV2_group_members_list(cli_runner, rest_mock):
     """ Test `cray hsm group members list` with valid params """
 
@@ -2554,6 +2623,69 @@ def test_cray_hsmV2_partitions_list(cli_runner, rest_mock):
         config['default']['hostname'],
         url_template
     )
+
+# pylint: disable=redefined-outer-name
+def test_cray_hsmV2_partitions_create(cli_runner, rest_mock):
+    """ Test `cray hsm partitions create` with valid params """
+
+    runner, cli, config = cli_runner
+    url_template = '/apis/smd/hsm/v2/partitions'
+    name = 'p0.1'
+    tags = 'foo'
+    desc = 'My partition'
+    comps = 'x0c0s0b0n0'
+    result = runner.invoke(cli, ['hsm', 'partitions', 'create',
+                                 '--name', name,
+                                 '--tags', tags,
+                                 '--description', desc,
+                                 '--members-ids', comps])
+    assert result.exit_code == 0
+    data = json.loads(result.output)
+    assert data['method'] == 'POST'
+    assert data['url'] == '{}{}'.format(
+        config['default']['hostname'],
+        url_template
+    )
+    assert data['body'] == {
+        'name': name,
+        'tags': [tags],
+        'description': desc,
+        'members': {'ids': [comps]},
+    }
+
+# pylint: disable=redefined-outer-name
+def test_cray_hsmV2_partitions_create_file(cli_runner, rest_mock):
+    """ Test `cray hsm partitions create` with a members file """
+
+    runner, cli, config = cli_runner
+    url_template = '/apis/smd/hsm/v2/partitions'
+    name = 'p0.1'
+    tags = 'foo'
+    desc = 'My partition'
+    filename = 'hsm_test.txt'
+    comps = 'x0c0s0b0n0'
+    with open(filename, 'w', encoding='utf-8') as f:
+        f.write(comps)
+        f.close()
+    result = runner.invoke(cli, ['hsm', 'partitions', 'create',
+                                 '--name', name,
+                                 '--tags', tags,
+                                 '--description', desc,
+                                 '--members-file', filename])
+    os.remove(filename)
+    assert result.exit_code == 0
+    data = json.loads(result.output)
+    assert data['method'] == 'POST'
+    assert data['url'] == '{}{}'.format(
+        config['default']['hostname'],
+        url_template
+    )
+    assert data['body'] == {
+        'name': name,
+        'tags': [tags],
+        'description': desc,
+        'members': {'ids': [comps]},
+    }
 
 # pylint: disable=redefined-outer-name
 def test_cray_hsmV2_partition_members_list(cli_runner, rest_mock):
