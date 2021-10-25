@@ -1,0 +1,397 @@
+#
+# swagger.yaml - OpenAPI specification for vnid
+# Copyright 2021 Hewlett Packard Enterprise Development LP
+#
+# Use https://editor.swagger.io/ to validate changes
+#
+openapi: '3.0.3'
+info:
+  title: Virtual Network Identifier Daemon
+  version: 0.1.0
+  description: The vnid API handles Slingshot virtual network identifier (VNI) reservations.
+
+servers:
+  - url: https://api-gw-service-nmn.local/apis/vnid/fabric
+
+paths:
+  /vnis:
+    get:
+      summary: Get an array of active partitions
+      responses:
+        200:
+          $ref: '#/components/responses/partitions'
+        default:
+          $ref: '#/components/responses/error'
+    post:
+      summary: Create a partition
+      requestBody:
+        $ref: '#/components/requestBodies/partition'
+      responses:
+        200:
+          $ref: '#/components/responses/partition'
+        default:
+          $ref: '#/components/responses/error'
+  /vnis/{partition}:
+    parameters:
+      - $ref: '#/components/parameters/partition'
+    get:
+      summary: Get partition details
+      responses:
+        200:
+          $ref: '#/components/responses/partition'
+        default:
+          $ref: '#/components/responses/error'
+    delete:
+      summary: Delete a partition and its VNIs
+      responses:
+        200:
+          $ref: '#/components/responses/deleted'
+        default:
+          $ref: '#/components/responses/error'
+  /vnis/{partition}/vnis:
+    parameters:
+      - $ref: '#/components/parameters/partition'
+    get:
+      summary: Get a list of active VNIs
+      responses:
+        200:
+          $ref: '#/components/responses/vnis'
+        default:
+          $ref: '#/components/responses/error'
+    post:
+      summary: Reserve one or more VNIs
+      requestBody:
+        $ref: '#/components/requestBodies/vniRequest'
+      responses:
+        200:
+          $ref: '#/components/responses/vnis'
+        default:
+          $ref: '#/components/responses/error'
+  /vnis/{partition}/vnis/{vni}:
+    parameters:
+      - $ref: '#/components/parameters/partition'
+      - $ref: '#/components/parameters/vni'
+    get:
+      summary: Get information about a single VNI
+      responses:
+        200:
+          $ref: '#/components/responses/vni'
+        default:
+          $ref: '#/components/responses/error'
+    delete:
+      summary: Release a single VNI
+      responses:
+        200:
+          $ref: '#/components/responses/deleted'
+        default:
+          $ref: '#/components/responses/error'
+  /vnis/{partition}/jobs:
+    parameters:
+      - $ref: '#/components/parameters/partition'
+    get:
+      summary: Get a list of jobs in this partition
+      responses:
+        200:
+          $ref: '#/components/responses/jobs'
+        default:
+          $ref: '#/components/responses/error'
+    post:
+      summary: Create a new job and reserve a VNI for it
+      requestBody:
+        $ref: '#/components/requestBodies/job'
+      responses:
+        200:
+          $ref: '#/components/responses/job'
+        default:
+          $ref: '#/components/responses/error'
+  /vnis/{partition}/jobs/{job}:
+    parameters:
+      - $ref: '#/components/parameters/partition'
+      - $ref: '#/components/parameters/job'
+    get:
+      summary: Get information about a single job
+      responses:
+        200:
+          $ref: '#/components/responses/job'
+        default:
+          $ref: '#/components/responses/error'
+    delete:
+      summary: Delete a job and its VNIs
+      responses:
+        200:
+          $ref: '#/components/responses/deleted'
+        default:
+          $ref: '#/components/responses/error'
+
+components:
+  parameters:
+    partition:
+      name: partition
+      in: path
+      description: Partition name
+      required: true
+      schema:
+        type: string
+    vni:
+      name: vni
+      in: path
+      description: Virtual network identifier
+      required: true
+      schema:
+        type: integer
+    job:
+      name: job
+      in: path
+      description: Job identifier
+      required: true
+      schema:
+        type: string
+  schemas:
+    partitions:
+      description: A list of partitions
+      type: object
+      properties:
+        documentSelfLinks:
+          description: An array of links to partitions
+          type: array
+          items:
+            type: string
+          example: ["/fabric/vnis/WLM"]
+    partition:
+      description: A partition from which VNIs may be reserved
+      type: object
+      required:
+        - partitionName
+        - description
+        - vniLimit
+        - vniSvcLimit
+        - enforce
+      properties:
+        partitionName:
+          description: Name of the partition
+          type: string
+          example: WLM
+        description:
+          description: Description for this partition
+          type: string
+          example: Default partition
+        vniLimit:
+          description: Maximum number of VNIs that may be reserved in this partition
+          type: integer
+          example: 50000
+        vniSvcLimit:
+          description: Maximum number of service VNIs that may be reserved in this partition
+          type: integer
+          example: 1000
+        enforce:
+          description: Enable switch enforcement for VNIs in this partition (not implemented)
+          type: boolean
+          example: false
+        drain:
+          description: Don't allow new VNI reservations in this partition (not implemented)
+          type: boolean
+          example: false
+          readOnly: true
+        vniLink:
+          description: Link to VNIs reserved in this partition
+          type: string
+          example: /fabric/vnis/WLM/vnis
+          readOnly: true
+        documentSelfLink:
+          description: Link to this partition
+          type: string
+          example: /fabric/vnis/WLM
+          readOnly: true
+    vnis:
+      description: A list of VNIs
+      type: object
+      properties:
+        documentSelfLinks:
+          description: An array of links to reserved VNIs
+          type: array
+          items:
+            type: string
+          example: ["/fabric/vnis/WLM/vnis/1024"]
+    vniRequest:
+      description: A request to reserve VNIs
+      type: object
+      required:
+        - vniCount
+        - isService
+      properties:
+        description:
+          description: A description for these VNIs
+          type: string
+          example: Application 1234
+        vniCount:
+          description: Number of VNIs to reserve. Must be 1 if isService is true.
+          type: integer
+          example: 1
+        isService:
+          description: Whether these VNIs are for a service
+          type: boolean
+          example: false
+        vni:
+          description: Reserve a specific VNI value. Only allowed if ifService is true.
+          type: integer
+          example: 1024
+    vni:
+      description: A virtual network identifier object
+      type: object
+      properties:
+        VNI:
+          description: VNI value
+          type: integer
+          example: 1024
+        description:
+          description: Description of this VNI
+          type: string
+          nullable: true
+          example: Application 1234
+        isService:
+          description: Whether this VNI is for a service
+          type: boolean
+          example: false
+        jobVNI:
+          description: Whether this VNI is associated with a job
+          type: boolean
+          example: false
+    jobs:
+      description: A list of jobs
+      type: object
+      properties:
+        documentSelfLinks:
+          description: An array of links to jobs
+          type: array
+          items:
+            type: string
+          example: ["/fabric/vnis/WLM/jobs/1"]
+    job:
+      description: A job object
+      type: object
+      required:
+        - JobID
+        - UID
+        - TrafficClasses
+      properties:
+        JobID:
+          description: Job identifier
+          type: string
+          example: "1"
+        UID:
+          description: User identifier associated with the job
+          type: integer
+          example: 1000
+        TrafficClasses:
+          description: Set of permitted Slingshot Traffic Classes
+          type: object
+          properties:
+            best_effort:
+              description: Best Effort for most traffic
+              type: boolean
+              example: true
+            low_latency:
+              description: Low Latency TC for small messages
+              type: boolean
+              example: true
+            bulk_data:
+              description: Bulk Data for large transfers
+              type: boolean
+              example: false
+            dedicated_access:
+              description: Dedicated Access for special system services
+              type: boolean
+              example: false
+        VNIs:
+          description: Array of VNI links associated with this job
+          type: array
+          items:
+            type: string
+          example: ["/fabric/vnis/WLM/vnis/1025"]
+          readOnly: true
+    error:
+      description: Contains error information in RFC 7807 format
+      type: object
+      properties:
+        status:
+          description: The HTTP status code generated by the origin server for this occurrence of the problem
+          type: integer
+          example: 400
+        detail:
+          description: A human-readable explanation specific to this occurrence of the problem
+          type: string
+          example: Missing required placement parameter
+        title:
+          description: A short, human-readable summary of the problem type
+          type: string
+          example: Bad Request
+  responses:
+    partitions:
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/partitions'
+    partition:
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/partition'
+    vnis:
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/vnis'
+    vni:
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/vni'
+    jobs:
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/jobs'
+    job:
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/job'
+    error:
+      description: Error
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/error'
+    deleted:
+      description: Deleted
+      content:
+        application/json:
+          schema:
+            type: object
+            properties: {}
+            example: {}
+  requestBodies:
+    partition:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/partition'
+      required: true
+    vniRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/vniRequest'
+      required: true
+    job:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/job'
+      required: true
