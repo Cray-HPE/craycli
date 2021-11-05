@@ -39,7 +39,7 @@ PING_INTERVAL = 20  # WebSocket ping interval
 
 def validate_soft(ctx, param, value):
     # pylint: disable=unused-argument
-    """ Convert a soft option into a set of acceptable ranks """
+    """Convert a soft option into a set of acceptable ranks"""
     if value is None:
         return None
 
@@ -73,7 +73,7 @@ def validate_soft(ctx, param, value):
 
 
 def soft_nprocs(soft, nprocs):
-    """ Reduce the number of ranks to the largest acceptable soft value """
+    """Reduce the number of ranks to the largest acceptable soft value"""
     # If no soft specification given, use -n value
     if not soft:
         return nprocs
@@ -88,7 +88,7 @@ def soft_nprocs(soft, nprocs):
 
 def validate_umask(ctx, param, value):
     # pylint: disable=unused-argument
-    """ Validate a umask setting """
+    """Validate a umask setting"""
     try:
         umaskint = int(value, base=8)
         if umaskint < 0:
@@ -107,7 +107,7 @@ def validate_umask(ctx, param, value):
 
 
 def get_hostlist(hosts, hostfile):
-    """ Given command-line arguments, produce a host list """
+    """Given command-line arguments, produce a host list"""
     hostlist = []
     if hosts:
         hostlist = hosts.split(",")
@@ -125,7 +125,7 @@ def get_hostlist(hosts, hostfile):
 
 
 def get_launch_env(envlist, envall, env, path):
-    """ Given command line arguments, build up the environment array """
+    """Given command line arguments, build up the environment array"""
 
     # First handle the arguments that export existing environment
     if envlist:
@@ -155,14 +155,14 @@ def get_launch_env(envlist, envall, env, path):
 
 
 def get_umask():
-    """ Return the current umask value """
+    """Return the current umask value"""
     umask = os.umask(0)
     os.umask(umask)
     return umask
 
 
 def get_wdir():
-    """ Get the current working directory, if it exists """
+    """Get the current working directory, if it exists"""
     try:
         return os.getcwd()
     except OSError:
@@ -170,32 +170,20 @@ def get_wdir():
 
 
 def octal(val):
-    """ Parse a string into an octal value """
+    """Parse a string into an octal value"""
     return int(val, 8)
 
 
 def posint(val):
-    """ Parse a string into a positive integer """
+    """Parse a string into a positive integer"""
     ival = int(val)
     if ival <= 0:
         raise argparse.ArgumentTypeError("%s must be positive" % val)
     return ival
 
 
-def get_cmd(executable, args, nranks, soft, wdir, umask, depth):
-    """ Format a command dictionary """
-    cmd = {"argv": [executable] + list(args), "nranks": soft_nprocs(soft, nranks)}
-    if wdir:
-        cmd["wdir"] = wdir
-    if umask:
-        cmd["umask"] = umask
-    if depth:
-        cmd["depth"] = depth
-    return cmd
-
-
-def parse_mpmd_args(argv, soft, def_depth):
-    """ Parse MPMD command arguments into a command dictionary """
+def parse_mpmd_args(argv, soft, def_depth, def_ppn):
+    """Parse MPMD command arguments into a command dictionary"""
     parser = argparse.ArgumentParser(prog="", description="MPMD Command Definition")
     parser.add_argument(
         "-n", "-np", "--np", default=1, type=posint, help="number of processes to start"
@@ -207,7 +195,10 @@ def parse_mpmd_args(argv, soft, def_depth):
         "-umask", "--umask", default=get_umask(), type=octal, help="file creation mask"
     )
     parser.add_argument(
-        "-depth", "--depth", default=def_depth, type=posint, help="CPUs per process"
+        "-d", "--depth", default=def_depth, type=posint, help="CPUs per process"
+    )
+    parser.add_argument(
+        "-ppn", "--ppn", default=def_ppn, type=posint, help="processes per node"
     )
     parser.add_argument("executable", help="executable to launch")
     parser.add_argument(
@@ -218,14 +209,23 @@ def parse_mpmd_args(argv, soft, def_depth):
     args = parser.parse_args(argv)
 
     # Format into a command dictionary
-    return get_cmd(args.executable, args.args, args.np, soft, args.wdir, args.umask, args.depth)
+    argv = [args.executable] + list(args.args)
+    nranks = soft_nprocs(soft, args.np)
+    return dict(
+        argv=argv,
+        nranks=nranks,
+        wdir=args.wdir,
+        umask=args.umask,
+        depth=args.depth,
+        ppn=args.ppn,
+    )
 
 
-def parse_mpmd_file(configfile, soft=None, def_depth=1):
-    """ Read an MPMD config file and return a list of commands """
+def parse_mpmd_file(configfile, soft, def_depth, def_ppn):
+    """Read an MPMD config file and return a list of commands"""
     try:
         cmds = []
-        with open(configfile, encoding='utf-8') as config:
+        with open(configfile, encoding="utf-8") as config:
             content = config.read().replace("\\\n", "")
             for line in content.splitlines():
                 line = line.strip()
@@ -234,7 +234,7 @@ def parse_mpmd_file(configfile, soft=None, def_depth=1):
                 if not line or line[0] == "#":
                     continue
 
-                cmds.append(parse_mpmd_args(line.split(), soft, def_depth))
+                cmds.append(parse_mpmd_args(line.split(), soft, def_depth, def_ppn))
 
         # Make sure we got at least one command
         if not cmds:
@@ -247,24 +247,28 @@ def parse_mpmd_file(configfile, soft=None, def_depth=1):
         )
 
 
-def parse_mpmd(executable, args, nranks, soft, wdir, umask, depth):
-    """ Parse MPMD commands from the given arguments """
+def parse_mpmd(executable, args, nranks, soft, wdir, umask, depth, ppn):
+    """Parse MPMD commands from the given arguments"""
 
     # Split into separate commands
     cmdargvs = split_mpmd_args(list(args))
 
     # Create first command
-    cmds = [get_cmd(executable, cmdargvs[0], nranks, soft, wdir, umask, depth)]
+    argv = [executable] + list(cmdargvs[0])
+    nranks = soft_nprocs(soft, nranks)
+    cmds = [
+        dict(argv=argv, nranks=nranks, wdir=wdir, umask=umask, depth=depth, ppn=ppn)
+    ]
 
     # Add other commands
     for cmdargv in cmdargvs[1:]:
-        cmds.append(parse_mpmd_args(cmdargv, soft, depth))
+        cmds.append(parse_mpmd_args(cmdargv, soft, depth, ppn))
 
     return cmds
 
 
 def get_rlimits(rlimits):
-    """ Get resource limits to apply to application """
+    """Get resource limits to apply to application"""
     # Determine the limits we're sending
     if rlimits == "NONE":
         limitnames = []
@@ -568,9 +572,11 @@ def cli(
 
     # Parse commands
     if configfile:
-        launchreq["cmds"] = parse_mpmd_file(executable, soft, depth)
+        launchreq["cmds"] = parse_mpmd_file(executable, soft, depth, ppn)
     else:
-        launchreq["cmds"] = parse_mpmd(executable, args, nranks, soft, wdir, umask, depth)
+        launchreq["cmds"] = parse_mpmd(
+            executable, args, nranks, soft, wdir, umask, depth, ppn
+        )
 
     # Add optional settings
     if "PBS_JOBID" in os.environ:
