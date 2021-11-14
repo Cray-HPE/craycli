@@ -1,4 +1,4 @@
-FROM alpine:3.13.2 as app
+FROM alpine:3.13 as app
 
 RUN apk add --no-cache bash
 RUN apk add --no-cache python3
