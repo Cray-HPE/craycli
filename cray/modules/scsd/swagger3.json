@@ -3,7 +3,7 @@
     "info": {
         "version": "0.1",
         "title": "System Configuration Service",
-        "description": "Commercial off-the-shelf BMCs and HPE-built controllers will need to have various parameters configured on them such as NTP server, syslog server, SSH keys, access credentials. These parameters are automatically configured when the targets like BMC and controllers are discovered.\nThe System Configuration Service makes it possible for administrators to configure these parameters at anytime on multiple targets in a single operation. The System Configuration Service runs on the non-compute worker node.\n\nThe REST API provides the following functions:\n* Set or retrieve network protocol (NWP) parameters (NTP, syslog servers, SSH keys) for specified targets (xnames or groups). Only Redfish access credentials can be configured for Commercial off-the-shelf BMCs or BMC's in air cooled hardware. The other parameters are not applicable.\n* Set Redfish access credentials for specified targets\n* Check service health\n## Resources\n### /bmc/dumpcfg\nRetrieve network protocol parameters like NTP, syslog server, and SSH keys for a set of controllers.\n### /bmc/loadcfg\nConfigure NTP, syslog server, and SSH keys for a set of controllers.\n### /bmc/cfg/{xname}\nRetrieve or set NTP, syslog server, and SSH keys for a single controller.\n### /bmc/discreetcreds\nConfigure discrete access credentials for target BMCs or controllers.\n### /bmc/creds/{xname}\nConfigure access credentials for a single BMC or controller.\n### /bmc/globalcreds\nConfigure the same access credentials for multiple BMCs or controllers.\n### /bmc/createcerts\nCreate BMC TLS cert/key pairs and store securely for later use.\n### /bmc/deletecerts\nDelet BMC TLS cert/key pairs and store securely for later use.\n### /bmc/fetchcerts\nFetch previously created BMC TLS certs for viewing.\n### /bmc/setcerts\nApply previously created BMC TLS cert/key pairs to target Redfish BMCs.\n### /bmc/setcert/{xname}\nApply previously created BMC TLS cert/key pairs to a single target Redfish BMCs.\n### /health\nRetrieve the current health state of the service.\n## Workflows\n### Retrieve syslog, NTP server and/or SSH key information on a single or multiple targets\n#### POST /bmc/dumpcfg\nSend a JSON payload with targets to retrieve. Targets can be xnames of BMCs or controllers, or group IDs. Returns a JSON payload containing NTP server information on specified targets.\n#### GET /bmc/cfg/{xname}?params=NTPServer+SyslogServer\nReturns a JSON payload containing only NTP and syslog server from a single target.\n### Set syslog and NTP server and/or SSH key information on a single or multiple targets\n#### POST /bmc/loadcfg\nSend a JSON payload with parameters to set and a list of targets.  Targets  can be xnames of BMCs or controllers, or group IDs. Returns a JSON payload with the results of the operation.\n#### POST /bmc/cfg/{xname}?params=NTPServer+SSHKey\nReturns a JSON payload containing NTP and SSH key information from a single target.\n### Set login credentials on controllers\n#### POST /bmc/discreetcreds\nSets login credentials on a set of controllers.  Targets can be xnames of controllers or group IDs.\n### Create or delete BMC TLS cert/key pairs\n#### POST /bmc/createcerts\nSend a JSON payload with BMC domain and targets.  Creates a TLS cert/key pair for each BMC domain (e.g. cabinet) and stores it in secure storage  for later use.\n#### POST /bmc/deletecerts\nSend a JSON payload with BMC domain and targets.  Deletes all applicable TLS cert/key pairs from secure storage.\n### Fetch and view TLS certs\n#### POST /bmc/fetchcerts\nSend a JSON payload with BMC targets.  Fetches applicable TLS certs and returns them in a JSON payload.  Note that cert data is fetched, but not the private key data.\n### Apply TLS Certs to BMCs\n#### POST /bmc/setcerts\nSend a JSON payload with BMC targets.  Fetch applicable TLS certs/keys from secure storage.  Apply cert/key pairs to target BMCs.\n#### POST /bmc/setcert/{xname}?Force=true&Domain=cabinet\nNo JSON payload needed.  Fetch TLS cert/key pair from secure storage for target BMC specified by {xname}.  Apply cert/key pair to target BMC. Force defaults to false, Domain defaults to cabinet.",
+        "description": "Commercial off-the-shelf BMCs and HPE-built controllers will need to have various parameters configured on them such as NTP server, syslog server, SSH keys, access credentials. These parameters are automatically configured when the targets like BMC and controllers are discovered.\nThe System Configuration Service makes it possible for administrators to configure these parameters at anytime on multiple targets in a single operation. The System Configuration Service runs on the non-compute worker node.\n\nThe REST API provides the following functions:\n* Set or retrieve network protocol (NWP) parameters (NTP, syslog servers, SSH keys) for specified targets (xnames or groups). Only Redfish access credentials can be configured for Commercial off-the-shelf BMCs or BMC's in air cooled hardware. The other parameters are not applicable.\n* Set Redfish access credentials for specified targets\n* Check service health\n## Resources\n### /bmc/dumpcfg\nRetrieve network protocol parameters like NTP, syslog server, and SSH keys for a set of controllers.\n### /bmc/loadcfg\nConfigure NTP, syslog server, and SSH keys for a set of controllers.\n### /bmc/cfg/{xname}\nRetrieve or set NTP, syslog server, and SSH keys for a single controller.\n### /bmc/discreetcreds\nConfigure discrete access credentials for target BMCs or controllers.\n### /bmc/creds/{xname}\nConfigure or fetch (with authorization) access credentials for a single BMC or controller.\n### /bmc/globalcreds\nConfigure the same access credentials for multiple BMCs or controllers.\n### /bmc/createcerts\nCreate BMC TLS cert/key pairs and store securely for later use.\n### /bmc/deletecerts\nDelet BMC TLS cert/key pairs and store securely for later use.\n### /bmc/fetchcerts\nFetch previously created BMC TLS certs for viewing.\n### /bmc/setcerts\nApply previously created BMC TLS cert/key pairs to target Redfish BMCs.\n### /bmc/setcert/{xname}\nApply previously created BMC TLS cert/key pairs to a single target Redfish BMCs.\n### /health\nRetrieve the current health state of the service.\n## Workflows\n### Retrieve syslog, NTP server and/or SSH key information on a single or multiple targets\n#### POST /bmc/dumpcfg\nSend a JSON payload with targets to retrieve. Targets can be xnames of BMCs or controllers, or group IDs. Returns a JSON payload containing NTP server information on specified targets.\n#### GET /bmc/cfg/{xname}?params=NTPServer+SyslogServer\nReturns a JSON payload containing only NTP and syslog server from a single target.\n### Set syslog and NTP server and/or SSH key information on a single or multiple targets\n#### POST /bmc/loadcfg\nSend a JSON payload with parameters to set and a list of targets.  Targets  can be xnames of BMCs or controllers, or group IDs. Returns a JSON payload with the results of the operation.\n#### POST /bmc/cfg/{xname}?params=NTPServer+SSHKey\nReturns a JSON payload containing NTP and SSH key information from a single target.\n### Set login credentials on controllers\n#### POST /bmc/discreetcreds\nSets login credentials on a set of controllers.  Targets can be xnames of controllers or group IDs.\n### Create or delete BMC TLS cert/key pairs\n#### POST /bmc/createcerts\nSend a JSON payload with BMC domain and targets.  Creates a TLS cert/key pair for each BMC domain (e.g. cabinet) and stores it in secure storage  for later use.\n#### POST /bmc/deletecerts\nSend a JSON payload with BMC domain and targets.  Deletes all applicable TLS cert/key pairs from secure storage.\n### Fetch and view TLS certs\n#### POST /bmc/fetchcerts\nSend a JSON payload with BMC targets.  Fetches applicable TLS certs and returns them in a JSON payload.  Note that cert data is fetched, but not the private key data.\n### Apply TLS Certs to BMCs\n#### POST /bmc/setcerts\nSend a JSON payload with BMC targets.  Fetch applicable TLS certs/keys from secure storage.  Apply cert/key pairs to target BMCs.\n#### POST /bmc/setcert/{xname}?Force=true&Domain=cabinet\nNo JSON payload needed.  Fetch TLS cert/key pair from secure storage for target BMC specified by {xname}.  Apply cert/key pair to target BMC. Force defaults to false, Domain defaults to cabinet.",
         "license": {
             "name": "Cray Proprietary"
         }
@@ -667,6 +667,83 @@
                 }
             }
         },
+        "/bmc/creds": {
+            "parameters": [
+                {
+                    "in": "query",
+                    "name": "targets",
+                    "required": false,
+                    "description": "Comma separated list of XNames.  No query string results in fetching creds for all known BMCs.",
+                    "schema": {
+                        "type": "string",
+                        "description": "Comma separated list of xnames",
+                        "example": "x1000c0s0b0,x1000c0s1b0"
+                    }
+                },
+                {
+                    "in": "query",
+                    "name": "type",
+                    "required": false,
+                    "description": "Target component type.  A maximum of one type is allowed.  If no type is specified, all known BMC types are returned.",
+                    "schema": {
+                        "type": "string",
+                        "example": "NodeBMC"
+                    }
+                }
+            ],
+            "get": {
+                "tags": [
+                    "creds"
+                ],
+                "summary": "Fetch controller login credentials for specified targets.",
+                "description": "Fetch controller login credentials for a specified targets.  Targets are specified as a comma-separated list of xnames.",
+                "responses": {
+                    "200": {
+                        "description": "OK.  The data was succesfully set",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "Xname": {
+                                                "type": "string",
+                                                "pattern": "^s0$|^d([0-9]+)$|^x([0-9]{1,4})d([0-1])$|^x([0-9]{1,4})m([0-3])$|^x([0-9]{1,4})m([0-3])p([0-7])$|^x([0-9]{1,4})m([0-3])i([0-3])$|^x([0-9]{1,4})m([0-3])p([0-7])j([1-9][0-9]*)$|^x([0-9]{1,4})e([0-1])$|^x([0-9]{1,4})$|^x([0-9]{1,4})b([0])$|^x([0-9]{1,4})c([0-7])$|^x([0-9]{1,4})c([0-7])b([0])$|^x([0-9]{1,4})c([0-7])f([0])$|^x([0-9]{1,4})c([0-7])t([0-2])$|^x([0-9]{1,4})c([0-7])s([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)f([0])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)e([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)j([1-2])$|^x([0-9]{1,4})c([0-7])r([0-9]+)e([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)h([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)a([0-7])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)d([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)p([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)$|^x([0-9]{1,4})c([0-7])r([0-9]+)f([01])$|^x([0-9]{1,4})c([0-7])r([0-9]+)t([0-9]+)f([0-1])$|^x([0-9]{1,4})c([0-7])r([0-9]+)b([0-9]+)$|^x([0-9]{1,4})c([0-7])r([0-9]+)b([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)a([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)j([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])r([0-9]+)j([1-9][0-9]*)p([012])$|^x([0-9]{1,4})c([0-7])r([0-9]+)a([0-3])l([0-9]+)$|^x([0-9]{1,4})c([0-7])w([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])w([0-9]+)j([1-9][0-9]*)$",
+                                                "description": "The xname of this piece of hardware",
+                                                "example": "x0c0s0b0"
+                                            },
+                                            "Username": {
+                                                "type": "string",
+                                                "example": "admin"
+                                            },
+                                            "Password": {
+                                                "type": "string",
+                                                "example": "pwstring"
+                                            },
+                                            "StatusCode": {
+                                                "type": "integer",
+                                                "example": 200
+                                            },
+                                            "StatusMsg": {
+                                                "type": "string",
+                                                "example": "OK"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Endpoint not found"
+                    },
+                    "405": {
+                        "description": "Invalid method, only GET, POST is allowed"
+                    }
+                }
+            }
+        },
         "/bmc/globalcreds": {
             "post": {
                 "tags": [
@@ -906,6 +983,8 @@
                     "certs",
                     "cli_from_file"
                 ],
+                "summary": "Fetch previously created BMC TLS certs for viewing.",
+                "description": "Fetches BMC TLS certs previously created using the /bmc/createcerts endpoint and stored in secure storage.  This API does not interact  with Redfish BMCs.",
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -994,7 +1073,7 @@
                     "cli_from_file"
                 ],
                 "summary": "Apply previously-generated TLS cert/key data to target BMCs",
-                "description": "Apply TLS cert/key pairs, previously generated using the /bmc/managecerts endpoint, to target BMCs. The Force field is optional. If present, and set to 'true', the Redfish operations will be attempted without contacting HSM and without verifying if the targets are present or are in a good state.  If the \"Force\" field is not present or is present but set to 'false', HSM will be used.",
+                "description": "Apply TLS cert/key pairs, previously generated using the /bmc/createcerts endpoint, to target BMCs. The Force field is optional. If present, and set to 'true', the Redfish operations will be attempted without contacting HSM and without verifying if the targets are present or are in a good state.  If the \"Force\" field is not present or is present but set to 'false', HSM will be used.",
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -1102,7 +1181,7 @@
                     "certs"
                 ],
                 "summary": "Apply previously-generated TLS cert/key data to the target BMC",
-                "description": "Apply a TLS cert/key pairs previously generated using the /bmc/managecerts endpoint to the target BMC. The Force parameter is optional. If present, and set to 'true', the Redfish operations will be attempted without contacting HSM and without verifying if the targets are present or are in a good state.  If the \"Force\" parameter is not present or is present but set to 'false', HSM will be used.",
+                "description": "Apply a TLS cert/key pairs previously generated using the /bmc/createcerts endpoint to the target BMC. The Force parameter is optional. If present, and set to 'true', the Redfish operations will be attempted without contacting HSM and without verifying if the targets are present or are in a good state.  If the \"Force\" parameter is not present or is present but set to 'false', HSM will be used.",
                 "responses": {
                     "200": {
                         "description": "OK.  The cert was succesfully applied to BMC target"
@@ -1193,6 +1272,11 @@
                 "pattern": "^s0$|^d([0-9]+)$|^x([0-9]{1,4})d([0-1])$|^x([0-9]{1,4})m([0-3])$|^x([0-9]{1,4})m([0-3])p([0-7])$|^x([0-9]{1,4})m([0-3])i([0-3])$|^x([0-9]{1,4})m([0-3])p([0-7])j([1-9][0-9]*)$|^x([0-9]{1,4})e([0-1])$|^x([0-9]{1,4})$|^x([0-9]{1,4})b([0])$|^x([0-9]{1,4})c([0-7])$|^x([0-9]{1,4})c([0-7])b([0])$|^x([0-9]{1,4})c([0-7])f([0])$|^x([0-9]{1,4})c([0-7])t([0-2])$|^x([0-9]{1,4})c([0-7])s([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)f([0])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)e([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)j([1-2])$|^x([0-9]{1,4})c([0-7])r([0-9]+)e([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)h([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)a([0-7])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)d([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)p([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)$|^x([0-9]{1,4})c([0-7])r([0-9]+)f([01])$|^x([0-9]{1,4})c([0-7])r([0-9]+)t([0-9]+)f([0-1])$|^x([0-9]{1,4})c([0-7])r([0-9]+)b([0-9]+)$|^x([0-9]{1,4})c([0-7])r([0-9]+)b([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)a([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)j([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])r([0-9]+)j([1-9][0-9]*)p([012])$|^x([0-9]{1,4})c([0-7])r([0-9]+)a([0-3])l([0-9]+)$|^x([0-9]{1,4})c([0-7])w([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])w([0-9]+)j([1-9][0-9]*)$",
                 "description": "The xname of this piece of hardware",
                 "example": "x0c0s0b0"
+            },
+            "xname_list": {
+                "type": "string",
+                "description": "Comma separated list of xnames",
+                "example": "x1000c0s0b0,x1000c0s1b0"
             },
             "ntp_server_info_kw": {
                 "type": "string",
@@ -1806,6 +1890,63 @@
                             "description": "The xname of this piece of hardware",
                             "example": "x0c0s0b0"
                         }
+                    }
+                }
+            },
+            "creds_fetch_rsp": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "Xname": {
+                            "type": "string",
+                            "pattern": "^s0$|^d([0-9]+)$|^x([0-9]{1,4})d([0-1])$|^x([0-9]{1,4})m([0-3])$|^x([0-9]{1,4})m([0-3])p([0-7])$|^x([0-9]{1,4})m([0-3])i([0-3])$|^x([0-9]{1,4})m([0-3])p([0-7])j([1-9][0-9]*)$|^x([0-9]{1,4})e([0-1])$|^x([0-9]{1,4})$|^x([0-9]{1,4})b([0])$|^x([0-9]{1,4})c([0-7])$|^x([0-9]{1,4})c([0-7])b([0])$|^x([0-9]{1,4})c([0-7])f([0])$|^x([0-9]{1,4})c([0-7])t([0-2])$|^x([0-9]{1,4})c([0-7])s([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)f([0])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)e([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)j([1-2])$|^x([0-9]{1,4})c([0-7])r([0-9]+)e([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)h([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)a([0-7])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)d([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)p([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)$|^x([0-9]{1,4})c([0-7])r([0-9]+)f([01])$|^x([0-9]{1,4})c([0-7])r([0-9]+)t([0-9]+)f([0-1])$|^x([0-9]{1,4})c([0-7])r([0-9]+)b([0-9]+)$|^x([0-9]{1,4})c([0-7])r([0-9]+)b([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)a([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)j([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])r([0-9]+)j([1-9][0-9]*)p([012])$|^x([0-9]{1,4})c([0-7])r([0-9]+)a([0-3])l([0-9]+)$|^x([0-9]{1,4})c([0-7])w([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])w([0-9]+)j([1-9][0-9]*)$",
+                            "description": "The xname of this piece of hardware",
+                            "example": "x0c0s0b0"
+                        },
+                        "Username": {
+                            "type": "string",
+                            "example": "admin"
+                        },
+                        "Password": {
+                            "type": "string",
+                            "example": "pwstring"
+                        },
+                        "StatusCode": {
+                            "type": "integer",
+                            "example": 200
+                        },
+                        "StatusMsg": {
+                            "type": "string",
+                            "example": "OK"
+                        }
+                    }
+                }
+            },
+            "creds_fetch_rsp_elmt": {
+                "type": "object",
+                "properties": {
+                    "Xname": {
+                        "type": "string",
+                        "pattern": "^s0$|^d([0-9]+)$|^x([0-9]{1,4})d([0-1])$|^x([0-9]{1,4})m([0-3])$|^x([0-9]{1,4})m([0-3])p([0-7])$|^x([0-9]{1,4})m([0-3])i([0-3])$|^x([0-9]{1,4})m([0-3])p([0-7])j([1-9][0-9]*)$|^x([0-9]{1,4})e([0-1])$|^x([0-9]{1,4})$|^x([0-9]{1,4})b([0])$|^x([0-9]{1,4})c([0-7])$|^x([0-9]{1,4})c([0-7])b([0])$|^x([0-9]{1,4})c([0-7])f([0])$|^x([0-9]{1,4})c([0-7])t([0-2])$|^x([0-9]{1,4})c([0-7])s([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)f([0])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)e([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)j([1-2])$|^x([0-9]{1,4})c([0-7])r([0-9]+)e([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)h([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)a([0-7])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)d([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)p([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)$|^x([0-9]{1,4})c([0-7])r([0-9]+)f([01])$|^x([0-9]{1,4})c([0-7])r([0-9]+)t([0-9]+)f([0-1])$|^x([0-9]{1,4})c([0-7])r([0-9]+)b([0-9]+)$|^x([0-9]{1,4})c([0-7])r([0-9]+)b([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)a([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)j([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])r([0-9]+)j([1-9][0-9]*)p([012])$|^x([0-9]{1,4})c([0-7])r([0-9]+)a([0-3])l([0-9]+)$|^x([0-9]{1,4})c([0-7])w([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])w([0-9]+)j([1-9][0-9]*)$",
+                        "description": "The xname of this piece of hardware",
+                        "example": "x0c0s0b0"
+                    },
+                    "Username": {
+                        "type": "string",
+                        "example": "admin"
+                    },
+                    "Password": {
+                        "type": "string",
+                        "example": "pwstring"
+                    },
+                    "StatusCode": {
+                        "type": "integer",
+                        "example": 200
+                    },
+                    "StatusMsg": {
+                        "type": "string",
+                        "example": "OK"
                     }
                 }
             },
