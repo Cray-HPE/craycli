@@ -2,7 +2,7 @@
 
 MIT License
 
-(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+(C) Copyright [2020-2021] Hewlett Packard Enterprise Development LP
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -308,6 +308,7 @@ def test_scsd_bmc_creds(cli_runner, rest_mock):
     outputs = [
         "cli scsd bmc creds [OPTIONS] COMMAND [ARGS]...",
         "create",
+        "list",
     ]
 
     for out in outputs:
@@ -410,6 +411,34 @@ def test_scsd_bmc_globalcreds_create(cli_runner, rest_mock):
     assert data['url'] == '{}{}'.format(config['default']['hostname'], url_template)
     ok = findDiff(payload, data['body'])
     assert(ok == 1)
+
+# pylint: disable=redefined-outer-name
+def test_scsd_bmc_creds_list(cli_runner, rest_mock):
+    """ Test `cray scsd bmc list` """
+    runner, cli, opts = cli_runner
+    url_template = urlPrefix+'/bmc/creds'
+    config = opts['default']
+    hostname = config['hostname']
+    targName = 'x1000c0s1b0'
+    targType = 'NodeBMC'
+
+    result = runner.invoke(cli, ['scsd', 'bmc', 'creds', 'list',
+                                 '--targets', targName,
+                                 '--type', targType])
+    print(result.output)
+    assert result.exit_code == 0
+    data = json.loads(result.output)
+    assert data['method'].lower() == 'get'
+    uri = data['url'].split(hostname)[-1]
+    outputs = [
+        url_template,
+        "targets="+targName,
+        "type="+targType,
+    ]
+
+    for out in outputs:
+        assert out in uri
+
 
 # pylint: disable=redefined-outer-name
 def test_scsd_bmc_createcerts(cli_runner, rest_mock):
