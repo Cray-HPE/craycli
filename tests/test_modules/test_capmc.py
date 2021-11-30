@@ -2,7 +2,7 @@
 
 MIT License
 
-(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+(C) Copyright [2020-2021] Hewlett Packard Enterprise Development LP
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -1030,8 +1030,7 @@ def test_cray_capmc_set_power_cap_help(cli_runner):
     outputs = [
         "cli capmc set_power_cap create [OPTIONS]",
         "nids",
-        "node",
-        "accel",
+        "control",
         ]
 
     for out in outputs:
@@ -1043,16 +1042,16 @@ spc_node_val = 400
 spc_accel_val = 200
 # pylint: disable=redefined-outer-name
 def test_cray_capmc_set_power_cap_create(cli_runner, rest_mock):
-    """ Test `cray capmc set_power_cap create --nids <nid list> --node <int> --accel <int>` """
+    """ Test `cray capmc set_power_cap create --nids <nid list> --control <string> <int>` """
     runner, cli, opts = cli_runner
     url_template = capmc_url_base + '/set_power_cap'
     config = opts['default']
     hostname = config['hostname']
     result = runner.invoke(cli, ['capmc', 'set_power_cap', 'create',
                                  '--nids', spc_nids,
-                                 '--node', spc_node_val,
-                                 '--accel', spc_accel_val])
-    print(result.output)
+                                 '--control', "node 0", spc_node_val,
+                                 '--control', "accel 0", spc_accel_val])
+    print(result)
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'].lower() == 'post'
@@ -1062,21 +1061,21 @@ def test_cray_capmc_set_power_cap_create(cli_runner, rest_mock):
     for i, e in enumerate(nids):
         assert e['nid'] == i * 2 + 1
         c = e['controls']
-        assert c[0]['name'] == 'node'
+        assert c[0]['name'] == 'node 0'
         assert c[0]['val'] == spc_node_val
-        assert c[1]['name'] == 'accel'
+        assert c[1]['name'] == 'accel 0'
         assert c[1]['val'] == spc_accel_val
 
 # pylint: disable=redefined-outer-name
 def test_cray_capmc_set_power_cap_create_only_node(cli_runner, rest_mock):
-    """ Test `cray capmc set_power_cap create --nids <nid list> --node <int>` """
+    """ Test `cray capmc set_power_cap create --nids <nid list> --control <string> <int>` """
     runner, cli, opts = cli_runner
     url_template = capmc_url_base + '/set_power_cap'
     config = opts['default']
     hostname = config['hostname']
     result = runner.invoke(cli, ['capmc', 'set_power_cap', 'create',
                                  '--nids', spc_nids,
-                                 '--node', spc_node_val])
+                                 '--control', "node 0", spc_node_val])
     print(result.output)
     assert result.exit_code == 0
     data = json.loads(result.output)
@@ -1087,19 +1086,19 @@ def test_cray_capmc_set_power_cap_create_only_node(cli_runner, rest_mock):
     for i, e in enumerate(nids):
         assert e['nid'] == i * 2 + 1
         c = e['controls']
-        assert c[0]['name'] == 'node'
+        assert c[0]['name'] == 'node 0'
         assert c[0]['val'] == spc_node_val
 
 # pylint: disable=redefined-outer-name
 def test_cray_capmc_set_power_cap_create_only_accel(cli_runner, rest_mock):
-    """ Test `cray capmc set_power_cap create --nids <nid list> --accel <int>` """
+    """ Test `cray capmc set_power_cap create --nids <nid list> --control <string> <int>` """
     runner, cli, opts = cli_runner
     url_template = capmc_url_base + '/set_power_cap'
     config = opts['default']
     hostname = config['hostname']
     result = runner.invoke(cli, ['capmc', 'set_power_cap', 'create',
                                  '--nids', spc_nids,
-                                 '--accel', spc_accel_val])
+                                 '--control', "accel 0", spc_accel_val])
     print(result.output)
     assert result.exit_code == 0
     data = json.loads(result.output)
@@ -1110,16 +1109,16 @@ def test_cray_capmc_set_power_cap_create_only_accel(cli_runner, rest_mock):
     for i, e in enumerate(nids):
         assert e['nid'] == i * 2 + 1
         c = e['controls']
-        assert c[0]['name'] == 'accel'
+        assert c[0]['name'] == 'accel 0'
         assert c[0]['val'] == spc_accel_val
 
 # pylint: disable=redefined-outer-name
 def test_cray_capmc_set_power_cap_create_no_nids(cli_runner, rest_mock):
-    """ Test `cray capmc set_power_cap create --node <int> --accel <int>` """
+    """ Test `cray capmc set_power_cap create --control <string> <int> --control <string> <int>` """
     runner, cli, _ = cli_runner
     result = runner.invoke(cli, ['capmc', 'set_power_cap', 'create',
-                                 '--node', spc_node_val,
-                                 '--accel', spc_accel_val])
+                                 '--control', "node 0", spc_node_val,
+                                 '--control', "accel 0", spc_accel_val])
     print(result.output)
     assert result.exit_code == 2
     outputs = [
@@ -1138,7 +1137,7 @@ def test_cray_capmc_set_power_cap_create_no_node_or_accel(cli_runner, rest_mock)
     print(result.output)
     assert result.exit_code == 2
     outputs = [
-        "Invalid value: --node and/or --accel must be supplied.",
+        "Invalid value: --control must be supplied.",
         ]
 
     for out in outputs:

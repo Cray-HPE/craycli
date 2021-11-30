@@ -148,7 +148,7 @@ def _parse_data(data, base=None, **kwargs):
     body = from_file_data if from_file_data \
         else _generate_body(opts[PARAM_ORIGIN], data.get('params', []))
 
-    if body == {} and method.lower() in ['get', 'delete']:
+    if not body and method.lower() in ['get', 'delete']:
         body = None
 
     # Pack args into kwargs requests expects

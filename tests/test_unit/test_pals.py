@@ -320,7 +320,9 @@ def test_split_mpmd_args():
 
 def test_get_resource_limits():
     """ Test fetching resource limits """
+    # pylint: disable=use-implicit-booleaness-not-comparison
     assert pals.get_resource_limits([]) == {}
+    # pylint: disable=use-implicit-booleaness-not-comparison
     assert pals.get_resource_limits(["foo"]) == {}
 
     soft, hard = resource.getrlimit(
