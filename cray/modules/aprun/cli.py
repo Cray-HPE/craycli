@@ -3,7 +3,7 @@ cli.py - aprun PALS CLI
 
 MIT License
 
-(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+(C) Copyright [2020-2021] Hewlett Packard Enterprise Development LP
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -41,7 +41,7 @@ APRUN_ENV_ALIAS = {
 
 
 def parse_rangelist(rli):
-    """ Parse a range list into a list of integers """
+    """Parse a range list into a list of integers"""
     try:
         mylist = []
         for nidrange in rli.split(","):
@@ -63,7 +63,7 @@ def parse_rangelist(rli):
 
 
 def parse_rangelist_file(rlif):
-    """ Parse a file containing rangelists into a list of integers """
+    """Parse a file containing rangelists into a list of integers"""
     mylist = []
     for line in rlif:
         line = line.strip()
@@ -73,12 +73,12 @@ def parse_rangelist_file(rlif):
 
 
 def nids_to_hosts(nidlist):
-    """ Convert a list of integer nids to a list of hostnames """
+    """Convert a list of integer nids to a list of hostnames"""
     return ["nid%06d" % nid for nid in nidlist]
 
 
 def get_hostlist(node_list, node_list_file, exclude_node_list, exclude_node_list_file):
-    """ Given command-line arguments, produce a host list """
+    """Given command-line arguments, produce a host list"""
     nodelist = []
     excllist = []
 
@@ -88,7 +88,7 @@ def get_hostlist(node_list, node_list_file, exclude_node_list, exclude_node_list
     elif node_list_file:
         nodelist = nids_to_hosts(parse_rangelist_file(node_list_file))
     elif "PBS_NODEFILE" in os.environ:
-        with open(os.environ["PBS_NODEFILE"], encoding='utf-8') as nodefile:
+        with open(os.environ["PBS_NODEFILE"], encoding="utf-8") as nodefile:
             nodelist = parse_hostfile(nodefile)
 
     # Build exclude node list from command line arguments
@@ -108,7 +108,7 @@ def get_hostlist(node_list, node_list_file, exclude_node_list, exclude_node_list
 
 
 def get_launch_env(environment_override, environ=None):
-    """ Given command line arguments, build up the environment array """
+    """Given command line arguments, build up the environment array"""
     # Copy the environment to avoid modifying the original
     if environ is None:
         environ = os.environ.copy()
@@ -128,14 +128,14 @@ def get_launch_env(environment_override, environ=None):
 
 
 def get_umask():
-    """ Return the current umask value """
+    """Return the current umask value"""
     umask = os.umask(0)
     os.umask(umask)
     return umask
 
 
 def get_wdir(wdir):
-    """ Get the current working directory to use for the launch """
+    """Get the current working directory to use for the launch"""
     # If user provided a wdir through argument or env var, use that
     if wdir:
         return wdir
@@ -149,7 +149,7 @@ def get_wdir(wdir):
 
 
 def get_cpubind(cpu_binding):
-    """ Convert aprun-style CPU binding to PALS-style """
+    """Convert aprun-style CPU binding to PALS-style"""
     # First check for keywords
     if not cpu_binding or cpu_binding == "cpu":
         return "thread"
@@ -167,7 +167,7 @@ def get_cpubind(cpu_binding):
 
 
 def get_membind(strict_memory_containment):
-    """ Get memory binding to use """
+    """Get memory binding to use"""
     if strict_memory_containment:
         return "local"
 
@@ -175,7 +175,7 @@ def get_membind(strict_memory_containment):
 
 
 def get_exclusive(access_mode):
-    """ Get exclusive setting from -F [exclusive|share] option """
+    """Get exclusive setting from -F [exclusive|share] option"""
     # aprun only checked for e/E (exclusive) or s/S (share)
     if not access_mode:
         return None
@@ -188,7 +188,7 @@ def get_exclusive(access_mode):
 
 
 def print_output(params, a_file):
-    """ Print output from a stdout/stderr RPC to the given file """
+    """Print output from a stdout/stderr RPC to the given file"""
     content = params.get("content")
     if not content:
         return
@@ -214,15 +214,15 @@ def get_argv(executable, args, bypass_app_transfer):
 
 
 def posint(val):
-    """ Parse a string into a positive integer """
+    """Parse a string into a positive integer"""
     ival = int(val)
     if ival <= 0:
         raise argparse.ArgumentTypeError("%s must be positive" % val)
     return ival
 
 
-def parse_mpmd(executable, args, pes, wdir, depth):
-    """ Parse MPMD commands from the given arguments """
+def parse_mpmd(executable, args, pes, wdir, depth, ppn):
+    """Parse MPMD commands from the given arguments"""
 
     # Split into separate commands
     cmdargvs = split_mpmd_args(list(args))
@@ -230,7 +230,7 @@ def parse_mpmd(executable, args, pes, wdir, depth):
     # Create first command
     umask = get_umask()
     argv = [executable] + cmdargvs[0]
-    cmds = [dict(argv=argv, nranks=pes, umask=umask, wdir=wdir, depth=depth)]
+    cmds = [dict(argv=argv, nranks=pes, umask=umask, wdir=wdir, depth=depth, ppn=ppn)]
 
     # Create a parser for each other MPMD command
     parser = argparse.ArgumentParser(prog="", description="MPMD Command Definition")
@@ -242,7 +242,11 @@ def parse_mpmd(executable, args, pes, wdir, depth):
         "args", nargs=argparse.REMAINDER, help="arguments to executable"
     )
     parser.add_argument(
-        "-depth", "--depth", default=depth, type=posint, help="CPUs per process")
+        "-d", "--cpus-per-pe", default=depth, type=posint, help="CPUs per process"
+    )
+    parser.add_argument(
+        "-N", "--pes-per-node", default=ppn, type=posint, help="PEs per compute node"
+    )
 
     # Add other commands
     for cmdargv in cmdargvs[1:]:
@@ -251,14 +255,22 @@ def parse_mpmd(executable, args, pes, wdir, depth):
 
         # Create MPMD command dict
         argv = [cmdargs.executable] + list(cmdargs.args)
-        cmds.append(dict(argv=argv, nranks=cmdargs.pes, umask=umask, wdir=wdir,
-                         depth=cmdargs.depth))
+        cmds.append(
+            dict(
+                argv=argv,
+                nranks=cmdargs.pes,
+                umask=umask,
+                wdir=wdir,
+                depth=cmdargs.cpus_per_pe,
+                ppn=cmdargs.pes_per_node,
+            )
+        )
 
     return cmds
 
 
 def get_rlimits(memory_per_pe):
-    """ Get resource limits to transfer to application """
+    """Get resource limits to transfer to application"""
     # Check relevant environment variables
     send_limits = int(os.environ.get("APRUN_XFER_LIMITS", 0))
     stack_limit = int(os.environ.get("APRUN_XFER_STACK_LIMIT", 0))
@@ -421,7 +433,6 @@ def get_rlimits(memory_per_pe):
     default=False,
     help="enable/disable Scalable Start Up",
 )
-
 @core.argument("executable")
 @core.argument("args", nargs=-1)
 def cli(
@@ -512,7 +523,9 @@ def cli(
 
     # Create a launch request from arguments
     launchreq = {
-        "cmds": parse_mpmd(executable, args, pes, get_wdir(wdir), cpus_per_pe),
+        "cmds": parse_mpmd(
+            executable, args, pes, get_wdir(wdir), cpus_per_pe, pes_per_node
+        ),
         "hosts": get_hostlist(
             node_list, node_list_file, exclude_node_list, exclude_node_list_file
         ),

@@ -3,7 +3,7 @@ test_mpiexec.py - Unit tests for the mpiexec module
 
 MIT License
 
-(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+(C) Copyright [2020-2021] Hewlett Packard Enterprise Development LP
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -190,53 +190,48 @@ def test_parse_mpmd_file():
 
     # Empty file should produce a Click exception
     with pytest.raises(click.ClickException):
-        mpiexec.parse_mpmd_file(tmpfname)
+        mpiexec.parse_mpmd_file(tmpfname, None, 1, 0)
 
     # File with only spaces and comments isn't good either
     os.write(tmpfd, b"# comment\n\t\n \n\\\n")
     with pytest.raises(click.ClickException):
-        mpiexec.parse_mpmd_file(tmpfname)
+        mpiexec.parse_mpmd_file(tmpfname, None, 1, 0)
 
     # Negative -n value not allowed
     os.lseek(tmpfd, 0, os.SEEK_SET)
     os.write(tmpfd, b"-n -1 hostname\n")
     with pytest.raises(SystemExit):
-        mpiexec.parse_mpmd_file(tmpfname)
+        mpiexec.parse_mpmd_file(tmpfname, None, 1, 0)
 
     # Must have executable
     os.lseek(tmpfd, 0, os.SEEK_SET)
     os.write(tmpfd, b"-n 1\n")
     with pytest.raises(SystemExit):
-        mpiexec.parse_mpmd_file(tmpfname)
+        mpiexec.parse_mpmd_file(tmpfname, None, 1, 0)
 
     # umask must be octal
     os.lseek(tmpfd, 0, os.SEEK_SET)
     os.write(tmpfd, b"--umask 99 hostname\n")
     with pytest.raises(SystemExit):
-        mpiexec.parse_mpmd_file(tmpfname)
+        mpiexec.parse_mpmd_file(tmpfname, None, 1, 0)
 
     # Good file with a bunch of different options
     os.lseek(tmpfd, 0, os.SEEK_SET)
     os.write(tmpfd, b"# comment\n\nhostname\nhostname -a\n-n 2 hostname -b\n")
-    os.write(tmpfd, b"-n 3 --wdir /tmp -umask 0222 --depth 2 hostname -c\n")
-    os.write(tmpfd, b"-n4 --wdir=/home --umask=0333 --depth=3 hostname -d\n")
+    os.write(tmpfd, b"-n 3 --wdir /tmp -umask 0222 -d 2 -ppn 3 hostname -c\n")
+    os.write(tmpfd, b"-n4 --wdir=/home --umask=0333 --depth=3 --ppn=4 hostname -d\n")
     cmds = [
-        {"argv": ["hostname"], "nranks": 1, "wdir": wdir, "umask": umask,
-         "depth": 7},
-        {"argv": ["hostname", "-a"], "nranks": 1, "wdir": wdir, "umask": umask,
-         "depth": 7},
-        {"argv": ["hostname", "-b"], "nranks": 2, "wdir": wdir, "umask": umask,
-         "depth": 7},
-        {"argv": ["hostname", "-c"], "nranks": 3, "wdir": "/tmp",
-         "umask": 0o222, "depth": 2},
-        {"argv": ["hostname", "-d"], "nranks": 4, "wdir": "/home",
-         "umask": 0o333, "depth": 3},
+        dict(argv=["hostname"], nranks=1, wdir=wdir, umask=umask, depth=7, ppn=1),
+        dict(argv=["hostname", "-a"], nranks=1, wdir=wdir, umask=umask, depth=7, ppn=1),
+        dict(argv=["hostname", "-b"], nranks=2, wdir=wdir, umask=umask, depth=7, ppn=1),
+        dict(argv=["hostname", "-c"], nranks=3, wdir="/tmp", umask=0o222, depth=2, ppn=3),
+        dict(argv=["hostname", "-d"], nranks=4, wdir="/home", umask=0o333, depth=3, ppn=4),
     ]
-    assert mpiexec.parse_mpmd_file(tmpfname, def_depth=7) == cmds
+    assert mpiexec.parse_mpmd_file(tmpfname, None, 7, 1) == cmds
 
     os.close(tmpfd)
     os.unlink(tmpfname)
 
     # Nonexistent file should produce a Click exception
     with pytest.raises(click.ClickException):
-        mpiexec.parse_mpmd_file(tmpfname)
+        mpiexec.parse_mpmd_file(tmpfname, None, 1, 0)
