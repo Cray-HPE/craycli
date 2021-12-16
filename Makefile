@@ -28,8 +28,9 @@ RPM_NAME ?= craycli
 SPEC_FILE ?= ${SPEC_NAME}.spec
 SPEC_VERSION ?= $(shell cat .version)
 
+DIST ?= dist
 SOURCE_NAME ?= ${RPM_NAME}-${SPEC_VERSION}
-BUILD_DIR ?= $(PWD)/dist/rpmbuild
+BUILD_DIR ?= $(PWD)/$(DIST)/rpmbuild
 SOURCE_PATH := ${BUILD_DIR}/SOURCES/${SOURCE_NAME}.tar.gz
 BUILD_METADATA ?= "1~development~$(shell git rev-parse --short HEAD)"
 
@@ -45,7 +46,7 @@ build_prep:
 		./runBuildPrep.sh
 
 rpm_package_source:
-		tar --transform 'flags=r;s,^,/$(SOURCE_NAME)/,' --exclude .git --exclude dist -cvjf $(SOURCE_PATH) .
+		tar --transform 'flags=r;s,^,/$(SOURCE_NAME)/,' --exclude .git --exclude 'dist*' -cvjf $(SOURCE_PATH) .
 
 rpm_build_source:
 		BUILD_METADATA=$(BUILD_METADATA) rpmbuild -ts $(SOURCE_PATH) --define "_topdir $(BUILD_DIR)"

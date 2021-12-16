@@ -21,11 +21,12 @@ pipeline {
     stages {
         stage("Prepare") {
             steps {
-                sh "make prepare"
+                sh "make DIST=dist-sp2 prepare"
+                sh "make DIST=dist-sp3 prepare"
             }
         }
 
-        stage("Build Prep and Build") {
+        stage("Build Prep and Build SP2") {
             agent {
                 docker {
                     label "metal-gcp-builder"
@@ -36,18 +37,37 @@ pipeline {
                 }
             }
             steps {
-                sh "make build_prep"
-                sh "make build"
-                sh "make post"
+                sh "make DIST=dist-sp2 build_prep"
+                sh "make DIST=dist-sp2 build"
+                sh "make DIST=dist-sp2 post"
+            }
+        }
+
+        stage("Build Prep and Build SP3") {
+            agent {
+                docker {
+                    label "metal-gcp-builder"
+                    reuseNode true
+                    image "arti.dev.cray.com/dstbuildenv-docker-master-local/cray-sle15sp3_build_environment:latest"
+                    // Run as root
+                    args "-u root"
+                }
+            }
+            steps {
+                sh "make DIST=dist-sp3 build_prep"
+                sh "make DIST=dist-sp3 build"
+                sh "make DIST=dist-sp3 post"
             }
         }
 
         stage('Publish ') {
             steps {
-                sh "sudo chown -R jenkins:jenkins $WORKSPACE/dist/rpmbuild"
+                sh "sudo chown -R jenkins:jenkins $WORKSPACE/dist*/rpmbuild"
                 script {
-                    publishCsmRpms(component: env.NAME, pattern: "dist/rpmbuild/RPMS/x86_64/*.rpm", arch: "x86_64", isStable: env.IS_STABLE)
-                    publishCsmRpms(component: env.NAME, pattern: "dist/rpmbuild/SRPMS/*.rpm", arch: "src", isStable: env.IS_STABLE)
+                    publishCsmRpms(os: 'sle-15sp2', component: env.NAME, pattern: "dist-sp2/rpmbuild/RPMS/x86_64/*.rpm", arch: "x86_64", isStable: env.IS_STABLE)
+                    publishCsmRpms(os: 'sle-15sp2', component: env.NAME, pattern: "dist-sp2/rpmbuild/SRPMS/*.rpm", arch: "src", isStable: env.IS_STABLE)
+                    publishCsmRpms(os: 'sle-15sp3', component: env.NAME, pattern: "dist-sp3/rpmbuild/RPMS/x86_64/*.rpm", arch: "x86_64", isStable: env.IS_STABLE)
+                    publishCsmRpms(os: 'sle-15sp3', component: env.NAME, pattern: "dist-sp3/rpmbuild/SRPMS/*.rpm", arch: "src", isStable: env.IS_STABLE)
                 }
             }
         }
