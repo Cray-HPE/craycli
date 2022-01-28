@@ -2,7 +2,7 @@
     "openapi": "3.0.2",
     "info": {
         "title": "Configuration Framework Service",
-        "version": "@VERSION@",
+        "version": "0.0.0",
         "description": "The Configuration Framework Service (CFS) manages the launch of Ansible Execution Environments for image customization, node personalization, and node reconfiguration. CFS manages the Ansible staging container that pulls Ansible play/role content and inventory (optional) from the git server and launches the Ansible Execution Environment.\n\nCFS includes the following components:\n\n  * CFS REST API\n  * A Kubernetes operator running on the management services infrastructure to handle\n  the lifecycle and reporting of configuration sessions.\n  * Pre-packaged Ansible Execution Environment(s) (AEE) with values tuned for performant\n  configuration for executing Ansible playbooks against Cray compute and user access nodes.\n\n\nCFS uses a Git version control server running in the management services infrastructure for management of the configuration manifest lifecycle.\n\n\n  The CFS API allows an administrator to customize the compute and user access nodes\n  in the following ways:\n* Customize the bootable images prior to their use on the system. This process is called\n  image customization. CFS uses IMS to stage images in an ssh container and then modifies\n  one or more images using Ansible.\n\n* Customize live nodes during boot or post-boot. This process is called node personalization.\n  Node personalization involves applying software and/or configuration that differentiates\n  a node or a group of nodes from all other groups of nodes.\n  This should be used in scenarios where configuration cannot be applied prior to booting\n  a node. It is typically best to make changes pre-boot via image customization. This ensures\n  Ansible only has to run once against an image, rather than against every individual booted node.\n  The BOS and IMS APIs support CFS to customize live nodes during boot time.\n\n## Resources\n/healthz - Check service health\n\n/options - Updates service options.\n\n/sessions - Create, retrieve, or delete configuration sessions.\n\n/components - Add, update, retrieve, or delete component information.\n\n/configurations - Add, update, retrieve or delete desired configuration states. (v2 api only)\n## Workflows\n### Image Customization\n\n #### GET /images\n\n Identify the IMS image that you want to customize. Note the id of the image that you want to customize.\n\n #### POST /sessions\n\n Create a configuration session and push the configuration to the specific image in IMS.\n You must specify the target definition as image and provide id of the image that you want to customize.\n This step customizes the image as per Ansible playbook and saves the image in the IMS.\n\n\n### Node Personalization\n\n #### POST /sessions\n Create a configuration framework session to push configuration to nodes that have already\n been booted, specifying the target (optional), the git repository location, inventory (optional),\n and gives the session a unique name.\n\n #### GET /sessions/{session_name}\n View details and status for the specific session_name.\n\n #### DELETE /sessions/{session_name}\n Delete all session history for session_name (as needed).\n\nThe default content type for the CFS API is `application/json`. Unsuccessful API calls return a content type of `application/problem+json` as per RFC 7807.\n"
     },
     "servers": [
@@ -170,6 +170,10 @@
                                     "minimum": 0,
                                     "maximum": 4,
                                     "description": "The verbose mode to use in the call to the ansible-playbook command. 1 = -v, 2 = -vv, etc. Valid values range from 0 to 4. See the ansible-playbook help for more information."
+                                },
+                                "ansiblePassthrough": {
+                                    "type": "string",
+                                    "description": "Additional parameters that are added to all Ansible calls for the session. This field is currently limited to the following Ansible parameters: \"--extra-vars\", \"--forks\", \"--skip-tags\", \"--start-at-task\", and \"--tags\". WARNING: Parameters passed to Ansible in this way should be used with caution.  State will not be recorded for components when using these flags to avoid incorrect reporting of partial playbook runs."
                                 },
                                 "target": {
                                     "type": "object",
@@ -1670,6 +1674,10 @@
                                             "minimum": 0,
                                             "maximum": 4,
                                             "description": "The verbose mode to use in the call to the ansible-playbook command. 1 = -v, 2 = -vv, etc. Valid values range from 0 to 4. See the ansible-playbook help for more information."
+                                        },
+                                        "passthrough": {
+                                            "type": "string",
+                                            "description": "Additional parameters that are added to all Ansible calls for the session. This field is currently limited to the following Ansible parameters: \"--extra-vars\", \"--forks\", \"--skip-tags\", \"--start-at-task\", and \"--tags\". WARNING: Parameters passed to Ansible in this way should be used with caution.  State will not be recorded for components when using these flags to avoid incorrect reporting of partial playbook runs."
                                         }
                                     }
                                 },
@@ -1869,6 +1877,10 @@
                                                 "minimum": 0,
                                                 "maximum": 4,
                                                 "description": "The verbose mode to use in the call to the ansible-playbook command. 1 = -v, 2 = -vv, etc. Valid values range from 0 to 4. See the ansible-playbook help for more information."
+                                            },
+                                            "passthrough": {
+                                                "type": "string",
+                                                "description": "Additional parameters that are added to all Ansible calls for the session. This field is currently limited to the following Ansible parameters: \"--extra-vars\", \"--forks\", \"--skip-tags\", \"--start-at-task\", and \"--tags\". WARNING: Parameters passed to Ansible in this way should be used with caution.  State will not be recorded for components when using these flags to avoid incorrect reporting of partial playbook runs."
                                             }
                                         }
                                     },
@@ -3412,6 +3424,10 @@
                                 "minimum": 0,
                                 "maximum": 4,
                                 "description": "The verbose mode to use in the call to the ansible-playbook command. 1 = -v, 2 = -vv, etc. Valid values range from 0 to 4. See the ansible-playbook help for more information."
+                            },
+                            "passthrough": {
+                                "type": "string",
+                                "description": "Additional parameters that are added to all Ansible calls for the session. This field is currently limited to the following Ansible parameters: \"--extra-vars\", \"--forks\", \"--skip-tags\", \"--start-at-task\", and \"--tags\". WARNING: Parameters passed to Ansible in this way should be used with caution.  State will not be recorded for components when using these flags to avoid incorrect reporting of partial playbook runs."
                             }
                         }
                     },
@@ -3592,6 +3608,10 @@
                         "minimum": 0,
                         "maximum": 4,
                         "description": "The verbose mode to use in the call to the ansible-playbook command. 1 = -v, 2 = -vv, etc. Valid values range from 0 to 4. See the ansible-playbook help for more information."
+                    },
+                    "ansiblePassthrough": {
+                        "type": "string",
+                        "description": "Additional parameters that are added to all Ansible calls for the session. This field is currently limited to the following Ansible parameters: \"--extra-vars\", \"--forks\", \"--skip-tags\", \"--start-at-task\", and \"--tags\". WARNING: Parameters passed to Ansible in this way should be used with caution.  State will not be recorded for components when using these flags to avoid incorrect reporting of partial playbook runs."
                     },
                     "target": {
                         "type": "object",
@@ -7858,6 +7878,10 @@
                                                         "minimum": 0,
                                                         "maximum": 4,
                                                         "description": "The verbose mode to use in the call to the ansible-playbook command. 1 = -v, 2 = -vv, etc. Valid values range from 0 to 4. See the ansible-playbook help for more information."
+                                                    },
+                                                    "passthrough": {
+                                                        "type": "string",
+                                                        "description": "Additional parameters that are added to all Ansible calls for the session. This field is currently limited to the following Ansible parameters: \"--extra-vars\", \"--forks\", \"--skip-tags\", \"--start-at-task\", and \"--tags\". WARNING: Parameters passed to Ansible in this way should be used with caution.  State will not be recorded for components when using these flags to avoid incorrect reporting of partial playbook runs."
                                                     }
                                                 }
                                             },
@@ -8059,6 +8083,10 @@
                                         "maximum": 4,
                                         "description": "The verbose mode to use in the call to the ansible-playbook command. 1 = -v, 2 = -vv, etc. Valid values range from 0 to 4. See the ansible-playbook help for more information."
                                     },
+                                    "ansiblePassthrough": {
+                                        "type": "string",
+                                        "description": "Additional parameters that are added to all Ansible calls for the session. This field is currently limited to the following Ansible parameters: \"--extra-vars\", \"--forks\", \"--skip-tags\", \"--start-at-task\", and \"--tags\". WARNING: Parameters passed to Ansible in this way should be used with caution.  State will not be recorded for components when using these flags to avoid incorrect reporting of partial playbook runs."
+                                    },
                                     "target": {
                                         "type": "object",
                                         "description": "A target lets you define the nodes or images that you want to customize and consists of two sub-parameters - Definition and groups. By default, Configuration Framework Sessions use dynamic inventory definition to target hosts. When using a session to customize an image, or if a static inventory is required, use this optional section to specify entities (whether images or nodes) for the session to target.\n",
@@ -8178,6 +8206,10 @@
                                                     "minimum": 0,
                                                     "maximum": 4,
                                                     "description": "The verbose mode to use in the call to the ansible-playbook command. 1 = -v, 2 = -vv, etc. Valid values range from 0 to 4. See the ansible-playbook help for more information."
+                                                },
+                                                "passthrough": {
+                                                    "type": "string",
+                                                    "description": "Additional parameters that are added to all Ansible calls for the session. This field is currently limited to the following Ansible parameters: \"--extra-vars\", \"--forks\", \"--skip-tags\", \"--start-at-task\", and \"--tags\". WARNING: Parameters passed to Ansible in this way should be used with caution.  State will not be recorded for components when using these flags to avoid incorrect reporting of partial playbook runs."
                                                 }
                                             }
                                         },
@@ -8580,6 +8612,10 @@
                                                     "minimum": 0,
                                                     "maximum": 4,
                                                     "description": "The verbose mode to use in the call to the ansible-playbook command. 1 = -v, 2 = -vv, etc. Valid values range from 0 to 4. See the ansible-playbook help for more information."
+                                                },
+                                                "passthrough": {
+                                                    "type": "string",
+                                                    "description": "Additional parameters that are added to all Ansible calls for the session. This field is currently limited to the following Ansible parameters: \"--extra-vars\", \"--forks\", \"--skip-tags\", \"--start-at-task\", and \"--tags\". WARNING: Parameters passed to Ansible in this way should be used with caution.  State will not be recorded for components when using these flags to avoid incorrect reporting of partial playbook runs."
                                                 }
                                             }
                                         },
@@ -8826,6 +8862,10 @@
                                                     "minimum": 0,
                                                     "maximum": 4,
                                                     "description": "The verbose mode to use in the call to the ansible-playbook command. 1 = -v, 2 = -vv, etc. Valid values range from 0 to 4. See the ansible-playbook help for more information."
+                                                },
+                                                "passthrough": {
+                                                    "type": "string",
+                                                    "description": "Additional parameters that are added to all Ansible calls for the session. This field is currently limited to the following Ansible parameters: \"--extra-vars\", \"--forks\", \"--skip-tags\", \"--start-at-task\", and \"--tags\". WARNING: Parameters passed to Ansible in this way should be used with caution.  State will not be recorded for components when using these flags to avoid incorrect reporting of partial playbook runs."
                                                 }
                                             }
                                         },
