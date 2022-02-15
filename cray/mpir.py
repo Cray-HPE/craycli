@@ -11,7 +11,6 @@ to deal in the Software without restriction, including without limitation
 the rights to use, copy, modify, merge, publish, distribute, sublicense,
 and/or sell copies of the Software, and to permit persons to whom the
 Software is furnished to do so, subject to the following conditions:
-
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
 
@@ -27,11 +26,13 @@ OTHER DEALINGS IN THE SOFTWARE.
 import os
 import ctypes
 
+from cray.echo import echo, LOG_INFO, LOG_WARN, LOG_DEBUG, LOG_RAW
+
 def get_libmpirattach_path():
     """ If set, read the palsd install location from the environment """
     palsd_install_dir = os.getenv("PALSD_INSTALL_DIR")
     if palsd_install_dir is None:
-        palsd_install_dir = "/usr/lib"
+        palsd_install_dir = "/usr/lib64"
 
     return palsd_install_dir + "/libmpirattach.so.0"
 
@@ -45,6 +46,7 @@ def init_libMpirAttach_functions():
     # pylint: disable=bare-except
     try:
         libMpirAttach_path = get_libmpirattach_path()
+        echo("Loading libMpirAttach from %s" % libMpirAttach_path, level=LOG_INFO)
         libMpirAttach = ctypes.CDLL(libMpirAttach_path)
 
         libMpirAttach.MPIR_Breakpoint.restype = None
@@ -89,12 +91,14 @@ def init_libMpirAttach_functions():
         ]
 
     except:
+        echo("Failed to load library from %s. \
+            Try setting PALSD_INSTALL_DIR to the directory where libMpirAttach.so is located."
+            % libMpirAttach_path, level=LOG_WARN)
         libMpirAttach = None
 
 
 def get_MPIR_being_debugged():
     """ Get C variable MPIR_being_debugged """
-    global libMpirAttach # pylint: disable=global-statement
 
     # Load MPIR initialization functions from shared library
     if libMpirAttach is None:
@@ -107,7 +111,6 @@ def get_MPIR_being_debugged():
 
 def MPIR_proctable_filled():
     """ Determine if proctable is already filled in """
-    global libMpirAttach # pylint: disable=global-statement
 
     # Load MPIR initialization functions from shared library
     if libMpirAttach is None:
@@ -121,7 +124,6 @@ def MPIR_proctable_filled():
 def fill_MPIR_proctable(proctable_elems):
     """ Use proctable element array to fill C MPIR_proctable """
     # pylint: disable=too-many-locals,too-many-branches
-    global libMpirAttach # pylint: disable=global-statement
 
     # Load MPIR initialization functions from shared library
     if libMpirAttach is None:
@@ -186,7 +188,6 @@ def fill_MPIR_proctable(proctable_elems):
 
 def set_current_apid(apid):
     """ Make currently-running apid available to debugger client """
-    global libMpirAttach # pylint: disable=global-statement
 
     # Load MPIR initialization functions from shared library
     if libMpirAttach is None:
@@ -201,7 +202,6 @@ def set_current_apid(apid):
 
 def call_MPIR_Breakpoint():
     """ Notify MPIR client that proctable is completed """
-    global libMpirAttach # pylint: disable=global-statement
 
     # Load MPIR initialization functions from shared library
     if libMpirAttach is None:
@@ -214,7 +214,6 @@ def call_MPIR_Breakpoint():
 
 def free_MPIR_proctable():
     """ Free the C data structures allocated by the MPIR library """
-    global libMpirAttach # pylint: disable=global-statement
 
     # Load MPIR initialization functions from shared library
     if libMpirAttach is None:
