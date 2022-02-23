@@ -26,7 +26,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 import os
 import ctypes
 
-from cray.echo import echo, LOG_INFO, LOG_WARN, LOG_DEBUG, LOG_RAW
+from cray.echo import echo, LOG_INFO, LOG_WARN
 
 def get_libmpirattach_path():
     """ If set, read the palsd install location from the environment """
