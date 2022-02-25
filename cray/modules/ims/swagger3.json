@@ -1,9 +1,13 @@
 {
     "openapi": "3.0.2",
     "info": {
-        "description": "The Image Management Service (IMS) creates and customizes boot images which run on compute nodes. A boot image consists of multiple image artifacts including the root file system (rootfs), kernel and initrd. There are optionally additional artifacts such as debug symbols, etc. \nIMS uses the open source Kiwi-NG tool to build image roots from compressed Kiwi image descriptions (recipes). Kiwi-NG is able to build images based on a variety of different Linux distributions, specifically SUSE, RHEL and their derivatives.\nA user may choose to use the Cray-provided recipes or  customize Kiwi recipes to define the image to be built.\nIMS creates and customizes existing boot images and maintains metadata about the images and related artifacts. IMS accesses and stores the recipes, images, and related artifacts in the artifact repository. \n## Resources \n### /images \n  \n  Manipulate ImageRecords, which relate multiple image artifact records together.\n\n### /jobs  \n\n  Initiate image creation or customization.  It creates the image which it uploads to \n  the artifact repository,\n  and maintains associated metadata in IMS for subsequent access. It also customizes a pre-existing\n  image.\n\n### /public-keys\n\n  Manage the public keys which enable ssh access. \n  Public-keys are created and uploaded by the\n  administrator to allow access to ssh shells provided\n  by IMS during image creation and customization.\n\n\n### /recipes \n\n  Manipulate the RecipeRecord metadata about the Kiwi-NG recipes \n  which are stored in the artifact repository. \n  Recipes themselves define how an image is to be created including the\n  RPMS that will be installed, the RPM repos to use, etc. \n   \n\n## Workflows\n\n  There are two main workflows using the IMS - image creation and image customization.  \n  The IMS /jobs endpoint directs the creation of a new image, or \n  the customization of an existing image, depending on the POST /jobs request body parameter, job_type.\n\n### Add a New Recipe\n#### GET /recipes \n   \n  Obtain list of existing recipes which are registered with IMS.\n\n#### Upload recipe using CLI\n   \n  Upload a new recipe to the artifact repository using the cray artifacts command, if necessary.\n  Refer to Administrator's Guide for instructions.\n  \n#### POST /recipes\n\n  Register new recipe with IMS. \n\n### Manage Public Keys\n#### GET /public-keys\n\n  Obtain list of available public-keys.\n   \n#### POST /public-keys\n\n  Add a new public-key.\n\n### Create a New Image\n  \n#### GET /public-keys\nGet a list of available keys.\n  \n#### GET /recipes\n\n Get recipe id.\n  \n  #### POST /jobs\n  \n  Use Kiwi-NG to create a new IMS image and image artifacts from a recipe,\n  Specify job_type \"create\" in JobRecord. \n  Request body parameters supply the recipe id and public key id.\n  Upon success,\n  the artifact repository contains the new image and the image artifacts,\n  IMS contains a new ImageRecord - metadata for the new image.\n  During the creation process, IMS may create an ssh shell for\n  administrator interaction with the image for\n  debugging, if necessary.  (enable_debug = true in JobRecord)\n\n### Modify an Image\n  \n#### GET /public-keys\nGet a list of available keys.\n  \n#### GET /images\nObtain a list of available images registered in IMS.\n  \n#### POST /jobs\n\n  To create a modified version of an existing IMS image, \n  specify job_type \"customize\". Specify the IMS id of the existing image, and\n  public key.  This request creates a copy of the existing image,\n  and then an interactive ssh shell\n  in which to modify the copy of the image.  Upon success,\n  the artifact repository contains the original image and a modified version of it. IMS contains \n  a new ImageRecord - metadata for the modified image.\n  The original image is still intact.  A user may want to install additional software, \n  install licenses, change the timezone, add mount points, etc.\n",
-        "version": "3.0.0",
-        "title": "Image Management Service"
+        "description": "The Image Management Service (IMS) creates and customizes boot images which run on compute nodes. A boot image consists of multiple image artifacts including the root file system (rootfs), kernel and initrd. There are optionally additional artifacts such as debug symbols, etc. \nIMS uses the open source Kiwi-NG tool to build image roots from compressed Kiwi image descriptions (recipes). Kiwi-NG is able to build images based on a variety of different Linux distributions, specifically SUSE, RHEL and their derivatives.\nA user may choose to use the provided recipes or  customize Kiwi recipes to define the image to be built.\nIMS creates and customizes existing boot images and maintains metadata about the images and related artifacts. IMS accesses and stores the recipes, images, and related artifacts in the artifact repository. \n## Resources \n### /images \n  \n  Manipulate ImageRecords, which relate multiple image artifact records together.\n\n### /jobs  \n\n  Initiate image creation or customization.  It creates the image which it uploads to \n  the artifact repository,\n  and maintains associated metadata in IMS for subsequent access. It also customizes a pre-existing\n  image.\n\n### /public-keys\n\n  Manage the public keys which enable ssh access. \n  Public-keys are created and uploaded by the\n  administrator to allow access to ssh shells provided\n  by IMS during image creation and customization.\n\n\n### /recipes \n\n  Manipulate the RecipeRecord metadata about the Kiwi-NG recipes \n  which are stored in the artifact repository. \n  Recipes themselves define how an image is to be created including the\n  RPMS that will be installed, the RPM repos to use, etc. \n   \n\n## Workflows\n\n  There are two main workflows using the IMS - image creation and image customization.  \n  The IMS /jobs endpoint directs the creation of a new image, or \n  the customization of an existing image, depending on the POST /jobs request body parameter, job_type.\n\n### Add a New Recipe\n#### GET /recipes \n   \n  Obtain list of existing recipes which are registered with IMS.\n\n#### Upload recipe using CLI\n   \n  Upload a new recipe to the artifact repository using the cray artifacts command, if necessary.\n  Refer to Administrator's Guide for instructions.\n  \n#### POST /recipes\n\n  Register new recipe with IMS. \n\n### Manage Public Keys\n#### GET /public-keys\n\n  Obtain list of available public-keys.\n   \n#### POST /public-keys\n\n  Add a new public-key.\n\n### Create a New Image\n  \n#### GET /public-keys\nGet a list of available keys.\n  \n#### GET /recipes\n\n Get recipe id.\n  \n  #### POST /jobs\n  \n  Use Kiwi-NG to create a new IMS image and image artifacts from a recipe,\n  Specify job_type \"create\" in JobRecord. \n  Request body parameters supply the recipe id and public key id.\n  Upon success,\n  the artifact repository contains the new image and the image artifacts,\n  IMS contains a new ImageRecord - metadata for the new image.\n  During the creation process, IMS may create an ssh shell for\n  administrator interaction with the image for\n  debugging, if necessary.  (enable_debug = true in JobRecord)\n\n### Modify an Image\n  \n#### GET /public-keys\nGet a list of available keys.\n  \n#### GET /images\nObtain a list of available images registered in IMS.\n  \n#### POST /jobs\n\n  To create a modified version of an existing IMS image, \n  specify job_type \"customize\". Specify the IMS id of the existing image, and\n  public key.  This request creates a copy of the existing image,\n  and then an interactive ssh shell\n  in which to modify the copy of the image.  Upon success,\n  the artifact repository contains the original image and a modified version of it. IMS contains \n  a new ImageRecord - metadata for the modified image.\n  The original image is still intact.  A user may want to install additional software, \n  install licenses, change the timezone, add mount points, etc.\n",
+        "version": "3.1.0",
+        "title": "Image Management Service",
+        "license": {
+            "name": "Hewlett Packard Enterprise Development LP",
+            "url": "http://www.hpe.com/"
+        }
     },
     "servers": [
         {
@@ -101,6 +105,30 @@
                                                 "description": "Name of the image",
                                                 "example": "centos7.5_barebones",
                                                 "type": "string"
+                                            },
+                                            "template_dictionary": {
+                                                "description": "List of key/value pairs to be templated into the recipe when building the image.",
+                                                "type": "array",
+                                                "items": {
+                                                    "description": "Key/value pair used to template an IMS recipe",
+                                                    "type": "object",
+                                                    "required": [
+                                                        "key",
+                                                        "value"
+                                                    ],
+                                                    "properties": {
+                                                        "key": {
+                                                            "description": "Template variable to replace in the IMS recipe",
+                                                            "example": "CSM_RELEASE_VERSION",
+                                                            "type": "string"
+                                                        },
+                                                        "value": {
+                                                            "description": "Value to replace the template variable in the IMS recipe",
+                                                            "example": "1.0.0",
+                                                            "type": "string"
+                                                        }
+                                                    }
+                                                }
                                             }
                                         }
                                     },
@@ -233,6 +261,30 @@
                                         "description": "Name of the image",
                                         "example": "centos7.5_barebones",
                                         "type": "string"
+                                    },
+                                    "template_dictionary": {
+                                        "description": "List of key/value pairs to be templated into the recipe when building the image.",
+                                        "type": "array",
+                                        "items": {
+                                            "description": "Key/value pair used to template an IMS recipe",
+                                            "type": "object",
+                                            "required": [
+                                                "key",
+                                                "value"
+                                            ],
+                                            "properties": {
+                                                "key": {
+                                                    "description": "Template variable to replace in the IMS recipe",
+                                                    "example": "CSM_RELEASE_VERSION",
+                                                    "type": "string"
+                                                },
+                                                "value": {
+                                                    "description": "Value to replace the template variable in the IMS recipe",
+                                                    "example": "1.0.0",
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -313,6 +365,30 @@
                                 "description": "Name of the image",
                                 "example": "centos7.5_barebones",
                                 "type": "string"
+                            },
+                            "template_dictionary": {
+                                "description": "List of key/value pairs to be templated into the recipe when building the image.",
+                                "type": "array",
+                                "items": {
+                                    "description": "Key/value pair used to template an IMS recipe",
+                                    "type": "object",
+                                    "required": [
+                                        "key",
+                                        "value"
+                                    ],
+                                    "properties": {
+                                        "key": {
+                                            "description": "Template variable to replace in the IMS recipe",
+                                            "example": "CSM_RELEASE_VERSION",
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "description": "Value to replace the template variable in the IMS recipe",
+                                            "example": "1.0.0",
+                                            "type": "string"
+                                        }
+                                    }
+                                }
                             }
                         }
                     },
@@ -593,6 +669,30 @@
                                             "description": "Name of the image",
                                             "example": "centos7.5_barebones",
                                             "type": "string"
+                                        },
+                                        "template_dictionary": {
+                                            "description": "List of key/value pairs to be templated into the recipe when building the image.",
+                                            "type": "array",
+                                            "items": {
+                                                "description": "Key/value pair used to template an IMS recipe",
+                                                "type": "object",
+                                                "required": [
+                                                    "key",
+                                                    "value"
+                                                ],
+                                                "properties": {
+                                                    "key": {
+                                                        "description": "Template variable to replace in the IMS recipe",
+                                                        "example": "CSM_RELEASE_VERSION",
+                                                        "type": "string"
+                                                    },
+                                                    "value": {
+                                                        "description": "Value to replace the template variable in the IMS recipe",
+                                                        "example": "1.0.0",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -764,6 +864,30 @@
                                             "description": "Name of the image",
                                             "example": "centos7.5_barebones",
                                             "type": "string"
+                                        },
+                                        "template_dictionary": {
+                                            "description": "List of key/value pairs to be templated into the recipe when building the image.",
+                                            "type": "array",
+                                            "items": {
+                                                "description": "Key/value pair used to template an IMS recipe",
+                                                "type": "object",
+                                                "required": [
+                                                    "key",
+                                                    "value"
+                                                ],
+                                                "properties": {
+                                                    "key": {
+                                                        "description": "Template variable to replace in the IMS recipe",
+                                                        "example": "CSM_RELEASE_VERSION",
+                                                        "type": "string"
+                                                    },
+                                                    "value": {
+                                                        "description": "Value to replace the template variable in the IMS recipe",
+                                                        "example": "1.0.0",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -2749,6 +2873,13 @@
                                                 "type": "string",
                                                 "minLength": 1
                                             },
+                                            "kernel_parameters_file_name": {
+                                                "description": "Name of the kernel-parameters file to extract and upload to the artifact repository from the /boot directory of the image root.",
+                                                "default": "kernel-parameters",
+                                                "example": "kernel-parameters",
+                                                "type": "string",
+                                                "minLength": 1
+                                            },
                                             "status": {
                                                 "readOnly": true,
                                                 "allOf": [
@@ -2986,6 +3117,13 @@
                                         "type": "string",
                                         "minLength": 1
                                     },
+                                    "kernel_parameters_file_name": {
+                                        "description": "Name of the kernel-parameters file to extract and upload to the artifact repository from the /boot directory of the image root.",
+                                        "default": "kernel-parameters",
+                                        "example": "kernel-parameters",
+                                        "type": "string",
+                                        "minLength": 1
+                                    },
                                     "status": {
                                         "readOnly": true,
                                         "allOf": [
@@ -3168,6 +3306,13 @@
                                 "description": "Name of the initrd image file to extract and upload to the artifact repository from the /boot directory of the image root.",
                                 "default": "initrd",
                                 "example": "initrd",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "kernel_parameters_file_name": {
+                                "description": "Name of the kernel-parameters file to extract and upload to the artifact repository from the /boot directory of the image root.",
+                                "default": "kernel-parameters",
+                                "example": "kernel-parameters",
                                 "type": "string",
                                 "minLength": 1
                             },
@@ -3606,6 +3751,13 @@
                                             "type": "string",
                                             "minLength": 1
                                         },
+                                        "kernel_parameters_file_name": {
+                                            "description": "Name of the kernel-parameters file to extract and upload to the artifact repository from the /boot directory of the image root.",
+                                            "default": "kernel-parameters",
+                                            "example": "kernel-parameters",
+                                            "type": "string",
+                                            "minLength": 1
+                                        },
                                         "status": {
                                             "readOnly": true,
                                             "allOf": [
@@ -3877,6 +4029,13 @@
                                             "description": "Name of the initrd image file to extract and upload to the artifact repository from the /boot directory of the image root.",
                                             "default": "initrd",
                                             "example": "initrd",
+                                            "type": "string",
+                                            "minLength": 1
+                                        },
+                                        "kernel_parameters_file_name": {
+                                            "description": "Name of the kernel-parameters file to extract and upload to the artifact repository from the /boot directory of the image root.",
+                                            "default": "kernel-parameters",
+                                            "example": "kernel-parameters",
                                             "type": "string",
                                             "minLength": 1
                                         },
@@ -7103,6 +7262,30 @@
                                                 "description": "Name of the image",
                                                 "example": "centos7.5_barebones",
                                                 "type": "string"
+                                            },
+                                            "template_dictionary": {
+                                                "description": "List of key/value pairs to be templated into the recipe when building the image.",
+                                                "type": "array",
+                                                "items": {
+                                                    "description": "Key/value pair used to template an IMS recipe",
+                                                    "type": "object",
+                                                    "required": [
+                                                        "key",
+                                                        "value"
+                                                    ],
+                                                    "properties": {
+                                                        "key": {
+                                                            "description": "Template variable to replace in the IMS recipe",
+                                                            "example": "CSM_RELEASE_VERSION",
+                                                            "type": "string"
+                                                        },
+                                                        "value": {
+                                                            "description": "Value to replace the template variable in the IMS recipe",
+                                                            "example": "1.0.0",
+                                                            "type": "string"
+                                                        }
+                                                    }
+                                                }
                                             }
                                         }
                                     },
@@ -7235,6 +7418,30 @@
                                         "description": "Name of the image",
                                         "example": "centos7.5_barebones",
                                         "type": "string"
+                                    },
+                                    "template_dictionary": {
+                                        "description": "List of key/value pairs to be templated into the recipe when building the image.",
+                                        "type": "array",
+                                        "items": {
+                                            "description": "Key/value pair used to template an IMS recipe",
+                                            "type": "object",
+                                            "required": [
+                                                "key",
+                                                "value"
+                                            ],
+                                            "properties": {
+                                                "key": {
+                                                    "description": "Template variable to replace in the IMS recipe",
+                                                    "example": "CSM_RELEASE_VERSION",
+                                                    "type": "string"
+                                                },
+                                                "value": {
+                                                    "description": "Value to replace the template variable in the IMS recipe",
+                                                    "example": "1.0.0",
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -7315,6 +7522,30 @@
                                 "description": "Name of the image",
                                 "example": "centos7.5_barebones",
                                 "type": "string"
+                            },
+                            "template_dictionary": {
+                                "description": "List of key/value pairs to be templated into the recipe when building the image.",
+                                "type": "array",
+                                "items": {
+                                    "description": "Key/value pair used to template an IMS recipe",
+                                    "type": "object",
+                                    "required": [
+                                        "key",
+                                        "value"
+                                    ],
+                                    "properties": {
+                                        "key": {
+                                            "description": "Template variable to replace in the IMS recipe",
+                                            "example": "CSM_RELEASE_VERSION",
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "description": "Value to replace the template variable in the IMS recipe",
+                                            "example": "1.0.0",
+                                            "type": "string"
+                                        }
+                                    }
+                                }
                             }
                         }
                     },
@@ -7607,6 +7838,30 @@
                                             "description": "Name of the image",
                                             "example": "centos7.5_barebones",
                                             "type": "string"
+                                        },
+                                        "template_dictionary": {
+                                            "description": "List of key/value pairs to be templated into the recipe when building the image.",
+                                            "type": "array",
+                                            "items": {
+                                                "description": "Key/value pair used to template an IMS recipe",
+                                                "type": "object",
+                                                "required": [
+                                                    "key",
+                                                    "value"
+                                                ],
+                                                "properties": {
+                                                    "key": {
+                                                        "description": "Template variable to replace in the IMS recipe",
+                                                        "example": "CSM_RELEASE_VERSION",
+                                                        "type": "string"
+                                                    },
+                                                    "value": {
+                                                        "description": "Value to replace the template variable in the IMS recipe",
+                                                        "example": "1.0.0",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -7778,6 +8033,30 @@
                                             "description": "Name of the image",
                                             "example": "centos7.5_barebones",
                                             "type": "string"
+                                        },
+                                        "template_dictionary": {
+                                            "description": "List of key/value pairs to be templated into the recipe when building the image.",
+                                            "type": "array",
+                                            "items": {
+                                                "description": "Key/value pair used to template an IMS recipe",
+                                                "type": "object",
+                                                "required": [
+                                                    "key",
+                                                    "value"
+                                                ],
+                                                "properties": {
+                                                    "key": {
+                                                        "description": "Template variable to replace in the IMS recipe",
+                                                        "example": "CSM_RELEASE_VERSION",
+                                                        "type": "string"
+                                                    },
+                                                    "value": {
+                                                        "description": "Value to replace the template variable in the IMS recipe",
+                                                        "example": "1.0.0",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -9798,6 +10077,13 @@
                                                 "type": "string",
                                                 "minLength": 1
                                             },
+                                            "kernel_parameters_file_name": {
+                                                "description": "Name of the kernel-parameters file to extract and upload to the artifact repository from the /boot directory of the image root.",
+                                                "default": "kernel-parameters",
+                                                "example": "kernel-parameters",
+                                                "type": "string",
+                                                "minLength": 1
+                                            },
                                             "status": {
                                                 "readOnly": true,
                                                 "allOf": [
@@ -10035,6 +10321,13 @@
                                         "type": "string",
                                         "minLength": 1
                                     },
+                                    "kernel_parameters_file_name": {
+                                        "description": "Name of the kernel-parameters file to extract and upload to the artifact repository from the /boot directory of the image root.",
+                                        "default": "kernel-parameters",
+                                        "example": "kernel-parameters",
+                                        "type": "string",
+                                        "minLength": 1
+                                    },
                                     "status": {
                                         "readOnly": true,
                                         "allOf": [
@@ -10217,6 +10510,13 @@
                                 "description": "Name of the initrd image file to extract and upload to the artifact repository from the /boot directory of the image root.",
                                 "default": "initrd",
                                 "example": "initrd",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "kernel_parameters_file_name": {
+                                "description": "Name of the kernel-parameters file to extract and upload to the artifact repository from the /boot directory of the image root.",
+                                "default": "kernel-parameters",
+                                "example": "kernel-parameters",
                                 "type": "string",
                                 "minLength": 1
                             },
@@ -10656,6 +10956,13 @@
                                             "type": "string",
                                             "minLength": 1
                                         },
+                                        "kernel_parameters_file_name": {
+                                            "description": "Name of the kernel-parameters file to extract and upload to the artifact repository from the /boot directory of the image root.",
+                                            "default": "kernel-parameters",
+                                            "example": "kernel-parameters",
+                                            "type": "string",
+                                            "minLength": 1
+                                        },
                                         "status": {
                                             "readOnly": true,
                                             "allOf": [
@@ -10927,6 +11234,13 @@
                                             "description": "Name of the initrd image file to extract and upload to the artifact repository from the /boot directory of the image root.",
                                             "default": "initrd",
                                             "example": "initrd",
+                                            "type": "string",
+                                            "minLength": 1
+                                        },
+                                        "kernel_parameters_file_name": {
+                                            "description": "Name of the kernel-parameters file to extract and upload to the artifact repository from the /boot directory of the image root.",
+                                            "default": "kernel-parameters",
+                                            "example": "kernel-parameters",
                                             "type": "string",
                                             "minLength": 1
                                         },
@@ -11406,6 +11720,30 @@
                                                 "description": "Name of the image",
                                                 "example": "centos7.5_barebones",
                                                 "type": "string"
+                                            },
+                                            "template_dictionary": {
+                                                "description": "List of key/value pairs to be templated into the recipe when building the image.",
+                                                "type": "array",
+                                                "items": {
+                                                    "description": "Key/value pair used to template an IMS recipe",
+                                                    "type": "object",
+                                                    "required": [
+                                                        "key",
+                                                        "value"
+                                                    ],
+                                                    "properties": {
+                                                        "key": {
+                                                            "description": "Template variable to replace in the IMS recipe",
+                                                            "example": "CSM_RELEASE_VERSION",
+                                                            "type": "string"
+                                                        },
+                                                        "value": {
+                                                            "description": "Value to replace the template variable in the IMS recipe",
+                                                            "example": "1.0.0",
+                                                            "type": "string"
+                                                        }
+                                                    }
+                                                }
                                             }
                                         }
                                     },
@@ -11538,6 +11876,30 @@
                                         "description": "Name of the image",
                                         "example": "centos7.5_barebones",
                                         "type": "string"
+                                    },
+                                    "template_dictionary": {
+                                        "description": "List of key/value pairs to be templated into the recipe when building the image.",
+                                        "type": "array",
+                                        "items": {
+                                            "description": "Key/value pair used to template an IMS recipe",
+                                            "type": "object",
+                                            "required": [
+                                                "key",
+                                                "value"
+                                            ],
+                                            "properties": {
+                                                "key": {
+                                                    "description": "Template variable to replace in the IMS recipe",
+                                                    "example": "CSM_RELEASE_VERSION",
+                                                    "type": "string"
+                                                },
+                                                "value": {
+                                                    "description": "Value to replace the template variable in the IMS recipe",
+                                                    "example": "1.0.0",
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -11618,6 +11980,30 @@
                                 "description": "Name of the image",
                                 "example": "centos7.5_barebones",
                                 "type": "string"
+                            },
+                            "template_dictionary": {
+                                "description": "List of key/value pairs to be templated into the recipe when building the image.",
+                                "type": "array",
+                                "items": {
+                                    "description": "Key/value pair used to template an IMS recipe",
+                                    "type": "object",
+                                    "required": [
+                                        "key",
+                                        "value"
+                                    ],
+                                    "properties": {
+                                        "key": {
+                                            "description": "Template variable to replace in the IMS recipe",
+                                            "example": "CSM_RELEASE_VERSION",
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "description": "Value to replace the template variable in the IMS recipe",
+                                            "example": "1.0.0",
+                                            "type": "string"
+                                        }
+                                    }
+                                }
                             }
                         }
                     },
@@ -11910,6 +12296,30 @@
                                             "description": "Name of the image",
                                             "example": "centos7.5_barebones",
                                             "type": "string"
+                                        },
+                                        "template_dictionary": {
+                                            "description": "List of key/value pairs to be templated into the recipe when building the image.",
+                                            "type": "array",
+                                            "items": {
+                                                "description": "Key/value pair used to template an IMS recipe",
+                                                "type": "object",
+                                                "required": [
+                                                    "key",
+                                                    "value"
+                                                ],
+                                                "properties": {
+                                                    "key": {
+                                                        "description": "Template variable to replace in the IMS recipe",
+                                                        "example": "CSM_RELEASE_VERSION",
+                                                        "type": "string"
+                                                    },
+                                                    "value": {
+                                                        "description": "Value to replace the template variable in the IMS recipe",
+                                                        "example": "1.0.0",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -12081,6 +12491,30 @@
                                             "description": "Name of the image",
                                             "example": "centos7.5_barebones",
                                             "type": "string"
+                                        },
+                                        "template_dictionary": {
+                                            "description": "List of key/value pairs to be templated into the recipe when building the image.",
+                                            "type": "array",
+                                            "items": {
+                                                "description": "Key/value pair used to template an IMS recipe",
+                                                "type": "object",
+                                                "required": [
+                                                    "key",
+                                                    "value"
+                                                ],
+                                                "properties": {
+                                                    "key": {
+                                                        "description": "Template variable to replace in the IMS recipe",
+                                                        "example": "CSM_RELEASE_VERSION",
+                                                        "type": "string"
+                                                    },
+                                                    "value": {
+                                                        "description": "Value to replace the template variable in the IMS recipe",
+                                                        "example": "1.0.0",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -14101,6 +14535,13 @@
                                                 "type": "string",
                                                 "minLength": 1
                                             },
+                                            "kernel_parameters_file_name": {
+                                                "description": "Name of the kernel-parameters file to extract and upload to the artifact repository from the /boot directory of the image root.",
+                                                "default": "kernel-parameters",
+                                                "example": "kernel-parameters",
+                                                "type": "string",
+                                                "minLength": 1
+                                            },
                                             "status": {
                                                 "readOnly": true,
                                                 "allOf": [
@@ -14338,6 +14779,13 @@
                                         "type": "string",
                                         "minLength": 1
                                     },
+                                    "kernel_parameters_file_name": {
+                                        "description": "Name of the kernel-parameters file to extract and upload to the artifact repository from the /boot directory of the image root.",
+                                        "default": "kernel-parameters",
+                                        "example": "kernel-parameters",
+                                        "type": "string",
+                                        "minLength": 1
+                                    },
                                     "status": {
                                         "readOnly": true,
                                         "allOf": [
@@ -14520,6 +14968,13 @@
                                 "description": "Name of the initrd image file to extract and upload to the artifact repository from the /boot directory of the image root.",
                                 "default": "initrd",
                                 "example": "initrd",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "kernel_parameters_file_name": {
+                                "description": "Name of the kernel-parameters file to extract and upload to the artifact repository from the /boot directory of the image root.",
+                                "default": "kernel-parameters",
+                                "example": "kernel-parameters",
                                 "type": "string",
                                 "minLength": 1
                             },
@@ -14959,6 +15414,13 @@
                                             "type": "string",
                                             "minLength": 1
                                         },
+                                        "kernel_parameters_file_name": {
+                                            "description": "Name of the kernel-parameters file to extract and upload to the artifact repository from the /boot directory of the image root.",
+                                            "default": "kernel-parameters",
+                                            "example": "kernel-parameters",
+                                            "type": "string",
+                                            "minLength": 1
+                                        },
                                         "status": {
                                             "readOnly": true,
                                             "allOf": [
@@ -15230,6 +15692,13 @@
                                             "description": "Name of the initrd image file to extract and upload to the artifact repository from the /boot directory of the image root.",
                                             "default": "initrd",
                                             "example": "initrd",
+                                            "type": "string",
+                                            "minLength": 1
+                                        },
+                                        "kernel_parameters_file_name": {
+                                            "description": "Name of the kernel-parameters file to extract and upload to the artifact repository from the /boot directory of the image root.",
+                                            "default": "kernel-parameters",
+                                            "example": "kernel-parameters",
                                             "type": "string",
                                             "minLength": 1
                                         },
@@ -16272,6 +16741,26 @@
                     }
                 }
             },
+            "RecipeKeyValuePair": {
+                "description": "Key/value pair used to template an IMS recipe",
+                "type": "object",
+                "required": [
+                    "key",
+                    "value"
+                ],
+                "properties": {
+                    "key": {
+                        "description": "Template variable to replace in the IMS recipe",
+                        "example": "CSM_RELEASE_VERSION",
+                        "type": "string"
+                    },
+                    "value": {
+                        "description": "Value to replace the template variable in the IMS recipe",
+                        "example": "1.0.0",
+                        "type": "string"
+                    }
+                }
+            },
             "RecipeRecord": {
                 "description": "A Recipe Record",
                 "type": "object",
@@ -16343,6 +16832,30 @@
                         "description": "Name of the image",
                         "example": "centos7.5_barebones",
                         "type": "string"
+                    },
+                    "template_dictionary": {
+                        "description": "List of key/value pairs to be templated into the recipe when building the image.",
+                        "type": "array",
+                        "items": {
+                            "description": "Key/value pair used to template an IMS recipe",
+                            "type": "object",
+                            "required": [
+                                "key",
+                                "value"
+                            ],
+                            "properties": {
+                                "key": {
+                                    "description": "Template variable to replace in the IMS recipe",
+                                    "example": "CSM_RELEASE_VERSION",
+                                    "type": "string"
+                                },
+                                "value": {
+                                    "description": "Value to replace the template variable in the IMS recipe",
+                                    "example": "1.0.0",
+                                    "type": "string"
+                                }
+                            }
+                        }
                     }
                 }
             },
@@ -16654,6 +17167,13 @@
                         "description": "Name of the initrd image file to extract and upload to the artifact repository from the /boot directory of the image root.",
                         "default": "initrd",
                         "example": "initrd",
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "kernel_parameters_file_name": {
+                        "description": "Name of the kernel-parameters file to extract and upload to the artifact repository from the /boot directory of the image root.",
+                        "default": "kernel-parameters",
+                        "example": "kernel-parameters",
                         "type": "string",
                         "minLength": 1
                     },
