@@ -1,4 +1,4 @@
-FROM alpine:3.13.2 as base
+FROM alpine:3.14.3 as base
 
 RUN apk add --update npm
 
