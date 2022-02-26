@@ -4,7 +4,7 @@ and options.
 
 MIT License
 
-(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+(C) Copyright [2020-2022] Hewlett Packard Enterprise Development LP
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -358,13 +358,17 @@ def test_cray_ims_recipes_create(cli_runner, rest_mock):
     runner, cli, config = cli_runner
     s3_link_path = new_random_string()
     s3_link_etag = new_random_string()
+    test_key = new_random_string()
+    test_value = new_random_string()
     result = runner.invoke(cli, ['ims', 'recipes', 'create',
                                  '--name', 'foo',
                                  '--linux-distribution', 'sles15',
                                  '--recipe-type', 'kiwi-ng',
                                  '--link-type', 's3',
                                  '--link-path', s3_link_path,
-                                 '--link-etag', s3_link_etag])
+                                 '--link-etag', s3_link_etag,
+                                 '--template-dictionary-key', test_key,
+                                 '--template-dictionary-value', test_value])
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'POST'
@@ -378,6 +382,7 @@ def test_cray_ims_recipes_create(cli_runner, rest_mock):
     assert data['body']['link'].get('type', None) == 's3'
     assert data['body']['link'].get('path', None) == s3_link_path
     assert data['body']['link'].get('etag', None) == s3_link_etag
+    assert data['body'].get('template_dictionary') == [{'key': test_key, 'value': test_value}]
 
 
 # pylint: disable=redefined-outer-name
@@ -798,6 +803,7 @@ def test_cray_ims_jobs_create_create(cli_runner, rest_mock):
         'initrd_file_name': test_initrd_file_name,
         'kernel_file_name': test_kernel_file_name,
         'image_root_archive_name': test_image_root_archive_name,
+        'kernel_parameters_file_name': 'kernel-parameters',
         'job_type': test_job_type
     }
 
@@ -841,6 +847,7 @@ def test_cray_ims_jobs_create_customize(cli_runner, rest_mock):
         'initrd_file_name': test_initrd_file_name,
         'kernel_file_name': test_kernel_file_name,
         'image_root_archive_name': test_image_root_archive_name,
+        'kernel_parameters_file_name': 'kernel-parameters',
         'job_type': test_job_type,
     }
 

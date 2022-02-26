@@ -1,5 +1,27 @@
-# Cray Image Management Service API Specification
-# © Copyright 2019-2020 Hewlett Packard Enterprise Development LP
+#
+# MIT License
+#
+# (C) Copyright 2022 Hewlett Packard Enterprise Development LP
+#
+# Permission is hereby granted, free of charge, to any person obtaining a
+# copy of this software and associated documentation files (the "Software"),
+# to deal in the Software without restriction, including without limitation
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,
+# and/or sell copies of the Software, and to permit persons to whom the
+# Software is furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included
+# in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+# THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+# OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+# ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+# OTHER DEALINGS IN THE SOFTWARE.
+#
+# Image Management Service API Specification
 openapi: 3.0.2
 
 info:
@@ -16,7 +38,7 @@ info:
     Linux distributions, specifically SUSE, RHEL and
     their derivatives.
 
-    A user may choose to use the Cray-provided recipes or 
+    A user may choose to use the provided recipes or 
     customize Kiwi recipes to define the image
     to be built.
 
@@ -128,8 +150,11 @@ info:
       The original image is still intact.  A user may want to install additional software, 
       install licenses, change the timezone, add mount points, etc.
     
-  version: 3.0.0
+  version: 3.1.0
   title: Image Management Service
+  license:
+    name: Hewlett Packard Enterprise Development LP
+    url: http://www.hpe.com/
 servers:
   - url: 'https://api-gw-service-nmn.local/apis/ims'
     description: The production IMS API server. Accessed from outside the mesh.
@@ -1868,6 +1893,21 @@ components:
           description: Identifer specifing the artifact repository where the artifact is located
           example: s3
           type: string
+    RecipeKeyValuePair:
+      description: Key/value pair used to template an IMS recipe
+      type: object
+      required:
+        - key
+        - value
+      properties:
+        key:
+          description: Template variable to replace in the IMS recipe
+          example: CSM_RELEASE_VERSION
+          type: string
+        value:
+          description: Value to replace the template variable in the IMS recipe
+          example: 1.0.0
+          type: string
     RecipeRecord:
       description: A Recipe Record
       type: object
@@ -1910,6 +1950,11 @@ components:
           description: Name of the image
           example: centos7.5_barebones
           type: string
+        template_dictionary:
+          description: List of key/value pairs to be templated into the recipe when building the image.
+          type: array
+          items:
+            $ref: '#/components/schemas/RecipeKeyValuePair'
     DeletedRecipeRecord:
       description: A Deleted Recipe Record
       type: object
@@ -2072,6 +2117,14 @@ components:
             /boot directory of the image root.
           default: initrd
           example: initrd
+          type: string
+          minLength: 1
+        kernel_parameters_file_name:
+          description:
+            Name of the kernel-parameters file to extract and upload to the artifact repository from the
+            /boot directory of the image root.
+          default: kernel-parameters
+          example: kernel-parameters
           type: string
           minLength: 1
         status:
