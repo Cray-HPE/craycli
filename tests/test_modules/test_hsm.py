@@ -2,7 +2,7 @@
 
 MIT License
 
-(C) Copyright [2020-2021] Hewlett Packard Enterprise Development LP
+(C) Copyright [2020-2022] Hewlett Packard Enterprise Development LP
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -2760,7 +2760,7 @@ def test_cray_hsmV2_memberships_list(cli_runner, rest_mock):
     url_template = '/apis/smd/hsm/v2/memberships'
     result = runner.invoke(
         cli,
-        ['hsm', 'memberships', 'list', '--type', 'node', '--group', 'blue']
+        ['hsm', 'memberships', 'list', '--type', 'Node', '--group', 'blue']
     )
     assert result.exit_code == 0
     data = json.loads(result.output)
@@ -2770,11 +2770,11 @@ def test_cray_hsmV2_memberships_list(cli_runner, rest_mock):
     assert data['url'] == '{}{}?{}'.format(
         config['default']['hostname'],
         url_template,
-        'type=node&group=blue'
+        'type=Node&group=blue'
     ) or data['url'] == '{}{}?{}'.format(
         config['default']['hostname'],
         url_template,
-        'group=blue&type=node'
+        'group=blue&type=Node'
     )
 
 # pylint: disable=redefined-outer-name
@@ -3159,6 +3159,24 @@ def test_cray_hsmV2_locks_status_create(cli_runner, rest_mock):
     assert data['body'] == {
         'ComponentIDs': compIDs.split(',')
     }
+
+# pylint: disable=redefined-outer-name
+def test_cray_hsmV2_locks_status_list(cli_runner, rest_mock):
+    """ Test `cray hsm locks status list` with valid params """
+
+    runner, cli, config = cli_runner
+    url_template = '/apis/smd/hsm/v2/locks/status'
+    result = runner.invoke(
+        cli,
+        ['hsm', 'locks', 'status', 'list']
+    )
+    assert result.exit_code == 0
+    data = json.loads(result.output)
+    assert data['method'] == 'GET'
+    assert data['url'] == '{}{}'.format(
+        config['default']['hostname'],
+        url_template
+    )
 
 # pylint: disable=redefined-outer-name
 def test_cray_hsmV2_sysinfo_powermaps(cli_runner, rest_mock):
