@@ -2,7 +2,7 @@
 
 MIT License
 
-(C) Copyright [2020-2021] Hewlett Packard Enterprise Development LP
+(C) Copyright [2020-2022] Hewlett Packard Enterprise Development LP
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -654,5 +654,3 @@ gne_apid = '831ab138'
 gne_job_id = '831138.sdb'
 gne_start_time = '2019-07-10 12:55:06'
 gne_end_time = '2019-07-10 14:00:00'
-
-

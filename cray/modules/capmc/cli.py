@@ -3,7 +3,7 @@ CAPMC - Cray Advanced Platform Monitoring and Control
 
 MIT License
 
-(C) Copyright [2020-2021] Hewlett Packard Enterprise Development LP
+(C) Copyright [2020-2022] Hewlett Packard Enterprise Development LP
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -126,4 +126,3 @@ def set_power_cap_shim(func):
 
 # Update to create command with the callback
 CREATE_CMD.callback = set_power_cap_shim(CREATE_CMD.callback)
-
