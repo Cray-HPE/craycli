@@ -145,38 +145,6 @@ def test_cray_capmc_xname_reinit_help(cli_runner):
         assert out in result.output
     assert result.exit_code == 0
 
-# pylint: disable=redefined-outer-name
-def test_cray_capmc_emergency_power_off(cli_runner):
-    """ Test `cray capmc emergency_power_off` to make sure the expected commands are available """
-    runner, cli, _ = cli_runner
-    result = runner.invoke(cli, ['capmc', 'emergency_power_off'])
-
-    outputs = [
-        "cli capmc emergency_power_off [OPTIONS] COMMAND [ARGS]...",
-        "create",
-        ]
-
-    for out in outputs:
-        assert out in result.output
-    assert result.exit_code == 0
-
-# pylint: disable=redefined-outer-name
-def test_cray_capmc_emergency_power_off_help(cli_runner):
-    """ Test `cray capmc emergency_power_off create --help` for expected options """
-    runner, cli, _ = cli_runner
-    result = runner.invoke(cli, ['capmc', 'emergency_power_off', 'create', '--help'])
-
-    outputs = [
-        "cli capmc emergency_power_off create [OPTIONS]",
-        "force",
-        "xnames",
-        "reason",
-        ]
-
-    for out in outputs:
-        assert out in result.output
-    assert result.exit_code == 0
-
 capmc_url_base = '/capmc/v1'
 
 
