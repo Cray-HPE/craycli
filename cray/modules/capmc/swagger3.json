@@ -1,49 +1,41 @@
 {
     "openapi": "3.0.0",
     "info": {
-        "title": "Cray Advanced Platform Monitoring and Control (CAPMC) API",
-        "description": "The Cray Advanced Platform Monitoring and Control (CAPMC) API provides remote power monitoring and control to agents running externally to the Cray Systems Management Services.\n\nThese controls enable external software to manage the power state of an entire system and to more intelligently manage systemwide power consumption. The following API calls are provided as a means for third party software to implement power control and management strategies as simple or complex as the site-level requirements demand. The simplest power management strategy may be to simply turn off components which may be idle for a significant time interval and turn them back on when demand increases.\n\nThis implementation of CAPMC uses Redfish APIs to communicate directly with the hardware. Furthermore, all CAPMC power commands should be viewed as **asynchronous** and require the client to check for status after a CAPMC API call returns.",
+        "title": "Cray Advanced Platform Monitoring and Control (CAPMC)",
+        "description": "\n## Deprecation Notice: many CAPMC v1 features are being partially deprecated\n#### Effective CSM 1.0 -> removed as part of CSM 1.3\nMany CAPMC v1 REST API and CLI features are being deprecated as part of CSM version 1.0; Full removal of the deprecated CAPMC features will happen in CSM version 1.3. Further development of CAPMC service or CLI has stopped. CAPMC has entered end-of-life but will still be generally available. CAPMC is going to be replaced with the Power Control Service (PCS) in a future release. The current API/CLI portfolio for CAPMC are being pruned to better align with the future direction of PCS. More information about PCS and the CAPMC transition will be released as part of subsequent CSM releases.\n\nThe API endpoints that remain un-deprecated will remain supported until their 'phased transition' into PCS (e.g. Power Capping is not 'deprecated' and will be supported in PCS; As PCS is developed, CAPMC's Powercapping and PCS's Powercapping will both function, eventually callers of the CAPMC power capping API/CLI will need to will need transition to call PCS as the API will be different.)\n\nHere is a list of deprecated API (CLI) endpoints:\n* node control  \n  * `/get_node_rules`\n  * `/get_node_status`\n  * `/node_on`\n  * `/node_off`\n  * `/node_reinit`\n* group control\n  * `/group_reinit`\n  * `/get_group_status`\n  * `/group_on`\n  * `/group_off`\n* node energy\n  * `/get_node_energy`\n  * `/get_node_energy_stats`\n  * `/get_node_energy_counter`\n* system monitor\n  * `/get_system_parameters`\n  * `/get_system_power`\n  * `/get_system_power_details`\n* EPO\n  * `/emergency_power_off`  \n* utilities\n  * `/get_nid_map`\n\n## Introduction\nThe Cray Advanced Platform Monitoring and Control (CAPMC) API provides remote power monitoring and control to agents running externally to the Cray System Management Services.\n\nThese controls enable external software to manage the power state of an entire system and to more intelligently manage systemwide power consumption. The following API calls are provided as a means for third party software to implement power control and management strategies as simple or complex as the site-level requirements demand. The simplest power management strategy may be to simply turn off components which may be idle for a significant time interval and turn them back on when demand increases.\n\nThis implementation of CAPMC uses Redfish APIs to communicate directly with the hardware. Furthermore, all CAPMC power commands should be viewed as **asynchronous** and require the client to check for status after a CAPMC API call returns.\n## Controls\n### component control\n\n  CAPMC component power controls implement a simple interface for powering\n  off or on components (chassis, modules, nodes), and querying component\n  state information using component identifiers known as xnames. These\n  controls enable external software to more intelligently manage systemwide\n  power consumption or configuration parameters.\n\n### node control (deprecated CSM 1.0 - removed CSM 1.3)\n\n  CAPMC node power controls implement a simple interface for powering on\n  or off nodes, querying node state information, and querying site-specific\n  service usage rules. These controls enable external software to more\n  intelligently manage systemwide power consumption or configuration\n  parameters. The simplest power management strategy may be to simply turn\n  off compute nodes which may be idle for a significant time interval and\n  turn them back on when demand increases. The node control API calls are\n  provided as a means for third party software to implement power management\n  strategies as simple or complex as the site-level requirements demand.\n\n### group control (deprecated CSM 1.0 - removed CSM 1.3)\n\n  CAPMC group power controls implement a simple interface for querying\n  component state and controlling the power of components that are part of a\n  predefined group. Component groups are defined in the Hardware State\n  Manager. These controls enable external software to more intelligently\n  manage systemwide power consumption or configuration parameters.\n\n### power capping\n\n  CAPMC power capping controls implement a simple interface for\n  querying component capabilities and manipulation of node or sub-node\n  (accelerator) power constraints. This functionality enables external\n  software to establish an upper bound, or estimate a minimum bound, on\n  the amount of power a system or a select subset of the system may\n  consume. The power capping API calls are provided as a means for third\n  party software to implement advanced power management strategies.\n\n### utilities (partially deprecated CSM 1.0 - removed CSM 1.3)\n\n  CAPMC also contains utility functions used to query information such as\n  component name mapping, system partition membership, or a node\\'s role\n  assignment. The client utility may also function in an HTTP pass-through\n  mode, effectively allowing a client to specify custom input payloads not\n  possible using command line arguments alone. This mode of operation offers\n  maximum flexibility while allowing the client to utilize capmc\\'s built in\n  authorization mechanism.\n\n### node energy (deprecated CSM 1.0 - removed CSM 1.3)\n\n  CAPMC energy reporting controls implement a simple interface for querying\n  node energy consumption in various ways. The client may query statistics\n  by application id, job id, or simply use a list of NID numbers and a\n  client specified time window. Types of information returned may include\n  aggregated energy usage on a set of nodes, energy usage per-node, or an\n  energy accumulator point in time snapshot.\n\n  **Note:** API calls backed by data from the power management database\n  (PMDB), `get_node_energy`, `get_node_energy_stats`, and\n  `get_node_energy_counter`, are subject to a\n  [hysteresis](https://www.dictionary.com/browse/hysteresis) constraint. The\n  hysteresis value is 15 seconds; so all data sets returned from those API\n  calls will be shifted back in time so that the end time is less than the\n  hystersis window. The minimum window of time that may be queried is 15\n  seconds. Furthermore, all aggregation of data over the time dimension will\n  first be aggregated in 15s time windows. These constraints ensure high\n  data quality and minimize the impact of hysteresis on API calls.\n\n  **Warning:** The `get_node_energy` and `get_node_energy_stats` API calls\n  are resource intensive. Depending on system size and input parameters,\n  those API calls may require several minutes to complete.\n\n### system monitor (deprecated CSM 1.0 - removed CSM 1.3)\n\n  CAPMC system level monitoring controls implement a simple interface for\n  monitoring near real time system level power consumption. Current or\n  historical power data may be selected. This data may be returned in\n  aggregate or constituent form containing information relating to total\n  system or per-cabinet components, respectively. Additionally, a mechanism\n  is provided for a system administrator to convey intent or other\n  operational parameters, such as a maximum system power limit, or\n  unreported static power overhead, to third-parties.\n\n  **Note:** API calls backed by data from the power management database\n  (PMDB), `get_system_power` and `get_system_power_details`, are subject to\n  a hysteresis constraint. The hysteresis value is 15 seconds; so all data\n  sets returned from those API calls will be shifted back in time so that\n  the end time is less than the hystersis window. The minimum window of time\n  that may be queried is 15 seconds. Furthermore, all aggregation of data\n  over the time dimension will first be aggregated in 15s time windows.\n  These constraints ensure high data quality and minimize the impact of\n  hysteresis on API calls.\n\n### EPO (deprecated CSM 1.0 - removed CSM 1.3)\n\n  CAPMC EPO controls implement a simple interface for issuing a software\n  driven emergency power off. This causes a hard power off for all\n  components that can have their power directly controlled. This API should\n  not be used for routine power control of the system.\n\n  **Note:** EPO is only available at the system, cabinet, and chassis\n  component levels for Mountain hardware. All mountain hardware that shares\n  a cooling group with a component that is EPO'd will also be EPO'd.\n\n  **Warning:** Manual steps are required to recover from this and all EPOs.",
         "version": "1.2.2"
     },
     "tags": [
         {
-            "name": "component control",
-            "description": "**Component Status & Off/On Control**\n\nCAPMC component power controls implement a simple interface for powering off or on components (chassis, modules, nodes), and querying component state information using component identifiers known as xnames. These controls enable external software to more intelligently manage systemwide power consumption or configuration parameters."
+            "name": "component control"
         },
         {
-            "name": "node control",
-            "description": "**Node Status & Off/On Control**\n\nCAPMC node power controls implement a simple interface for powering on or off nodes, querying node state information, and querying site-specific service usage rules. These controls enable external software to more intelligently manage systemwide power consumption or configuration parameters. The simplest power management strategy may be to simply turn off compute nodes which may be idle for a significant time interval and turn them back on when demand increases. The following API calls are provided as a means for third party software to implement power management strategies as simple or complex as the site-level requirements demand."
+            "name": "node control - DEPRECATED"
         },
         {
-            "name": "group control",
-            "description": "**Group Status and On/Off Control**\n\nCAPMC group power controls implement a simple interface for querying component state and controlling the power of components that are part of a predefined group. Component groups are defined in the Hardware State Manager. These controls enable external software to more intelligently manage systemwide power consumption or configuration parameters."
+            "name": "group control - DEPRECATED"
         },
         {
-            "name": "power capping",
-            "description": "**Node Capabilities & Power Control**\n\nCAPMC power capping controls implement a simple interface for querying component capabilities and manipulation of node or sub-node (accelerator) power constraints. This functionality enables external software to establish an upper bound, or estimate a minimum bound, on the amount of power a system or a select subset of the system may consume. The following API calls are provided as a means for third party software to implement advanced power management strategies."
+            "name": "power capping"
         },
         {
-            "name": "utilities",
-            "description": "**Utility Functions**\n\nCAPMC also contains utility functions used to query information such as component name mapping, system partition membership, or a node\\'s role assignment. The client utility may also function in an HTTP pass-through mode, effectively allowing a client to specify custom input payloads not possible using command line arguments alone. This mode of operation offers maximum flexibility while allowing the client to utilize capmc\\'s built in authorization mechanism."
+            "name": "utilities - DEPRECATED"
         },
         {
-            "name": "node energy",
-            "description": "**Node Energy Reporting**\n\nCAPMC energy reporting controls implement a simple interface for querying node energy consumption in various ways. The client may query statistics by application id, job id, or simply use a list of NID numbers and a client specified time window. Types of information returned may include aggregated energy usage on a set of nodes, energy usage per-node, or an energy accumulator point in time snapshot.\n\n**Note**\n\nAPI calls backed by data from the power management database (PMDB), `get_node_energy`, `get_node_energy_stats`, and `get_node_energy_counter`, are subject to a [hysteresis](https://www.dictionary.com/browse/hysteresis) constraint. The hysteresis value is 15 seconds; so all data sets returned from those API calls will be shifted back in time so that the end time is less than the hystersis window. Furthermore, the minimum window of time that may be queried is 15 seconds. Futhermore all aggregation of data over the time dimension will first be aggregated in 15s time windows. These constraints are all to ensure high data quality and to minimize the impact of the hysteresis on API calls.\n\n**Warning**\n\nThe `get_node_energy` and `get_node_energy_stats` API calls are resource intensive. Depending on system size and input parameters, those API calls may require several minutes to complete."
+            "name": "node energy - DEPRECATED"
         },
         {
-            "name": "system monitor",
-            "description": "**System Level Monitoring**\n\nCAPMC system level monitoring controls implement a simple interface for monitoring near real time system level power consumption. Current or historical power data may be selected. This data may be returned in aggregate or constituent form containing information relating to total system or per-cabinet components, respectively. Additionally, a mechanism is provided for a system administrator to convey intent or other operational parameters, such as a maximum system power limit, or unreported static power overhead, to third-parties.\n\n**Note**\n\nAPI calls backed by data from the power management database (PMDB), `get_system_power` and `get_system_power_details`, are subject to a hysteresis constraint. The hysteresis value is 15 seconds; so all data sets returned from those API calls will be shifted back in time so that the end time is less than the hystersis window. Furthermore, the minimum window of time that may be queried is 15 seconds. Futhermore, all aggregation of data over the time dimension will first be aggregated in 15s time windows. These constraints are all to ensure high data quality and to minimize the impact of the hysteresis on API calls."
+            "name": "system monitor - DEPRECATED"
         },
         {
-            "name": "EPO",
-            "description": "**Emergency Power Off**\n\nCAPMC EPO controls implement a simple interface for issuing a software driven emergency power off. This causes a hard power off for all components that can have their power directly controlled. This API should not be used for routine power control of the system.\n\n**Note**\n\nEPO is only available at the system, cabinet, and chassis component levels for Mountain hardware. All mountain hardware that shares a cooling group with a component that is EPO'd will also be EPO'd.\n\n**Warning**\n\nManual steps are required to recover from this and all EPOs."
+            "name": "EPO - DEPRECATED"
         }
     ],
     "paths": {
         "/get_node_rules": {
             "get": {
                 "tags": [
-                    "node control"
+                    "node control - DEPRECATED"
                 ],
                 "summary": "Admin defined node rules",
                 "description": "The `get_node_rules` API returns hardware (and perhaps site-specific) rules or timing constraints that allow for efficient and effective management of idle node resources. The data returned informs the client of how long `node_on` and `node_off` operations are expected to take, the minimum amount of time nodes should be left off to save energy, and limits on the number of nodes that should be turned on or off at once. Default rules are supplied where appropriate.\n\nOther values such as the maximum node counts for `node_on` or `node_off` and the maximum amount of time a node should remain off after a power down are left unset. The values are not strictly enforced by Cray system management software. They are meant to provide guidelines for authorized clients in their use of the CAPMC service.",
@@ -65,42 +57,42 @@
                                             "type": "string"
                                         },
                                         "latency_node_off": {
-                                            "description": "Approximate time, in seconds, in which a node is expected to perform a clean shutdown and power off",
+                                            "description": "Approximate time, in seconds, in which a node is expected to perform a clean shutdown and power off.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
                                         "latency_node_on": {
-                                            "description": "Approximate time, in seconds, in which a node is expected to perform a warm bounce and boot into a ready state",
+                                            "description": "Approximate time, in seconds, in which a node is expected to perform a warm bounce and boot into a ready state.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
                                         "latency_node_reinit": {
-                                            "description": "Approximate time, in seconds, in which a node is expected to perform a clean shutdown, power off, warm bounce, and boot into a ready state",
+                                            "description": "Approximate time, in seconds, in which a node is expected to perform a clean shutdown, power off, warm bounce, and boot into a ready state.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
                                         "max_off_req_count": {
-                                            "description": "Maximum number of nodes which may be powered off at once -1 indicates no limit",
+                                            "description": "Maximum number of nodes which may be powered off at once -1 indicates no limit.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
                                         "max_off_time": {
-                                            "description": "Maximum time, in seconds, in which a node may be in the powered off state. -1 indicates no limit",
+                                            "description": "Maximum time, in seconds, in which a node may be in the powered off state. -1 indicates no limit.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
                                         "max_on_req_count": {
-                                            "description": "Maximum number of nodes which may be powered on and booted at once. -1 indicates no limit",
+                                            "description": "Maximum number of nodes which may be powered on and booted at once. -1 indicates no limit.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
                                         "max_reinit_req_count": {
-                                            "description": "Maximum number of nodes which may be shutdown, powered off, powered on, and rebooted at once. -1 indicates no limit",
+                                            "description": "Maximum number of nodes which may be shutdown, powered off, powered on, and rebooted at once. -1 indicates no limit.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
                                         "min_off_time": {
-                                            "description": "Minimum time, in seconds, in which a node must remain in the powered off state after a shutdown and power off operation -1 indicates no limit",
+                                            "description": "Minimum time, in seconds, in which a node must remain in the powered off state after a shutdown or power off operation. -1 indicates no limit.",
                                             "type": "integer",
                                             "format": "int32"
                                         }
@@ -142,7 +134,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -168,7 +160,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -189,7 +181,7 @@
             },
             "post": {
                 "tags": [
-                    "node control"
+                    "node control - DEPRECATED"
                 ],
                 "summary": "Return admin defined node rules",
                 "description": "`get_node_rules` informs third party software about hardware (and perhaps site-specific) rules or timing constraints that allow for efficient and effective management of idle node resources. The data returned informs the client of how long `node_on` and `node_off` operations are expected to take, the minimum amount of time nodes should be left off to save energy, and limits on the number of nodes that should be turned on or off at once. Default rules are supplied where appropriate.\n\nOther values such as the maximum node counts for `node_on` or `node_off` and the maximum amount of time a node should remain off after a power down are left unset. The values are not strictly enforced by Cray system management software. They are meant to provide guidelines for authorized clients in their use of the CAPMC service.",
@@ -221,42 +213,42 @@
                                             "type": "string"
                                         },
                                         "latency_node_off": {
-                                            "description": "Approximate time, in seconds, in which a node is expected to perform a clean shutdown and power off",
+                                            "description": "Approximate time, in seconds, in which a node is expected to perform a clean shutdown and power off.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
                                         "latency_node_on": {
-                                            "description": "Approximate time, in seconds, in which a node is expected to perform a warm bounce and boot into a ready state",
+                                            "description": "Approximate time, in seconds, in which a node is expected to perform a warm bounce and boot into a ready state.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
                                         "latency_node_reinit": {
-                                            "description": "Approximate time, in seconds, in which a node is expected to perform a clean shutdown, power off, warm bounce, and boot into a ready state",
+                                            "description": "Approximate time, in seconds, in which a node is expected to perform a clean shutdown, power off, warm bounce, and boot into a ready state.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
                                         "max_off_req_count": {
-                                            "description": "Maximum number of nodes which may be powered off at once -1 indicates no limit",
+                                            "description": "Maximum number of nodes which may be powered off at once -1 indicates no limit.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
                                         "max_off_time": {
-                                            "description": "Maximum time, in seconds, in which a node may be in the powered off state. -1 indicates no limit",
+                                            "description": "Maximum time, in seconds, in which a node may be in the powered off state. -1 indicates no limit.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
                                         "max_on_req_count": {
-                                            "description": "Maximum number of nodes which may be powered on and booted at once. -1 indicates no limit",
+                                            "description": "Maximum number of nodes which may be powered on and booted at once. -1 indicates no limit.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
                                         "max_reinit_req_count": {
-                                            "description": "Maximum number of nodes which may be shutdown, powered off, powered on, and rebooted at once. -1 indicates no limit",
+                                            "description": "Maximum number of nodes which may be shutdown, powered off, powered on, and rebooted at once. -1 indicates no limit.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
                                         "min_off_time": {
-                                            "description": "Minimum time, in seconds, in which a node must remain in the powered off state after a shutdown and power off operation -1 indicates no limit",
+                                            "description": "Minimum time, in seconds, in which a node must remain in the powered off state after a shutdown or power off operation. -1 indicates no limit.",
                                             "type": "integer",
                                             "format": "int32"
                                         }
@@ -298,7 +290,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -324,7 +316,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -347,10 +339,10 @@
         "/get_node_status": {
             "post": {
                 "tags": [
-                    "node control"
+                    "node control - DEPRECATED"
                 ],
                 "summary": "Return node status",
-                "description": "The `get_node_status` API returns componet state for all nodes or a subset of nodes as specified by a nid list and/or state filter. This status API is intended, but not limited, to be used in conjunction with operations which may modify node component state, such as `node_on` or `node_off`.\n\nBy default, the status returned from this API reports the component states as reported by the Hardware State Manager (HSM). An optional `source` parameter may be passed in the request body to report the hardware states as reported by Redfish (**on** or **off**).\n\nThe `get_node_status` API does not report **empty** components.\n\n**Filters**\n\nFilters for a status query may be supplied as a pipe-separated (|) list surrounded with double quotes, e.g. \"filter1|filter2|filter3\". Valid filters are: `show_all`, `show_off`, `show_on`, `show_halt`, `show_standby`, `show_ready`, and `show_disabled`. Valid flag filters are `show_alert`, `show_resvd`, and `show_warn`. Status and flag filters may be intermixed freely. The `show_all` filter overrides any other status or flag filters and is the default.\n\n**Notice**\n\nThe hardware management system no longer supports a \"diag\" state, as such the `show_diag` filter is considered deprecated. Specifying only the `show_diag` filter will not return any results.",
+                "description": "The `get_node_status` API returns component state for all nodes or a subset of nodes as specified by a nid list and/or state filter. This status API is intended, but not limited, to be used in conjunction with operations which may modify node component state, such as `node_on` or `node_off`.\n\nBy default, the status returned from this API reports the component states as reported by the Hardware State Manager (HSM). An optional `source` parameter may be passed in the request body to report the hardware states as reported by Redfish (**on** or **off**).\n\nThe `get_node_status` API does not report **empty** components.\n\n**Filters**\n\nFilters for a status query may be supplied as a pipe-separated (|) list surrounded with double quotes, e.g. \"filter1|filter2|filter3\". Valid filters are: `show_all`, `show_off`, `show_on`, `show_halt`, `show_standby`, `show_ready`, and `show_disabled`. Valid flag filters are `show_alert`, `show_resvd`, and `show_warn`. Status and flag filters may be intermixed freely. The `show_all` filter overrides any other status or flag filters and is the default.\n\n**Notice**\n\nThe hardware management system no longer supports a \"diag\" state, as such the `show_diag` filter is considered deprecated. Specifying only the `show_diag` filter will not return any results.",
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -386,7 +378,7 @@
                             }
                         }
                     },
-                    "description": "A JSON object to get power status for selected nids",
+                    "description": "A JSON object to get power status for selected nids.",
                     "required": true
                 },
                 "responses": {
@@ -515,7 +507,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -541,7 +533,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -567,7 +559,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -578,7 +570,7 @@
                                     },
                                     "example": {
                                         "e": 500,
-                                        "err_msg": "Connection to the secure store isn't ready. Can not get redfish credentials."
+                                        "err_msg": "Connection to the secure store isn't ready. Cannot get redfish credentials."
                                     }
                                 }
                             }
@@ -590,7 +582,7 @@
         "/node_on": {
             "post": {
                 "tags": [
-                    "node control"
+                    "node control - DEPRECATED"
                 ],
                 "summary": "Power on nodes",
                 "description": "The `node_on` API will power **on** a selected list of nodes by NID. Once powered on, these nodes will automatically start to boot with a discovery image or a previously configured image.\n\nThe `node_on` API will return after a power **on** request is attempted to be sent to all of the selected nodes. The return payload should be examined as it may indicate nodes that did not receive the power **on** request due to an error. The API may return immediately on an error contianing a status result indicating any error encountered. The client must determine overall command status by calling the `get_node_status` API after this call returns.\n\nAn optional text message may be provided describing the reason for performing the `node_on` operation.",
@@ -633,7 +625,7 @@
                             }
                         }
                     },
-                    "description": "A JSON object to power on selected nids",
+                    "description": "A JSON object to power on selected nids.",
                     "required": true
                 },
                 "responses": {
@@ -659,12 +651,12 @@
                                                 "type": "object",
                                                 "properties": {
                                                     "nid": {
-                                                        "description": "NID failing power on attempt",
+                                                        "description": "NID failing power on attempt.",
                                                         "type": "integer",
                                                         "format": "int32"
                                                     },
                                                     "e": {
-                                                        "description": "Non-zero status code for failed request",
+                                                        "description": "Non-zero status code for failed request.",
                                                         "type": "integer",
                                                         "format": "int32"
                                                     },
@@ -714,7 +706,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -740,7 +732,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -766,7 +758,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -777,7 +769,7 @@
                                     },
                                     "example": {
                                         "e": 500,
-                                        "err_msg": "Connection to the secure store isn't ready. Can not get redfish credentials."
+                                        "err_msg": "Connection to the secure store isn't ready. Cannot get redfish credentials."
                                     }
                                 }
                             }
@@ -789,7 +781,7 @@
         "/node_off": {
             "post": {
                 "tags": [
-                    "node control"
+                    "node control - DEPRECATED"
                 ],
                 "summary": "Power off nodes",
                 "description": "The `node_off` API will shutdown and power **off** a selected list of nodes by NID.\n\nThe `node_off` API will return after a power **off** request is attempted to be sent to all of the selected nodes. The return payload should be examined as it may indicate nodes that did not receive the power **off** request due to an error. The API may return immediately on an error contianing a status result indicating any error encountered. The client must determine overall command status by calling the `get_node_status` API after this call returns.\n\nAn optional text message may be provided describing the reason for performing the `node_off` operation.",
@@ -832,7 +824,7 @@
                             }
                         }
                     },
-                    "description": "A JSON object to power off selected nids",
+                    "description": "A JSON object to power off selected nids.",
                     "required": true
                 },
                 "responses": {
@@ -858,12 +850,12 @@
                                                 "type": "object",
                                                 "properties": {
                                                     "nid": {
-                                                        "description": "NID failing power down attempt",
+                                                        "description": "NID failing power down attempt.",
                                                         "type": "integer",
                                                         "format": "int32"
                                                     },
                                                     "e": {
-                                                        "description": "Non-zero status code for failed request",
+                                                        "description": "Non-zero status code for failed request.",
                                                         "type": "integer",
                                                         "format": "int32"
                                                     },
@@ -913,7 +905,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -939,7 +931,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -965,7 +957,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -976,7 +968,7 @@
                                     },
                                     "example": {
                                         "e": 500,
-                                        "err_msg": "Connection to the secure store isn't ready. Can not get redfish credentials."
+                                        "err_msg": "Connection to the secure store isn't ready. Cannot get redfish credentials."
                                     }
                                 }
                             }
@@ -988,7 +980,7 @@
         "/node_reinit": {
             "post": {
                 "tags": [
-                    "node control"
+                    "node control - DEPRECATED"
                 ],
                 "summary": "Restart nodes",
                 "description": "The `node_reinit` API issues a **restart** or **off-on** sequence to a selected list of nodes by NID. Once restarted, the selected nodes will automatically start to boot with a discovery image or a previously configured image. Not all nodes support a **restart**, in these cases, the API may issue an **off** and then **on** to those components.\n\nThe `node_reinit` API will return after a power **restart** or **off-on** sequence is attempted to be sent to all of the selected components. The return payload should be examined as it may indicate components that did not receive the power request due to an error. The API may return immediately on an error containing a status result indicating any error encountered. The client must determine overall command status by calling the `get_node_status` API after this call returns.\n\nAn optional text message may be provided describing the reason for performing the `node_reinit` operation.",
@@ -1028,7 +1020,7 @@
                             }
                         }
                     },
-                    "description": "A JSON object to restart selected nids",
+                    "description": "A JSON object to restart selected nids.",
                     "required": true
                 },
                 "responses": {
@@ -1054,12 +1046,12 @@
                                                 "type": "object",
                                                 "properties": {
                                                     "nid": {
-                                                        "description": "NID failing power restart attempt",
+                                                        "description": "NID failing power restart attempt.",
                                                         "type": "integer",
                                                         "format": "int32"
                                                     },
                                                     "e": {
-                                                        "description": "Non-zero status code for failed request",
+                                                        "description": "Non-zero status code for failed request.",
                                                         "type": "integer",
                                                         "format": "int32"
                                                     },
@@ -1104,7 +1096,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -1130,7 +1122,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -1156,7 +1148,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -1167,7 +1159,7 @@
                                     },
                                     "example": {
                                         "e": 500,
-                                        "err_msg": "Connection to the secure store isn't ready. Can not get redfish credentials."
+                                        "err_msg": "Connection to the secure store isn't ready. Cannot get redfish credentials."
                                     }
                                 }
                             }
@@ -1179,10 +1171,10 @@
         "/get_node_energy": {
             "post": {
                 "tags": [
-                    "node energy"
+                    "node energy - DEPRECATED"
                 ],
                 "summary": "Return accumulated energy values",
-                "description": "The `get_node_energy` API will return accumulated energy values for a set of nodes defined by a job (job_id), application (apid), list of NIDs (nids), or start and end time.\n\nThe input parameters are treated as conditions which are logically ANDed together. If an apid and start/end times are specified, then the values returned will be for the nodes involved in that apid during the interval specified by the start/end times. The start/end time will be adjusted so that no part of the interval is within the hysteresis window.",
+                "description": "The `get_node_energy` API will return accumulated energy values for a set of nodes defined by a job (`job_id`), application (`apid`), list of NIDs (`nids`), or start and end time.\n\nThe input parameters are treated as conditions which are logically ANDed together. If an `apid` and start/end times are specified, then the values returned will be for the nodes involved in that `apid` during the interval specified by the start/end times. The start/end time will be adjusted so that no part of the interval is within the hysteresis window.",
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -1190,15 +1182,15 @@
                                 "type": "object",
                                 "properties": {
                                     "start_time": {
-                                        "description": "Optional, requested energy window sample start time. If omitted, the starting time of the specified *apid* or *jobid* is used.",
+                                        "description": "Optional, requested energy window sample start time. If omitted, the starting time of the specified `apid` or `job_id` is used.",
                                         "type": "string"
                                     },
                                     "end_time": {
-                                        "description": "Optional, requested energy window sample end time. If omitted, the ending time of the specified *apid* or *jobid* is used.",
+                                        "description": "Optional, requested energy window sample end time. If omitted, the ending time of the specified `apid` or `job_id` is used.",
                                         "type": "string"
                                     },
                                     "nids": {
-                                        "description": "Optional, list of NIDs to gather energy values from.",
+                                        "description": "Optional, list of NIDs to gather energy values for.",
                                         "type": "array",
                                         "items": {
                                             "type": "integer",
@@ -1227,7 +1219,7 @@
                             }
                         }
                     },
-                    "description": "A JSON object to get node energy for selected nids",
+                    "description": "A JSON object to get node energy for selected nids.",
                     "required": true
                 },
                 "responses": {
@@ -1239,7 +1231,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status, non-zero indicates statistics are unavailable",
+                                            "description": "Error status, non-zero indicates statistics are unavailable.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -1248,28 +1240,28 @@
                                             "type": "string"
                                         },
                                         "nid_count": {
-                                            "description": "Number of nodes used in statistics query",
+                                            "description": "Number of nodes used in statistics query.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
                                         "time": {
-                                            "description": "Window width of energy calculation, in seconds",
+                                            "description": "Window width of energy calculation, in seconds.",
                                             "type": "number",
                                             "format": "double"
                                         },
                                         "nodes": {
-                                            "description": "Object array containing node level energy info, each element represents a single node",
+                                            "description": "Object array containing node level energy info, each element represents a single node.",
                                             "type": "array",
                                             "items": {
                                                 "type": "object",
                                                 "properties": {
                                                     "nid": {
-                                                        "description": "NID number owning the returned energy accumulation",
+                                                        "description": "NID number owning the returned energy accumulation.",
                                                         "type": "integer",
                                                         "format": "int32"
                                                     },
                                                     "energy": {
-                                                        "description": "Accumulated energy computed over the requested time interval, specified in Joules",
+                                                        "description": "Accumulated energy computed over the requested time interval, specified in Joules.",
                                                         "type": "integer",
                                                         "format": "int32"
                                                     }
@@ -1317,7 +1309,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -1328,7 +1320,7 @@
                                     },
                                     "example": {
                                         "e": 500,
-                                        "err_msg": "Connection to the secure store isn't ready. Can not get redfish credentials."
+                                        "err_msg": "Connection to the secure store isn't ready. Cannot get redfish credentials."
                                     }
                                 }
                             }
@@ -1343,7 +1335,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -1366,10 +1358,10 @@
         "/get_node_energy_stats": {
             "post": {
                 "tags": [
-                    "node energy"
+                    "node energy - DEPRECATED"
                 ],
                 "summary": "Return node energy statistics",
-                "description": "The `get_node_energy_stats` API returns the energy statistics for a set of nodes defined by a job (job_id), application (apid), list of NIDs (nodes), or start and end time.\n\nThe input parameters are treated as conditions which are logically ANDed together. If an apid and start/end times are specified, then the statistics will be for the nodes involved in that apid during the interval specified by the start/end times. Both a temporal argument (apid, job_id, or start_time and end_time) and a component argument (apid, job_id, or NIDs) are required. The start/end time will be adjusted so that no part of the interval is within the hysteresis window.",
+                "description": "The `get_node_energy_stats` API returns the energy statistics for a set of nodes defined by a job (`job_id`), application (`apid`), list of NIDs (`nodes`), or start and end time.\n\nThe input parameters are treated as conditions which are logically ANDed together. If an `apid` and start/end times are specified, then the statistics will be for the nodes involved in that `apid` during the interval specified by the start/end times. Both a temporal argument (`apid`, `job_id`, or `start_time` and `end_time`) and a component argument (`apid`, `job_id`, or `NIDs`) are required. The start/end time will be adjusted so that no part of the interval is within the hysteresis window.",
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -1377,11 +1369,11 @@
                                 "type": "object",
                                 "properties": {
                                     "start_time": {
-                                        "description": "Optional, requested energy window sample start time. If omitted, the starting time of the specified *apid* or *jobid* is used.",
+                                        "description": "Optional, requested energy window sample start time. If omitted, the starting time of the specified `apid` or `job_id` is used.",
                                         "type": "string"
                                     },
                                     "end_time": {
-                                        "description": "Optional, requested energy window sample end time. If omitted, the ending time of the specified *apid* or *jobid* is used.",
+                                        "description": "Optional, requested energy window sample end time. If omitted, the ending time of the specified `apid` or `job_id` is used.",
                                         "type": "string"
                                     },
                                     "nids": {
@@ -1393,11 +1385,11 @@
                                         }
                                     },
                                     "apid": {
-                                        "description": "Optional, PALS application ID",
+                                        "description": "Optional, PALS application ID.",
                                         "type": "string"
                                     },
                                     "job_id": {
-                                        "description": "Optional, batch scheduler job id",
+                                        "description": "Optional, batch scheduler job id.",
                                         "type": "string"
                                     }
                                 },
@@ -1414,7 +1406,7 @@
                             }
                         }
                     },
-                    "description": "A JSON object to get node energy stats for selected nids",
+                    "description": "A JSON object to get node energy stats for selected nids.",
                     "required": true
                 },
                 "responses": {
@@ -1426,7 +1418,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status, non-zero indicates statistics are unavailable",
+                                            "description": "Error status, non-zero indicates statistics are unavailable.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -1435,32 +1427,32 @@
                                             "type": "string"
                                         },
                                         "time": {
-                                            "description": "Window width of energy statistics calculation, in seconds",
+                                            "description": "Window width of energy statistics calculation, in seconds.",
                                             "type": "number",
                                             "format": "double"
                                         },
                                         "nid_count": {
-                                            "description": "Number of nodes used in statistics query",
+                                            "description": "Number of nodes used in statistics query.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
                                         "energy_total": {
-                                            "description": "Sum of per node energy, in Joules",
+                                            "description": "Sum of per node energy, in Joules.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
                                         "energy_avg": {
-                                            "description": "Per node average energy, in Joules",
+                                            "description": "Per node average energy, in Joules.",
                                             "type": "number",
                                             "format": "double"
                                         },
                                         "energy_std": {
-                                            "description": "Standard deviation, in Joules",
+                                            "description": "Standard deviation, in Joules.",
                                             "type": "number",
                                             "format": "double"
                                         },
                                         "energy_max": {
-                                            "description": "Ordered list identifying NID number followed by maximum observed node energy consumption",
+                                            "description": "Ordered list identifying NID number followed by maximum observed node energy consumption.",
                                             "type": "array",
                                             "items": {
                                                 "type": "integer",
@@ -1468,7 +1460,7 @@
                                             }
                                         },
                                         "energy_min": {
-                                            "description": "Ordered list identifying NID number followed by minimum observed node energy consumption",
+                                            "description": "Ordered list identifying NID number followed by minimum observed node energy consumption.",
                                             "type": "array",
                                             "items": {
                                                 "type": "integer",
@@ -1517,7 +1509,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -1528,7 +1520,7 @@
                                     },
                                     "example": {
                                         "e": 500,
-                                        "err_msg": "Connection to the secure store isn't ready. Can not get redfish credentials."
+                                        "err_msg": "Connection to the secure store isn't ready. Cannot get redfish credentials."
                                     }
                                 }
                             }
@@ -1543,7 +1535,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -1566,10 +1558,10 @@
         "/get_node_energy_counter": {
             "post": {
                 "tags": [
-                    "node energy"
+                    "node energy - DEPRECATED"
                 ],
                 "summary": "Return node energy counters",
-                "description": "The `get_node_energy_counter` API returns energy counters for a set of nodes defined by a job (job_id), application (apid), or list of NIDs (nids).\n\nThe parameters *apid*, *jobid*, and *nids* are treated as selectors for the set of nodes to query. If an *apid* or *jobid* are supplied, the running counters for each node associated with the respective id will be returned. If a list of NIDs is supplied, then the counters for the nodes corresponding to the supplied NID list will be returned.\n\nOne and only one of apid, jobid, or NIDs list must be specified. If a time value is specified, then the query will retrieve the energy counters at or very near the specified time (if available, within one second). Otherwise, the most recent energy counter value will be returned, that has occured outside the hysteresis window.\n\nThis API returns a free running energy counter for each of the target NIDs. In order to be meaningful, such as when computing average power or energy consumed over a time interval, multiple calls must be made such that the client can perform calculations based on the difference in returned energy counter values.",
+                "description": "The `get_node_energy_counter` API returns energy counters for a set of nodes defined by a job (`job_id`), application (`apid`), or list of NIDs (`nids`).\n\nThe parameters `apid`, `job_id`, and `nids` are treated as selectors for the set of nodes to query. If an `apid` or `job_id` are supplied, the running counters for each node associated with the respective id will be returned. If a list of NIDs is supplied, then the counters for the nodes corresponding to the supplied NID list will be returned.\n\nOne and only one of `apid`, `job_id`, or `nids` list must be specified. If a time value is specified, then the query will retrieve the energy counters at or very near the specified time (if available, within one second). Otherwise, the most recent energy counter value will be returned that has occured outside the hysteresis window.\n\nThis API returns a free running energy counter for each of the target NIDs. In order to be meaningful, such as when computing average power or energy consumed over a time interval, multiple calls must be made such that the client can perform calculations based on the difference in returned energy counter values.",
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -1593,7 +1585,7 @@
                                         "type": "string"
                                     },
                                     "job_id": {
-                                        "description": "Batch scheduler job id",
+                                        "description": "Batch scheduler job id.",
                                         "type": "string"
                                     }
                                 },
@@ -1609,7 +1601,7 @@
                             }
                         }
                     },
-                    "description": "A JSON object to get the node energy counter for selected nids",
+                    "description": "A JSON object to get the node energy counter for selected nids.",
                     "required": true
                 },
                 "responses": {
@@ -1621,7 +1613,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status, non-zero indicates statistics are unavailable",
+                                            "description": "Error status, non-zero indicates statistics are unavailable.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -1630,28 +1622,28 @@
                                             "type": "string"
                                         },
                                         "nid_count": {
-                                            "description": "Number of nodes used in statistics query",
+                                            "description": "Number of nodes used in statistics query.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
                                         "nodes": {
-                                            "description": "Object array containing node level energy info, each element represents a single node",
+                                            "description": "Object array containing node level energy info, each element represents a single node.",
                                             "type": "array",
                                             "items": {
                                                 "type": "object",
                                                 "properties": {
                                                     "nid": {
-                                                        "description": "NID number owning the returned energy counter",
+                                                        "description": "NID number owning the returned energy counter.",
                                                         "type": "integer",
                                                         "format": "int32"
                                                     },
                                                     "energy_cntr": {
-                                                        "description": "Point in time energy accumulator value, specified in Joules",
+                                                        "description": "Point in time energy accumulator value, specified in Joules.",
                                                         "type": "integer",
                                                         "format": "int32"
                                                     },
                                                     "time": {
-                                                        "description": "Time stamp of returned energy value, includes fractional seconds and timezone offset",
+                                                        "description": "Time stamp of returned energy value, includes fractional seconds and timezone offset.",
                                                         "type": "string"
                                                     }
                                                 },
@@ -1698,7 +1690,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -1709,7 +1701,7 @@
                                     },
                                     "example": {
                                         "e": 500,
-                                        "err_msg": "Connection to the secure store isn't ready. Can not get redfish credentials."
+                                        "err_msg": "Connection to the secure store isn't ready. Cannot get redfish credentials."
                                     }
                                 }
                             }
@@ -1724,7 +1716,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -1789,7 +1781,7 @@
                             }
                         }
                     },
-                    "description": "A JSON object to get status for selected components",
+                    "description": "A JSON object to get status for selected components.",
                     "required": true
                 },
                 "responses": {
@@ -1878,7 +1870,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -1904,7 +1896,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -1930,7 +1922,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -1941,7 +1933,7 @@
                                     },
                                     "example": {
                                         "e": 500,
-                                        "err_msg": "Connection to the secure store isn't ready. Can not get redfish credentials."
+                                        "err_msg": "Connection to the secure store isn't ready. Cannot get redfish credentials."
                                     }
                                 }
                             }
@@ -1995,7 +1987,7 @@
                             }
                         }
                     },
-                    "description": "A JSON object to reinit selected components",
+                    "description": "A JSON object to reinit selected components.",
                     "required": true
                 },
                 "responses": {
@@ -2075,7 +2067,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -2101,7 +2093,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -2127,7 +2119,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -2138,7 +2130,7 @@
                                     },
                                     "example": {
                                         "e": 500,
-                                        "err_msg": "Connection to the secure store isn't ready. Can not get redfish credentials."
+                                        "err_msg": "Connection to the secure store isn't ready. Cannot get redfish credentials."
                                     }
                                 }
                             }
@@ -2165,7 +2157,7 @@
                                         "type": "string"
                                     },
                                     "xnames": {
-                                        "description": "User specified list of component IDs (xnames) to power on. An empty array is invalid. If invalid xnames are specified then an error will be returned. Available wildcards: all, s0",
+                                        "description": "User specified list of component IDs (xnames) to power on. An empty array is invalid. If invalid xnames are specified then an error will be returned. Available wildcards: all, s0.",
                                         "type": "array",
                                         "items": {
                                             "type": "string"
@@ -2205,7 +2197,7 @@
                             }
                         }
                     },
-                    "description": "A JSON object to power on selected components",
+                    "description": "A JSON object to power on selected components.",
                     "required": true
                 },
                 "responses": {
@@ -2285,7 +2277,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -2311,7 +2303,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -2337,7 +2329,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -2348,7 +2340,7 @@
                                     },
                                     "example": {
                                         "e": 500,
-                                        "err_msg": "Connection to the secure store isn't ready. Can not get redfish credentials."
+                                        "err_msg": "Connection to the secure store isn't ready. Cannot get redfish credentials."
                                     }
                                 }
                             }
@@ -2375,7 +2367,7 @@
                                         "type": "string"
                                     },
                                     "xnames": {
-                                        "description": "User specified list of component IDs (xnames) to shutdown and power off. An empty array is invalid. If invalid xnames are specified then an error will be returned. Available wildcards: all, s0",
+                                        "description": "User specified list of component IDs (xnames) to shutdown and power off. An empty array is invalid. If invalid xnames are specified then an error will be returned. Available wildcards: all, s0.",
                                         "type": "array",
                                         "items": {
                                             "type": "string"
@@ -2390,7 +2382,7 @@
                                         "type": "boolean"
                                     },
                                     "prereq": {
-                                        "description": "Attempt to power off the component and all of its ancestors by their componet ID (xname). Incompatible with the recursive option.",
+                                        "description": "Attempt to power off the component and all of its ancestors by their component ID (xname). Incompatible with the recursive option.",
                                         "type": "boolean"
                                     },
                                     "continue": {
@@ -2415,7 +2407,7 @@
                             }
                         }
                     },
-                    "description": "A JSON object to power off selected components",
+                    "description": "A JSON object to power off selected components.",
                     "required": true
                 },
                 "responses": {
@@ -2441,11 +2433,11 @@
                                                 "type": "object",
                                                 "properties": {
                                                     "xname": {
-                                                        "description": "Component ID failing power down attempt",
+                                                        "description": "Component ID failing power down attempt.",
                                                         "type": "string"
                                                     },
                                                     "e": {
-                                                        "description": "Non-zero status code for failed request",
+                                                        "description": "Non-zero status code for failed request.",
                                                         "type": "integer",
                                                         "format": "int32"
                                                     },
@@ -2495,7 +2487,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -2521,7 +2513,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -2547,7 +2539,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -2558,7 +2550,7 @@
                                     },
                                     "example": {
                                         "e": 500,
-                                        "err_msg": "Connection to the secure store isn't ready. Can not get redfish credentials."
+                                        "err_msg": "Connection to the secure store isn't ready. Cannot get redfish credentials."
                                     }
                                 }
                             }
@@ -2570,7 +2562,7 @@
         "/group_reinit": {
             "post": {
                 "tags": [
-                    "group control"
+                    "group control - DEPRECATED"
                 ],
                 "summary": "Restart group",
                 "description": "The `group_reinit` API issues a **restart** or **off-on** sequence to a selected list of components by group. These power operations are ordered to allow large sets of components to be reinit'd with a single API call. Not all components support a **restart**, in these cases, the API may issue an **off** and then **on** to those components. If nodes are part of the groups being restarted, those nodes will automatically start to boot with a discovery image or a previously configured image.\n\nThe `group_reinit` API will return after a power **restart** or **off-on** sequence is attempted to be sent to all of the selected components. The return payload should be examined as it may indicate components that did not receive the power request due to an error. The API may return immediately on an error containing a status result indicating any error encountered. The client must determine overall command status by calling the `get_group_status` API after this call returns.\n\nAn optional text message may be provided describing the reason for performing the `group_reinit` operation.",
@@ -2610,7 +2602,7 @@
                             }
                         }
                     },
-                    "description": "A JSON object to restart components in a selected group",
+                    "description": "A JSON object to restart components in a selected group.",
                     "required": true
                 },
                 "responses": {
@@ -2636,11 +2628,11 @@
                                                 "type": "object",
                                                 "properties": {
                                                     "xname": {
-                                                        "description": "Component ID failing power restart attempt",
+                                                        "description": "Component ID failing power restart attempt.",
                                                         "type": "string"
                                                     },
                                                     "e": {
-                                                        "description": "Non-zero status code for failed request",
+                                                        "description": "Non-zero status code for failed request.",
                                                         "type": "integer",
                                                         "format": "int32"
                                                     },
@@ -2690,7 +2682,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -2716,7 +2708,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -2742,7 +2734,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -2753,7 +2745,7 @@
                                     },
                                     "example": {
                                         "e": 500,
-                                        "err_msg": "Connection to the secure store isn't ready. Can not get redfish credentials."
+                                        "err_msg": "Connection to the secure store isn't ready. Cannot get redfish credentials."
                                     }
                                 }
                             }
@@ -2765,10 +2757,10 @@
         "/get_group_status": {
             "post": {
                 "tags": [
-                    "group control"
+                    "group control - DEPRECATED"
                 ],
                 "summary": "Return component status by group",
-                "description": "The `get_group_status` API returns component state specified by a group for the full set of components in the group or a subset as specified by a component filter. This status API is intended, but not limited, to be used in conjunction with asynchronous operations which may modify the state of components in a group, such as `group_on` or `group_off`.\n\nThe status returend from this API are the hardware states as reported by Redfish (**on** or **off**).\n\nThe `get_group_status` API does not report **empty** components.\n\nGroups queried via the `get_group_status` API must be defined in Hardware State Manager.\n\n**Filters**\n\nFilters for a status query may be supplied as a pipe-separated (|) list surrounded with double quotes, e.g. \"filter1|filter2|filter3\". Valid filters are: `show_all`, `show_off`, `show_on`, `show_halt`, `show_standby`, `show_ready`, and `show_disabled`. Valid flag filters are `show_alert`, `show_resvd`, and `show_warn`. Status and flag filters may be intermixed freely. The `show_all` filter overrides any other status or flag filters and is the default.\n\n**Notice**\n\nThe hardware management system no longer supports a \"diag\" state, as such the `show_diag` filter is considered deprecated. Specifying only the `show_diag` filter will not return any results.",
+                "description": "The `get_group_status` API returns component state specified by a group for the full set of components in the group or a subset as specified by a component filter. This status API is intended, but not limited, to be used in conjunction with asynchronous operations which may modify the state of components in a group, such as `group_on` or `group_off`.\n\nThe status returned from this API are the hardware states as reported by Redfish (**on** or **off**).\n\nThe `get_group_status` API does not report **empty** components.\n\nGroups queried via the `get_group_status` API must be defined in Hardware State Manager.\n\n**Filters**\n\nFilters for a status query may be supplied as a pipe-separated (|) list surrounded with double quotes, e.g. \"filter1|filter2|filter3\". Valid filters are: `show_all`, `show_off`, `show_on`, `show_halt`, `show_standby`, `show_ready`, and `show_disabled`. Valid flag filters are `show_alert`, `show_resvd`, and `show_warn`. Status and flag filters may be intermixed freely. The `show_all` filter overrides any other status or flag filters and is the default.\n\n**Notice**\n\nThe hardware management system no longer supports a \"diag\" state, as such the `show_diag` filter is considered deprecated. Specifying only the `show_diag` filter will not return any results.",
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -2800,7 +2792,7 @@
                             }
                         }
                     },
-                    "description": "A JSON object to get status for components in a selected group",
+                    "description": "A JSON object to get status for components in a selected group.",
                     "required": true
                 },
                 "responses": {
@@ -2868,7 +2860,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -2894,7 +2886,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -2920,7 +2912,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -2931,7 +2923,7 @@
                                     },
                                     "example": {
                                         "e": 500,
-                                        "err_msg": "Connection to the secure store isn't ready. Can not get redfish credentials."
+                                        "err_msg": "Connection to the secure store isn't ready. Cannot get redfish credentials."
                                     }
                                 }
                             }
@@ -2943,10 +2935,10 @@
         "/group_on": {
             "post": {
                 "tags": [
-                    "group control"
+                    "group control - DEPRECATED"
                 ],
                 "summary": "Power components on by group",
-                "description": "The `group_on` API powers **on** a component list by group. Power **on** operations are ordered to allow large sets of components to be powered on with a single API call. The group names must be defined in Hardware State Manager.\n\nThe `group_on` API will return after a power **on** request is attempted to be sent to all of the components in the selected groups. The return payload should be examined as it may indicate components that did not receive the power **on** request due to an error. The API may return immediately on an error containing a status result indicating the error encountered. The client must determine overall command status by calling the `get_group_status` API after this call returns.\n\nAn optional text message may be provided describing the reason for performing the `group_on` opteration.",
+                "description": "The `group_on` API powers **on** a component list by group. Power **on** operations are ordered to allow large sets of components to be powered on with a single API call. The group names must be defined in Hardware State Manager.\n\nThe `group_on` API will return after a power **on** request is attempted to be sent to all of the components in the selected groups. The return payload should be examined as it may indicate components that did not receive the power **on** request due to an error. The API may return immediately on an error containing a status result indicating the error encountered. The client must determine overall command status by calling the `get_group_status` API after this call returns.\n\nAn optional text message may be provided describing the reason for performing the `group_on` operation.",
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -2983,7 +2975,7 @@
                             }
                         }
                     },
-                    "description": "A JSON object to power on components in a selected group",
+                    "description": "A JSON object to power on components in a selected group.",
                     "required": true
                 },
                 "responses": {
@@ -3009,7 +3001,7 @@
                                                 "type": "object",
                                                 "properties": {
                                                     "e": {
-                                                        "description": "Non-zero status code for failed request",
+                                                        "description": "Non-zero status code for failed request.",
                                                         "type": "integer",
                                                         "format": "int32"
                                                     },
@@ -3018,7 +3010,7 @@
                                                         "type": "string"
                                                     },
                                                     "xname": {
-                                                        "description": "Component ID failing power up attempt",
+                                                        "description": "Component ID failing power up attempt.",
                                                         "type": "string"
                                                     }
                                                 },
@@ -3058,7 +3050,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -3084,7 +3076,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -3110,7 +3102,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -3121,7 +3113,7 @@
                                     },
                                     "example": {
                                         "e": 500,
-                                        "err_msg": "Connection to the secure store isn't ready. Can not get redfish credentials."
+                                        "err_msg": "Connection to the secure store isn't ready. Cannot get redfish credentials."
                                     }
                                 }
                             }
@@ -3133,10 +3125,10 @@
         "/group_off": {
             "post": {
                 "tags": [
-                    "group control"
+                    "group control - DEPRECATED"
                 ],
                 "summary": "Power components off by group",
-                "description": "The `group_off` API powers **off** a component list by group. Power **off** operations are ordered to allow large sets of components to be powered off with a single API call. The group names must be defined in Hardware State Manager.\n\nThe `group_off` API will return after a power **off** request is attempted to be sent to all of the components in the selected groups. The return payload should be examined as it may indicate components that did not receive the power **off** request due to an error. The API may return immediately on an error containing a status result indicating the error encountered. The client must determine overall command status by calling the `get_group_status` API after this call returns.\n\nAn optional text message may be provided describing the reason for performing the `group_off` opteration.",
+                "description": "The `group_off` API powers **off** a component list by group. Power **off** operations are ordered to allow large sets of components to be powered off with a single API call. The group names must be defined in Hardware State Manager.\n\nThe `group_off` API will return after a power **off** request is attempted to be sent to all of the components in the selected groups. The return payload should be examined as it may indicate components that did not receive the power **off** request due to an error. The API may return immediately on an error containing a status result indicating the error encountered. The client must determine overall command status by calling the `get_group_status` API after this call returns.\n\nAn optional text message may be provided describing the reason for performing the `group_off` operation.",
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -3173,7 +3165,7 @@
                             }
                         }
                     },
-                    "description": "A JSON object to power off components in a selected group",
+                    "description": "A JSON object to power off components in a selected group.",
                     "required": true
                 },
                 "responses": {
@@ -3199,7 +3191,7 @@
                                                 "type": "object",
                                                 "properties": {
                                                     "e": {
-                                                        "description": "Non-zero status code for failed request",
+                                                        "description": "Non-zero status code for failed request.",
                                                         "type": "integer",
                                                         "format": "int32"
                                                     },
@@ -3208,7 +3200,7 @@
                                                         "type": "string"
                                                     },
                                                     "xname": {
-                                                        "description": "Component ID failing power down attempt",
+                                                        "description": "Component ID failing power down attempt.",
                                                         "type": "string"
                                                     }
                                                 },
@@ -3253,7 +3245,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -3279,7 +3271,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -3305,7 +3297,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -3316,7 +3308,7 @@
                                     },
                                     "example": {
                                         "e": 500,
-                                        "err_msg": "Connection to the secure store isn't ready. Can not get redfish credentials."
+                                        "err_msg": "Connection to the secure store isn't ready. Cannot get redfish credentials."
                                     }
                                 }
                             }
@@ -3362,7 +3354,7 @@
                             }
                         }
                     },
-                    "description": "A JSON object to get power capping controls of selected nids",
+                    "description": "A JSON object to get power capping controls of selected nids.",
                     "required": true
                 },
                 "responses": {
@@ -3374,7 +3366,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Overall request status code, zero on total success, non-zero if one or more node specific operations fail",
+                                            "description": "Overall request status code, zero on total success, non-zero if one or more node specific operations fail.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -3383,18 +3375,18 @@
                                             "type": "string"
                                         },
                                         "nids": {
-                                            "description": "Object array containing NID specific result data, each element represents a single NID",
+                                            "description": "Object array containing NID specific result data, each element represents a single NID.",
                                             "type": "array",
                                             "items": {
                                                 "type": "object",
                                                 "properties": {
                                                     "nid": {
-                                                        "description": "NID number owning the returned control objects",
+                                                        "description": "NID number owning the returned control objects.",
                                                         "type": "integer",
                                                         "format": "int32"
                                                     },
                                                     "e": {
-                                                        "description": "Optional, error status, non-zero indicates operation failed on this node",
+                                                        "description": "Optional, error status, non-zero indicates operation failed on this node.",
                                                         "type": "integer",
                                                         "format": "int32"
                                                     },
@@ -3403,17 +3395,17 @@
                                                         "type": "string"
                                                     },
                                                     "controls": {
-                                                        "description": "Optional, array of node level control and status objects which have been queried, one element per control",
+                                                        "description": "Optional, array of node level control and status objects which have been queried, one element per control.",
                                                         "type": "array",
                                                         "items": {
                                                             "type": "object",
                                                             "properties": {
                                                                 "name": {
-                                                                    "description": "Unique control or status object identifier",
+                                                                    "description": "Unique control or status object identifier.",
                                                                     "type": "string"
                                                                 },
                                                                 "val": {
-                                                                    "description": "Control object setting, or zero to indicate control is unconstrained, units are dependent upon control type",
+                                                                    "description": "Control object setting, or zero to indicate control is unconstrained, units are dependent upon control type.",
                                                                     "type": "integer",
                                                                     "format": "int32"
                                                                 }
@@ -3485,7 +3477,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -3496,7 +3488,7 @@
                                     },
                                     "example": {
                                         "e": 500,
-                                        "err_msg": "Connection to the secure store isn't ready. Can not get redfish credentials."
+                                        "err_msg": "Connection to the secure store isn't ready. Cannot get redfish credentials."
                                     }
                                 }
                             }
@@ -3541,7 +3533,7 @@
                             }
                         }
                     },
-                    "description": "A JSON object to get power capping capabilities of selected nids",
+                    "description": "A JSON object to get power capping capabilities of selected nids.",
                     "required": true
                 },
                 "responses": {
@@ -3572,7 +3564,7 @@
                                                         "type": "string"
                                                     },
                                                     "desc": {
-                                                        "description": "Text description of the opaque node type identifier",
+                                                        "description": "Text description of the opaque node type identifier.",
                                                         "type": "string"
                                                     },
                                                     "host_limit_max": {
@@ -3586,7 +3578,7 @@
                                                         "format": "int32"
                                                     },
                                                     "static": {
-                                                        "description": "Static per node power overhead, specified in watts, which is unreported",
+                                                        "description": "Static per node power overhead, specified in watts, which is unreported.",
                                                         "type": "integer",
                                                         "format": "int32"
                                                     },
@@ -3615,7 +3607,7 @@
                                                             "type": "object",
                                                             "properties": {
                                                                 "name": {
-                                                                    "description": "Unique control object identifier",
+                                                                    "description": "Unique control object identifier.",
                                                                     "type": "string"
                                                                 },
                                                                 "desc": {
@@ -3675,7 +3667,7 @@
                                                 "controls": [
                                                     {
                                                         "name": "accel",
-                                                        "desc": "Acelerator control",
+                                                        "desc": "Accelerator control",
                                                         "min": 220,
                                                         "max": 260
                                                     },
@@ -3728,7 +3720,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -3739,7 +3731,7 @@
                                     },
                                     "example": {
                                         "e": 500,
-                                        "err_msg": "Connection to the secure store isn't ready. Can not get redfish credentials."
+                                        "err_msg": "Connection to the secure store isn't ready. Cannot get redfish credentials."
                                     }
                                 }
                             }
@@ -3834,7 +3826,7 @@
                             }
                         }
                     },
-                    "description": "A JSON object to set power capping parameters of selected nids",
+                    "description": "A JSON object to set power capping parameters of selected nids.",
                     "required": true
                 },
                 "responses": {
@@ -3855,18 +3847,18 @@
                                             "type": "string"
                                         },
                                         "nids": {
-                                            "description": "Object array containing NID specific error data, NIDs which experienced success are omitted",
+                                            "description": "Object array containing NID specific error data, NIDs which experienced success are omitted.",
                                             "type": "array",
                                             "items": {
                                                 "type": "object",
                                                 "properties": {
                                                     "nid": {
-                                                        "description": "NID number owning the returned error data",
+                                                        "description": "NID number owning the returned error data.",
                                                         "type": "integer",
                                                         "format": "int32"
                                                     },
                                                     "e": {
-                                                        "description": "Error status, non-zero indicates operation failed on this node",
+                                                        "description": "Error status, non-zero indicates operation failed on this node.",
                                                         "type": "integer",
                                                         "format": "int32"
                                                     },
@@ -3917,7 +3909,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -3928,7 +3920,7 @@
                                     },
                                     "example": {
                                         "e": 500,
-                                        "err_msg": "Connection to the secure store isn't ready. Can not get redfish credentials."
+                                        "err_msg": "Connection to the secure store isn't ready. Cannot get redfish credentials."
                                     }
                                 }
                             }
@@ -3940,7 +3932,7 @@
         "/get_system_parameters": {
             "get": {
                 "tags": [
-                    "system monitor"
+                    "system monitor - DEPRECATED"
                 ],
                 "summary": "Read-only system parameters",
                 "description": "The `get_system_parameters` API returns read-only parameters such as expected worst case system power consumption, static power overhead, or administratively defined values such as a systemwide power limit, maximum power ramp rate, and target power band. Returned values are used to convey intent between the system administrator and external agents with respect to target power limits and other operational parameters. The returned parameters are strictly informational.",
@@ -3977,7 +3969,7 @@
                                             "format": "int32"
                                         },
                                         "ramp_limited": {
-                                            "description": "True if out-of-band HSS power ramp rate limiting features are enabled",
+                                            "description": "True if out-of-band HSS power ramp rate limiting features are enabled.",
                                             "type": "boolean"
                                         },
                                         "ramp_limit": {
@@ -4031,7 +4023,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -4042,7 +4034,7 @@
                                     },
                                     "example": {
                                         "e": 500,
-                                        "err_msg": "Connection to the secure store isn't ready. Can not get redfish credentials."
+                                        "err_msg": "Connection to the secure store isn't ready. Cannot get redfish credentials."
                                     }
                                 }
                             }
@@ -4052,7 +4044,7 @@
             },
             "post": {
                 "tags": [
-                    "system monitor"
+                    "system monitor - DEPRECATED"
                 ],
                 "summary": "Return read-only system parameters",
                 "description": "The `get_system_parameters` API returns read-only parameters such as expected worst case system power consumption, static power overhead, or administratively defined values such as a systemwide power limit, maximum power ramp rate, and target power band. Returned values are used to convey intent between the system administrator and external agents with respect to target power limits and other operational parameters. The returned parameters are strictly informational.\n\nThe request must **POST** an empty JSON object to the API server. This command takes no arguments.",
@@ -4089,7 +4081,7 @@
                                             "format": "int32"
                                         },
                                         "ramp_limited": {
-                                            "description": "True if out-of-band HSS power ramp rate limiting features are enabled",
+                                            "description": "True if out-of-band HSS power ramp rate limiting features are enabled.",
                                             "type": "boolean"
                                         },
                                         "ramp_limit": {
@@ -4143,7 +4135,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -4154,7 +4146,7 @@
                                     },
                                     "example": {
                                         "e": 500,
-                                        "err_msg": "Connection to the secure store isn't ready. Can not get redfish credentials."
+                                        "err_msg": "Connection to the secure store isn't ready. Cannot get redfish credentials."
                                     }
                                 }
                             }
@@ -4166,7 +4158,7 @@
         "/get_system_power": {
             "get": {
                 "tags": [
-                    "system monitor"
+                    "system monitor - DEPRECATED"
                 ],
                 "summary": "System level power information",
                 "description": "The `get_system_power` API returns system level power information including the average, minimum, and maximum values observed over a user specified time interval. If no arguments are given, then information is returned for an interval of 15 seconds adjusted for the hysteresis.",
@@ -4174,7 +4166,7 @@
                     {
                         "in": "query",
                         "name": "start_time",
-                        "description": "Optional, sampling window start time of the form \"2019-07-10 11:36:32\"",
+                        "description": "Optional, sampling window start time of the form \"2019-07-10 11:36:32\".",
                         "schema": {
                             "type": "string"
                         }
@@ -4182,7 +4174,7 @@
                     {
                         "in": "query",
                         "name": "window_len",
-                        "description": "Window length in seconds in which the statistics have been computed, may be different from the requested value",
+                        "description": "Window length in seconds in which the statistics have been computed, may be different from the requested value.",
                         "schema": {
                             "type": "integer",
                             "format": "int32"
@@ -4262,7 +4254,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -4288,7 +4280,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -4314,7 +4306,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -4325,7 +4317,7 @@
                                     },
                                     "example": {
                                         "e": 500,
-                                        "err_msg": "Connection to the secure store isn't ready. Can not get redfish credentials."
+                                        "err_msg": "Connection to the secure store isn't ready. Cannot get redfish credentials."
                                     }
                                 }
                             }
@@ -4335,7 +4327,7 @@
             },
             "post": {
                 "tags": [
-                    "system monitor"
+                    "system monitor - DEPRECATED"
                 ],
                 "summary": "Return system level power information",
                 "description": "The `get_system_power` API returns system level power information including the average, minimum, and maximum values observed over a user specified time interval. If no arguments are given, then information is returned for an interval of 15 seconds adjusted for the hysteresis.\n\nThe request must **POST** a properly formatted JSON object to the API server. The command takes up to two optional arguments which identify a start time and window length.",
@@ -4346,11 +4338,11 @@
                                 "type": "object",
                                 "properties": {
                                     "start_time": {
-                                        "description": "Optional, sampling window start time",
+                                        "description": "Optional, sampling window start time.",
                                         "type": "string"
                                     },
                                     "window_len": {
-                                        "description": "Window length in seconds in which the statistics have been computed, may be different from the requested value",
+                                        "description": "Window length in seconds in which the statistics have been computed, may be different from the requested value.",
                                         "type": "integer",
                                         "format": "int32"
                                     }
@@ -4362,7 +4354,7 @@
                             }
                         }
                     },
-                    "description": "A JSON object to get system level power information",
+                    "description": "A JSON object to get system level power information.",
                     "required": true
                 },
                 "responses": {
@@ -4438,7 +4430,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -4464,7 +4456,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -4490,7 +4482,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -4501,7 +4493,7 @@
                                     },
                                     "example": {
                                         "e": 500,
-                                        "err_msg": "Connection to the secure store isn't ready. Can not get redfish credentials."
+                                        "err_msg": "Connection to the secure store isn't ready. Cannot get redfish credentials."
                                     }
                                 }
                             }
@@ -4513,7 +4505,7 @@
         "/get_system_power_details": {
             "get": {
                 "tags": [
-                    "system monitor"
+                    "system monitor - DEPRECATED"
                 ],
                 "summary": "Per cabinet power information",
                 "description": "The `get_system_power_details` API returns per cabinet power information including the average, minimum, and maximum values observed over a user specified time interval. If no arguments are given, then information is returned for an interval of 15 seconds adjusted for the hysteresis.",
@@ -4521,7 +4513,7 @@
                     {
                         "in": "query",
                         "name": "start_time",
-                        "description": "Optional, sampling window start time of the form \"2019-07-10 11:36:32\"",
+                        "description": "Optional, sampling window start time of the form \"2019-07-10 11:36:32\".",
                         "schema": {
                             "type": "string"
                         }
@@ -4529,7 +4521,7 @@
                     {
                         "in": "query",
                         "name": "window_len",
-                        "description": "Window length in seconds in which the statistics have been computed, may be different from the requested value",
+                        "description": "Window length in seconds in which the statistics have been computed, may be different from the requested value.",
                         "schema": {
                             "type": "integer",
                             "format": "int32"
@@ -4545,7 +4537,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status, non-zero indicates statistics are unavailable",
+                                            "description": "Error status, non-zero indicates statistics are unavailable.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -4645,7 +4637,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -4671,7 +4663,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -4697,7 +4689,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -4708,7 +4700,7 @@
                                     },
                                     "example": {
                                         "e": 500,
-                                        "err_msg": "Connection to the secure store isn't ready. Can not get redfish credentials."
+                                        "err_msg": "Connection to the secure store isn't ready. Cannot get redfish credentials."
                                     }
                                 }
                             }
@@ -4718,7 +4710,7 @@
             },
             "post": {
                 "tags": [
-                    "system monitor"
+                    "system monitor - DEPRECATED"
                 ],
                 "summary": "Return per cabinet power information",
                 "description": "The `get_system_power_details` API returns per cabinet power information including the average, minimum, and maximum values observed over a user specified time interval. If no arguments are given, then information is returned for an interval of 15 seconds adjusted for the hysteresis.\n\nThe request must **POST** a properly formatted JSON object to the API server. The command takes up to two optional arguments which identify a start time and window length.",
@@ -4729,7 +4721,7 @@
                                 "type": "object",
                                 "properties": {
                                     "start_time": {
-                                        "description": "Optional, sampling window start time",
+                                        "description": "Optional, sampling window start time.",
                                         "type": "string"
                                     },
                                     "window_len": {
@@ -4741,7 +4733,7 @@
                             }
                         }
                     },
-                    "description": "A JSON object to get per cabinet power information",
+                    "description": "A JSON object to get per cabinet power information.",
                     "required": true
                 },
                 "responses": {
@@ -4753,7 +4745,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status, non-zero indicates statistics are unavailable",
+                                            "description": "Error status, non-zero indicates statistics are unavailable.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -4853,7 +4845,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -4879,7 +4871,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -4905,7 +4897,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -4916,7 +4908,7 @@
                                     },
                                     "example": {
                                         "e": 500,
-                                        "err_msg": "Connection to the secure store isn't ready. Can not get redfish credentials."
+                                        "err_msg": "Connection to the secure store isn't ready. Cannot get redfish credentials."
                                     }
                                 }
                             }
@@ -4928,7 +4920,7 @@
         "/get_nid_map": {
             "post": {
                 "tags": [
-                    "utilities"
+                    "utilities - DEPRECATED"
                 ],
                 "summary": "Return NID to component name mapping",
                 "description": "The `get_nid_map` API returns a list of objects where each element represents a single node. Each object in the list contains the NID number, geographic component name, and the operational role for the node.\n\nSpecify the NIDs to retrieve NID number to component name mapping and assigned role. The syntax allows a comma-separated list of nids (e.g., “1,4,5”), a range of nids (e.g., “7-10”), or both (e.g., “1,4,5,7-10”). If omitted, the default is all NIDs.\n\nThe request must **POST** a properly formatted JSON object to the API server. The command takes a single argument which identifies a target NID list.",
@@ -4958,7 +4950,7 @@
                             }
                         }
                     },
-                    "description": "A JSON object to get node nid to xname mapping",
+                    "description": "A JSON object to get node nid to xname mapping.",
                     "required": true
                 },
                 "responses": {
@@ -4970,7 +4962,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status, non-zero indicates failure",
+                                            "description": "Error status, non-zero indicates failure.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -4979,7 +4971,7 @@
                                             "type": "string"
                                         },
                                         "nids": {
-                                            "description": "Object array containing node specific mapping information, each element represents a single NID",
+                                            "description": "Object array containing node specific mapping information, each element represents a single NID.",
                                             "type": "array",
                                             "items": {
                                                 "type": "object",
@@ -5054,7 +5046,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -5080,7 +5072,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -5106,7 +5098,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -5117,7 +5109,166 @@
                                     },
                                     "example": {
                                         "e": 500,
-                                        "err_msg": "Connection to the secure store isn't ready. Can not get redfish credentials."
+                                        "err_msg": "Connection to the secure store isn't ready. Cannot get redfish credentials."
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/health": {
+            "get": {
+                "tags": [
+                    "utilities"
+                ],
+                "summary": "Query the health of the service",
+                "description": "The `health` API returns health information about the CAPMC service and its dependencies.  This actively checks the connection between  CAPMC and the following:\n  * Credentials vault\n  * Hardware State Manager\n  * Power telemetry database\n\n\nDifferent portions of the CAPMC interface are dependent on combinations of the above services.  If one or more of these services are unavailable, portions of the CAPMC interface will be unavailable.\nThis is primarily intended as a diagnostic tool to investigate the functioning of the CAPMC service.",
+                "responses": {
+                    "200": {
+                        "description": "[OK](http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) Network API call success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "readiness": {
+                                            "description": "General state of the service - may be Ready, Service Degraded, or Not Ready.",
+                                            "type": "string"
+                                        },
+                                        "vault": {
+                                            "description": "Description of the connection to the credentials vault.  If there is an error returned when attempting to access the vault that will be included here.",
+                                            "type": "string"
+                                        },
+                                        "hsm": {
+                                            "description": "Status of the connection to the Hardware State Manager (HSM).  Any error reported by an attempt to access the HSM will be included in this description.",
+                                            "type": "string"
+                                        },
+                                        "tmdb": {
+                                            "description": "Status of the connection to the telemetry database.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "example": {
+                                        "readiness": "Service Degraded",
+                                        "vault": "No connection established to vault",
+                                        "hsm": "HSM Ready",
+                                        "tmdb": "Telemetry database connection established"
+                                    },
+                                    "required": [
+                                        "readiness",
+                                        "vault",
+                                        "hsm",
+                                        "tmdb"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "405": {
+                        "description": "[Method Not Allowed](http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.6)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "description": "CAPMC Method Not Allowed error payload",
+                                    "type": "object",
+                                    "properties": {
+                                        "e": {
+                                            "description": "Error status code.",
+                                            "type": "integer",
+                                            "format": "int32"
+                                        },
+                                        "err_msg": {
+                                            "description": "Message indicating any error encountered.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "example": {
+                                        "e": 405,
+                                        "err_msg": "(PATCH) Not Allowed"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/liveness": {
+            "get": {
+                "tags": [
+                    "utilities"
+                ],
+                "summary": "Kubernetes liveness endpoint to monitor service health",
+                "x-private": true,
+                "description": "The `liveness` API works in conjunction with the Kubernetes liveness probe to determine when the service is no longer responding to requests.  Too many failures of the liveness probe will result in the service being shut down and restarted.  \n\nThis is primarily an endpoint for the automated Kubernetes system.",
+                "responses": {
+                    "204": {
+                        "description": "[No Content](http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.5) Network API call success"
+                    },
+                    "405": {
+                        "description": "[Method Not Allowed](http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.6)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "description": "CAPMC Method Not Allowed error payload",
+                                    "type": "object",
+                                    "properties": {
+                                        "e": {
+                                            "description": "Error status code.",
+                                            "type": "integer",
+                                            "format": "int32"
+                                        },
+                                        "err_msg": {
+                                            "description": "Message indicating any error encountered.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "example": {
+                                        "e": 405,
+                                        "err_msg": "(PATCH) Not Allowed"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/readiness": {
+            "get": {
+                "tags": [
+                    "utilities"
+                ],
+                "summary": "Kubernetes readiness endpoint to monitor service health",
+                "x-private": true,
+                "description": "The `readiness` API works in conjunction with the Kubernetes readiness probe to determine when the service is no longer healthy and able to respond correctly to requests.  Too many failures of the readiness probe will result in the traffic being routed away from this service and eventually the service will be shut down and restarted if in an unready state for too long.\n\nThis is primarily an endpoint for the automated Kubernetes system.",
+                "responses": {
+                    "204": {
+                        "description": "[No Content](http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.5) Network API call success"
+                    },
+                    "405": {
+                        "description": "[Method Not Allowed](http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.6)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "description": "CAPMC Method Not Allowed error payload",
+                                    "type": "object",
+                                    "properties": {
+                                        "e": {
+                                            "description": "Error status code.",
+                                            "type": "integer",
+                                            "format": "int32"
+                                        },
+                                        "err_msg": {
+                                            "description": "Message indicating any error encountered.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "example": {
+                                        "e": 405,
+                                        "err_msg": "(PATCH) Not Allowed"
                                     }
                                 }
                             }
@@ -5129,7 +5280,7 @@
         "/emergency_power_off": {
             "post": {
                 "tags": [
-                    "EPO"
+                    "EPO - DEPRECATED"
                 ],
                 "summary": "Send Emergency Power Off",
                 "description": "The `emergency_power_off` API performs a software driven Emergency Power Off (EPO) for all descendants of the selected list of component IDs (xnames).  This is an immediate and hard power off of selected components and their descendants. After the `emergency_power_off` operation has completed, the selected components and all of their descendants will be in an Off state.\n\nIssuing an EPO to a Mountain cabinet or chassis will result in all Mountain components that share the cooling group with the specified cabinet or chassis to also receive an EPO.\n\nThe `emergency_power_off` API will return after a power **off** request is attempted to be sent to all of the selected components. The return payload should be examined as it may indicate components that did not receive the power **off** request due to an error. The API may return immediately on an error containing a status result indicating the error encountered. The client must determine overall command status by calling the `get_xname_status` API after this call returns.\n\nSpecify an arbitrary text message which is given as the reason for performing the `emergency_power_off` operation.",
@@ -5166,7 +5317,7 @@
                             }
                         }
                     },
-                    "description": "A JSON object to issue an emergency power off",
+                    "description": "A JSON object to issue an emergency power off.",
                     "required": true
                 },
                 "responses": {
@@ -5182,7 +5333,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -5208,7 +5359,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -5234,7 +5385,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -5260,7 +5411,7 @@
                                     "type": "object",
                                     "properties": {
                                         "e": {
-                                            "description": "Error status code",
+                                            "description": "Error status code.",
                                             "type": "integer",
                                             "format": "int32"
                                         },
@@ -5271,7 +5422,7 @@
                                     },
                                     "example": {
                                         "e": 500,
-                                        "err_msg": "Connection to the secure store isn't ready. Can not get redfish credentials."
+                                        "err_msg": "Connection to the secure store isn't ready. Cannot get redfish credentials."
                                     }
                                 }
                             }
@@ -5320,7 +5471,7 @@
                                     "format": "int32"
                                 },
                                 "ramp_limited": {
-                                    "description": "True if out-of-band HSS power ramp rate limiting features are enabled",
+                                    "description": "True if out-of-band HSS power ramp rate limiting features are enabled.",
                                     "type": "boolean"
                                 },
                                 "ramp_limit": {
@@ -5436,7 +5587,7 @@
                             "type": "object",
                             "properties": {
                                 "e": {
-                                    "description": "Error status, non-zero indicates statistics are unavailable",
+                                    "description": "Error status, non-zero indicates statistics are unavailable.",
                                     "type": "integer",
                                     "format": "int32"
                                 },
@@ -5534,7 +5685,7 @@
                 "type": "object",
                 "properties": {
                     "e": {
-                        "description": "Error status code",
+                        "description": "Error status code.",
                         "type": "integer",
                         "format": "int32"
                     },
@@ -5553,7 +5704,7 @@
                 "type": "object",
                 "properties": {
                     "e": {
-                        "description": "Error status code",
+                        "description": "Error status code.",
                         "type": "integer",
                         "format": "int32"
                     },
@@ -5572,7 +5723,7 @@
                 "type": "object",
                 "properties": {
                     "e": {
-                        "description": "Error status code",
+                        "description": "Error status code.",
                         "type": "integer",
                         "format": "int32"
                     },
@@ -5591,7 +5742,7 @@
                 "type": "object",
                 "properties": {
                     "e": {
-                        "description": "Error status code",
+                        "description": "Error status code.",
                         "type": "integer",
                         "format": "int32"
                     },
@@ -5602,7 +5753,7 @@
                 },
                 "example": {
                     "e": 500,
-                    "err_msg": "Connection to the secure store isn't ready. Can not get redfish credentials."
+                    "err_msg": "Connection to the secure store isn't ready. Cannot get redfish credentials."
                 }
             },
             "httpError504_GatewayTimeout": {
@@ -5610,7 +5761,7 @@
                 "type": "object",
                 "properties": {
                     "e": {
-                        "description": "Error status code",
+                        "description": "Error status code.",
                         "type": "integer",
                         "format": "int32"
                     },

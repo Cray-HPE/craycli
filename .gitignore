@@ -30,7 +30,7 @@ htmlcov
 
 # IDEs
 *.sublime-workspace
-
+.idea
 # Mac
 .DS_Store
 
