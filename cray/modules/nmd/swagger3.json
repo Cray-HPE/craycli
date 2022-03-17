@@ -2,7 +2,7 @@
     "openapi": "3.0.2",
     "info": {
         "title": "Node Memory Dump Service",
-        "version": "2.1.0",
+        "version": "2.1.2",
         "description": "The Node Memory Dump (NMD) service requests and retrieves node memory dumps.  The dumps retrieved by the NMD will be gathered by the System Dump Framework (SDF) via a registered callback API.\n\nGeneral workflow:\n\n  * POST /dumps - request a dump\n  * GET /dumps/{requestID} - retrieve dump metadata"
     },
     "servers": [
@@ -1647,6 +1647,11 @@
                                             "description": "S3 endpoint url",
                                             "example": "http://10.100.0.39:8080"
                                         },
+                                        "ssl_validate": {
+                                            "type": "boolean",
+                                            "description": "S3 ssl_validate flag for certificate validation",
+                                            "default": false
+                                        },
                                         "bucketname": {
                                             "type": "string",
                                             "description": "S3 bucket name for the dump storage",
@@ -1796,6 +1801,11 @@
                                         "description": "S3 endpoint url",
                                         "example": "http://10.100.0.39:8080"
                                     },
+                                    "ssl_validate": {
+                                        "type": "boolean",
+                                        "description": "S3 ssl_validate flag for certificate validation",
+                                        "default": false
+                                    },
                                     "bucketname": {
                                         "type": "string",
                                         "description": "S3 bucket name for the dump storage",
@@ -1897,6 +1907,11 @@
                                             "type": "string",
                                             "description": "S3 endpoint url",
                                             "example": "http://10.100.0.39:8080"
+                                        },
+                                        "ssl_validate": {
+                                            "type": "boolean",
+                                            "description": "S3 ssl_validate flag for certificate validation",
+                                            "default": false
                                         },
                                         "bucketname": {
                                             "type": "string",
@@ -2033,6 +2048,10 @@
         {
             "name": "artifacts",
             "description": "Debug artifacts for node memory dump analysis"
+        },
+        {
+            "name": "cli_hidden",
+            "description": "APIs hidden from CLI for health and liveness check"
         }
     ],
     "components": {
@@ -2425,6 +2444,11 @@
                                     "type": "string",
                                     "description": "S3 endpoint url",
                                     "example": "http://10.100.0.39:8080"
+                                },
+                                "ssl_validate": {
+                                    "type": "boolean",
+                                    "description": "S3 ssl_validate flag for certificate validation",
+                                    "default": false
                                 },
                                 "bucketname": {
                                     "type": "string",
@@ -3296,6 +3320,11 @@
                         "type": "string",
                         "description": "S3 endpoint url",
                         "example": "http://10.100.0.39:8080"
+                    },
+                    "ssl_validate": {
+                        "type": "boolean",
+                        "description": "S3 ssl_validate flag for certificate validation",
+                        "default": false
                     },
                     "bucketname": {
                         "type": "string",
