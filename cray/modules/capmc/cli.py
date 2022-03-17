@@ -1,9 +1,32 @@
+#
+# MIT License
+#
+# (C) Copyright 2022 Hewlett Packard Enterprise Development LP
+#
+# Permission is hereby granted, free of charge, to any person obtaining a
+# copy of this software and associated documentation files (the "Software"),
+# to deal in the Software without restriction, including without limitation
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,
+# and/or sell copies of the Software, and to permit persons to whom the
+# Software is furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included
+# in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+# THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+# OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+# ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+# OTHER DEALINGS IN THE SOFTWARE.
+#
 """
 CAPMC - Cray Advanced Platform Monitoring and Control
 
 MIT License
 
-(C) Copyright [2020-2021] Hewlett Packard Enterprise Development LP
+(C) Copyright [2020-2022] Hewlett Packard Enterprise Development LP
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -126,44 +149,3 @@ def set_power_cap_shim(func):
 
 # Update to create command with the callback
 CREATE_CMD.callback = set_power_cap_shim(CREATE_CMD.callback)
-
-################################################################################
-#####                 cray capmc emergency_power_off create                #####
-#####                                  for                                 #####
-#####                   /capmc/v1/emergency_power_off API                  #####
-################################################################################
-
-CREATE_CMD = cli.commands['emergency_power_off'].commands['create']
-
-EPO_FORCE = 'force'
-
-option('--'+EPO_FORCE, nargs=1, type=click.BOOL, multiple=False,
-       payload_name=EPO_FORCE,
-       metavar='BOOLEAN',
-       help="Immediately issue the emergency power off.")(CREATE_CMD)
-
-
-# Add the new force command into the proper place.
-params = []
-for p in CREATE_CMD.params:
-    if p.payload_name == EPO_FORCE:
-        params.insert(2, p)
-    else:
-        params.append(p)
-
-# Update the command with the new params
-CREATE_CMD.params = params
-
-def emergency_power_off_shim(func):
-    """ Callback function to create our own payload """
-    def _decorator(force, **kwargs):
-        if not force:
-            click.confirm('Are you sure you want to perform an EPO?',
-                          abort=True)
-
-        return func(**kwargs)
-    return _decorator
-
-
-# Update to create command with the callback
-CREATE_CMD.callback = emergency_power_off_shim(CREATE_CMD.callback)
