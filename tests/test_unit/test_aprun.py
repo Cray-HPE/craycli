@@ -1,28 +1,28 @@
+# MIT License
+#
+# (C) Copyright [2020-2022] Hewlett Packard Enterprise Development LP
+#
+# Permission is hereby granted, free of charge, to any person obtaining a
+# copy of this software and associated documentation files (the "Software"),
+# to deal in the Software without restriction, including without limitation
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,
+# and/or sell copies of the Software, and to permit persons to whom the
+# Software is furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included
+# in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+# THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+# OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+# ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+# OTHER DEALINGS IN THE SOFTWARE.
 """
 test_aprun.py - Unit tests for the aprun module
-
-MIT License
-
-(C) Copyright [2020-2021] Hewlett Packard Enterprise Development LP
-
-Permission is hereby granted, free of charge, to any person obtaining a
-copy of this software and associated documentation files (the "Software"),
-to deal in the Software without restriction, including without limitation
-the rights to use, copy, modify, merge, publish, distribute, sublicense,
-and/or sell copies of the Software, and to permit persons to whom the
-Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included
-in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
-OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-OTHER DEALINGS IN THE SOFTWARE.
 """
+
 # pylint: disable=import-error
 import io
 import os
@@ -57,12 +57,12 @@ def test_parse_rangelist():
 
 def test_parse_rangelist_file():
     """ Test parsing a range list from a file """
-    nidfile = io.StringIO(u"1\n2-3$@4\n\n5")
+    nidfile = io.StringIO("1\n2-3$@4\n\n5")
     with pytest.raises(click.ClickException):
         aprun.parse_rangelist_file(nidfile)
     nidfile.close()
 
-    nidfile = io.StringIO(u"1\n2-3,4\n\n5")
+    nidfile = io.StringIO("1\n2-3,4\n\n5")
     assert aprun.parse_rangelist_file(nidfile) == [1, 2, 3, 4, 5]
     nidfile.close()
 
@@ -81,8 +81,8 @@ def test_get_hostlist():
     assert aprun.get_hostlist("1,2,2", None, "1", None) == ["nid000002", "nid000002"]
 
     # Test getting lists from files
-    nidfile = io.StringIO(u"1\n2-3,4\n\n5")
-    exclfile = io.StringIO(u"2-4\n4\n")
+    nidfile = io.StringIO("1\n2-3,4\n\n5")
+    exclfile = io.StringIO("2-4\n4\n")
     assert aprun.get_hostlist(None, nidfile, None, exclfile) == [
         "nid000001",
         "nid000005",
