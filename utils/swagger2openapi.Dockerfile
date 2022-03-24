@@ -1,4 +1,4 @@
-FROM alpine:node8 as base
+FROM alpine:3.15 as base
 
 RUN mkdir -p /converter
 
