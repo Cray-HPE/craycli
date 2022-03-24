@@ -1,4 +1,4 @@
-FROM alpine as app
+FROM alpine:3.15 as app
 
 RUN apk add --no-cache bash
 RUN apk add --no-cache python
