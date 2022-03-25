@@ -1,30 +1,32 @@
-""" Test the sls module.
+# MIT License
+#
+# (C) Copyright [2020,2022] Hewlett Packard Enterprise Development LP
+#
+# Permission is hereby granted, free of charge, to any person obtaining a
+# copy of this software and associated documentation files (the "Software"),
+# to deal in the Software without restriction, including without limitation
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,
+# and/or sell copies of the Software, and to permit persons to whom the
+# Software is furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included
+# in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+# THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+# OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+# ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+# OTHER DEALINGS IN THE SOFTWARE.
 
-MIT License
+""" Test the sls module. """
 
-(C) Copyright [2020] Hewlett Packard Enterprise Development LP
-
-Permission is hereby granted, free of charge, to any person obtaining a
-copy of this software and associated documentation files (the "Software"),
-to deal in the Software without restriction, including without limitation
-the rights to use, copy, modify, merge, publish, distribute, sublicense,
-and/or sell copies of the Software, and to permit persons to whom the
-Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included
-in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
-OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-OTHER DEALINGS IN THE SOFTWARE.
-"""
 # pylint: disable=invalid-name
 # pylint: disable=too-many-arguments, unused-argument
 import json
+import os
+import tempfile
 
 from ..utils.runner import cli_runner  # pylint: disable=unused-import
 from ..utils.rest import rest_mock  # pylint: disable=unused-import
@@ -143,6 +145,7 @@ def test_sls_health(cli_runner, rest_mock):
         assert out in result.output
     assert result.exit_code == 0
 
+
 # pylint: disable=redefined-outer-name
 def test_sls_search(cli_runner, rest_mock):
     """ Test `cray sls search` """
@@ -240,12 +243,11 @@ def test_sls_hardware_create(cli_runner, rest_mock):
     url_template = '/apis/sls/v1/hardware'
     config = opts['default']
     hostname = config['hostname']
+    powered_by = 'x3001'
     result = runner.invoke(cli, ['sls', 'hardware', 'create',
                                  '--xname', Xname,
-                                 '--parent', Parent,
-                                 '--children', 'x0c0s0b[0-1]n[0-1]',
-                                 '--type', Type,
-                                 '--class', Class])
+                                 '--class', Class,
+                                 '--extra-properties', f'{{ "PoweredBy":"{powered_by}" }}'])
 
     print(result.output)
     assert result.exit_code == 0
@@ -253,13 +255,168 @@ def test_sls_hardware_create(cli_runner, rest_mock):
     assert data['method'].lower() == 'post'
     assert data.get('body')
     body = data.get('body')
-    assert body['Type'] == Type
     assert body['Xname'] == Xname
-    assert body['Children'] == Children
-    assert body['Parent'] == Parent
     assert body['Class'] == Class
+    assert body.get('ExtraProperties', {}).get('PoweredBy') == powered_by
     uri = data['url'].split(hostname)[-1]
     assert uri == url_template
+
+
+# pylint: disable=redefined-outer-name
+# pylint: disable=too-many-locals
+def test_sls_hardware_create_payload(cli_runner, rest_mock):
+    """ Test `cray sls hardware create` using a payload file """
+    runner, cli, opts = cli_runner
+    url_template = '/apis/sls/v1/hardware'
+    config = opts['default']
+    hostname = config['hostname']
+    powered_by = 'x3002'
+    payload = f"""{{
+        "Xname": "{Xname}",
+        "Class": "{Class}",
+        "ExtraProperties": {{
+            "PoweredBy": "{powered_by}"
+        }}
+    }}"""
+
+    fd, path = tempfile.mkstemp(prefix='test_sls_hardware_create', suffix='.json')
+    try:
+        with os.fdopen(fd, 'w') as f:
+            f.write(payload)
+
+        result = runner.invoke(cli, ['sls', 'hardware', 'create', '--payload-file', path])
+
+        print(result.output)
+        assert result.exit_code == 0
+        data = json.loads(result.output)
+        assert data['method'].lower() == 'post'
+        body = data.get('body')
+        assert body
+        assert body['Xname'] == Xname
+        assert body['Class'] == Class
+        assert body.get('ExtraProperties', {}).get('PoweredBy') == powered_by
+        uri = data['url'].split(hostname)[-1]
+        assert uri == url_template
+    finally:
+        os.remove(path)
+
+
+def test_sls_hardware_create_incompatible_parameters(cli_runner, rest_mock):
+    """ Test `cray sls hardware create` with incompatible parameters """
+    runner, cli, _ = cli_runner
+    powered_by = 'x3003'
+    payload = f"""{{
+        "Xname": "{Xname}",
+        "Class": "{Class}",
+        "ExtraProperties": {{
+            "PoweredBy": "{powered_by}"
+        }}
+    }}"""
+
+    fd, path = tempfile.mkstemp(prefix='test_sls_hardware_create', suffix='.json')
+    try:
+        with os.fdopen(fd, 'w') as f:
+            f.write(payload)
+
+        result = runner.invoke(cli, ['sls', 'hardware', 'create',
+                                     '--xname', Xname,
+                                     '--class', Class,
+                                     '--extra-properties', f'{{ "PoweredBy":"{powered_by}" }}',
+                                     '--payload-file', path])
+
+        print(result.output)
+        assert result.exit_code != 0
+    finally:
+        os.remove(path)
+
+
+# pylint: disable=redefined-outer-name
+def test_sls_hardware_update(cli_runner, rest_mock):
+    """ Test `cray sls hardware update` with various params """
+    runner, cli, opts = cli_runner
+    url_template = f'/apis/sls/v1/hardware/{Xname}'
+    config = opts['default']
+    hostname = config['hostname']
+    powered_by = 'x3004'
+    result = runner.invoke(cli, ['sls', 'hardware', 'update', Xname,
+                                 '--class', Class,
+                                 '--extra-properties', f'{{ "PoweredBy":"{powered_by}" }}'])
+
+    print(result.output)
+    assert result.exit_code == 0
+    data = json.loads(result.output)
+    assert data['method'].lower() == 'put'
+    assert data.get('body')
+    body = data.get('body')
+    assert body['xname'] == Xname
+    assert body['Class'] == Class
+    assert body.get('ExtraProperties', {}).get('PoweredBy') == powered_by
+    uri = data['url'].split(hostname)[-1]
+    assert uri == url_template
+
+
+# pylint: disable=redefined-outer-name
+# pylint: disable=too-many-locals
+def test_sls_hardware_update_payload(cli_runner, rest_mock):
+    """ Test `cray sls hardware create` using a payload file """
+    runner, cli, opts = cli_runner
+    url_template = f'/apis/sls/v1/hardware/{Xname}'
+    config = opts['default']
+    hostname = config['hostname']
+    powered_by = 'x3005'
+    payload = f"""{{
+        "Class": "{Class}",
+        "ExtraProperties": {{
+            "PoweredBy": "{powered_by}"
+        }}
+    }}"""
+
+    fd, path = tempfile.mkstemp(prefix='test_sls_hardware_create', suffix='.json')
+    try:
+        with os.fdopen(fd, 'w') as f:
+            f.write(payload)
+
+        result = runner.invoke(cli, ['sls', 'hardware', 'update', Xname, '--payload-file', path])
+
+        print(result.output)
+        assert result.exit_code == 0
+        data = json.loads(result.output)
+        assert data['method'].lower() == 'put'
+        body = data.get('body')
+        assert body
+        assert body['Class'] == Class
+        assert body.get('ExtraProperties', {}).get('PoweredBy') == powered_by
+        uri = data['url'].split(hostname)[-1]
+        assert uri == url_template
+    finally:
+        os.remove(path)
+
+
+def test_sls_hardware_update_incompatible_parameters(cli_runner, rest_mock):
+    """ Test `cray sls hardware update` incorrect parameters """
+    runner, cli, _ = cli_runner
+    powered_by = 'x3006'
+    payload = f"""{{
+        "Class": "{Class}",
+        "ExtraProperties": {{
+            "PoweredBy": "{powered_by}"
+        }}
+    }}"""
+
+    fd, path = tempfile.mkstemp(prefix='test_sls_hardware_create', suffix='.json')
+    try:
+        with os.fdopen(fd, 'w') as f:
+            f.write(payload)
+
+        result = runner.invoke(cli, ['sls', 'hardware', 'update', Xname,
+                                     '--class', Class,
+                                     '--extra-properties', f'{{ "PoweredBy":"{powered_by}" }}',
+                                     '--payload-file', path])
+
+        print(result.output)
+        assert result.exit_code != 0
+    finally:
+        os.remove(path)
 
 
 # pylint: disable=redefined-outer-name
@@ -296,37 +453,76 @@ def test_sls_hardware_describe(cli_runner, rest_mock):
     assert uri == url_template+'/'+des_xname
 
 
-netname = 'foobar'
-fullname = 'barfoobar'
-iprange = ['192.168.1.0/24']
-nettype = 'slingshot10'
-
-
 # pylint: disable=redefined-outer-name
+# pylint: disable=too-many-locals
 def test_sls_networks_create(cli_runner, rest_mock):
     """ Test `cray sls networks create` with various params """
     runner, cli, opts = cli_runner
     url_template = '/apis/sls/v1/networks'
     config = opts['default']
     hostname = config['hostname']
-    result = runner.invoke(cli, ['sls', 'networks', 'create',
-                                 '--name', netname,
-                                 '--full-name', fullname,
-                                 '--ip-ranges', '192.168.1.0/24',
-                                 '--type', nettype])
+    network_name = 'foobar'
+    payload = f"""{{
+        "Name": "{network_name}",
+        "FullName": "barfoobar",
+        "IPRanges": ["192.168.1.0/24"],
+        "Type": "ethernet"
+    }}"""
 
-    print(result.output)
-    assert result.exit_code == 0
-    data = json.loads(result.output)
-    assert data['method'].lower() == 'post'
-    assert data.get('body')
-    body = data.get('body')
-    assert body['Type'] == nettype
-    assert body['Name'] == netname
-    assert body['FullName'] == fullname
-    assert body['IPRanges'] == iprange
-    uri = data['url'].split(hostname)[-1]
-    assert uri == url_template
+    fd, path = tempfile.mkstemp(prefix='test_sls_networks_create', suffix='.json')
+    try:
+        with os.fdopen(fd, 'w') as f:
+            f.write(payload)
+
+        result = runner.invoke(cli, ['sls', 'networks', 'create', path])
+
+        print(result.output)
+        assert result.exit_code == 0
+        data = json.loads(result.output)
+        assert data['method'].lower() == 'post'
+        body = data.get('body')
+        assert body
+        assert body['Name'] == network_name
+        uri = data['url'].split(hostname)[-1]
+        assert uri == url_template
+    finally:
+        os.remove(path)
+
+
+# pylint: disable=redefined-outer-name
+# pylint: disable=too-many-locals
+def test_sls_networks_update(cli_runner, rest_mock):
+    """ Test `cray sls networks update` with various params """
+    runner, cli, opts = cli_runner
+    network_name = 'foobar'
+    url_template = f'/apis/sls/v1/networks/{network_name}'
+    config = opts['default']
+    hostname = config['hostname']
+    payload = f"""{{
+        "Name": "{network_name}",
+        "FullName": "barfoobar",
+        "IPRanges": ["192.168.1.0/24"],
+        "Type": "ethernet"
+    }}"""
+
+    fd, path = tempfile.mkstemp(prefix='test_sls_networks_create', suffix='.json')
+    try:
+        with os.fdopen(fd, 'w') as f:
+            f.write(payload)
+
+        result = runner.invoke(cli, ['sls', 'networks', 'update', path, network_name])
+
+        print(result.output)
+        assert result.exit_code == 0
+        data = json.loads(result.output)
+        assert data['method'].lower() == 'put'
+        body = data.get('body')
+        assert body
+        assert body['Name'] == network_name
+        uri = data['url'].split(hostname)[-1]
+        assert uri == url_template
+    finally:
+        os.remove(path)
 
 
 # pylint: disable=redefined-outer-name
@@ -447,31 +643,3 @@ def test_sls_search_networks_list(cli_runner, rest_mock):
 
     for out in outputs:
         assert out in uri
-
-
-# pylint: disable=redefined-outer-name
-def test_sls_hardware_update(cli_runner, rest_mock):
-    """ Test `cray sls hardware update` with various params """
-    runner, cli, opts = cli_runner
-    url_template = '/apis/sls/v1/hardware'
-    config = opts['default']
-    hostname = config['hostname']
-    result = runner.invoke(cli, ['sls', 'hardware', 'update', Xname,
-                                 '--xname', Xname,
-                                 '--parent', Parent,
-                                 '--children', 'x0c0s0b[0-1]n[0-1]',
-                                 '--type', Type,
-                                 '--class', Class])
-
-    print(result.output)
-    assert result.exit_code == 0
-    data = json.loads(result.output)
-    assert data['method'].lower() == 'put'
-    assert data.get('body')
-    body = data.get('body')
-    assert body['Type'] == Type
-    assert body['Children'] == Children
-    assert body['Parent'] == Parent
-    assert body['Class'] == Class
-    uri = data['url'].split(hostname)[-1]
-    assert uri == url_template+'/'+Xname

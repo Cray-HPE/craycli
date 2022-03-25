@@ -68,6 +68,10 @@ info:
     ### /networks
     
     Create new network objects or retrieve networks available in the system.
+
+    ### /networks/{network}
+
+    Retrieve, update, or delete information about specific networks.
     
     ### /dumpstate
     
@@ -290,7 +294,7 @@ paths:
         is an array of hardware objects representing all the hardware in the system.
       responses:
         200:
-          description: OK
+          description: "Request successful"
           content:
             application/json:
               schema:
@@ -305,21 +309,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/hardware'
-            example:
-              xname: "x0c1s2b0n1"
-              class: "River"
+              $ref: '#/components/schemas/hardware_post'
       responses:
         201:
-          description: "Created. Item successfully created"
+          description: "Request successful. The item was created"
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/hardware'
         400:
-          description: "Bad request.  See body for details"
+          description: "Bad request. See body for details"
         409:
-          description: "Conflict.  The requested resource already exists"
+          description: "Conflict. The requested resource already exists"
+        500:
+          description: "Unexpected error. See body for details"
   /hardware/{xname}:
     parameters:
       - in: path
@@ -336,7 +339,7 @@ paths:
         are returned as a JSON array.
       responses:
         200:
-          description: OK
+          description: "Request successful"
           content:
             application/json:
               schema:
@@ -349,21 +352,24 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/hardware'
-            example:
-              xname: "x0c1s2b0n1"
-              class: "River"
+              $ref: '#/components/schemas/hardware_put'
       responses:
         200:
-          description: "Update. Item successfully updated in database"
+          description: "Request successful. The item was updated"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/hardware'
+        201:
+          description: "Request successful. The item was created"
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/hardware'
         400:
-          description: "Bad request.  See body for details"
-        409:
-          description: "Conflict.  The requested resource already exists"
+          description: "Bad request. See body for details"
+        500:
+          description: "Unexpected error. See body for details"
     delete:
       tags: ["hardware"]
       summary: "Delete the xname"
@@ -450,6 +456,12 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/hardware'
+        400:
+          description: "Bad request. See body for details."
+        404:
+          description: "Search did not find any matching hardware."
+        500:
+          description: "An unexpected error occurred. See body for details."
   /search/networks:
     get:
       tags: ["search"]
@@ -491,7 +503,6 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/network'
-
   /networks:
     get:
       tags: ["network"]
@@ -508,31 +519,8 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/network'
-    put:
-      tags: ["network"]
-      summary: "Update a network object"
-      description: "Update a network object.  Parent objects will be created, if possible."
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/network'
-            example:
-              Name: "HSN"
-              FullName: "High Speed Network"
-      responses:
-        200:
-          description: "Update. Item successfully updated in database"
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/network'
-        400:
-          description: "Bad request.  See body for details"
-        409:
-          description: "Conflict.  The requested resource already exists"
     post:
-      tags: ["network"]
+      tags: ["network", "cli_from_file"]
       summary: "Create a new network"
       description: Create a new network. Must include all fields at the time of upload.
       requestBody:
@@ -568,12 +556,10 @@ paths:
                 $ref: '#/components/schemas/network'
         404:
           description: "No network item found with requested name"
-    patch:
-      tags:
-        - network
-        - cli_ignore
-      summary: "Update the named network"
-      description: "Update the network.  All values except \"Name\" may be altered."
+    put:
+      tags: ["network", "cli_from_file"]
+      summary: "Update a network object"
+      description: "Update a network object. Parent objects will be created, if possible."
       requestBody:
         content:
           application/json:
@@ -581,15 +567,15 @@ paths:
               $ref: '#/components/schemas/network'
       responses:
         200:
-          description: "OK. The object was successfully  updated"
+          description: "Request successful"
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/network'
-        404:
-          description: "Not found. The requested network doesn't exist"
+        400:
+          description: "Bad request. See body for details"
         409:
-          description: "Conflict. The object couldn't be updated, see body for details."
+          description: "Conflict. The requested resource already exists"
     delete:
       tags: ["network"]
       summary: "Delete the named network"
@@ -692,6 +678,7 @@ components:
 
     network:
       type: object
+      required: ["Name", "Type", "IPRanges"]
       properties:
         Name:
           type: string
@@ -711,8 +698,7 @@ components:
         LastUpdatedTime:
           $ref: '#/components/schemas/last_updated_time'
         ExtraProperties:
-          # The properties for a network aren't well defined and are intended mostly for use by the DHCP service.
-          type: object
+          $ref: '#/components/schemas/network_extra_properties'
     network_ip_range:
       type: string
       pattern: "[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}/[0-9]{1,2}|[0-9a-fA-F:]+/[0-9]{1,3}"
@@ -720,80 +706,152 @@ components:
       type: string
       pattern: "sligshot10|cassini|ethernet|OPA|infiniband|mixed"
       example: "slingshot10"
+    network_extra_properties:
+      type: object
+      properties:
+        CIDR:
+          type: string
+          pattern: "[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}/[0-9]{1,2}|[0-9a-fA-F:]+/[0-9]{1,3}"
+          example: "10.253.0.0/16"
+        VlanRange:
+          type: array
+          items:
+            type: integer
+        MTU:
+          type: integer
+          example: 9000
+        Subnets:
+          type: array
+          items:
+            $ref: '#/components/schemas/network_ipv4_subnet'
+        Comment:
+          type: string
+    network_ipv4_subnet:
+      type: object
+      required: ["Name", "CIDR", "VlanID"]
+      properties:
+        Name:
+          type: string
+          pattern: "[^ ]+"
+          example: cabinet_1008_hsn"
+        FullName:
+          type: string
+          example: "Cabinet 1008 HSN"
+        CIDR:
+          type: string
+          pattern: "[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}/[0-9]{1,2}|[0-9a-fA-F:]+/[0-9]{1,3}"
+          example: "10.253.0.0/16"
+        VlanID:
+          type: integer
+          example: 60
+        Gateway:
+          type: string
+          format: ipv4
+        DHCPStart:
+          type: string
+          format: ipv4
+        DHCPEnd:
+          type: string
+          format: ipv4
+        IPReservations:
+          type: array
+          items:
+            $ref: '#/components/schemas/network_ip_reservation'
+        Comment:
+          type: string
+    network_ip_reservation:
+      type: object
+      required: ["IPAddress", "Name"]
+      properties:
+          IPAddress:
+            type: string
+            format: ipv4
+          Name:
+            type: string
+            pattern: "[^ ]+"
+            example: "S3"
+          Aliases:
+            type: array
+            items:
+              type: string
+              example: "rgw-vip.local"
+          Comment:
+            type: string
 
 
     xname:
       type: string
       # This string should be generated using the command "grep regexp.MustCompile pkg/base/hmstypes.go | grep -v -e 'INVALID' -e 'all_*' -e '\^p' -e '\^sms' | awk -F'"' '{print $2}' | tr '\n' '|'" from the root of the hsm-common repository whenever the hmstypes.go file is updated
-      pattern: "^s0$|^d([0-9]+)$|^x([0-9]{1,4})d([0-1])$|^x([0-9]{1,4})m([0-3])$|^x([0-9]{1,4})m([0-3])p([0-7])$|^x([0-9]{1,4})m([0-3])i([0-3])$|^x([0-9]{1,4})m([0-3])p([0-7])j([1-9][0-9]*)$|^x([0-9]{1,4})e([0-1])$|^x([0-9]{1,4})$|^x([0-9]{1,4})b([0])$|^x([0-9]{1,4})c([0-7])$|^x([0-9]{1,4})c([0-7])b([0])$|^x([0-9]{1,4})c([0-7])f([0])$|^x([0-9]{1,4})c([0-7])t([0-2])$|^x([0-9]{1,4})c([0-7])s([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)f([0])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)e([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)j([1-2])$|^x([0-9]{1,4})c([0-7])r([0-9]+)e([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)h([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)a([0-7])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)d([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)p([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)$|^x([0-9]{1,4})c([0-7])r([0-9]+)f([01])$|^x([0-9]{1,4})c([0-7])r([0-9]+)t([0-9]+)f([0-1])$|^x([0-9]{1,4})c([0-7])r([0-9]+)b([0-9]+)$|^x([0-9]{1,4})c([0-7])r([0-9]+)b([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)a([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)j([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])r([0-9]+)j([1-9][0-9]*)p([012])$|^x([0-9]{1,4})c([0-7])r([0-9]+)a([0-3])l([0-9]+)$|^x([0-9]{1,4})c([0-7])w([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])w([0-9]+)j([1-9][0-9]*)$"
+      pattern: &xname_pattern "^s0$|^d([0-9]+)$|^x([0-9]{1,4})d([0-1])$|^x([0-9]{1,4})m([0-3])$|^x([0-9]{1,4})m([0-3])p([0-7])$|^x([0-9]{1,4})m([0-3])i([0-3])$|^x([0-9]{1,4})m([0-3])p([0-7])j([1-9][0-9]*)$|^x([0-9]{1,4})e([0-1])$|^x([0-9]{1,4})$|^x([0-9]{1,4})b([0])$|^x([0-9]{1,4})c([0-7])$|^x([0-9]{1,4})c([0-7])b([0])$|^x([0-9]{1,4})c([0-7])f([0])$|^x([0-9]{1,4})c([0-7])t([0-2])$|^x([0-9]{1,4})c([0-7])s([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)f([0])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)e([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)j([1-2])$|^x([0-9]{1,4})c([0-7])r([0-9]+)e([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)h([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)a([0-7])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)d([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)p([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)$|^x([0-9]{1,4})c([0-7])r([0-9]+)f([01])$|^x([0-9]{1,4})c([0-7])r([0-9]+)t([0-9]+)f([0-1])$|^x([0-9]{1,4})c([0-7])r([0-9]+)b([0-9]+)$|^x([0-9]{1,4})c([0-7])r([0-9]+)b([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)a([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)j([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])r([0-9]+)j([1-9][0-9]*)p([012])$|^x([0-9]{1,4})c([0-7])r([0-9]+)a([0-3])l([0-9]+)$|^x([0-9]{1,4})c([0-7])w([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])w([0-9]+)j([1-9][0-9]*)$"
       description: "The xname of this piece of hardware"
       example: "x0c0s0b0"
     hwtype:
       type: string
       # Regenerate thispattern by running "grep "HMSType = " pkg/base/hmstypes.go | awk '{print "^" $4 "$"}' | tr -d '"' | grep -v -e INVALID -e 'All*' -e Partition | tr '\n' '|'"
-      pattern: "^CDU$|^CabinetCDU$|^Cabinet$|^CabinetBMC$|^CabinetPDUController$|^CabinetPDU$|^CabinetPDUNic$|^CabinetPDUOutlet$|^Chassis$|^ChassisBMC$|^CMMRectifier$|^CMMFpga$|^CEC$|^ComputeModule$|^RouterModule$|^NodeBMC$|^NodeBMCNic$|^NodeEnclosure$|^NodePowerConnector$|^Node$|^Processor$|^NodeNIC$|^NodeHsnNIC$|^Memory$|^NodeAccel$|^NodeFpga$|^HSNAsic$|^RouterFpga$|^RouterTORFpga$|^RouterBMC$|^RouterBMCNic$|^HSNBoard$|^HSNLink$|^HSNConnector$|^HSNConnectorPort$|^MgmtSwitch$|^MgmtSwitchConnector$|^SMSBox$|^System$"
-      description: "The type of this piece of hardware.  This is an optional hint during upload; it will be ignored if it does not match the xname"
-      example: "comptype_ncard"
+      pattern: &hwtype_pattern "^CDU$|^CabinetCDU$|^Cabinet$|^CabinetBMC$|^CabinetPDUController$|^CabinetPDU$|^CabinetPDUNic$|^CabinetPDUOutlet$|^Chassis$|^ChassisBMC$|^CMMRectifier$|^CMMFpga$|^CEC$|^ComputeModule$|^RouterModule$|^NodeBMC$|^NodeBMCNic$|^NodeEnclosure$|^NodePowerConnector$|^Node$|^Processor$|^NodeNIC$|^NodeHsnNIC$|^Memory$|^NodeAccel$|^NodeFpga$|^HSNAsic$|^RouterFpga$|^RouterTORFpga$|^RouterBMC$|^RouterBMCNic$|^HSNBoard$|^HSNLink$|^HSNConnector$|^HSNConnectorPort$|^MgmtSwitch$|^MgmtSwitchConnector$|^SMSBox$|^System$"
+      description: &hwtype_description "The type of this piece of hardware.  This is an optional hint during upload; it will be ignored if it does not match the xname"
+      example: &hwtype_example "comptype_ncard"
     hwclass:
       type: string
-      enum: ["River", "Mountain"]
-      description: "A hint as to whether this is River or Mountain hardware. May be ignored during upload.  If omitted, will attempt to intuit from parent hardware"
+      enum: ["River", "Mountain", "Hill"]
+      description: "The hardware class."
       example: "Mountain"
     last_updated:
       type: integer
+      readOnly: true
       description: "The unix timestamp of the last time this entry was created or updated"
     last_updated_time:
       type: string
+      readOnly: true
       description: "The human-readable time this object was last created or updated."
 
-    hardware_dump:
+    hardware_put:
       type: object
-      required: ["Xname"]
+      required: ["Class"]
       properties:
-        Parent:
-          $ref: '#/components/schemas/xname'
-        Xname:
-          $ref: '#/components/schemas/xname'
-        Children:
-          type: array
-          items:
-            $ref: '#/components/schemas/xname'
-        Type:
-          $ref: '#/components/schemas/hwtype'
-        TypeString:
-          type: string
         Class:
           $ref: '#/components/schemas/hwclass'
         ExtraProperties:
-          oneOf:
-            - $ref: '#/components/schemas/hardware_comptype_hsn_connector'
-            - $ref: '#/components/schemas/hardware_pwr_connector'
-            - $ref: '#/components/schemas/hardware_mgmt_switch_connector'
-            - $ref: '#/components/schemas/hardware_comptype_rtr_bmc'
-            - $ref: '#/components/schemas/hardware_comptype_bmc_nic'
-            - $ref: '#/components/schemas/hardware_nic'
-            - $ref: '#/components/schemas/hardware_comptype_rtmod'
-            - $ref: '#/components/schemas/hardware_comptype_mgmt_switch'
-            - $ref: '#/components/schemas/hardware_comptype_compmod'
-            - $ref: '#/components/schemas/hardware_comptype_cab_pdu'
-            - $ref: '#/components/schemas/hardware_comptype_node'
-            - $ref: '#/components/schemas/hardware_comptype_nodecard'
+          $ref: '#/components/schemas/hardware_extra_properties'
+    hardware_post:
+      type: object
+      required: ["Xname", "Class"]
+      properties:
+        Xname:
+          $ref: '#/components/schemas/xname'
+        Class:
+          $ref: '#/components/schemas/hwclass'
+        ExtraProperties:
+          $ref: '#/components/schemas/hardware_extra_properties'
     hardware:
       type: object
-      required: ["Xname"]
+      required: ["Xname", "Class"]
       properties:
         Parent:
-          $ref: '#/components/schemas/xname'
+          type: string
+          readOnly: true
+          pattern: *xname_pattern
+          description: "The xname of the parent of this piece of hardware"
+          example: "x0c0s0"
         Xname:
           $ref: '#/components/schemas/xname'
         Children:
           type: array
+          readOnly: true
           items:
-            $ref: '#/components/schemas/xname'
+            type: string
+            pattern: *xname_pattern
+            description: "The xname of a child of this piece of hardware"
+            example: "x0c0s0b0n0"
         Type:
-          $ref: '#/components/schemas/hwtype'
+          type: string
+          readOnly: true
+          pattern: *hwtype_pattern
+          description: *hwtype_description
+          example: *hwtype_example
         TypeString:
           type: string
+          readOnly: true
         Class:
           $ref: '#/components/schemas/hwclass'
         LastUpdated:
@@ -801,19 +859,7 @@ components:
         LastUpdatedTime:
           $ref: '#/components/schemas/last_updated_time'
         ExtraProperties:
-          oneOf:
-            - $ref: '#/components/schemas/hardware_comptype_hsn_connector'
-            - $ref: '#/components/schemas/hardware_pwr_connector'
-            - $ref: '#/components/schemas/hardware_mgmt_switch_connector'
-            - $ref: '#/components/schemas/hardware_comptype_rtr_bmc'
-            - $ref: '#/components/schemas/hardware_comptype_bmc_nic'
-            - $ref: '#/components/schemas/hardware_nic'
-            - $ref: '#/components/schemas/hardware_comptype_rtmod'
-            - $ref: '#/components/schemas/hardware_comptype_mgmt_switch'
-            - $ref: '#/components/schemas/hardware_comptype_compmod'
-            - $ref: '#/components/schemas/hardware_comptype_cab_pdu'
-            - $ref: '#/components/schemas/hardware_comptype_node'
-            - $ref: '#/components/schemas/hardware_comptype_nodecard'
+          $ref: '#/components/schemas/hardware_extra_properties'
     hardware_bmc:
       type: object
       required: ["IP6addr", "IP4addr"]
@@ -950,7 +996,20 @@ components:
           example: "2"
     hardware_comptype_nodecard:
       $ref: '#/components/schemas/hardware_ip_and_creds_optional'
-
+    hardware_extra_properties:
+      oneOf:
+        - $ref: '#/components/schemas/hardware_comptype_hsn_connector'
+        - $ref: '#/components/schemas/hardware_pwr_connector'
+        - $ref: '#/components/schemas/hardware_mgmt_switch_connector'
+        - $ref: '#/components/schemas/hardware_comptype_rtr_bmc'
+        - $ref: '#/components/schemas/hardware_comptype_bmc_nic'
+        - $ref: '#/components/schemas/hardware_nic'
+        - $ref: '#/components/schemas/hardware_comptype_rtmod'
+        - $ref: '#/components/schemas/hardware_comptype_mgmt_switch'
+        - $ref: '#/components/schemas/hardware_comptype_compmod'
+        - $ref: '#/components/schemas/hardware_comptype_cab_pdu'
+        - $ref: '#/components/schemas/hardware_comptype_node'
+        - $ref: '#/components/schemas/hardware_comptype_nodecard'
 
     slsState:
       type: object
