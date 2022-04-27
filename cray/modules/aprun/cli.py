@@ -3,7 +3,7 @@ cli.py - aprun PALS CLI
 
 MIT License
 
-(C) Copyright [2020-2021] Hewlett Packard Enterprise Development LP
+(C) Copyright [2020-2022] Hewlett Packard Enterprise Development LP
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -31,6 +31,7 @@ import sys
 import click
 
 from cray import core
+from cray.echo import echo, LOG_WARN
 from cray.pals import PALSApp, split_mpmd_args, get_resource_limits, parse_hostfile
 
 APRUN_ENV_ALIAS = {
@@ -553,8 +554,18 @@ def cli(
     label = int(os.getenv("APRUN_LABEL", "0"))
 
     # Make the launch request
-    app = PALSApp()
-    exit_codes = app.launch(launchreq, not bypass_app_transfer, label, procinfo_file)
+    try:
+        app = PALSApp()
+        exit_codes = app.launch(
+            launchreq, not bypass_app_transfer, label, procinfo_file
+        )
+    except click.UsageError as err:
+        echo(
+            "Note: PALS may have been reconfigured for direct launch on this system.\n"
+            "To switch, load the 'cray-pals' module and replace 'cray aprun' with 'aprun'\n",
+            level=LOG_WARN,
+        )
+        raise err
 
     # Print exit code summary (4 highest nonzero exit codes)
     exit_codes.discard(0)
@@ -566,3 +577,7 @@ def cli(
         exit_code = 0
 
     sys.exit(exit_code)
+
+
+# Since this API/CLI is deprecated, hide from the main help message
+cli.hidden = True
