@@ -28,8 +28,8 @@ echo $VERSION > build_version
 
 if command -v yum > /dev/null; then
     yum install -y python-devel
-    yum install -y python36
-    yum install -y python36-setuptools
+    yum install -y python38
+    yum install -y python38-setuptools
     yum install -y python3-devel
 elif command -v zypper > /dev/null; then
     zypper install -y -f -l python-pip
