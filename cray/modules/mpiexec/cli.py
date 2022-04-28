@@ -3,7 +3,7 @@ cli.py - mpiexec PALS CLI
 
 MIT License
 
-(C) Copyright [2020-2021] Hewlett Packard Enterprise Development LP
+(C) Copyright [2020-2022] Hewlett Packard Enterprise Development LP
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -31,6 +31,7 @@ import sys
 import click
 
 from cray import core
+from cray.echo import echo, LOG_WARN
 from cray.pals import PALSApp, split_mpmd_args, get_resource_limits, parse_hostfile
 
 SIGNAL_RECEIVED = 0  # Last signal number received
@@ -597,9 +598,21 @@ def cli(
         launchreq["sstartup"] = True
 
     # Make the launch request
-    app = PALSApp()
-    exit_codes = app.launch(launchreq, transfer, label, procinfo_file)
+    try:
+        app = PALSApp()
+        exit_codes = app.launch(launchreq, transfer, label, procinfo_file)
+    except click.UsageError as err:
+        echo(
+            "Note: PALS may have been reconfigured for direct launch on this system.\n"
+            "To switch, load the 'cray-pals' module and replace 'cray mpiexec' with 'mpiexec'\n",
+            level=LOG_WARN,
+        )
+        raise err
 
     # Calculate exit code
     exit_code = max(exit_codes) if exit_codes else 0
     sys.exit(exit_code)
+
+
+# Since this API/CLI is deprecated, hide from the main help message
+cli.hidden = True
