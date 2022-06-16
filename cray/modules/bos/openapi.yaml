@@ -1,3 +1,4 @@
+
 #
 # MIT License
 #
@@ -1068,9 +1069,21 @@ components:
         action:
           type: string
           description: A description of the most recent operator/action to impact the component.
-        num_attempts:
+      additionalProperties: false
+    V2ComponentEventStats:
+      description: |
+        Information on the most recent attempt to return the node to its desired state.
+      type: object
+      properties:
+        power_on_attempts:
           type: integer
-          description: How many attempts have been made for this action.
+          description: How many attempts have been made to power-on since the last time the node was in the desired state.
+        power_off_graceful_attempts:
+          type: integer
+          description: How many attempts have been made to power-off gracefully since the last time the node was in the desired state.
+        power_off_forceful_attempts:
+          type: integer
+          description: How many attempts have been made to power-off forcefully since the last time the node was in the desired state.
       additionalProperties: false
     V2ComponentStatus:
       description: Status information for the component
@@ -1103,6 +1116,8 @@ components:
           $ref: '#/components/schemas/V2ComponentStagedState'
         last_action:
           $ref: '#/components/schemas/V2ComponentLastAction'
+        event_stats:
+          $ref: '#/components/schemas/V2ComponentEventStats'
         status:
           $ref: '#/components/schemas/V2ComponentStatus'
         enabled:
@@ -1114,6 +1129,12 @@ components:
         session:
           type: string
           description: The session responsible for the component's current state
+        retry_policy:
+          type: integer
+          description: |
+            The maximum number attempts per action when actions fail.
+            Defaults to the global default_retry_policy if not set
+          example: 1
       additionalProperties: false
     V2ComponentArray:
       description: An array of component states.
@@ -1200,6 +1221,10 @@ components:
         polling_frequency:
           type: integer
           description: How frequently the BOS operators check component state for needed actions. (in seconds)
+        default_retry_policy:
+          type: integer
+          description: The default maximum number attempts per node for failed actions.
+          example: 1
       additionalProperties: true
   requestBodies:
     V2sessionCreateRequest:
