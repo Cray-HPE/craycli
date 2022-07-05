@@ -63,7 +63,7 @@ def _formatter(format_type):
     return JSON
 
 
-class _NullStream:  # pylint: disable=no-init
+class _NullStream:
     """ NullStream used for yaml dump """
 
     def write(self, *args, **kwargs):

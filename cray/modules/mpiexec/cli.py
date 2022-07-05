@@ -81,6 +81,7 @@ def soft_nprocs(soft, nprocs):
 
     # Filter to values between 1 and nprocs
     try:
+        # pylint: disable=consider-using-generator
         return max([x for x in soft if 0 < x <= nprocs])
     except ValueError:
         # pylint: disable=raise-missing-from

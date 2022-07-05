@@ -122,6 +122,7 @@ def _setup_hardware_options(cmd, is_update=False):
         elif p.payload_name == option_payload_file:
             params.append((3, p))
         elif p.payload_name == 'ExtraProperties':
+            # pylint: disable=fixme
             # todo
             pass
         else:
