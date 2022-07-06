@@ -1718,7 +1718,8 @@
                         "format": "date-time",
                         "readOnly": true
                     }
-                }
+                },
+                "additionalProperties": false
             },
             "V2ComponentDesiredState": {
                 "description": "The desired boot artifacts and configuration for a component\n",
@@ -1816,6 +1817,10 @@
                     "action": {
                         "type": "string",
                         "description": "A description of the most recent operator/action to impact the component."
+                    },
+                    "failed": {
+                        "type": "boolean",
+                        "description": "Denotes if the last action failed to accomplish its task"
                     }
                 },
                 "additionalProperties": false
@@ -1901,7 +1906,8 @@
                                 "format": "date-time",
                                 "readOnly": true
                             }
-                        }
+                        },
+                        "additionalProperties": false
                     },
                     "desired_state": {
                         "description": "The desired boot artifacts and configuration for a component\n",
@@ -1999,6 +2005,10 @@
                             "action": {
                                 "type": "string",
                                 "description": "A description of the most recent operator/action to impact the component."
+                            },
+                            "failed": {
+                                "type": "boolean",
+                                "description": "Denotes if the last action failed to accomplish its task"
                             }
                         },
                         "additionalProperties": false
@@ -2107,7 +2117,8 @@
                                     "format": "date-time",
                                     "readOnly": true
                                 }
-                            }
+                            },
+                            "additionalProperties": false
                         },
                         "desired_state": {
                             "description": "The desired boot artifacts and configuration for a component\n",
@@ -2205,6 +2216,10 @@
                                 "action": {
                                     "type": "string",
                                     "description": "A description of the most recent operator/action to impact the component."
+                                },
+                                "failed": {
+                                    "type": "boolean",
+                                    "description": "Denotes if the last action failed to accomplish its task"
                                 }
                             },
                             "additionalProperties": false
@@ -2329,7 +2344,8 @@
                                         "format": "date-time",
                                         "readOnly": true
                                     }
-                                }
+                                },
+                                "additionalProperties": false
                             },
                             "desired_state": {
                                 "description": "The desired boot artifacts and configuration for a component\n",
@@ -2427,6 +2443,10 @@
                                     "action": {
                                         "type": "string",
                                         "description": "A description of the most recent operator/action to impact the component."
+                                    },
+                                    "failed": {
+                                        "type": "boolean",
+                                        "description": "Denotes if the last action failed to accomplish its task"
                                     }
                                 },
                                 "additionalProperties": false
@@ -2576,9 +2596,13 @@
                         "type": "string",
                         "description": "The logging level for all BOS services"
                     },
+                    "max_boot_wait_time": {
+                        "type": "integer",
+                        "description": "How long BOS will wait for a node to boot into a usable state before rebooting it again (in seconds)"
+                    },
                     "max_power_on_wait_time": {
                         "type": "integer",
-                        "description": "How long BOS will wait for a node to power on before rebooting again (in seconds)"
+                        "description": "How long BOS will wait for a node to power on before calling power on again (in seconds)"
                     },
                     "max_power_off_wait_time": {
                         "type": "integer",
@@ -2696,7 +2720,8 @@
                                             "format": "date-time",
                                             "readOnly": true
                                         }
-                                    }
+                                    },
+                                    "additionalProperties": false
                                 },
                                 "desired_state": {
                                     "description": "The desired boot artifacts and configuration for a component\n",
@@ -2794,6 +2819,10 @@
                                         "action": {
                                             "type": "string",
                                             "description": "A description of the most recent operator/action to impact the component."
+                                        },
+                                        "failed": {
+                                            "type": "boolean",
+                                            "description": "Denotes if the last action failed to accomplish its task"
                                         }
                                     },
                                     "additionalProperties": false
@@ -2910,7 +2939,8 @@
                                                 "format": "date-time",
                                                 "readOnly": true
                                             }
-                                        }
+                                        },
+                                        "additionalProperties": false
                                     },
                                     "desired_state": {
                                         "description": "The desired boot artifacts and configuration for a component\n",
@@ -3008,6 +3038,10 @@
                                             "action": {
                                                 "type": "string",
                                                 "description": "A description of the most recent operator/action to impact the component."
+                                            },
+                                            "failed": {
+                                                "type": "boolean",
+                                                "description": "Denotes if the last action failed to accomplish its task"
                                             }
                                         },
                                         "additionalProperties": false
@@ -3128,7 +3162,8 @@
                                                             "format": "date-time",
                                                             "readOnly": true
                                                         }
-                                                    }
+                                                    },
+                                                    "additionalProperties": false
                                                 },
                                                 "desired_state": {
                                                     "description": "The desired boot artifacts and configuration for a component\n",
@@ -3226,6 +3261,10 @@
                                                         "action": {
                                                             "type": "string",
                                                             "description": "A description of the most recent operator/action to impact the component."
+                                                        },
+                                                        "failed": {
+                                                            "type": "boolean",
+                                                            "description": "Denotes if the last action failed to accomplish its task"
                                                         }
                                                     },
                                                     "additionalProperties": false
@@ -3354,7 +3393,8 @@
                                                         "format": "date-time",
                                                         "readOnly": true
                                                     }
-                                                }
+                                                },
+                                                "additionalProperties": false
                                             },
                                             "desired_state": {
                                                 "description": "The desired boot artifacts and configuration for a component\n",
@@ -3452,6 +3492,10 @@
                                                     "action": {
                                                         "type": "string",
                                                         "description": "A description of the most recent operator/action to impact the component."
+                                                    },
+                                                    "failed": {
+                                                        "type": "boolean",
+                                                        "description": "Denotes if the last action failed to accomplish its task"
                                                     }
                                                 },
                                                 "additionalProperties": false
@@ -3550,9 +3594,13 @@
                                     "type": "string",
                                     "description": "The logging level for all BOS services"
                                 },
+                                "max_boot_wait_time": {
+                                    "type": "integer",
+                                    "description": "How long BOS will wait for a node to boot into a usable state before rebooting it again (in seconds)"
+                                },
                                 "max_power_on_wait_time": {
                                     "type": "integer",
-                                    "description": "How long BOS will wait for a node to power on before rebooting again (in seconds)"
+                                    "description": "How long BOS will wait for a node to power on before calling power on again (in seconds)"
                                 },
                                 "max_power_off_wait_time": {
                                     "type": "integer",
@@ -4614,7 +4662,8 @@
                                             "format": "date-time",
                                             "readOnly": true
                                         }
-                                    }
+                                    },
+                                    "additionalProperties": false
                                 },
                                 "desired_state": {
                                     "description": "The desired boot artifacts and configuration for a component\n",
@@ -4712,6 +4761,10 @@
                                         "action": {
                                             "type": "string",
                                             "description": "A description of the most recent operator/action to impact the component."
+                                        },
+                                        "failed": {
+                                            "type": "boolean",
+                                            "description": "Denotes if the last action failed to accomplish its task"
                                         }
                                     },
                                     "additionalProperties": false
@@ -4827,7 +4880,8 @@
                                                 "format": "date-time",
                                                 "readOnly": true
                                             }
-                                        }
+                                        },
+                                        "additionalProperties": false
                                     },
                                     "desired_state": {
                                         "description": "The desired boot artifacts and configuration for a component\n",
@@ -4925,6 +4979,10 @@
                                             "action": {
                                                 "type": "string",
                                                 "description": "A description of the most recent operator/action to impact the component."
+                                            },
+                                            "failed": {
+                                                "type": "boolean",
+                                                "description": "Denotes if the last action failed to accomplish its task"
                                             }
                                         },
                                         "additionalProperties": false
@@ -5055,9 +5113,13 @@
                                     "type": "string",
                                     "description": "The logging level for all BOS services"
                                 },
+                                "max_boot_wait_time": {
+                                    "type": "integer",
+                                    "description": "How long BOS will wait for a node to boot into a usable state before rebooting it again (in seconds)"
+                                },
                                 "max_power_on_wait_time": {
                                     "type": "integer",
-                                    "description": "How long BOS will wait for a node to power on before rebooting again (in seconds)"
+                                    "description": "How long BOS will wait for a node to power on before calling power on again (in seconds)"
                                 },
                                 "max_power_off_wait_time": {
                                     "type": "integer",
@@ -11537,7 +11599,8 @@
                                                         "format": "date-time",
                                                         "readOnly": true
                                                     }
-                                                }
+                                                },
+                                                "additionalProperties": false
                                             },
                                             "desired_state": {
                                                 "description": "The desired boot artifacts and configuration for a component\n",
@@ -11635,6 +11698,10 @@
                                                     "action": {
                                                         "type": "string",
                                                         "description": "A description of the most recent operator/action to impact the component."
+                                                    },
+                                                    "failed": {
+                                                        "type": "boolean",
+                                                        "description": "Denotes if the last action failed to accomplish its task"
                                                     }
                                                 },
                                                 "additionalProperties": false
@@ -11802,7 +11869,8 @@
                                                     "format": "date-time",
                                                     "readOnly": true
                                                 }
-                                            }
+                                            },
+                                            "additionalProperties": false
                                         },
                                         "desired_state": {
                                             "description": "The desired boot artifacts and configuration for a component\n",
@@ -11900,6 +11968,10 @@
                                                 "action": {
                                                     "type": "string",
                                                     "description": "A description of the most recent operator/action to impact the component."
+                                                },
+                                                "failed": {
+                                                    "type": "boolean",
+                                                    "description": "Denotes if the last action failed to accomplish its task"
                                                 }
                                             },
                                             "additionalProperties": false
@@ -12017,7 +12089,8 @@
                                                         "format": "date-time",
                                                         "readOnly": true
                                                     }
-                                                }
+                                                },
+                                                "additionalProperties": false
                                             },
                                             "desired_state": {
                                                 "description": "The desired boot artifacts and configuration for a component\n",
@@ -12115,6 +12188,10 @@
                                                     "action": {
                                                         "type": "string",
                                                         "description": "A description of the most recent operator/action to impact the component."
+                                                    },
+                                                    "failed": {
+                                                        "type": "boolean",
+                                                        "description": "Denotes if the last action failed to accomplish its task"
                                                     }
                                                 },
                                                 "additionalProperties": false
@@ -12285,7 +12362,8 @@
                                                                 "format": "date-time",
                                                                 "readOnly": true
                                                             }
-                                                        }
+                                                        },
+                                                        "additionalProperties": false
                                                     },
                                                     "desired_state": {
                                                         "description": "The desired boot artifacts and configuration for a component\n",
@@ -12383,6 +12461,10 @@
                                                             "action": {
                                                                 "type": "string",
                                                                 "description": "A description of the most recent operator/action to impact the component."
+                                                            },
+                                                            "failed": {
+                                                                "type": "boolean",
+                                                                "description": "Denotes if the last action failed to accomplish its task"
                                                             }
                                                         },
                                                         "additionalProperties": false
@@ -12511,7 +12593,8 @@
                                                             "format": "date-time",
                                                             "readOnly": true
                                                         }
-                                                    }
+                                                    },
+                                                    "additionalProperties": false
                                                 },
                                                 "desired_state": {
                                                     "description": "The desired boot artifacts and configuration for a component\n",
@@ -12609,6 +12692,10 @@
                                                         "action": {
                                                             "type": "string",
                                                             "description": "A description of the most recent operator/action to impact the component."
+                                                        },
+                                                        "failed": {
+                                                            "type": "boolean",
+                                                            "description": "Denotes if the last action failed to accomplish its task"
                                                         }
                                                     },
                                                     "additionalProperties": false
@@ -12728,7 +12815,8 @@
                                                         "format": "date-time",
                                                         "readOnly": true
                                                     }
-                                                }
+                                                },
+                                                "additionalProperties": false
                                             },
                                             "desired_state": {
                                                 "description": "The desired boot artifacts and configuration for a component\n",
@@ -12826,6 +12914,10 @@
                                                     "action": {
                                                         "type": "string",
                                                         "description": "A description of the most recent operator/action to impact the component."
+                                                    },
+                                                    "failed": {
+                                                        "type": "boolean",
+                                                        "description": "Denotes if the last action failed to accomplish its task"
                                                     }
                                                 },
                                                 "additionalProperties": false
@@ -13029,7 +13121,8 @@
                                                     "format": "date-time",
                                                     "readOnly": true
                                                 }
-                                            }
+                                            },
+                                            "additionalProperties": false
                                         },
                                         "desired_state": {
                                             "description": "The desired boot artifacts and configuration for a component\n",
@@ -13127,6 +13220,10 @@
                                                 "action": {
                                                     "type": "string",
                                                     "description": "A description of the most recent operator/action to impact the component."
+                                                },
+                                                "failed": {
+                                                    "type": "boolean",
+                                                    "description": "Denotes if the last action failed to accomplish its task"
                                                 }
                                             },
                                             "additionalProperties": false
@@ -13327,7 +13424,8 @@
                                                 "format": "date-time",
                                                 "readOnly": true
                                             }
-                                        }
+                                        },
+                                        "additionalProperties": false
                                     },
                                     "desired_state": {
                                         "description": "The desired boot artifacts and configuration for a component\n",
@@ -13425,6 +13523,10 @@
                                             "action": {
                                                 "type": "string",
                                                 "description": "A description of the most recent operator/action to impact the component."
+                                            },
+                                            "failed": {
+                                                "type": "boolean",
+                                                "description": "Denotes if the last action failed to accomplish its task"
                                             }
                                         },
                                         "additionalProperties": false
@@ -13538,7 +13640,8 @@
                                                     "format": "date-time",
                                                     "readOnly": true
                                                 }
-                                            }
+                                            },
+                                            "additionalProperties": false
                                         },
                                         "desired_state": {
                                             "description": "The desired boot artifacts and configuration for a component\n",
@@ -13636,6 +13739,10 @@
                                                 "action": {
                                                     "type": "string",
                                                     "description": "A description of the most recent operator/action to impact the component."
+                                                },
+                                                "failed": {
+                                                    "type": "boolean",
+                                                    "description": "Denotes if the last action failed to accomplish its task"
                                                 }
                                             },
                                             "additionalProperties": false
@@ -13798,7 +13905,8 @@
                                                 "format": "date-time",
                                                 "readOnly": true
                                             }
-                                        }
+                                        },
+                                        "additionalProperties": false
                                     },
                                     "desired_state": {
                                         "description": "The desired boot artifacts and configuration for a component\n",
@@ -13896,6 +14004,10 @@
                                             "action": {
                                                 "type": "string",
                                                 "description": "A description of the most recent operator/action to impact the component."
+                                            },
+                                            "failed": {
+                                                "type": "boolean",
+                                                "description": "Denotes if the last action failed to accomplish its task"
                                             }
                                         },
                                         "additionalProperties": false
@@ -14009,7 +14121,8 @@
                                                     "format": "date-time",
                                                     "readOnly": true
                                                 }
-                                            }
+                                            },
+                                            "additionalProperties": false
                                         },
                                         "desired_state": {
                                             "description": "The desired boot artifacts and configuration for a component\n",
@@ -14107,6 +14220,10 @@
                                                 "action": {
                                                     "type": "string",
                                                     "description": "A description of the most recent operator/action to impact the component."
+                                                },
+                                                "failed": {
+                                                    "type": "boolean",
+                                                    "description": "Denotes if the last action failed to accomplish its task"
                                                 }
                                             },
                                             "additionalProperties": false
@@ -14464,9 +14581,13 @@
                                             "type": "string",
                                             "description": "The logging level for all BOS services"
                                         },
+                                        "max_boot_wait_time": {
+                                            "type": "integer",
+                                            "description": "How long BOS will wait for a node to boot into a usable state before rebooting it again (in seconds)"
+                                        },
                                         "max_power_on_wait_time": {
                                             "type": "integer",
-                                            "description": "How long BOS will wait for a node to power on before rebooting again (in seconds)"
+                                            "description": "How long BOS will wait for a node to power on before calling power on again (in seconds)"
                                         },
                                         "max_power_off_wait_time": {
                                             "type": "integer",
@@ -14527,9 +14648,13 @@
                                         "type": "string",
                                         "description": "The logging level for all BOS services"
                                     },
+                                    "max_boot_wait_time": {
+                                        "type": "integer",
+                                        "description": "How long BOS will wait for a node to boot into a usable state before rebooting it again (in seconds)"
+                                    },
                                     "max_power_on_wait_time": {
                                         "type": "integer",
-                                        "description": "How long BOS will wait for a node to power on before rebooting again (in seconds)"
+                                        "description": "How long BOS will wait for a node to power on before calling power on again (in seconds)"
                                     },
                                     "max_power_off_wait_time": {
                                         "type": "integer",
@@ -14579,9 +14704,13 @@
                                             "type": "string",
                                             "description": "The logging level for all BOS services"
                                         },
+                                        "max_boot_wait_time": {
+                                            "type": "integer",
+                                            "description": "How long BOS will wait for a node to boot into a usable state before rebooting it again (in seconds)"
+                                        },
                                         "max_power_on_wait_time": {
                                             "type": "integer",
-                                            "description": "How long BOS will wait for a node to power on before rebooting again (in seconds)"
+                                            "description": "How long BOS will wait for a node to power on before calling power on again (in seconds)"
                                         },
                                         "max_power_off_wait_time": {
                                             "type": "integer",
