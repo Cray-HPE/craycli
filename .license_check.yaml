@@ -1,3 +1,4 @@
 add_exclude:
   - ".license_check.yaml"
+  - "cray/modules/scsd/swagger.yaml"
   - "cray/modules/sls/swagger.yaml"
