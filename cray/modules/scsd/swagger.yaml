@@ -146,11 +146,12 @@ info:
     Force defaults to false, Domain defaults to cabinet.
 
     ### Bios
-    #### GET /bmc/bios/{xname}/tpmstate
+
+    #### GET /bmc/bios/{xname}/{bios_field}
 
     Get TPM State in the BIOS settings.
 
-    #### GET /bmc/bios/{xname}/tpmstate
+    #### PATCH /bmc/bios/{xname}/{bios_field}
 
     Set TPM State in the BIOS settings.
 
@@ -648,7 +649,7 @@ paths:
         '503':
           description: The service is not taking HTTP requests
 
-  '/bmc/bios/{xname}/tpmstate':
+  '/bmc/bios/{xname}/{bios_field}':
     get:
       tags:
         - bios
@@ -662,6 +663,12 @@ paths:
           required: true
           schema:
             $ref: '#/components/schemas/xname_for_node'
+        - name: bios_field
+          in: path
+          description: Name of the BIOS field
+          required: true
+          schema:
+            $ref: '#/components/schemas/bios_field'
       responses:
         '200':
           description: OK.
@@ -710,6 +717,12 @@ paths:
           required: true
           schema:
             $ref: '#/components/schemas/xname_for_node'
+        - name: bios_field
+          in: path
+          description: Name of the BIOS field
+          required: true
+          schema:
+            $ref: '#/components/schemas/bios_field'
       requestBody:
         content:
           application/json:
@@ -763,6 +776,11 @@ components:
       type: string
       description: Comma separated list of xnames
       example: 'x1000c0s0b0,x1000c0s1b0'
+    bios_field:
+      type: string
+      description: The name of the BIOS field
+      enum:
+        - tpmstate
     ntp_server_info_kw:
       type: string
       description: NTP server

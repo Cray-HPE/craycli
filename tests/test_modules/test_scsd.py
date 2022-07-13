@@ -119,11 +119,11 @@ def test_scsd_bmc_bios_tpmstate(cli_runner, rest_mock):
     """ Test `cray scsd bmc bios tpmstate` """
 
     runner, cli, _ = cli_runner
-    result = runner.invoke(cli, ['scsd', 'bmc', 'bios', 'tpmstate'])
+    result = runner.invoke(cli, ['scsd', 'bmc', 'bios'])
 
     outputs = [
-        "cli scsd bmc bios tpmstate [OPTIONS] COMMAND [ARGS]...",
-        "list",
+        "cli scsd bmc bios [OPTIONS] COMMAND [ARGS]...",
+        "describe",
         "update",
     ]
 
@@ -140,7 +140,7 @@ def test_scsd_bmc_bios_tpmstate_update(cli_runner, rest_mock):
     future = 'Disabled'
 
     comp = 'x0c0s0b0n0'
-    result = runner.invoke(cli, ['scsd', 'bmc', 'bios', 'tpmstate', 'update',
+    result = runner.invoke(cli, ['scsd', 'bmc', 'bios', 'update', 'tpmstate',
                                  '--future', future,
                                  comp])
 
