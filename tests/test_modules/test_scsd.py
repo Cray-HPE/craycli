@@ -1,27 +1,28 @@
+# MIT License
+#
+# (C) Copyright [2020-2022] Hewlett Packard Enterprise Development LP
+#
+# Permission is hereby granted, free of charge, to any person obtaining a
+# copy of this software and associated documentation files (the "Software"),
+# to deal in the Software without restriction, including without limitation
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,
+# and/or sell copies of the Software, and to permit persons to whom the
+# Software is furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included
+# in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+# THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+# OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+# ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+# OTHER DEALINGS IN THE SOFTWARE.
+
 """ Test the scsd module.
-
-MIT License
-
-(C) Copyright [2020-2021] Hewlett Packard Enterprise Development LP
-
-Permission is hereby granted, free of charge, to any person obtaining a
-copy of this software and associated documentation files (the "Software"),
-to deal in the Software without restriction, including without limitation
-the rights to use, copy, modify, merge, publish, distribute, sublicense,
-and/or sell copies of the Software, and to permit persons to whom the
-Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included
-in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
-OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-OTHER DEALINGS IN THE SOFTWARE.
 """
+
 # pylint: disable=invalid-name,
 # pylint: disable=too-many-arguments, unused-argument
 import json
@@ -95,17 +96,68 @@ def test_scsd_bmc(cli_runner, rest_mock):
 
     outputs = [
         "cli scsd bmc [OPTIONS] COMMAND [ARGS]...",
+        "bios",
         "cfg",
+        "createcerts",
         "creds",
+        "deletecerts",
         "discreetcreds",
         "dumpcfg",
+        "fetchcerts",
         "globalcreds",
         "loadcfg",
+        "setcert",
+        "setcerts",
     ]
 
     for out in outputs:
         assert out in result.output
     assert result.exit_code == 0
+
+# pylint: disable=redefined-outer-name
+def test_scsd_bmc_bios_tpmstate(cli_runner, rest_mock):
+    """ Test `cray scsd bmc bios tpmstate` """
+
+    runner, cli, _ = cli_runner
+    result = runner.invoke(cli, ['scsd', 'bmc', 'bios'])
+
+    outputs = [
+        "cli scsd bmc bios [OPTIONS] COMMAND [ARGS]...",
+        "describe",
+        "update",
+    ]
+
+    for out in outputs:
+        assert out in result.output
+    assert result.exit_code == 0
+
+# pylint: disable=redefined-outer-name
+def test_scsd_bmc_bios_tpmstate_update(cli_runner, rest_mock):
+    """ Test `cray scsd bmc bios update` """
+
+    runner, cli, config = cli_runner
+    url_template = urlPrefix+'/bmc/bios'
+    future = 'Disabled'
+
+    comp = 'x0c0s0b0n0'
+    result = runner.invoke(cli, ['scsd', 'bmc', 'bios', 'update', 'tpmstate',
+                                 '--future', future,
+                                 comp])
+
+    assert result.exit_code == 0
+    data = json.loads(result.output)
+    assert data['method'] == 'PATCH'
+    assert data['url'] == '{}{}/{}/{}'.format(config['default']['hostname'],
+                                              url_template,
+                                              comp,
+                                              'tpmstate')
+
+    expdata = {
+        'Future': future
+    }
+
+    ok = findDiff(expdata, data['body'])
+    assert(ok == 1)
 
 # pylint: disable=redefined-outer-name
 def test_scsd_bmc_cfg(cli_runner, rest_mock):

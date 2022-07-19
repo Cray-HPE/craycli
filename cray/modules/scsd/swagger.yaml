@@ -1,0 +1,1149 @@
+openapi: 3.0.0
+info:
+  version: '0.1'
+  title: System Configuration Service
+  description: >-
+    Commercial off-the-shelf BMCs and HPE-built controllers will need to have various
+    parameters configured on them such as NTP server, syslog server, SSH keys, access
+    credentials. These parameters are automatically configured when the targets like
+    BMC and controllers are discovered.
+
+    The System Configuration Service makes it possible for administrators to configure these
+    parameters at anytime on multiple targets in a single operation. The System
+    Configuration Service runs on the non-compute worker node.
+
+
+    The REST API provides the following functions:
+
+    * Set or retrieve network protocol (NWP) parameters (NTP, syslog servers, SSH keys)
+    for specified targets (xnames or groups). Only Redfish access credentials can be configured
+    for Commercial off-the-shelf BMCs or BMC's in air cooled hardware.
+    The other parameters are not applicable.
+
+    * Set Redfish access credentials for specified targets
+
+    * Check service health
+
+    ## Resources
+
+    ### /bmc/dumpcfg
+
+    Retrieve network protocol parameters like NTP, syslog server, and SSH keys for a
+    set of controllers.
+
+    ### /bmc/loadcfg
+
+    Configure NTP, syslog server, and SSH keys for a set of controllers.
+
+    ### /bmc/cfg/{xname}
+
+    Retrieve or set NTP, syslog server, and SSH keys for a single controller.
+
+    ### /bmc/discreetcreds
+
+    Configure discrete access credentials for target BMCs or controllers.
+
+    ### /bmc/creds/{xname}
+
+    Configure or fetch (with authorization) access credentials for a single BMC or controller.
+
+    ### /bmc/globalcreds
+
+    Configure the same access credentials for multiple BMCs or controllers.
+
+    ### /bmc/createcerts
+
+    Create BMC TLS cert/key pairs and store securely for later use.
+
+    ### /bmc/deletecerts
+
+    Delet BMC TLS cert/key pairs and store securely for later use.
+
+    ### /bmc/fetchcerts
+
+    Fetch previously created BMC TLS certs for viewing.
+
+    ### /bmc/setcerts
+
+    Apply previously created BMC TLS cert/key pairs to target Redfish BMCs.
+
+    ### /bmc/setcert/{xname}
+
+    Apply previously created BMC TLS cert/key pairs to a single target Redfish BMCs.
+
+    ### /health
+
+    Retrieve the current health state of the service.
+
+    ## Workflows
+
+    ### Retrieve syslog, NTP server and/or SSH key information on a
+    single or multiple targets
+
+    #### POST /bmc/dumpcfg
+
+    Send a JSON payload with targets to retrieve. Targets can be xnames of BMCs
+    or controllers, or group IDs. Returns a JSON payload containing NTP server
+    information on specified targets.
+
+    #### GET /bmc/cfg/{xname}?params=NTPServer+SyslogServer
+
+    Returns a JSON payload containing only NTP and syslog server from a
+    single target.
+
+    ### Set syslog and NTP server and/or SSH key information on a
+    single or multiple targets
+
+    #### POST /bmc/loadcfg
+
+    Send a JSON payload with parameters to set and a list of targets.  Targets
+    can be xnames of BMCs or controllers, or group IDs. Returns a JSON payload
+    with the results of the operation.
+
+    #### POST /bmc/cfg/{xname}?params=NTPServer+SSHKey
+
+    Returns a JSON payload containing NTP and SSH key information from a single target.
+
+    ### Set login credentials on controllers
+
+    #### POST /bmc/discreetcreds
+
+    Sets login credentials on a set of controllers.  Targets can be xnames of
+    controllers or group IDs.
+
+    ### Create or delete BMC TLS cert/key pairs
+
+    #### POST /bmc/createcerts
+
+    Send a JSON payload with BMC domain and targets.  Creates a TLS cert/key
+    pair for each BMC domain (e.g. cabinet) and stores it in secure storage
+    for later use.
+
+    #### POST /bmc/deletecerts
+
+    Send a JSON payload with BMC domain and targets.  Deletes all applicable
+    TLS cert/key pairs from secure storage.
+
+    ### Fetch and view TLS certs
+
+    #### POST /bmc/fetchcerts
+
+    Send a JSON payload with BMC targets.  Fetches applicable TLS certs and
+    returns them in a JSON payload.  Note that cert data is fetched, but not
+    the private key data.
+
+    ### Apply TLS Certs to BMCs
+
+    #### POST /bmc/setcerts
+
+    Send a JSON payload with BMC targets.  Fetch applicable TLS certs/keys from
+    secure storage.  Apply cert/key pairs to target BMCs.
+
+    #### POST /bmc/setcert/{xname}?Force=true&Domain=cabinet
+
+    No JSON payload needed.  Fetch TLS cert/key pair from secure storage for
+    target BMC specified by {xname}.  Apply cert/key pair to target BMC.
+    Force defaults to false, Domain defaults to cabinet.
+
+    ### Bios
+
+    #### GET /bmc/bios/{xname}/{bios_field}
+
+    Get TPM State in the BIOS settings.
+
+    #### PATCH /bmc/bios/{xname}/{bios_field}
+
+    Set TPM State in the BIOS settings.
+
+  license:
+    name: Cray Proprietary
+tags:
+  - name: nwp
+    description: Endpoints that set or get Redfish Network Protocol information
+  - name: creds
+    description: Endpoints that set Redfish access credentials
+  - name: bios
+    description: Endpoints that set or get BIOS information
+  - name: version
+    description: Endpoints that perform health and version checks
+  - name: certs
+    description: Endpoints that create, delete, fetch, and apply TLS certs
+servers:
+  - url: 'http://api-gw-service-nmn.local/apis/scsd/v1'
+    description: Production API service.  Access from outside the service mesh.
+  - url: 'http://cray-scsd/v1'
+    description: Access from inside the service mesh.
+paths:
+  /bmc/dumpcfg:
+    post:
+      tags:
+        - nwp
+        - cli_from_file
+      summary: Retrieve the Redfish network protocol data for a set of targets
+      description: >-
+        Get the Redfish Network Protocol data (NTP server, syslog server, SSH
+        key) for a set of targets.  The POST payload contains the parameters to
+        retrieve  along with a list of targets.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/bmc_dumpcfg_request'
+      responses:
+        '200':
+          description: OK.  The data was succesfully retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/bmc_dumpcfg_response'
+        '404':
+          description: Endpoint not found
+        '405':
+          description: 'Invalid method, only POST is allowed'
+  /bmc/loadcfg:
+    post:
+      tags:
+        - nwp
+        - cli_from_file
+      summary: Set the Redfish network protocol data for a set of targets
+      description: >-
+        Set the Redfish network protocol data (NTP server, syslog server, SSH
+        key) for a set of targets. The POST payload contains the parameters to
+        set  along with a list of targets.
+
+
+        The Force field is optional.
+        If present, and set to 'true', the Redfish operations will be attempted without contacting HSM
+        and without verifying if the targets are present or are in a good state.
+        If the "Force" field is not present or is present but set to 'false', HSM will be used.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/bmc_loadcfg_request'
+      responses:
+        '200':
+          description: OK.  The data was succesfully retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/multi_post_response'
+        '404':
+          description: Endpoint not found
+        '405':
+          description: 'Invalid method, only POST is allowed'
+  '/bmc/cfg/{xname}':
+    parameters:
+      - in: path
+        name: xname
+        required: true
+        schema:
+          $ref: '#/components/schemas/xname'
+      - in: query
+        name: param
+        schema:
+          type: string
+          anyOf:
+            - $ref: '#/components/schemas/ntp_server_info_kw'
+            - $ref: '#/components/schemas/syslog_server_info_kw'
+            - $ref: '#/components/schemas/sshkey_kw'
+            - $ref: '#/components/schemas/sshconkey_kw'
+          description: 'Specification of network protocol parameters.'
+    get:
+      tags:
+        - nwp
+      summary: Retrieve Redfish network protocol data for a single target
+      description: >-
+        Retrieve selected Redfish network protocol data for a single target. You
+        can select NTP server, Syslog server, or SSH key. If nothing is
+        specified, all Redfish network protocol parameters are returned.
+      responses:
+        '200':
+          description: OK.  The data was succesfully retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/cfg_get_single'
+        '404':
+          description: Endpoint not found
+        '405':
+          description: 'Invalid method, only GET,POST is allowed'
+    post:
+      tags:
+        - nwp
+      summary: Set Redfish network protocol data for a single target
+      description: >-
+        Set selected Redfish network protocol data for a single target.
+        Payload body specifies NTP server, syslog server, or SSH key.
+
+
+        The Force field is optional. If present, and set to 'true', the Redfish operations
+        will be attempted without contacting HSM
+        and without verifying if the targets are present or are in a good state.
+        If the "Force" field is not present or is present but set to 'false', HSM will be used.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/cfg_post_single'
+      responses:
+        '200':
+          description: OK.  The data was succesfully set
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/cfg_rsp_status'
+        '404':
+          description: Endpoint not found
+        '405':
+          description: 'Invalid method, only GET,POST is allowed'
+  /bmc/discreetcreds:
+    post:
+      tags:
+        - creds
+        - cli_from_file
+      summary: Set the controller login credentials for a set of targets
+      description: >-
+        Set discrete controller login credentials for a set of targets.  The POST
+        payload contains the parameters to set along with a list of targets.
+
+
+        The Force field is optional. If present, and set to 'true', the Redfish operations
+        will be attempted without contacting HSM
+        and without verifying if the targets are present or are in a good state.
+        If the "Force" field is not present or is present but set to 'false', HSM will be used.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/creds_components'
+      responses:
+        '200':
+          description: OK.  The data was succesfully set
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/multi_post_response'
+        '404':
+          description: Endpoint not found
+        '405':
+          description: 'Invalid method, only POST is allowed'
+  '/bmc/creds/{xname}':
+    parameters:
+      - in: path
+        name: xname
+        required: true
+        schema:
+          $ref: '#/components/schemas/xname'
+    post:
+      tags:
+        - creds
+      summary: Set controller login credentials for a single target
+      description: >-
+        Set controller login credentials for a single target.  The POST
+        payload contains the parameters to set along with a list of targets.
+
+
+        The Force field is optional. If present, and set to 'true', the Redfish operations
+        will be attempted without contacting HSM
+        and without verifying if the targets are present or are in a good state.
+        If the "Force" field is not present or is present but set to 'false', HSM will be used.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/creds_single'
+      responses:
+        '200':
+          description: OK.  The data was succesfully set
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/cfg_rsp_status'
+        '404':
+          description: Endpoint not found
+        '405':
+          description: 'Invalid method, only GET,POST is allowed'
+
+  /bmc/creds:
+    parameters:
+      - in: query
+        name: targets
+        required: false
+        description: Comma separated list of XNames.  No query string results in fetching creds for all known BMCs.
+        schema:
+          $ref: '#/components/schemas/xname_list'
+      - in: query
+        name: type
+        required: false
+        description: Target component type.  A maximum of one type is allowed.  If no type is specified, all known BMC types are returned.
+        schema:
+          type: string
+          example: NodeBMC
+    get:
+      tags:
+        - creds
+      summary: Fetch controller login credentials for specified targets and types.
+      description: >-
+        Fetch controller login credentials for a specified targets.  Targets
+        are specified as a comma-separated list of xnames.  A component type
+        may also be specified.  The xname list is 'ANDed' with the component
+        type; any xname that has a type other than the specified type will
+        be discarded.   If no type is specified, all BMC types are used.
+        If no query parameters are specified at all, all BMCs in the system
+        are used.
+      responses:
+        '200':
+          description: OK.  The data was succesfully set
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/creds_fetch_rsp'
+        '404':
+          description: Endpoint not found
+        '405':
+          description: 'Invalid method, only GET, POST is allowed'
+
+
+  /bmc/globalcreds:
+    post:
+      tags:
+        - creds
+        - cli_from_file
+      summary: Set the the same controller login credentials for a set of targets
+      description: >-
+        Set controller login credentials for a set of targets.  The POST
+        payload contains the parameters to set along with a list of targets.
+        The same credentials are set on all targets.
+
+
+        The Force field is optional. If present, and set to 'true', the Redfish operations
+        will be attempted without contacting HSM
+        and without verifying if the targets are present or are in a good state.
+        If the "Force" field is not present or is present but set to 'false', HSM will be used.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/creds_global'
+      responses:
+        '200':
+          description: OK.  The data was succesfully set
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/multi_post_response'
+        '404':
+          description: Endpoint not found
+        '405':
+          description: 'Invalid method, only POST is allowed'
+  /bmc/createcerts:
+    post:
+      tags:
+        - certs
+        - cli_from_file
+      summary: Create TLS cert/key pairs for a set of targets
+      description: >-
+        Create TLS cert/key pairs for a set of BMC targets.  A TLS cert/key
+        is created per BMC 'domain', the default being one cert per cabinet
+        to be used by all BMCs in that cabinet.  TLS cert/key info is stored
+        in secure storage for subsequent application or viewing.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/bmc_managecerts_request'
+      responses:
+        '200':
+          description: OK.  The data was succesfully retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/bmc_managecerts_response'
+        '404':
+          description: Endpoint not found
+        '405':
+          description: 'Invalid method, only POST or DELETE is allowed'
+  /bmc/deletecerts:
+    post:
+      tags:
+        - certs
+        - cli_from_file
+      summary: Delete TLS cert/key pairs for a set of targets
+      description: >-
+        Delete TLS cert/key information for domain-level TLS certs based on
+        the given targets.  There will be one TLS cert/key per BMC 'domain'
+        which will be deleted from secure storage.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/bmc_managecerts_request'
+      responses:
+        '200':
+          description: OK.  The data was succesfully retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/bmc_managecerts_response'
+        '404':
+          description: Endpoint not found
+        '405':
+          description: 'Invalid method, only POST or DELETE is allowed'
+  /bmc/fetchcerts:
+    post:
+      tags:
+        - certs
+        - cli_from_file
+      summary: Fetch previously created BMC TLS certs for viewing.
+      description: >-
+        Fetches BMC TLS certs previously created using the /bmc/createcerts
+        endpoint and stored in secure storage.  This API does not interact
+        with Redfish BMCs.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/bmc_managecerts_request'
+      responses:
+        '200':
+          description: OK.  The data was succesfully retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/bmc_fetchcerts_response'
+        '404':
+          description: Endpoint not found
+        '405':
+          description: 'Invalid method, only POST is allowed'
+  /bmc/setcerts:
+    post:
+      tags:
+        - certs
+        - cli_from_file
+      summary: Apply previously-generated TLS cert/key data to target BMCs
+      description: >-
+        Apply TLS cert/key pairs, previously generated using the /bmc/createcerts
+        endpoint, to target BMCs.
+        The Force field is optional. If present, and set to 'true', the Redfish operations
+        will be attempted without contacting HSM
+        and without verifying if the targets are present or are in a good state.
+        If the "Force" field is not present or is present but set to 'false', HSM will be used.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/bmc_rfcerts_request'
+      responses:
+        '200':
+          description: OK.  The data was succesfully retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/bmc_rfcerts_response'
+        '404':
+          description: Endpoint not found
+        '405':
+          description: 'Invalid method, only POST is allowed'
+  '/bmc/setcert/{xname}':
+    parameters:
+      - in: path
+        name: xname
+        required: true
+        schema:
+          $ref: '#/components/schemas/xname'
+      - in: query
+        name: Force
+        schema:
+            type: boolean
+        description: 'If true do not verify xname with HSM'
+      - in: query
+        name: Domain
+        schema:
+          type: string
+          example: 'Cabinet'
+    post:
+      tags:
+        - certs
+      summary: Apply previously-generated TLS cert/key data to the target BMC
+      description: >-
+        Apply a TLS cert/key pairs previously generated using the /bmc/createcerts
+        endpoint to the target BMC.
+        The Force parameter is optional. If present, and set to 'true', the Redfish operations
+        will be attempted without contacting HSM
+        and without verifying if the targets are present or are in a good state.
+        If the "Force" parameter is not present or is present but set to 'false', HSM will be used.
+      responses:
+        '200':
+          description: OK.  The cert was succesfully applied to BMC target
+        '404':
+          description: Endpoint not found
+        '405':
+          description: 'Invalid method, only POST is allowed'
+
+  /version:
+    get:
+      tags:
+        - version
+      summary: Retrieve service version information
+      description: >-
+        Retrieve service version information.  Version is returned in vmaj.min.bld
+        format
+      responses:
+        '200':
+          description: Information retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/version'
+        '404':
+          description: Endpoint not found
+        '405':
+          description: 'Invalid method, only GET,POST is allowed'
+  /liveness:
+    get:
+      tags:
+        - cli_ignore
+      summary: Get liveness status of the service
+      description: Get liveness status of the service
+      x-private: true
+      responses:
+        '204':
+          description: >-
+            [No
+            Content](http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.5)
+            Network API call success
+        '503':
+          description: The service is not taking HTTP requests
+  /readiness:
+    get:
+      tags:
+        - cli_ignore
+      summary: Get readiness status of the service
+      description: Get readiness status of the service
+      x-private: true
+      responses:
+        '200':
+          description: >-
+            [No
+            Content](http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.5)
+            Network API call success
+        '503':
+          description: The service is not taking HTTP requests
+  /health:
+    get:
+      tags:
+        - cli_ignore
+      summary: Get readiness status of the service
+      description: Get readiness status of the service
+      x-private: true
+      responses:
+        '200':
+          description: OK. All health parameters are operational.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/health'
+        '500':
+          description: The service encountered an error when gathering health information
+        '503':
+          description: The service is not taking HTTP requests
+
+  '/bmc/bios/{xname}/{bios_field}':
+    get:
+      tags:
+        - bios
+      summary: Fetch the current BIOS setting for the TPM State.
+      description: >-
+        Fetch the current BIOS setting for the TPM State.
+      parameters:
+        - name: xname
+          in: path
+          description: Locational xname of BMC.
+          required: true
+          schema:
+            $ref: '#/components/schemas/xname_for_node'
+        - name: bios_field
+          in: path
+          description: Name of the BIOS field
+          required: true
+          schema:
+            $ref: '#/components/schemas/bios_field'
+      responses:
+        '200':
+          description: OK.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/bmc_bios_tpm_state'
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+        '404':
+          description: Xname was not for a bmc.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+        '500':
+          description: Internal server error including failures communicating with the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+    patch:
+      tags:
+        - bios
+      summary: >-
+        Set the TPM State field in the BIOS settings
+      description: >-
+        Set the TPM State in the BIOS settings.
+      parameters:
+        - name: xname
+          in: path
+          description: Locational xname of the BMC.
+          required: true
+          schema:
+            $ref: '#/components/schemas/xname_for_node'
+        - name: bios_field
+          in: path
+          description: Name of the BIOS field
+          required: true
+          schema:
+            $ref: '#/components/schemas/bios_field'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/bmc_bios_tpm_state_put'
+      responses:
+        '204':
+          description: OK. The value was set.
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+        '404':
+          description: Xname was not for a bmc.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+        '500':
+          description: Internal server error including failures communicating with the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+
+components:
+  schemas:
+    xname:
+      type: string
+      pattern: &xname_pattern >-
+        ^s0$|^d([0-9]+)$|^x([0-9]{1,4})d([0-1])$|^x([0-9]{1,4})m([0-3])$|^x([0-9]{1,4})m([0-3])p([0-7])$|^x([0-9]{1,4})m([0-3])i([0-3])$|^x([0-9]{1,4})m([0-3])p([0-7])j([1-9][0-9]*)$|^x([0-9]{1,4})e([0-1])$|^x([0-9]{1,4})$|^x([0-9]{1,4})b([0])$|^x([0-9]{1,4})c([0-7])$|^x([0-9]{1,4})c([0-7])b([0])$|^x([0-9]{1,4})c([0-7])f([0])$|^x([0-9]{1,4})c([0-7])t([0-2])$|^x([0-9]{1,4})c([0-7])s([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)f([0])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)e([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)j([1-2])$|^x([0-9]{1,4})c([0-7])r([0-9]+)e([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)h([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)a([0-7])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)d([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)p([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)$|^x([0-9]{1,4})c([0-7])r([0-9]+)f([01])$|^x([0-9]{1,4})c([0-7])r([0-9]+)t([0-9]+)f([0-1])$|^x([0-9]{1,4})c([0-7])r([0-9]+)b([0-9]+)$|^x([0-9]{1,4})c([0-7])r([0-9]+)b([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)a([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)j([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])r([0-9]+)j([1-9][0-9]*)p([012])$|^x([0-9]{1,4})c([0-7])r([0-9]+)a([0-3])l([0-9]+)$|^x([0-9]{1,4})c([0-7])w([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])w([0-9]+)j([1-9][0-9]*)$
+      description: The xname of this piece of hardware
+      example: x0c0s0b0
+    xname_for_node:
+      type: string
+      pattern: *xname_pattern
+      description: The xname of this piece of hardware
+      example: x0c0s0b0n0
+    xname_list:
+      type: string
+      description: Comma separated list of xnames
+      example: 'x1000c0s0b0,x1000c0s1b0'
+    bios_field:
+      type: string
+      description: The name of the BIOS field
+      enum:
+        - tpmstate
+    ntp_server_info_kw:
+      type: string
+      description: NTP server
+      example: NTPServerInfo
+    syslog_server_info_kw:
+      type: string
+      description: Syslog server
+      example: SyslogServerInfo
+    sshkey_kw:
+      type: string
+      description: SSH key
+      example: SSHKey
+    sshconkey_kw:
+      type: string
+      description: SSH console key
+      example: SSHConsoleKey
+    cfg_types:
+      type: string
+      description: Redfish Network Protocol parameter names
+      example: NTPServerInfo
+    target_ntp_server:
+      type: object
+      properties:
+        NTPServers:
+          type: string
+          description: NTP service server name
+          example: "sms-ncn-w001"
+        Port:
+          type: integer
+        ProtocolEnabled:
+          type: boolean
+    target_syslog_server:
+      type: object
+      properties:
+        SyslogServers:
+          type: string
+          description: Syslog service server name
+          example: "sms-ncn-w001"
+        Port:
+          type: integer
+        ProtocolEnabled:
+          type: boolean
+    target_ssh_key:
+      type: string
+      example: xyzabc123...
+    params:
+      type: object
+      properties:
+        NTPServerInfo:
+          $ref: '#/components/schemas/target_ntp_server'
+        SyslogServerInfo:
+          $ref: '#/components/schemas/target_syslog_server'
+        SSHKey:
+          $ref: '#/components/schemas/target_ssh_key'
+        SSHConsoleKey:
+          $ref: '#/components/schemas/target_ssh_key'
+    target_cfg_item:
+      type: object
+      required:
+        - StatusCode
+        - StatusMsg
+        - Xname
+      properties:
+        StatusCode:
+          type: integer
+        StatusMsg:
+          type: string
+        Xname:
+          $ref: '#/components/schemas/xname'
+        Params:
+          $ref: '#/components/schemas/params'
+    cfg_get_single:
+      type: object
+      properties:
+        Force:
+          type: boolean
+        Params:
+          $ref: '#/components/schemas/params'
+    cfg_post_single:
+      type: object
+      properties:
+        Force:
+          type: boolean
+        Params:
+          $ref: '#/components/schemas/params'
+    cfg_rsp_status:
+      type: object
+      properties:
+        StatusMsg:
+          type: string
+          example: OK
+    bmc_dumpcfg_request:
+      type: object
+      required:
+        - Targets
+      properties:
+        Targets:
+          type: array
+          items:
+            $ref: '#/components/schemas/xname'
+        Params:
+          type: array
+          items:
+            $ref: '#/components/schemas/cfg_types'
+    multi_post_response_elem:
+      type: object
+      properties:
+        Xname:
+          $ref: '#/components/schemas/xname'
+        StatusCode:
+          type: integer
+          example: 200
+        StatusMsg:
+          type: string
+          example: OK
+    multi_post_response:
+      type: object
+      properties:
+        Targets:
+          type: array
+          items:
+            $ref: '#/components/schemas/multi_post_response_elem'
+    bmc_dumpcfg_response:
+      type: object
+      properties:
+        Targets:
+          type: array
+          items:
+            $ref: '#/components/schemas/target_cfg_item'
+    bmc_loadcfg_request:
+      type: object
+      required:
+        - Targets
+      properties:
+        Force:
+          type: boolean
+        Targets:
+          type: array
+          items:
+            $ref: '#/components/schemas/xname'
+        Params:
+          type: object
+          properties:
+            NTPServer:
+              $ref: '#/components/schemas/target_ntp_server'
+            SyslogServer:
+              $ref: '#/components/schemas/target_syslog_server'
+            SSHKey:
+              $ref: '#/components/schemas/target_ssh_key'
+            SSHConsoleKey:
+              $ref: '#/components/schemas/target_ssh_key'
+    creds_data:
+      type: object
+      properties:
+        Username:
+          type: string
+          example: admin-user
+        Password:
+          type: string
+          example: admin-pw
+    creds_target:
+      type: object
+      properties:
+        Xname:
+          $ref: '#/components/schemas/xname'
+        Creds:
+          $ref: '#/components/schemas/creds_data'
+    creds_components:
+      type: object
+      properties:
+        Force:
+          type: boolean
+        Targets:
+          type: array
+          items:
+            $ref: '#/components/schemas/creds_target'
+    creds_single:
+      type: object
+      properties:
+        Force:
+          type: boolean
+        Creds:
+          $ref: '#/components/schemas/creds_data'
+    creds_global:
+      type: object
+      properties:
+        Force:
+          type: boolean
+        Username:
+          type: string
+        Password:
+          type: string
+        Targets:
+          type: array
+          items:
+            $ref: '#/components/schemas/xname'
+    creds_fetch_rsp:
+      type: array
+      items:
+        $ref: '#/components/schemas/creds_fetch_rsp_elmt'
+    creds_fetch_rsp_elmt:
+      type: object
+      properties:
+        Xname:
+          $ref: '#/components/schemas/xname'
+        Username:
+          type: string
+          example: "admin"
+        Password:
+          type: string
+          example: "pwstring"
+        StatusCode:
+          type: integer
+          example: 200
+        StatusMsg:
+          type: string
+          example: "OK"
+    bmc_managecerts_request:
+      type: object
+      properties:
+        Domain:
+          type: string
+          example: Cabinet
+        DomainIDs:
+          type: array
+          items:
+            $ref: '#/components/schemas/xname'
+    bmc_managecerts_response:
+      type: object
+      properties:
+        DomainIDs:
+          type: array
+          items:
+            $ref: '#/components/schemas/cert_rsp'
+    bmc_fetchcerts_response:
+      type: object
+      properties:
+        DomainIDs:
+          type: array
+          items:
+            $ref: '#/components/schemas/cert_rsp_with_cert'
+    cert_rsp:
+      type: object
+      properties:
+        ID:
+          $ref: '#/components/schemas/xname'
+        StatusCode:
+          type: integer
+          example: 200
+        StatusMsg:
+          type: string
+          example: "OK"
+    cert_rsp_with_cert:
+      type: object
+      properties:
+        ID:
+          $ref: '#/components/schemas/xname'
+        StatusCode:
+          type: integer
+          example: 200
+        StatusMsg:
+          type: string
+          example: "OK"
+        Cert:
+          type: object
+          properties:
+            CertType:
+              type: string
+              example: "PEM"
+            CertData:
+              type: string
+              example: "-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----"
+    bmc_rfcerts_request:
+      type: object
+      properties:
+        Force:
+          type: boolean
+          example: false
+        CertDomain:
+          type: string
+          example: "Cabinet"
+        Targets:
+          type: array
+          items:
+            $ref: '#/components/schemas/xname'
+    bmc_rfcerts_response:
+      type: object
+      properties:
+        Targets:
+          type: array
+          items:
+            $ref: '#/components/schemas/cert_rsp'
+    bmc_bios_tpm_state:
+      type: object
+      properties:
+        Current:
+          description: The current BIOS setting
+          type: string
+          enum:
+            - Disabled
+            - Enabled
+            - NotPresent
+          example: Enabled
+        Future:
+          description: The future BIOS setting which will take affect when the node is rebooted
+          type: string
+          enum:
+            - Disabled
+            - Enabled
+            - NotPresent
+          example: Enabled
+    bmc_bios_tpm_state_put:
+      type: object
+      properties:
+        Future:
+          description: The future BIOS setting which will take affect when the node is rebooted
+          type: string
+          enum:
+            - Disabled
+            - Enabled
+          example: Enabled
+
+    version:
+      type: object
+      properties:
+        Version:
+          type: string
+          example: v1.2.3
+    health:
+      type: object
+      properties:
+        TaskRunnerStatus:
+          type: string
+          example: OK
+        TaskRunnerMode:
+          type: string
+          enum:
+            - Local
+            - Worker
+        VaultStatus:
+          type: string
+          example: Connected
+    Problem7807:
+      description: >-
+        RFC 7807 compliant error payload.  All fields are optional except the
+        'type' field.
+      type: object
+      required:
+        - type
+      properties:
+        type:
+          type: string
+          example: 'about:blank'
+        detail:
+          type: string
+          example: Detail about this specific problem occurrence. See RFC7807
+        instance:
+          type: string
+          example: ''
+        status:
+          type: number
+          format: int32
+          example: 400
+        title:
+          type: string
+          example: 'Description of HTTP Status code, e.g. 400'
