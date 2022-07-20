@@ -587,7 +587,6 @@
                         "description": "Name of the SessionTemplate. The length of the name is restricted to 45 characters.",
                         "example": "cle-1.0.0",
                         "minLength": 1,
-                        "maxLength": 45,
                         "pattern": "[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*"
                     },
                     "description": {
@@ -1122,7 +1121,6 @@
                         }
                     }
                 },
-                "required": [],
                 "additionalProperties": false
             },
             "V2SessionTemplateArray": {
@@ -1256,7 +1254,6 @@
                             }
                         }
                     },
-                    "required": [],
                     "additionalProperties": false
                 }
             },
@@ -1297,7 +1294,7 @@
                     },
                     "stage": {
                         "type": "boolean",
-                        "description": "Set to force nodes to reboot even if they are already in the desired state.\n",
+                        "description": "Set to stage a session which will not immediately change the state of any components. The \"applystaged\" endpoint can be called at a later time to trigger the start of this session.\n",
                         "default": false
                     }
                 },
@@ -1550,19 +1547,19 @@
                 "description": "Detailed information on the phases of a session.\n",
                 "properties": {
                     "percent_complete": {
-                        "type": "float",
+                        "type": "number",
                         "description": "The percent of components currently in a completed/stable state\n"
                     },
                     "percent_powering_on": {
-                        "type": "float",
+                        "type": "number",
                         "description": "The percent of components currently in the powering-on phase\n"
                     },
                     "percent_powering_off": {
-                        "type": "float",
+                        "type": "number",
                         "description": "The percent of components currently in the powering-off phase\n"
                     },
                     "percent_configuring": {
-                        "type": "float",
+                        "type": "number",
                         "description": "The percent of components currently in the configuring phase\n"
                     }
                 },
@@ -1609,34 +1606,34 @@
                         "description": "Detailed information on the phases of a session.\n",
                         "properties": {
                             "percent_complete": {
-                                "type": "float",
+                                "type": "number",
                                 "description": "The percent of components currently in a completed/stable state\n"
                             },
                             "percent_powering_on": {
-                                "type": "float",
+                                "type": "number",
                                 "description": "The percent of components currently in the powering-on phase\n"
                             },
                             "percent_powering_off": {
-                                "type": "float",
+                                "type": "number",
                                 "description": "The percent of components currently in the powering-off phase\n"
                             },
                             "percent_configuring": {
-                                "type": "float",
+                                "type": "number",
                                 "description": "The percent of components currently in the configuring phase\n"
                             }
                         },
                         "additionalProperties": false
                     },
                     "percent_successful": {
-                        "type": "float",
+                        "type": "number",
                         "description": "The percent of components currently in a successful state\n"
                     },
                     "percent_failed": {
-                        "type": "float",
+                        "type": "number",
                         "description": "The percent of components currently in a failed state\n"
                     },
                     "percent_staged": {
-                        "type": "float",
+                        "type": "number",
                         "description": "The percent of components currently still staged for this session\n"
                     },
                     "error_summary": {
@@ -2660,7 +2657,7 @@
                                 },
                                 "stage": {
                                     "type": "boolean",
-                                    "description": "Set to force nodes to reboot even if they are already in the desired state.\n",
+                                    "description": "Set to stage a session which will not immediately change the state of any components. The \"applystaged\" endpoint can be called at a later time to trigger the start of this session.\n",
                                     "default": false
                                 }
                             },
@@ -3933,7 +3930,6 @@
                                     "description": "Name of the SessionTemplate. The length of the name is restricted to 45 characters.",
                                     "example": "cle-1.0.0",
                                     "minLength": 1,
-                                    "maxLength": 45,
                                     "pattern": "[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*"
                                 },
                                 "description": {
@@ -4222,7 +4218,6 @@
                                     }
                                 }
                             },
-                            "required": [],
                             "additionalProperties": false
                         }
                     }
@@ -4363,7 +4358,6 @@
                                         }
                                     }
                                 },
-                                "required": [],
                                 "additionalProperties": false
                             }
                         }
@@ -4557,34 +4551,34 @@
                                     "description": "Detailed information on the phases of a session.\n",
                                     "properties": {
                                         "percent_complete": {
-                                            "type": "float",
+                                            "type": "number",
                                             "description": "The percent of components currently in a completed/stable state\n"
                                         },
                                         "percent_powering_on": {
-                                            "type": "float",
+                                            "type": "number",
                                             "description": "The percent of components currently in the powering-on phase\n"
                                         },
                                         "percent_powering_off": {
-                                            "type": "float",
+                                            "type": "number",
                                             "description": "The percent of components currently in the powering-off phase\n"
                                         },
                                         "percent_configuring": {
-                                            "type": "float",
+                                            "type": "number",
                                             "description": "The percent of components currently in the configuring phase\n"
                                         }
                                     },
                                     "additionalProperties": false
                                 },
                                 "percent_successful": {
-                                    "type": "float",
+                                    "type": "number",
                                     "description": "The percent of components currently in a successful state\n"
                                 },
                                 "percent_failed": {
-                                    "type": "float",
+                                    "type": "number",
                                     "description": "The percent of components currently in a failed state\n"
                                 },
                                 "percent_staged": {
-                                    "type": "float",
+                                    "type": "number",
                                     "description": "The percent of components currently still staged for this session\n"
                                 },
                                 "error_summary": {
@@ -5571,7 +5565,6 @@
                                         "description": "Name of the SessionTemplate. The length of the name is restricted to 45 characters.",
                                         "example": "cle-1.0.0",
                                         "minLength": 1,
-                                        "maxLength": 45,
                                         "pattern": "[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*"
                                     },
                                     "description": {
@@ -5746,7 +5739,6 @@
                                             "description": "Name of the SessionTemplate. The length of the name is restricted to 45 characters.",
                                             "example": "cle-1.0.0",
                                             "minLength": 1,
-                                            "maxLength": 45,
                                             "pattern": "[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*"
                                         },
                                         "description": {
@@ -5971,7 +5963,6 @@
                                                 "description": "Name of the SessionTemplate. The length of the name is restricted to 45 characters.",
                                                 "example": "cle-1.0.0",
                                                 "minLength": 1,
-                                                "maxLength": 45,
                                                 "pattern": "[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*"
                                             },
                                             "description": {
@@ -6170,7 +6161,6 @@
                                             "description": "Name of the SessionTemplate. The length of the name is restricted to 45 characters.",
                                             "example": "cle-1.0.0",
                                             "minLength": 1,
-                                            "maxLength": 45,
                                             "pattern": "[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*"
                                         },
                                         "description": {
@@ -6447,7 +6437,6 @@
                                             "description": "Name of the SessionTemplate. The length of the name is restricted to 45 characters.",
                                             "example": "cle-1.0.0",
                                             "minLength": 1,
-                                            "maxLength": 45,
                                             "pattern": "[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*"
                                         },
                                         "description": {
@@ -9270,7 +9259,6 @@
                                                 }
                                             }
                                         },
-                                        "required": [],
                                         "additionalProperties": false
                                     }
                                 }
@@ -9508,7 +9496,6 @@
                                             }
                                         }
                                     },
-                                    "required": [],
                                     "additionalProperties": false
                                 }
                             }
@@ -9696,7 +9683,6 @@
                                         }
                                     }
                                 },
-                                "required": [],
                                 "additionalProperties": false
                             }
                         }
@@ -9835,7 +9821,6 @@
                                             }
                                         }
                                     },
-                                    "required": [],
                                     "additionalProperties": false
                                 }
                             }
@@ -10022,7 +10007,6 @@
                                         }
                                     }
                                 },
-                                "required": [],
                                 "additionalProperties": false
                             }
                         }
@@ -10161,7 +10145,6 @@
                                             }
                                         }
                                     },
-                                    "required": [],
                                     "additionalProperties": false
                                 }
                             }
@@ -10404,7 +10387,6 @@
                                             }
                                         }
                                     },
-                                    "required": [],
                                     "additionalProperties": false
                                 }
                             }
@@ -10461,7 +10443,7 @@
                                     },
                                     "stage": {
                                         "type": "boolean",
-                                        "description": "Set to force nodes to reboot even if they are already in the desired state.\n",
+                                        "description": "Set to stage a session which will not immediately change the state of any components. The \"applystaged\" endpoint can be called at a later time to trigger the start of this session.\n",
                                         "default": false
                                     }
                                 },
@@ -11254,34 +11236,34 @@
                                             "description": "Detailed information on the phases of a session.\n",
                                             "properties": {
                                                 "percent_complete": {
-                                                    "type": "float",
+                                                    "type": "number",
                                                     "description": "The percent of components currently in a completed/stable state\n"
                                                 },
                                                 "percent_powering_on": {
-                                                    "type": "float",
+                                                    "type": "number",
                                                     "description": "The percent of components currently in the powering-on phase\n"
                                                 },
                                                 "percent_powering_off": {
-                                                    "type": "float",
+                                                    "type": "number",
                                                     "description": "The percent of components currently in the powering-off phase\n"
                                                 },
                                                 "percent_configuring": {
-                                                    "type": "float",
+                                                    "type": "number",
                                                     "description": "The percent of components currently in the configuring phase\n"
                                                 }
                                             },
                                             "additionalProperties": false
                                         },
                                         "percent_successful": {
-                                            "type": "float",
+                                            "type": "number",
                                             "description": "The percent of components currently in a successful state\n"
                                         },
                                         "percent_failed": {
-                                            "type": "float",
+                                            "type": "number",
                                             "description": "The percent of components currently in a failed state\n"
                                         },
                                         "percent_staged": {
-                                            "type": "float",
+                                            "type": "number",
                                             "description": "The percent of components currently still staged for this session\n"
                                         },
                                         "error_summary": {
