@@ -61,7 +61,7 @@ SWAGGER_OPTS = {
 cli = generate(__file__, swagger_opts=SWAGGER_OPTS)
 
 # Place the v1 commands at the 'cray bos' level of the cli
-CURRENT_VERSION = 'v1'
+CURRENT_VERSION = 'v2'
 PRESERVE_VERSIONS = True
 
 if PRESERVE_VERSIONS:
@@ -169,7 +169,7 @@ def setup_v2_template_create():
 
 setup_v2_template_create()
 
-setup_template_from_file(cli.commands['sessiontemplate'].commands['create'])
+setup_template_from_file(cli.commands['v1'].commands['sessiontemplate'].commands['create'])
 setup_template_from_file(cli.commands['v2'].commands['sessiontemplates'].commands['create'])
 setup_template_from_file(cli.commands['v2'].commands['sessiontemplates'].commands['update'])
 
