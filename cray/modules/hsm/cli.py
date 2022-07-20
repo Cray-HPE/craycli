@@ -2,7 +2,7 @@
 
 MIT License
 
-(C) Copyright [2020-2021] Hewlett Packard Enterprise Development LP
+(C) Copyright [2020-2022] Hewlett Packard Enterprise Development LP
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -36,7 +36,8 @@ SWAGGER_OPTS = {
     }
 }
 
-HSM_API_VERSION = os.environ.get("CRAY_HSM_API_VERSION", "v2")
+# Keeping for future API versions
+# HSM_API_VERSION = os.environ.get("CRAY_HSM_API_VERSION", "v2")
 
 def setup(hsm_cli):
     """ Sets up all HSM overrides """
@@ -81,8 +82,9 @@ def setup_groups_partitions_create(hsm_cli, command):
 
     hsm_cli.commands[command].commands['create'] = create_command
 
-if HSM_API_VERSION == 'v1':
-    cli = generate(__file__, filename='swagger3_v1.json', swagger_opts=SWAGGER_OPTS)
-else:
-    cli = generate(__file__, filename='swagger3_v2.json', swagger_opts=SWAGGER_OPTS)
-    setup(cli)
+# Keeping for future API versions
+# if HSM_API_VERSION == 'v1':
+    # cli = generate(__file__, filename='swagger3_v1.json', swagger_opts=SWAGGER_OPTS)
+# else:
+cli = generate(__file__, filename='swagger3_v2.json', swagger_opts=SWAGGER_OPTS)
+setup(cli)
