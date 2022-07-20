@@ -1122,6 +1122,35 @@ def test_cray_hsmV2_groups_create_file(cli_runner, rest_mock):
     }
 
 # pylint: disable=redefined-outer-name
+def test_cray_hsmV2_groups_create_no_members(cli_runner, rest_mock):
+    """ Test `cray hsm groups create` with valid params and no members """
+
+    runner, cli, config = cli_runner
+    url_template = '/apis/smd/hsm/v2/groups'
+    label = 'blue'
+    tags = 'foo'
+    desc = 'My group'
+    exgrp = 'foobar'
+    result = runner.invoke(cli, ['hsm', 'groups', 'create',
+                                 '--label', label,
+                                 '--tags', tags,
+                                 '--description', desc,
+                                 '--exclusive-group', exgrp])
+    assert result.exit_code == 0
+    data = json.loads(result.output)
+    assert data['method'] == 'POST'
+    assert data['url'] == '{}{}'.format(
+        config['default']['hostname'],
+        url_template
+    )
+    assert data['body'] == {
+        'label': label,
+        'tags': [tags],
+        'description': desc,
+        'exclusiveGroup': exgrp
+    }
+
+# pylint: disable=redefined-outer-name
 def test_cray_hsmV2_group_members_list(cli_runner, rest_mock):
     """ Test `cray hsm group members list` with valid params """
 
