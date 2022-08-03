@@ -27,11 +27,13 @@
 
 import json
 import os
-import click
+from contextlib import ExitStack
 
+import click
 from cray.core import option
 from cray.generator import generate, _opt_callback
 from cray.constants import FROM_FILE_TAG
+from cray.rest import request
 
 
 def _validate_options(
@@ -142,14 +144,69 @@ def _clear_required_parameters(cmd, parameter_names):
                 p.required = False
 
 
+def _loadstate_create(**kwargs):
+    payload = kwargs.get('payload', '')
+    private_key = kwargs.get('private_key', None)
+
+    with ExitStack() as stack:
+        payload_file = stack.enter_context(open(payload, 'rb'))
+        files = {'sls_dump': payload_file}
+
+        if private_key:
+            files['private_key'] = stack.enter_context(open(private_key, 'rb'))
+
+        response = request('POST', '/apis/sls/v1/loadstate', callback=None, files=files)
+        return response
+
+
+def _create_command_for_loadstate_create(_cli):
+    """
+    Creates the command for 'loadstate create PAYLOAD --private-key private.pem'
+    """
+    cmd = _cli.command(name='create')(_loadstate_create)
+    click.argument('PAYLOAD', nargs=1, type=click.Path(exists=True))(cmd)
+    click.option('--private-key', nargs=1, type=click.Path(exists=True), multiple=False,
+                 help="The filename for the private key")(cmd)
+    return cmd
+
+
+def _dumpstate_create(**kwargs):
+    public_key = kwargs.get('public_key', None)
+
+    with ExitStack() as stack:
+        files = {}
+
+        if public_key:
+            files['public_key'] = stack.enter_context(open(public_key, 'rb'))
+
+        response = request('POST', '/apis/sls/v1/dumpstate', callback=None, files=files)
+        return response
+
+
+def _create_command_for_dumpstate_create(_cli):
+    """
+    Creates the command for 'dumpstate create --public-key public.pem'
+    """
+    cmd = _cli.command(name='create')(_dumpstate_create)
+    click.option('--public-key', nargs=1, type=click.Path(exists=True), multiple=False,
+                 help="The filename for the public key")(cmd)
+    return cmd
+
+
 # Main #
 
 cli = generate(__file__, condense=False)
 
 create_cmd = cli.commands['hardware'].commands['create']
-_clear_required_parameters(create_cmd, [ 'Xname', 'Class' ])
+_clear_required_parameters(create_cmd, ['Xname', 'Class'])
 _setup_hardware_options(create_cmd)
 
 modify_cmd = cli.commands['hardware'].commands['update']
-_clear_required_parameters(modify_cmd, [ 'Class' ])
+_clear_required_parameters(modify_cmd, ['Class'])
 _setup_hardware_options(modify_cmd, is_update=True)
+
+# replace the loadstate create command with a custom implementation
+cli.commands['loadstate'].commands['create'] = _create_command_for_loadstate_create(cli)
+
+# replace the dumpstate create command with a custom implementation
+cli.commands['dumpstate'].commands['create'] = _create_command_for_dumpstate_create(cli)

@@ -3,6 +3,7 @@
 *.egg
 *.egg-info
 *.rpm
+*.swp
 .bash*
 .config
 dist
