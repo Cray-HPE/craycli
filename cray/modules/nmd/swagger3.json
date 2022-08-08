@@ -2,12 +2,12 @@
     "openapi": "3.0.2",
     "info": {
         "title": "Node Memory Dump Service",
-        "version": "2.1.2",
+        "version": "2.1.3",
         "description": "The Node Memory Dump (NMD) service requests and retrieves node memory dumps.  The dumps retrieved by the NMD will be gathered by the System Dump Framework (SDF) via a registered callback API.\n\nGeneral workflow:\n\n  * POST /dumps - request a dump\n  * GET /dumps/{requestID} - retrieve dump metadata"
     },
     "servers": [
         {
-            "url": "https://api-gw-service-nmn.local/apis/v2/nmd",
+            "url": "/apis/v2/nmd",
             "description": "The production NMD API server"
         }
     ],
