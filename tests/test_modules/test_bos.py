@@ -79,7 +79,7 @@ def test_cray_bos_list(cli_runner, rest_mock):
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'GET'
-    assert data['url'] == '{}/apis/bos/v1'.format(config['default']['hostname'])
+    assert data['url'] == '{}/apis/bos/v2'.format(config['default']['hostname'])
 
 # pylint: disable=redefined-outer-name
 def test_cray_bos_v1_base(cli_runner, rest_mock):
@@ -241,7 +241,7 @@ def test_cray_bos_sessiontemplateteplate_list(cli_runner, rest_mock):
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'GET'
-    assert data['url'] == '{}/apis/bos/v1/sessiontemplatetemplate'.format(
+    assert data['url'] == '{}/apis/bos/v2/sessiontemplatetemplate'.format(
         config['default']['hostname']
     )
 
@@ -466,3 +466,12 @@ def test_cray_bos_session_status_delete_missing_required_session(cli_runner,
     )
     assert result.exit_code == 2
     assert 'SESSION_ID' in result.output
+
+def test_update_many(cli_runner, rest_mock):
+    """ Test cray bos components updatemany"""
+    runner, cli, _ = cli_runner
+    result = runner.invoke(
+        cli,
+        ['bos', 'components', 'updatemany', '--filter-ids', 'test1,test2', '--patch', '{}']
+    )
+    assert result.exit_code == 0
