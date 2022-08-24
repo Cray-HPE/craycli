@@ -30,7 +30,7 @@ with open('LICENSE') as license_file:
 with open('requirements.txt') as reqs_file:
     REQUIRMENTS = reqs_file.read()
 
-with open('version') as vers_file:
+with open('.version') as vers_file:
     VERSION = vers_file.read()
 
 setup(
