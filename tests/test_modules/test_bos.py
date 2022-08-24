@@ -53,6 +53,8 @@ from ..utils.runner import cli_runner  # pylint: disable=unused-import
 from ..utils.rest import rest_mock  # pylint: disable=unused-import
 from ..utils.utils import compare_dicts
 
+DEFAULT_BOS_VERSION = 'v1'
+
 
 # pylint: disable=redefined-outer-name
 def test_cray_bos_base(cli_runner, rest_mock):
@@ -79,7 +81,9 @@ def test_cray_bos_list(cli_runner, rest_mock):
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'GET'
-    assert data['url'] == '{}/apis/bos/v2'.format(config['default']['hostname'])
+    assert data['url'] == '{}/apis/bos/{}'.format(config['default']['hostname'],
+                                                  DEFAULT_BOS_VERSION)
+
 
 # pylint: disable=redefined-outer-name
 def test_cray_bos_v1_base(cli_runner, rest_mock):
@@ -241,8 +245,9 @@ def test_cray_bos_sessiontemplateteplate_list(cli_runner, rest_mock):
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'GET'
-    assert data['url'] == '{}/apis/bos/v2/sessiontemplatetemplate'.format(
-        config['default']['hostname']
+    assert data['url'] == '{}/apis/bos/{}/sessiontemplatetemplate'.format(
+        config['default']['hostname'],
+        DEFAULT_BOS_VERSION
     )
 
 # pylint: disable=redefined-outer-name
@@ -472,6 +477,6 @@ def test_update_many(cli_runner, rest_mock):
     runner, cli, _ = cli_runner
     result = runner.invoke(
         cli,
-        ['bos', 'components', 'updatemany', '--filter-ids', 'test1,test2', '--patch', '{}']
+        ['bos', 'v2', 'components', 'updatemany', '--filter-ids', 'test1,test2', '--patch', '{}']
     )
     assert result.exit_code == 0
