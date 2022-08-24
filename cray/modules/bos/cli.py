@@ -61,7 +61,7 @@ SWAGGER_OPTS = {
 cli = generate(__file__, swagger_opts=SWAGGER_OPTS)
 
 # Place the v1 commands at the 'cray bos' level of the cli
-CURRENT_VERSION = 'v2'
+CURRENT_VERSION = 'v1'
 PRESERVE_VERSIONS = True
 
 if PRESERVE_VERSIONS:
