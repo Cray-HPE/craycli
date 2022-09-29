@@ -113,7 +113,7 @@ def test_cray_cfs_session_create(cli_runner, rest_mock):
     assert data['body'] == {
         'name': 'foo',
         'configurationName': 'bar',
-        'target': {'definition': 'dynamic', 'groups': []},
+        'target': {'definition': 'dynamic', 'groups': [], 'image_map': []},
     }
 
 
@@ -129,7 +129,8 @@ def test_cray_cfs_session_create_full(cli_runner, rest_mock):
                                  '--ansible-verbosity', '1',
                                  '--target-definition', 'spec',
                                  '--target-group', 'foo', 'a, b, c',
-                                 '--target-group', 'bar', 'x,y,z'])
+                                 '--target-group', 'bar', 'x,y,z',
+                                 '--target-image-map', 'foo', 'new'])
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'POST'
@@ -146,7 +147,8 @@ def test_cray_cfs_session_create_full(cli_runner, rest_mock):
             'groups': [
                 {'name': 'foo', 'members': ['a', 'b', 'c']},
                 {'name': 'bar', 'members': ['x', 'y', 'z']}
-            ]
+            ],
+            'image_map': [{'source_id': 'foo', 'result_name': 'new'}]
         },
     }
 
