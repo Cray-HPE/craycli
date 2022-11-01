@@ -12,9 +12,12 @@ pipeline {
 
     environment {
         NAME = "craycli"
+        IMAGE_NAME = "cray-craycli"
         DESCRIPTION = "Cray CLI Tool"
         IS_STABLE = getBuildIsStable()
         SPEC_FILE = "craycli.spec"
+        IMAGE_VERSION = getDockerBuildVersion(isStable: env.IS_STABLE)
+        DOCKER_ARGS = getDockerBuildArgs(name: env.NAME, description: env.DESCRIPTION)
         BUILD_METADATA = getRpmRevision(isStable: env.IS_STABLE)
     }
 
@@ -23,6 +26,12 @@ pipeline {
             steps {
                 sh "make DIST=dist-sp2 prepare"
                 sh "make DIST=dist-sp3 prepare"
+            }
+        }
+
+        stage("Build image") {
+            steps {
+                sh "make image"
             }
         }
 
@@ -68,6 +77,7 @@ pipeline {
                     publishCsmRpms(os: 'sle-15sp2', component: env.NAME, pattern: "dist-sp2/rpmbuild/SRPMS/*.rpm", arch: "src", isStable: env.IS_STABLE)
                     publishCsmRpms(os: 'sle-15sp3', component: env.NAME, pattern: "dist-sp3/rpmbuild/RPMS/x86_64/*.rpm", arch: "x86_64", isStable: env.IS_STABLE)
                     publishCsmRpms(os: 'sle-15sp3', component: env.NAME, pattern: "dist-sp3/rpmbuild/SRPMS/*.rpm", arch: "src", isStable: env.IS_STABLE)
+                    publishCsmDockerImage(image: env.IMAGE_NAME, tag: env.IMAGE_VERSION, isStable: env.IS_STABLE)
                 }
             }
         }

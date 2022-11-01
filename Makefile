@@ -34,8 +34,16 @@ BUILD_DIR ?= $(PWD)/$(DIST)/rpmbuild
 SOURCE_PATH := ${BUILD_DIR}/SOURCES/${SOURCE_NAME}.tar.gz
 BUILD_METADATA ?= "1~development~$(shell git rev-parse --short HEAD)"
 
+# DOCKER
+IMAGE_NAME ?= cray-craycli
+IMAGE_VERSION ?= $(shell cat .version)
+DOCKER_IMAGE ?= ${IMAGE_NAME}:${IMAGE_VERSION}
+
 build: rpm_package_source rpm_build_source rpm_build
 post: post_build smoke_tests
+
+image:
+		docker build --pull ${DOCKER_ARGS} --tag '${DOCKER_IMAGE}' .
 
 prepare:
 		rm -rf $(BUILD_DIR)
