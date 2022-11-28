@@ -1,0 +1,23 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Power Control Service",
+        "description": "",
+        "version": "1.0.0"
+    },
+    "tags": [
+        {
+            "name": "component control"
+        },
+        {
+            "name": "power capping"
+        }
+    ],
+    "servers": [
+        {
+            "url": "http://api-gw-service-nmn.local/apis/power-control/v1"
+        }
+    ],
+    "paths": {}
+
+}
