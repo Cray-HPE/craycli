@@ -89,26 +89,14 @@ info:
     
     ### Backup and Restore the SLS Database for Reinstallation
     
-    #### POST /dumpstate
+    #### GET /dumpstate
     
-    Perform a dump of the current state of the SLS data along with credentials. This should
-    be done before reinstalling the system. The database dump is a JSON blob in an SLS-specific format.
-    When doing POST /dumpstate, it is required that an RSA public key be provided to encrypt
-    the credentials that are pulled from the SLS database. The recommended tool for generating
-    a keypair is OpenSSL: 
-    
-    
-    openssl rsa -in private.pem -outform PEM -pubout -out public.pem
+    Perform a dump of the current state of the SLS data. This should be done before reinstalling
+    the system. The database dump is a JSON blob in an SLS-specific format.
     
     #### POST /loadstate
     
-    Reimport the dump from /dumpstate and restore the SLS database after reinstall. When doing
-    POST /loadstate, it is required that an RSA private key be provided to encrypt the credentials
-    pulled from the SLS database. It must be the one that was generated with the public key
-    used to dump state. The recommended tool for generating a keypair is OpenSSL:
-    
-    
-    openssl rsa -in private.pem -outform PEM -pubout -out public.pem
+    Reimport the dump from /dumpstate and restore the SLS database after reinstall.
         
     ### Expand System
     
@@ -184,7 +172,7 @@ paths:
                     description: Status of the connection with the database.
                     type: string
                 example:
-                  Vault: 'Enabled and initialized'
+                  Vault: 'Not checked'
                   DBConnection: 'Ready'
                 required:
                   - Vault
@@ -324,19 +312,20 @@ paths:
         500:
           description: "Unexpected error. See body for details"
   /hardware/{xname}:
-    parameters:
-      - in: path
-        name: xname
-        required: true
-        schema:
-          $ref: '#/components/schemas/xname'
-        description: "The xname to look up or alter."
     get:
       tags: ["hardware"]
       summary: "Retrieve information about the requested xname"
       description: >-
         Retrieve information about the requested xname. All properties
         are returned as a JSON array.
+      parameters:
+        - in: path
+          name: xname
+          required: true
+          schema:
+            $ref: '#/components/schemas/xname'
+          description: "The xname to look up or alter."
+
       responses:
         200:
           description: "Request successful"
@@ -348,6 +337,13 @@ paths:
       tags: ["hardware"]
       summary: "Update a hardware object"
       description: "Update a hardware object.  Parent objects will be created, if possible."
+      parameters:
+        - in: path
+          name: xname
+          required: true
+          schema:
+            $ref: '#/components/schemas/xname'
+          description: "The xname to look up or alter."
       requestBody:
         content:
           application/json:
@@ -378,6 +374,13 @@ paths:
         parent object, then the children are also deleted from SLS. If the child object happens
         to be a parent, then the deletion can cascade down levels.
         If you delete a child object, it does not affect the parent.
+      parameters:
+        - in: path
+          name: xname
+          required: true
+          schema:
+            $ref: '#/components/schemas/xname'
+          description: "The xname to look up or alter."
       responses:
         200:
           description: "OK. xname removed"
@@ -536,17 +539,17 @@ paths:
         409:
           description: "Network with that name already exists"
   /networks/{network}:
-    parameters:
-      - in: path
-        name: network
-        required: true
-        schema:
-          type: string
-        description: "The network to look up or alter."
     get:
       tags: ["network"]
       summary: "Retrieve a network item"
       description: "Retrieve the specific network."
+      parameters:
+        - in: path
+          name: network
+          required: true
+          schema:
+            type: string
+          description: "The network to look up or alter."
       responses:
         200:
           description: "Request successful"
@@ -560,6 +563,13 @@ paths:
       tags: ["network", "cli_from_file"]
       summary: "Update a network object"
       description: "Update a network object. Parent objects will be created, if possible."
+      parameters:
+        - in: path
+          name: network
+          required: true
+          schema:
+            type: string
+          description: "The network to look up or alter."
       requestBody:
         content:
           application/json:
@@ -580,6 +590,13 @@ paths:
       tags: ["network"]
       summary: "Delete the named network"
       description: "Delete the specific network from SLS."
+      parameters:
+        - in: path
+          name: network
+          required: true
+          schema:
+            type: string
+          description: "The network to look up or alter."
       responses:
         200:
           description: "OK. Network removed"
@@ -597,39 +614,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  oneOf:
-                    - $ref: '#/components/schemas/slsState'
-        500:
-          description: "An error occurred in state dumping.  See body for details"
-    post:
-      tags: ["dumpstate"]
-      summary: "Retrieve a dump of current service state with credentials"
-      description: >-
-        "Get a dump of current service state. The format of this is implementation-specific.
-        When doing POST /dumpstate, it is required that an RSA public key be provided to encrypt
-        the credentials that are pulled from the SLS database.
-        The recommended tool for generating a keypair is OpenSSL:
-        `openssl rsa -in private.pem -outform PEM -pubout -out public.pem`"
-      requestBody:
-        content:
-          multipart/form-data:
-            schema:
-              type: object
-              properties:
-                public_key:
-                  type: string
-      responses:
-        200:
-          description: "State dumped successfully"
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  oneOf:
-                    - $ref: '#/components/schemas/slsState'
+                $ref: '#/components/schemas/slsState'
         500:
           description: "An error occurred in state dumping.  See body for details"
   /loadstate:
@@ -640,11 +625,7 @@ paths:
       summary: "Load services state and overwrite current service state"
       description: >-
         "Load services state and overwrite current service state. The format of
-        the upload is implementation specific. When doing POST /loadstate, it is required
-        that an RSA private key be provided to encrypt the credentials pulled from the SLS database.
-        It must be the one that was generated with the public key used to dump state.
-        The recommended tool for generating a keypair is OpenSSL:
-        `openssl rsa -in private.pem -outform PEM -pubout -out public.pem`"
+        the upload is implementation specific."
       responses:
         201:
           description: "State loaded successfully"
@@ -657,8 +638,6 @@ paths:
             schema:
               type: object
               properties:
-                private_key:
-                  type: string
                 sls_dump:
                   $ref: '#/components/schemas/slsState'
 
@@ -704,7 +683,7 @@ components:
       pattern: "[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}/[0-9]{1,2}|[0-9a-fA-F:]+/[0-9]{1,3}"
     network_type:
       type: string
-      pattern: "sligshot10|cassini|ethernet|OPA|infiniband|mixed"
+      pattern: "slingshot10|slingshot11|cassini|ethernet|OPA|infiniband|mixed"
       example: "slingshot10"
     network_extra_properties:
       type: object
@@ -1015,12 +994,12 @@ components:
       type: object
       properties:
         Hardware:
-          type: array
-          items:
+          type: object
+          additionalProperties:
             $ref: '#/components/schemas/hardware'
         Networks:
-          type: array
-          items:
+          type: object
+          additionalProperties:
             $ref: '#/components/schemas/network'
 
     Problem7807:

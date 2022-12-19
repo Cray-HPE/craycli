@@ -64,7 +64,6 @@ def test_sls_dumpstate(cli_runner, rest_mock):
     outputs = [
         "cli sls dumpstate [OPTIONS] COMMAND [ARGS]...",
         "list",
-        "create",
     ]
 
     for out in outputs:
