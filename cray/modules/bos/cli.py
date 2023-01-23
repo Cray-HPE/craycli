@@ -1,31 +1,8 @@
-#
-# MIT License
-#
-# (C) Copyright 2022 Hewlett Packard Enterprise Development LP
-#
-# Permission is hereby granted, free of charge, to any person obtaining a
-# copy of this software and associated documentation files (the "Software"),
-# to deal in the Software without restriction, including without limitation
-# the rights to use, copy, modify, merge, publish, distribute, sublicense,
-# and/or sell copies of the Software, and to permit persons to whom the
-# Software is furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included
-# in all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-# THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
-# OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-# ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-# OTHER DEALINGS IN THE SOFTWARE.
-#
 """bos
 
 MIT License
 
-(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+(C) Copyright [2020, 2022-2023] Hewlett Packard Enterprise Development LP
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -91,7 +68,7 @@ def create_templates_shim(func):
 def setup_template_from_file(command):
     """ Adds a --file parameter for session template creation """
     option('--file', callback=_opt_callback, type=str, default='', metavar='TEXT',
-           help="A file containing the json for a template")(command)
+           help="A file containing the JSON for a template")(command)
     params = [command.params[-1]]
     for param in command.params[:-1]:
         if not getattr(param, 'help', None) or 'DEPRECATED' not in param.help:
@@ -112,7 +89,7 @@ def create_patch_shim(func):
         filter_ids=filter_ids["value"]
         filter_session=filter_session["value"]
         if not (filter_ids or filter_session):
-            raise Exception('Either the ids or session filter must be provided')
+            raise Exception('Either the IDs or session filter must be provided')
         if filter_ids and filter_session:
             raise Exception('Only one of the two filter options can be provided')
         payload = {}
@@ -143,7 +120,7 @@ def setup_components_patch():
     new_command.params = []
     default_params = [param for param in source_command.params if not param.expose_value]
     option('--filter-ids', callback=_opt_callback, type=str, default='', metavar='TEXT',
-           help="A comma separated list of nodes to patch")(new_command)
+           help="A comma-separated list of nodes to patch")(new_command)
     option('--filter-session', callback=_opt_callback, type=str, default='', metavar='TEXT',
            help="Patch all components owned by this session")(new_command)
     option('--patch', callback=_opt_callback, type=str, default='', metavar='TEXT',

@@ -1,26 +1,3 @@
-#
-# MIT License
-#
-# (C) Copyright 2022 Hewlett Packard Enterprise Development LP
-#
-# Permission is hereby granted, free of charge, to any person obtaining a
-# copy of this software and associated documentation files (the "Software"),
-# to deal in the Software without restriction, including without limitation
-# the rights to use, copy, modify, merge, publish, distribute, sublicense,
-# and/or sell copies of the Software, and to permit persons to whom the
-# Software is furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included
-# in all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-# THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
-# OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-# ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-# OTHER DEALINGS IN THE SOFTWARE.
-#
 # Cray Boot Orchestration Service (BOS) API Specification
 openapi: "3.0.2"
 
@@ -83,14 +60,14 @@ info:
     A new session is launched as a result of this call.
 
     A limit can also be specified to narrow the scope of the session. The limit
-    can consist of nodes, groups or roles in a comma-separated list.
+    can consist of nodes, groups, or roles in a comma-separated list.
     Multiple groups are treated as separated by OR, unless "&" is added to
     the start of the component, in which case this becomes an AND.  Components
     can also be preceded by "!" to exclude them.
 
     Note, the response from a successful session launch contains *links*.
     Within *links*, *href* is a string that uniquely identifies the session.
-    *href* is constructed using the session template name and a generated uuid.
+    *href* is constructed using the session template name and a generated UUID.
     Use the entire *href* string as the path parameter *session_id*
     to uniquely identify a session in for the /session/{session_id}
     endpoint.
@@ -117,15 +94,15 @@ info:
 servers:
 - url: https://api-gw-service-nmn.local/apis/bos
   description: The production BOS API server through a standard API gateway
-- url: https://cray-bos/
-  description: The service as exposed through k8s DNS service mapping
+- url: https://cray-bos
+  description: The service as exposed through Kubernetes DNS service mapping
 components:
   schemas:
     Healthz:
       description: Service health status
       type: object
       properties:
-        etcdStatus:
+        dbStatus:
           type: string
         apiStatus:
           type: string
@@ -357,7 +334,7 @@ components:
         A boot set defines a collection of nodes and the information about the
         boot artifacts and parameters to be sent to each node over the specified
         network to enable these nodes to boot. When multiple boot sets are used
-        in a session template, the boot_ordinal and shtudown_ordinal indicate
+        in a session template, the boot_ordinal and shutdown_ordinal indicate
         the order in which boot sets need to be acted upon. Boot sets sharing
         the same ordinal number will be addressed at the same time.
       type: object
@@ -421,7 +398,7 @@ components:
             type: string
           minItems: 1
           description: |
-            The node groups list. Allows actions against associated nodes by logical groupings. Logical groups are user defined groups in SMD.
+            The node groups list. Allows actions against associated nodes by logical groupings. Logical groups are user-defined groups in SMD.
         rootfs_provider:
           type: string
           description: |
@@ -439,7 +416,7 @@ components:
       description: |
         A Session Template object represents a collection of resources and metadata.
         A session template is used to create a Session which when combined with an
-        action (i.e. boot, reconfigure, reboot, shutdown) will create a K8s BOA job
+        action (i.e. boot, reconfigure, reboot, shutdown) will create a Kubernetes BOA job
         to complete the required tasks for the operation.
 
         A Session Template can be created from a JSON structure.  It will return
@@ -512,7 +489,7 @@ components:
           description: >
             A Session represents an operation on a SessionTemplate.
             The creation of a session effectively results in the creation
-            of a K8s Boot Orchestration Agent (BOA) job to perform the
+            of a Kubernetes Boot Orchestration Agent (BOA) job to perform the
             duties required to complete the operation.
 
             Operation -- An operation to perform on nodes in this session.
@@ -543,12 +520,12 @@ components:
           maxLength: 64
           readOnly: true
           description: >
-            The identity of the k8s job that is created to handle the session.
+            The identity of the Kubernetes job that is created to handle the session.
           example: "boa-07877de1-09bb-4ca8-a4e5-943b1262dbf0"
         limit:
           type: string
           description: >
-            A comma separated of nodes, groups or roles to which the session
+            A comma-separated of nodes, groups, or roles to which the session
             will be limited. Components are treated as OR operations unless
             preceded by "&" for AND or "!" for NOT.
         links:
@@ -720,7 +697,7 @@ components:
       properties:
         name:
           type: string
-          description: Name of the session. A uuid name is generated if a name is not provided.
+          description: Name of the session. A UUID name is generated if a name is not provided.
           example: "session-20190728032600"
           # These validation parameters are restricted by Kubernetes naming conventions.
           minLength: 1
@@ -747,7 +724,7 @@ components:
         limit:
           type: string
           description: >
-            A comma separated of nodes, groups or roles to which the session
+            A comma-separated of nodes, groups, or roles to which the session
             will be limited. Components are treated as OR operations unless
             preceded by "&" for AND or "!" for NOT.
         stage:
@@ -832,7 +809,7 @@ components:
             type: string
           minItems: 1
           description: |
-            The node groups list. Allows actions against associated nodes by logical groupings. Logical groups are user defined groups in SMD.
+            The node groups list. Allows actions against associated nodes by logical groupings. Logical groups are user-defined groups in SMD.
         rootfs_provider:
           type: string
           description: |
@@ -879,7 +856,7 @@ components:
         limit:
           type: string
           description: >
-            A comma separated of nodes, groups or roles to which the session
+            A comma-separated of nodes, groups, or roles to which the session
             will be limited. Components are treated as OR operations unless
             preceded by "&" for AND or "!" for NOT.
         stage:
@@ -890,7 +867,7 @@ components:
         components:
           type: string
           description: >
-            A comma separated list of nodes, representing the initial list of nodes
+            A comma-separated list of nodes, representing the initial list of nodes
             the session should operate against.  The list will remain even if
             other sessions have taken over management of the nodes.
         status:
@@ -1147,7 +1124,7 @@ components:
       properties:
         ids:
           type: string
-          description: A comma separated list of component ids
+          description: A comma-separated list of component IDs
         session:
           type: string
           description: A session name.  All components part of this session will be patched.
@@ -1200,6 +1177,9 @@ components:
         cleanup_completed_session_ttl:
           type: string
           description: Delete complete sessions that are older than cleanup_completed_session_ttl (in hours). 0h disables cleanup behavior.
+        clear_stage:
+          type: boolean
+          description: Allows components staged information to be cleared when the requested staging action has been started. Defaults to false.
         component_actual_state_ttl:
           type: string
           description: The maximum amount of time a component's actual state is considered valid (in hours). 0h disables cleanup behavior for newly booted nodes and instructs bos-state-reporter to report once instead of periodically.
