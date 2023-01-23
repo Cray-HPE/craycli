@@ -12,7 +12,7 @@ a payload for passing on to the API.
 
 MIT License
 
-(C) Copyright [2020-2021] Hewlett Packard Enterprise Development LP
+(C) Copyright [2020-2023] Hewlett Packard Enterprise Development LP
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -94,10 +94,10 @@ def setup_configurations_update(cfs_cli):
     patch_command = tmp_cli.commands['configurations'].commands['patch']
 
     option('--file', callback=_opt_callback, type=str, metavar='TEXT',
-           help="A file containing the json for a configuration"
+           help="A file containing the JSON for a configuration"
                 " (Required unless updating branches)")(update_command)
     option('--update-branches', callback=_opt_callback, is_flag=True,
-           help="Updates the commit ids for all config layers with branches")(update_command)
+           help="Updates the commit IDs for all configuration layers with branches")(update_command)
     new_params = update_command.params[-2:]
     for param in update_command.params[:-2]:
         if not param.name.startswith('layers_'):
@@ -191,11 +191,11 @@ def setup_sessions_create(cfs_cli):
     option('--' + IMAGE_MAP_PAYLOAD, nargs=2, type=click.Tuple([str, str]), multiple=True,
            payload_name=IMAGE_MAP_PAYLOAD, callback=_target_images_callback(_opt_callback),
            metavar='SOURCE_IMAGE_ID RESULTING_IMAGE_NAME',
-           help="Mapping of source image ids to resulting image names for image customization. "
-                "Multiple sources and results can be specified by providing this parameter more"
+           help="Mapping of source image IDs to resulting image names for image customization. "
+                "Multiple sources and results can be specified by providing this parameter more "
                 "than once.")(command)
     option('--tags', callback=_opt_callback, required=False, type=str, metavar='TEXT',
-           help="User defined tags.  A comma separated list of key=value")(command)
+           help="User-defined tags.  A comma-separated list of key=value")(command)
 
     # Remove the generated params for the group names and group member lists.
     # Add the new target-groups option.
@@ -232,7 +232,7 @@ def setup_components_update(cfs_cli):
     option('--state', callback=_opt_callback, required=False, type=str, metavar='TEXT',
            help="The component state. Set to [] to clear.")(command)
     option('--tags', callback=_opt_callback, required=False, type=str, metavar='TEXT',
-           help="User defined tags.  A comma separated list of key=value")(command)
+           help="User-defined tags.  A comma-separated list of key=value")(command)
     new_params = command.params[-2:]
     for param in command.params[:-2]:
         if not param.name.startswith('state_'):
