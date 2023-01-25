@@ -2,7 +2,7 @@
 
 MIT License
 
-(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+(C) Copyright [2020,2023] Hewlett Packard Enterprise Development LP
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -25,5 +25,14 @@ OTHER DEALINGS IN THE SOFTWARE.
 # pylint: disable=invalid-name
 from cray.generator import generate
 
+SWAGGER_OPTS = {
+    # endpoint-history not intended to be used via CLI
+    'ignore_endpoints': ['/boot/v1/endpoint-history'],
+    'vocabulary': {'put': 'replace'}
+}
 
-cli = generate(__file__, swagger_opts={'vocabulary': {'put': 'replace'}})
+cli = generate(__file__, swagger_opts=SWAGGER_OPTS)
+
+# Place the v1 commands at the 'cray bss' level of the cli
+CURRENT_VERSION = 'v1'
+cli.commands = cli.commands[CURRENT_VERSION].commands
