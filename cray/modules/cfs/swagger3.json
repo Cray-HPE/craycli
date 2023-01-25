@@ -111,7 +111,7 @@
                                         },
                                         "image_map": {
                                             "type": "array",
-                                            "description": "Mapping of image ids to resultant image names.  This is only valid for 'image' inventory definition types.\nOnly images that are defined in 'groups' will result in a new image.\nIf images in 'groups' are not specified here, CFS will generate a name for the resultant image.\n",
+                                            "description": "Mapping of image IDs to resultant image names.  This is only valid for 'image' inventory definition types.\nOnly images that are defined in 'groups' will result in a new image.\nIf images in 'groups' are not specified here, CFS will generate a name for the resultant image.\n",
                                             "items": {
                                                 "type": "object",
                                                 "required": [
@@ -162,7 +162,7 @@
                             "properties": {
                                 "hardwareSyncInterval": {
                                     "type": "integer",
-                                    "description": "How frequently the CFS hardware-sync-agent checks with the Hardware State Manager to update it's known hardware (in seconds)",
+                                    "description": "How frequently the CFS hardware-sync-agent checks with the Hardware State Manager to update its known hardware (in seconds)",
                                     "example": 5
                                 },
                                 "batcherCheckInterval": {
@@ -397,7 +397,7 @@
                                             "properties": {
                                                 "ids": {
                                                     "type": "string",
-                                                    "description": "A comma separated list of component ids"
+                                                    "description": "A comma-separated list of component IDs"
                                                 },
                                                 "status": {
                                                     "type": "string",
@@ -763,7 +763,7 @@
                                 },
                                 "description": {
                                     "type": "string",
-                                    "description": "A user defined description. This field is not used by CFS."
+                                    "description": "A user-defined description. This field is not used by CFS."
                                 },
                                 "lastUpdated": {
                                     "type": "string",
@@ -905,7 +905,7 @@
                             "properties": {
                                 "hardwareSyncInterval": {
                                     "type": "integer",
-                                    "description": "How frequently the CFS hardware-sync-agent checks with the Hardware State Manager to update it's known hardware (in seconds)",
+                                    "description": "How frequently the CFS hardware-sync-agent checks with the Hardware State Manager to update its known hardware (in seconds)",
                                     "example": 5
                                 },
                                 "batcherCheckInterval": {
@@ -1081,7 +1081,7 @@
                                         },
                                         "image_map": {
                                             "type": "array",
-                                            "description": "Mapping of image ids to resultant image names.  This is only valid for 'image' inventory definition types.\nOnly images that are defined in 'groups' will result in a new image.\nIf images in 'groups' are not specified here, CFS will generate a name for the resultant image.\n",
+                                            "description": "Mapping of image IDs to resultant image names.  This is only valid for 'image' inventory definition types.\nOnly images that are defined in 'groups' will result in a new image.\nIf images in 'groups' are not specified here, CFS will generate a name for the resultant image.\n",
                                             "items": {
                                                 "type": "object",
                                                 "required": [
@@ -1307,7 +1307,7 @@
                                             },
                                             "image_map": {
                                                 "type": "array",
-                                                "description": "Mapping of image ids to resultant image names.  This is only valid for 'image' inventory definition types.\nOnly images that are defined in 'groups' will result in a new image.\nIf images in 'groups' are not specified here, CFS will generate a name for the resultant image.\n",
+                                                "description": "Mapping of image IDs to resultant image names.  This is only valid for 'image' inventory definition types.\nOnly images that are defined in 'groups' will result in a new image.\nIf images in 'groups' are not specified here, CFS will generate a name for the resultant image.\n",
                                                 "items": {
                                                     "type": "object",
                                                     "required": [
@@ -1758,7 +1758,7 @@
                                 },
                                 "description": {
                                     "type": "string",
-                                    "description": "A user defined description. This field is not used by CFS."
+                                    "description": "A user-defined description. This field is not used by CFS."
                                 },
                                 "lastUpdated": {
                                     "type": "string",
@@ -1864,7 +1864,7 @@
                                     },
                                     "description": {
                                         "type": "string",
-                                        "description": "A user defined description. This field is not used by CFS."
+                                        "description": "A user-defined description. This field is not used by CFS."
                                     },
                                     "lastUpdated": {
                                         "type": "string",
@@ -2117,7 +2117,7 @@
                 "properties": {
                     "hardwareSyncInterval": {
                         "type": "integer",
-                        "description": "How frequently the CFS hardware-sync-agent checks with the Hardware State Manager to update it's known hardware (in seconds)",
+                        "description": "How frequently the CFS hardware-sync-agent checks with the Hardware State Manager to update its known hardware (in seconds)",
                         "example": 5
                     },
                     "batcherCheckInterval": {
@@ -2230,7 +2230,7 @@
                     },
                     "image_map": {
                         "type": "array",
-                        "description": "Mapping of image ids to resultant image names.  This is only valid for 'image' inventory definition types.\nOnly images that are defined in 'groups' will result in a new image.\nIf images in 'groups' are not specified here, CFS will generate a name for the resultant image.\n",
+                        "description": "Mapping of image IDs to resultant image names.  This is only valid for 'image' inventory definition types.\nOnly images that are defined in 'groups' will result in a new image.\nIf images in 'groups' are not specified here, CFS will generate a name for the resultant image.\n",
                         "items": {
                             "type": "object",
                             "required": [
@@ -2357,7 +2357,7 @@
                             },
                             "image_map": {
                                 "type": "array",
-                                "description": "Mapping of image ids to resultant image names.  This is only valid for 'image' inventory definition types.\nOnly images that are defined in 'groups' will result in a new image.\nIf images in 'groups' are not specified here, CFS will generate a name for the resultant image.\n",
+                                "description": "Mapping of image IDs to resultant image names.  This is only valid for 'image' inventory definition types.\nOnly images that are defined in 'groups' will result in a new image.\nIf images in 'groups' are not specified here, CFS will generate a name for the resultant image.\n",
                                 "items": {
                                     "type": "object",
                                     "required": [
@@ -2563,7 +2563,7 @@
                             },
                             "image_map": {
                                 "type": "array",
-                                "description": "Mapping of image ids to resultant image names.  This is only valid for 'image' inventory definition types.\nOnly images that are defined in 'groups' will result in a new image.\nIf images in 'groups' are not specified here, CFS will generate a name for the resultant image.\n",
+                                "description": "Mapping of image IDs to resultant image names.  This is only valid for 'image' inventory definition types.\nOnly images that are defined in 'groups' will result in a new image.\nIf images in 'groups' are not specified here, CFS will generate a name for the resultant image.\n",
                                 "items": {
                                     "type": "object",
                                     "required": [
@@ -2680,7 +2680,7 @@
                     },
                     "description": {
                         "type": "string",
-                        "description": "A user defined description. This field is not used by CFS."
+                        "description": "A user-defined description. This field is not used by CFS."
                     },
                     "lastUpdated": {
                         "type": "string",
@@ -2779,7 +2779,7 @@
                         },
                         "description": {
                             "type": "string",
-                            "description": "A user defined description. This field is not used by CFS."
+                            "description": "A user-defined description. This field is not used by CFS."
                         },
                         "lastUpdated": {
                             "type": "string",
@@ -3206,7 +3206,7 @@
                 "properties": {
                     "ids": {
                         "type": "string",
-                        "description": "A comma separated list of component ids"
+                        "description": "A comma-separated list of component IDs"
                     },
                     "status": {
                         "type": "string",
@@ -3392,7 +3392,7 @@
                         "properties": {
                             "ids": {
                                 "type": "string",
-                                "description": "A comma separated list of component ids"
+                                "description": "A comma-separated list of component IDs"
                             },
                             "status": {
                                 "type": "string",
@@ -3639,7 +3639,7 @@
                                     "properties": {
                                         "hardwareSyncInterval": {
                                             "type": "integer",
-                                            "description": "How frequently the CFS hardware-sync-agent checks with the Hardware State Manager to update it's known hardware (in seconds)",
+                                            "description": "How frequently the CFS hardware-sync-agent checks with the Hardware State Manager to update its known hardware (in seconds)",
                                             "example": 5
                                         },
                                         "batcherCheckInterval": {
@@ -3729,7 +3729,7 @@
                                 "properties": {
                                     "hardwareSyncInterval": {
                                         "type": "integer",
-                                        "description": "How frequently the CFS hardware-sync-agent checks with the Hardware State Manager to update it's known hardware (in seconds)",
+                                        "description": "How frequently the CFS hardware-sync-agent checks with the Hardware State Manager to update its known hardware (in seconds)",
                                         "example": 5
                                     },
                                     "batcherCheckInterval": {
@@ -3808,7 +3808,7 @@
                                     "properties": {
                                         "hardwareSyncInterval": {
                                             "type": "integer",
-                                            "description": "How frequently the CFS hardware-sync-agent checks with the Hardware State Manager to update it's known hardware (in seconds)",
+                                            "description": "How frequently the CFS hardware-sync-agent checks with the Hardware State Manager to update its known hardware (in seconds)",
                                             "example": 5
                                         },
                                         "batcherCheckInterval": {
@@ -4106,7 +4106,7 @@
                                                     },
                                                     "image_map": {
                                                         "type": "array",
-                                                        "description": "Mapping of image ids to resultant image names.  This is only valid for 'image' inventory definition types.\nOnly images that are defined in 'groups' will result in a new image.\nIf images in 'groups' are not specified here, CFS will generate a name for the resultant image.\n",
+                                                        "description": "Mapping of image IDs to resultant image names.  This is only valid for 'image' inventory definition types.\nOnly images that are defined in 'groups' will result in a new image.\nIf images in 'groups' are not specified here, CFS will generate a name for the resultant image.\n",
                                                         "items": {
                                                             "type": "object",
                                                             "required": [
@@ -4332,7 +4332,7 @@
                                             },
                                             "image_map": {
                                                 "type": "array",
-                                                "description": "Mapping of image ids to resultant image names.  This is only valid for 'image' inventory definition types.\nOnly images that are defined in 'groups' will result in a new image.\nIf images in 'groups' are not specified here, CFS will generate a name for the resultant image.\n",
+                                                "description": "Mapping of image IDs to resultant image names.  This is only valid for 'image' inventory definition types.\nOnly images that are defined in 'groups' will result in a new image.\nIf images in 'groups' are not specified here, CFS will generate a name for the resultant image.\n",
                                                 "items": {
                                                     "type": "object",
                                                     "required": [
@@ -4481,7 +4481,7 @@
                                                 },
                                                 "image_map": {
                                                     "type": "array",
-                                                    "description": "Mapping of image ids to resultant image names.  This is only valid for 'image' inventory definition types.\nOnly images that are defined in 'groups' will result in a new image.\nIf images in 'groups' are not specified here, CFS will generate a name for the resultant image.\n",
+                                                    "description": "Mapping of image IDs to resultant image names.  This is only valid for 'image' inventory definition types.\nOnly images that are defined in 'groups' will result in a new image.\nIf images in 'groups' are not specified here, CFS will generate a name for the resultant image.\n",
                                                     "items": {
                                                         "type": "object",
                                                         "required": [
@@ -4915,7 +4915,7 @@
                                                 },
                                                 "image_map": {
                                                     "type": "array",
-                                                    "description": "Mapping of image ids to resultant image names.  This is only valid for 'image' inventory definition types.\nOnly images that are defined in 'groups' will result in a new image.\nIf images in 'groups' are not specified here, CFS will generate a name for the resultant image.\n",
+                                                    "description": "Mapping of image IDs to resultant image names.  This is only valid for 'image' inventory definition types.\nOnly images that are defined in 'groups' will result in a new image.\nIf images in 'groups' are not specified here, CFS will generate a name for the resultant image.\n",
                                                     "items": {
                                                         "type": "object",
                                                         "required": [
@@ -5188,7 +5188,7 @@
                                                 },
                                                 "image_map": {
                                                     "type": "array",
-                                                    "description": "Mapping of image ids to resultant image names.  This is only valid for 'image' inventory definition types.\nOnly images that are defined in 'groups' will result in a new image.\nIf images in 'groups' are not specified here, CFS will generate a name for the resultant image.\n",
+                                                    "description": "Mapping of image IDs to resultant image names.  This is only valid for 'image' inventory definition types.\nOnly images that are defined in 'groups' will result in a new image.\nIf images in 'groups' are not specified here, CFS will generate a name for the resultant image.\n",
                                                     "items": {
                                                         "type": "object",
                                                         "required": [
@@ -5888,7 +5888,7 @@
                                                 "properties": {
                                                     "ids": {
                                                         "type": "string",
-                                                        "description": "A comma separated list of component ids"
+                                                        "description": "A comma-separated list of component IDs"
                                                     },
                                                     "status": {
                                                         "type": "string",
@@ -6457,7 +6457,7 @@
                                                 "properties": {
                                                     "ids": {
                                                         "type": "string",
-                                                        "description": "A comma separated list of component ids"
+                                                        "description": "A comma-separated list of component IDs"
                                                     },
                                                     "status": {
                                                         "type": "string",
@@ -8011,7 +8011,7 @@
                                             },
                                             "description": {
                                                 "type": "string",
-                                                "description": "A user defined description. This field is not used by CFS."
+                                                "description": "A user-defined description. This field is not used by CFS."
                                             },
                                             "lastUpdated": {
                                                 "type": "string",
@@ -8166,7 +8166,7 @@
                                         },
                                         "description": {
                                             "type": "string",
-                                            "description": "A user defined description. This field is not used by CFS."
+                                            "description": "A user-defined description. This field is not used by CFS."
                                         },
                                         "lastUpdated": {
                                             "type": "string",
@@ -8318,7 +8318,7 @@
                                     },
                                     "description": {
                                         "type": "string",
-                                        "description": "A user defined description. This field is not used by CFS."
+                                        "description": "A user-defined description. This field is not used by CFS."
                                     },
                                     "lastUpdated": {
                                         "type": "string",
@@ -8422,7 +8422,7 @@
                                         },
                                         "description": {
                                             "type": "string",
-                                            "description": "A user defined description. This field is not used by CFS."
+                                            "description": "A user-defined description. This field is not used by CFS."
                                         },
                                         "lastUpdated": {
                                             "type": "string",
@@ -8574,7 +8574,7 @@
                                         },
                                         "description": {
                                             "type": "string",
-                                            "description": "A user defined description. This field is not used by CFS."
+                                            "description": "A user-defined description. This field is not used by CFS."
                                         },
                                         "lastUpdated": {
                                             "type": "string",
