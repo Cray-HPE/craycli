@@ -57,7 +57,7 @@ info:
 
     ### /bmc/deletecerts
 
-    Delet BMC TLS cert/key pairs and store securely for later use.
+    Delete BMC TLS cert/key pairs and store securely for later use.
 
     ### /bmc/fetchcerts
 
@@ -191,7 +191,7 @@ paths:
               $ref: '#/components/schemas/bmc_dumpcfg_request'
       responses:
         '200':
-          description: OK.  The data was succesfully retrieved
+          description: OK.  The data was successfully retrieved
           content:
             application/json:
               schema:
@@ -223,7 +223,7 @@ paths:
               $ref: '#/components/schemas/bmc_loadcfg_request'
       responses:
         '200':
-          description: OK.  The data was succesfully retrieved
+          description: OK.  The data was successfully retrieved
           content:
             application/json:
               schema:
@@ -259,7 +259,7 @@ paths:
         specified, all Redfish network protocol parameters are returned.
       responses:
         '200':
-          description: OK.  The data was succesfully retrieved
+          description: OK.  The data was successfully retrieved
           content:
             application/json:
               schema:
@@ -288,7 +288,7 @@ paths:
               $ref: '#/components/schemas/cfg_post_single'
       responses:
         '200':
-          description: OK.  The data was succesfully set
+          description: OK.  The data was successfully set
           content:
             application/json:
               schema:
@@ -319,7 +319,7 @@ paths:
               $ref: '#/components/schemas/creds_components'
       responses:
         '200':
-          description: OK.  The data was succesfully set
+          description: OK.  The data was successfully set
           content:
             application/json:
               schema:
@@ -355,7 +355,7 @@ paths:
               $ref: '#/components/schemas/creds_single'
       responses:
         '200':
-          description: OK.  The data was succesfully set
+          description: OK.  The data was successfully set
           content:
             application/json:
               schema:
@@ -370,7 +370,7 @@ paths:
       - in: query
         name: targets
         required: false
-        description: Comma separated list of XNames.  No query string results in fetching creds for all known BMCs.
+        description: Comma-separated list of xnames.  No query string results in fetching creds for all known BMCs.
         schema:
           $ref: '#/components/schemas/xname_list'
       - in: query
@@ -394,7 +394,7 @@ paths:
         are used.
       responses:
         '200':
-          description: OK.  The data was succesfully set
+          description: OK.  The data was successfully set
           content:
             application/json:
               schema:
@@ -428,7 +428,7 @@ paths:
               $ref: '#/components/schemas/creds_global'
       responses:
         '200':
-          description: OK.  The data was succesfully set
+          description: OK.  The data was successfully set
           content:
             application/json:
               schema:
@@ -455,7 +455,7 @@ paths:
               $ref: '#/components/schemas/bmc_managecerts_request'
       responses:
         '200':
-          description: OK.  The data was succesfully retrieved
+          description: OK.  The data was successfully retrieved
           content:
             application/json:
               schema:
@@ -481,7 +481,7 @@ paths:
               $ref: '#/components/schemas/bmc_managecerts_request'
       responses:
         '200':
-          description: OK.  The data was succesfully retrieved
+          description: OK.  The data was successfully retrieved
           content:
             application/json:
               schema:
@@ -507,7 +507,7 @@ paths:
               $ref: '#/components/schemas/bmc_managecerts_request'
       responses:
         '200':
-          description: OK.  The data was succesfully retrieved
+          description: OK.  The data was successfully retrieved
           content:
             application/json:
               schema:
@@ -536,7 +536,7 @@ paths:
               $ref: '#/components/schemas/bmc_rfcerts_request'
       responses:
         '200':
-          description: OK.  The data was succesfully retrieved
+          description: OK.  The data was successfully retrieved
           content:
             application/json:
               schema:
@@ -575,7 +575,7 @@ paths:
         If the "Force" parameter is not present or is present but set to 'false', HSM will be used.
       responses:
         '200':
-          description: OK.  The cert was succesfully applied to BMC target
+          description: OK.  The cert was successfully applied to BMC target
         '404':
           description: Endpoint not found
         '405':
@@ -686,7 +686,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Problem7807'
         '404':
-          description: Xname was not for a bmc.
+          description: Xname was not for a BMC.
           content:
             application/json:
               schema:
@@ -741,7 +741,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Problem7807'
         '404':
-          description: Xname was not for a bmc.
+          description: Xname was not for a BMC.
           content:
             application/json:
               schema:
@@ -774,7 +774,7 @@ components:
       example: x0c0s0b0n0
     xname_list:
       type: string
-      description: Comma separated list of xnames
+      description: Comma-separated list of xnames
       example: 'x1000c0s0b0,x1000c0s1b0'
     bios_field:
       type: string
