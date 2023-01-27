@@ -3,7 +3,7 @@
     "info": {
         "title": "Boot Orchestration Service",
         "version": "0.0.0-api",
-        "description": "The Boot Orchestration Service (BOS) provides coordinated provisioning actions\nover defined hardware sets to enable boot, reboot, shutdown, configuration and\nstaging for specified hardware subsets. These provisioning actions apply state\nthrough numerous system management APIs at the request of system administrators\nfor managed product environments.\n\nThe default content type for the BOS API is \"application/json\". Unsuccessful\nAPI calls return a content type of \"application/problem+json\" as per RFC 7807.\n\n## Resources\n\n\n### /sessiontemplate\n\nA session template sets the operational context of which nodes to operate on for\nany given set of nodes. It is largely comprised of one or more boot\nsets and their associated software configuration.\n\nA boot set defines a list of nodes, the image you want to boot/reboot the nodes with,\nkernel parameters to use to boot the nodes, and additional configuration management\nframework actions to apply during node bring up.\n\n### /session\n\nA BOS session applies a provided action to the nodes defined in a session\ntemplate.\n\n## Workflow\n\n\n### Create a New Session\n\n#### GET /sessiontemplate\n\nList available session templates.\nNote the *name* which uniquely identifies each session template.\nThis value can be used to create a new session later,\nif specified in the request body of POST /session.\n\n#### POST /sessiontemplate\n\nIf no session template pre-exists that satisfies requirements,\nthen create a new session template. *name* uniquely identifies the\nsession template.\nThis value can be used to create a new session later,\nif specified in the request body of POST /session.\n\n#### POST /session\n\nSpecify template_name and an\noperation to create a new session.\nThe template_name corresponds to the session template *name*.\nA new session is launched as a result of this call.\n\nA limit can also be specified to narrow the scope of the session. The limit\ncan consist of nodes, groups or roles in a comma-separated list.\nMultiple groups are treated as separated by OR, unless \"&\" is added to\nthe start of the component, in which case this becomes an AND.  Components\ncan also be preceded by \"!\" to exclude them.\n\nNote, the response from a successful session launch contains *links*.\nWithin *links*, *href* is a string that uniquely identifies the session.\n*href* is constructed using the session template name and a generated uuid.\nUse the entire *href* string as the path parameter *session_id*\nto uniquely identify a session in for the /session/{session_id}\nendpoint.\n\n\n#### GET /session/{session_id}\n\nGet session details by session id.\n\nList all in progress and completed sessions.\n\n\n## Interactions with Other APIs\n\n\nBOS works in concert with Image Management Service (IMS) to access boot images,\nand if *enable_cfs* is true then\nBOS will invoke CFS to configure the compute nodes.\n\n\nAll boot images specified via the session template, must be available via IMS.\n"
+        "description": "The Boot Orchestration Service (BOS) provides coordinated provisioning actions\nover defined hardware sets to enable boot, reboot, shutdown, configuration and\nstaging for specified hardware subsets. These provisioning actions apply state\nthrough numerous system management APIs at the request of system administrators\nfor managed product environments.\n\nThe default content type for the BOS API is \"application/json\". Unsuccessful\nAPI calls return a content type of \"application/problem+json\" as per RFC 7807.\n\n## Resources\n\n\n### /sessiontemplate\n\nA session template sets the operational context of which nodes to operate on for\nany given set of nodes. It is largely comprised of one or more boot\nsets and their associated software configuration.\n\nA boot set defines a list of nodes, the image you want to boot/reboot the nodes with,\nkernel parameters to use to boot the nodes, and additional configuration management\nframework actions to apply during node bring up.\n\n### /session\n\nA BOS session applies a provided action to the nodes defined in a session\ntemplate.\n\n## Workflow\n\n\n### Create a New Session\n\n#### GET /sessiontemplate\n\nList available session templates.\nNote the *name* which uniquely identifies each session template.\nThis value can be used to create a new session later,\nif specified in the request body of POST /session.\n\n#### POST /sessiontemplate\n\nIf no session template pre-exists that satisfies requirements,\nthen create a new session template. *name* uniquely identifies the\nsession template.\nThis value can be used to create a new session later,\nif specified in the request body of POST /session.\n\n#### POST /session\n\nSpecify template_name and an\noperation to create a new session.\nThe template_name corresponds to the session template *name*.\nA new session is launched as a result of this call.\n\nA limit can also be specified to narrow the scope of the session. The limit\ncan consist of nodes, groups, or roles in a comma-separated list.\nMultiple groups are treated as separated by OR, unless \"&\" is added to\nthe start of the component, in which case this becomes an AND.  Components\ncan also be preceded by \"!\" to exclude them.\n\nNote, the response from a successful session launch contains *links*.\nWithin *links*, *href* is a string that uniquely identifies the session.\n*href* is constructed using the session template name and a generated UUID.\nUse the entire *href* string as the path parameter *session_id*\nto uniquely identify a session in for the /session/{session_id}\nendpoint.\n\n\n#### GET /session/{session_id}\n\nGet session details by session id.\n\nList all in progress and completed sessions.\n\n\n## Interactions with Other APIs\n\n\nBOS works in concert with Image Management Service (IMS) to access boot images,\nand if *enable_cfs* is true then\nBOS will invoke CFS to configure the compute nodes.\n\n\nAll boot images specified via the session template, must be available via IMS.\n"
     },
     "servers": [
         {
@@ -11,8 +11,8 @@
             "description": "The production BOS API server through a standard API gateway"
         },
         {
-            "url": "https://cray-bos/",
-            "description": "The service as exposed through k8s DNS service mapping"
+            "url": "https://cray-bos",
+            "description": "The service as exposed through Kubernetes DNS service mapping"
         }
     ],
     "components": {
@@ -21,7 +21,7 @@
                 "description": "Service health status",
                 "type": "object",
                 "properties": {
-                    "etcdStatus": {
+                    "dbStatus": {
                         "type": "string"
                     },
                     "apiStatus": {
@@ -498,7 +498,7 @@
                 }
             },
             "V1BootSet": {
-                "description": "A boot set defines a collection of nodes and the information about the\nboot artifacts and parameters to be sent to each node over the specified\nnetwork to enable these nodes to boot. When multiple boot sets are used\nin a session template, the boot_ordinal and shtudown_ordinal indicate\nthe order in which boot sets need to be acted upon. Boot sets sharing\nthe same ordinal number will be addressed at the same time.\n",
+                "description": "A boot set defines a collection of nodes and the information about the\nboot artifacts and parameters to be sent to each node over the specified\nnetwork to enable these nodes to boot. When multiple boot sets are used\nin a session template, the boot_ordinal and shutdown_ordinal indicate\nthe order in which boot sets need to be acted upon. Boot sets sharing\nthe same ordinal number will be addressed at the same time.\n",
                 "type": "object",
                 "properties": {
                     "name": {
@@ -557,7 +557,7 @@
                             "type": "string"
                         },
                         "minItems": 1,
-                        "description": "The node groups list. Allows actions against associated nodes by logical groupings. Logical groups are user defined groups in SMD.\n"
+                        "description": "The node groups list. Allows actions against associated nodes by logical groupings. Logical groups are user-defined groups in SMD.\n"
                     },
                     "rootfs_provider": {
                         "type": "string",
@@ -576,7 +576,7 @@
             },
             "V1SessionTemplate": {
                 "type": "object",
-                "description": "A Session Template object represents a collection of resources and metadata.\nA session template is used to create a Session which when combined with an\naction (i.e. boot, reconfigure, reboot, shutdown) will create a K8s BOA job\nto complete the required tasks for the operation.\n\nA Session Template can be created from a JSON structure.  It will return\na SessionTemplate name if successful.\nThis name is required when creating a Session.\n\n## Link Relationships\n\n* self : The session object\n",
+                "description": "A Session Template object represents a collection of resources and metadata.\nA session template is used to create a Session which when combined with an\naction (i.e. boot, reconfigure, reboot, shutdown) will create a Kubernetes BOA job\nto complete the required tasks for the operation.\n\nA Session Template can be created from a JSON structure.  It will return\na SessionTemplate name if successful.\nThis name is required when creating a Session.\n\n## Link Relationships\n\n* self : The session object\n",
                 "properties": {
                     "templateUrl": {
                         "type": "string",
@@ -640,7 +640,7 @@
                     "boot_sets": {
                         "type": "object",
                         "additionalProperties": {
-                            "description": "A boot set defines a collection of nodes and the information about the\nboot artifacts and parameters to be sent to each node over the specified\nnetwork to enable these nodes to boot. When multiple boot sets are used\nin a session template, the boot_ordinal and shtudown_ordinal indicate\nthe order in which boot sets need to be acted upon. Boot sets sharing\nthe same ordinal number will be addressed at the same time.\n",
+                            "description": "A boot set defines a collection of nodes and the information about the\nboot artifacts and parameters to be sent to each node over the specified\nnetwork to enable these nodes to boot. When multiple boot sets are used\nin a session template, the boot_ordinal and shutdown_ordinal indicate\nthe order in which boot sets need to be acted upon. Boot sets sharing\nthe same ordinal number will be addressed at the same time.\n",
                             "type": "object",
                             "properties": {
                                 "name": {
@@ -699,7 +699,7 @@
                                         "type": "string"
                                     },
                                     "minItems": 1,
-                                    "description": "The node groups list. Allows actions against associated nodes by logical groupings. Logical groups are user defined groups in SMD.\n"
+                                    "description": "The node groups list. Allows actions against associated nodes by logical groupings. Logical groups are user-defined groups in SMD.\n"
                                 },
                                 "rootfs_provider": {
                                     "type": "string",
@@ -746,7 +746,7 @@
                 "properties": {
                     "operation": {
                         "type": "string",
-                        "description": "A Session represents an operation on a SessionTemplate. The creation of a session effectively results in the creation of a K8s Boot Orchestration Agent (BOA) job to perform the duties required to complete the operation.\nOperation -- An operation to perform on nodes in this session.\n\n    Boot         Boot nodes that are off.\n\n    Configure    Reconfigure the nodes using the Configuration Framework\n                 Service (CFS).\n\n    Reboot       Gracefully power down nodes that are on and then power\n                 them back up.\n\n    Shutdown     Gracefully power down nodes that are on.\n",
+                        "description": "A Session represents an operation on a SessionTemplate. The creation of a session effectively results in the creation of a Kubernetes Boot Orchestration Agent (BOA) job to perform the duties required to complete the operation.\nOperation -- An operation to perform on nodes in this session.\n\n    Boot         Boot nodes that are off.\n\n    Configure    Reconfigure the nodes using the Configuration Framework\n                 Service (CFS).\n\n    Reboot       Gracefully power down nodes that are on and then power\n                 them back up.\n\n    Shutdown     Gracefully power down nodes that are on.\n",
                         "pattern": "^(?i)boot|configure|reboot|shutdown$"
                     },
                     "templateUuid": {
@@ -765,12 +765,12 @@
                         "type": "string",
                         "maxLength": 64,
                         "readOnly": true,
-                        "description": "The identity of the k8s job that is created to handle the session.\n",
+                        "description": "The identity of the Kubernetes job that is created to handle the session.\n",
                         "example": "boa-07877de1-09bb-4ca8-a4e5-943b1262dbf0"
                     },
                     "limit": {
                         "type": "string",
-                        "description": "A comma separated of nodes, groups or roles to which the session will be limited. Components are treated as OR operations unless preceded by \"&\" for AND or \"!\" for NOT.\n"
+                        "description": "A comma-separated of nodes, groups, or roles to which the session will be limited. Components are treated as OR operations unless preceded by \"&\" for AND or \"!\" for NOT.\n"
                     },
                     "links": {
                         "type": "array",
@@ -1085,7 +1085,7 @@
                                         "type": "string"
                                     },
                                     "minItems": 1,
-                                    "description": "The node groups list. Allows actions against associated nodes by logical groupings. Logical groups are user defined groups in SMD.\n"
+                                    "description": "The node groups list. Allows actions against associated nodes by logical groupings. Logical groups are user-defined groups in SMD.\n"
                                 },
                                 "rootfs_provider": {
                                     "type": "string",
@@ -1218,7 +1218,7 @@
                                             "type": "string"
                                         },
                                         "minItems": 1,
-                                        "description": "The node groups list. Allows actions against associated nodes by logical groupings. Logical groups are user defined groups in SMD.\n"
+                                        "description": "The node groups list. Allows actions against associated nodes by logical groupings. Logical groups are user-defined groups in SMD.\n"
                                     },
                                     "rootfs_provider": {
                                         "type": "string",
@@ -1267,7 +1267,7 @@
                 "properties": {
                     "name": {
                         "type": "string",
-                        "description": "Name of the session. A uuid name is generated if a name is not provided.",
+                        "description": "Name of the session. A UUID name is generated if a name is not provided.",
                         "example": "session-20190728032600",
                         "minLength": 1,
                         "maxLength": 45,
@@ -1290,7 +1290,7 @@
                     },
                     "limit": {
                         "type": "string",
-                        "description": "A comma separated of nodes, groups or roles to which the session will be limited. Components are treated as OR operations unless preceded by \"&\" for AND or \"!\" for NOT.\n"
+                        "description": "A comma-separated of nodes, groups, or roles to which the session will be limited. Components are treated as OR operations unless preceded by \"&\" for AND or \"!\" for NOT.\n"
                     },
                     "stage": {
                         "type": "boolean",
@@ -1389,7 +1389,7 @@
                             "type": "string"
                         },
                         "minItems": 1,
-                        "description": "The node groups list. Allows actions against associated nodes by logical groupings. Logical groups are user defined groups in SMD.\n"
+                        "description": "The node groups list. Allows actions against associated nodes by logical groupings. Logical groups are user-defined groups in SMD.\n"
                     },
                     "rootfs_provider": {
                         "type": "string",
@@ -1431,7 +1431,7 @@
                     },
                     "limit": {
                         "type": "string",
-                        "description": "A comma separated of nodes, groups or roles to which the session will be limited. Components are treated as OR operations unless preceded by \"&\" for AND or \"!\" for NOT.\n"
+                        "description": "A comma-separated of nodes, groups, or roles to which the session will be limited. Components are treated as OR operations unless preceded by \"&\" for AND or \"!\" for NOT.\n"
                     },
                     "stage": {
                         "type": "boolean",
@@ -1439,7 +1439,7 @@
                     },
                     "components": {
                         "type": "string",
-                        "description": "A comma separated list of nodes, representing the initial list of nodes the session should operate against.  The list will remain even if other sessions have taken over management of the nodes.\n"
+                        "description": "A comma-separated list of nodes, representing the initial list of nodes the session should operate against.  The list will remain even if other sessions have taken over management of the nodes.\n"
                     },
                     "status": {
                         "type": "object",
@@ -1500,7 +1500,7 @@
                         },
                         "limit": {
                             "type": "string",
-                            "description": "A comma separated of nodes, groups or roles to which the session will be limited. Components are treated as OR operations unless preceded by \"&\" for AND or \"!\" for NOT.\n"
+                            "description": "A comma-separated of nodes, groups, or roles to which the session will be limited. Components are treated as OR operations unless preceded by \"&\" for AND or \"!\" for NOT.\n"
                         },
                         "stage": {
                             "type": "boolean",
@@ -1508,7 +1508,7 @@
                         },
                         "components": {
                             "type": "string",
-                            "description": "A comma separated list of nodes, representing the initial list of nodes the session should operate against.  The list will remain even if other sessions have taken over management of the nodes.\n"
+                            "description": "A comma-separated list of nodes, representing the initial list of nodes the session should operate against.  The list will remain even if other sessions have taken over management of the nodes.\n"
                         },
                         "status": {
                             "type": "object",
@@ -2287,7 +2287,7 @@
                 "properties": {
                     "ids": {
                         "type": "string",
-                        "description": "A comma separated list of component ids"
+                        "description": "A comma-separated list of component IDs"
                     },
                     "session": {
                         "type": "string",
@@ -2513,7 +2513,7 @@
                         "properties": {
                             "ids": {
                                 "type": "string",
-                                "description": "A comma separated list of component ids"
+                                "description": "A comma-separated list of component IDs"
                             },
                             "session": {
                                 "type": "string",
@@ -2577,6 +2577,10 @@
                         "type": "string",
                         "description": "Delete complete sessions that are older than cleanup_completed_session_ttl (in hours). 0h disables cleanup behavior."
                     },
+                    "clear_stage": {
+                        "type": "boolean",
+                        "description": "Allows components staged information to be cleared when the requested staging action has been started. Defaults to false."
+                    },
                     "component_actual_state_ttl": {
                         "type": "string",
                         "description": "The maximum amount of time a component's actual state is considered valid (in hours). 0h disables cleanup behavior for newly booted nodes and instructs bos-state-reporter to report once instead of periodically."
@@ -2630,7 +2634,7 @@
                             "properties": {
                                 "name": {
                                     "type": "string",
-                                    "description": "Name of the session. A uuid name is generated if a name is not provided.",
+                                    "description": "Name of the session. A UUID name is generated if a name is not provided.",
                                     "example": "session-20190728032600",
                                     "minLength": 1,
                                     "maxLength": 45,
@@ -2653,7 +2657,7 @@
                                 },
                                 "limit": {
                                     "type": "string",
-                                    "description": "A comma separated of nodes, groups or roles to which the session will be limited. Components are treated as OR operations unless preceded by \"&\" for AND or \"!\" for NOT.\n"
+                                    "description": "A comma-separated of nodes, groups, or roles to which the session will be limited. Components are treated as OR operations unless preceded by \"&\" for AND or \"!\" for NOT.\n"
                                 },
                                 "stage": {
                                     "type": "boolean",
@@ -3331,7 +3335,7 @@
                                             "properties": {
                                                 "ids": {
                                                     "type": "string",
-                                                    "description": "A comma separated list of component ids"
+                                                    "description": "A comma-separated list of component IDs"
                                                 },
                                                 "session": {
                                                     "type": "string",
@@ -3575,6 +3579,10 @@
                                     "type": "string",
                                     "description": "Delete complete sessions that are older than cleanup_completed_session_ttl (in hours). 0h disables cleanup behavior."
                                 },
+                                "clear_stage": {
+                                    "type": "boolean",
+                                    "description": "Allows components staged information to be cleared when the requested staging action has been started. Defaults to false."
+                                },
                                 "component_actual_state_ttl": {
                                     "type": "string",
                                     "description": "The maximum amount of time a component's actual state is considered valid (in hours). 0h disables cleanup behavior for newly booted nodes and instructs bos-state-reporter to report once instead of periodically."
@@ -3648,7 +3656,7 @@
                                 },
                                 "limit": {
                                     "type": "string",
-                                    "description": "A comma separated of nodes, groups or roles to which the session will be limited. Components are treated as OR operations unless preceded by \"&\" for AND or \"!\" for NOT.\n"
+                                    "description": "A comma-separated of nodes, groups, or roles to which the session will be limited. Components are treated as OR operations unless preceded by \"&\" for AND or \"!\" for NOT.\n"
                                 },
                                 "stage": {
                                     "type": "boolean",
@@ -3656,7 +3664,7 @@
                                 },
                                 "components": {
                                     "type": "string",
-                                    "description": "A comma separated list of nodes, representing the initial list of nodes the session should operate against.  The list will remain even if other sessions have taken over management of the nodes.\n"
+                                    "description": "A comma-separated list of nodes, representing the initial list of nodes the session should operate against.  The list will remain even if other sessions have taken over management of the nodes.\n"
                                 },
                                 "status": {
                                     "type": "object",
@@ -3724,7 +3732,7 @@
                             "description": "Service health status",
                             "type": "object",
                             "properties": {
-                                "etcdStatus": {
+                                "dbStatus": {
                                     "type": "string"
                                 },
                                 "apiStatus": {
@@ -3788,7 +3796,7 @@
                             "properties": {
                                 "operation": {
                                     "type": "string",
-                                    "description": "A Session represents an operation on a SessionTemplate. The creation of a session effectively results in the creation of a K8s Boot Orchestration Agent (BOA) job to perform the duties required to complete the operation.\nOperation -- An operation to perform on nodes in this session.\n\n    Boot         Boot nodes that are off.\n\n    Configure    Reconfigure the nodes using the Configuration Framework\n                 Service (CFS).\n\n    Reboot       Gracefully power down nodes that are on and then power\n                 them back up.\n\n    Shutdown     Gracefully power down nodes that are on.\n",
+                                    "description": "A Session represents an operation on a SessionTemplate. The creation of a session effectively results in the creation of a Kubernetes Boot Orchestration Agent (BOA) job to perform the duties required to complete the operation.\nOperation -- An operation to perform on nodes in this session.\n\n    Boot         Boot nodes that are off.\n\n    Configure    Reconfigure the nodes using the Configuration Framework\n                 Service (CFS).\n\n    Reboot       Gracefully power down nodes that are on and then power\n                 them back up.\n\n    Shutdown     Gracefully power down nodes that are on.\n",
                                     "pattern": "^(?i)boot|configure|reboot|shutdown$"
                                 },
                                 "templateUuid": {
@@ -3807,12 +3815,12 @@
                                     "type": "string",
                                     "maxLength": 64,
                                     "readOnly": true,
-                                    "description": "The identity of the k8s job that is created to handle the session.\n",
+                                    "description": "The identity of the Kubernetes job that is created to handle the session.\n",
                                     "example": "boa-07877de1-09bb-4ca8-a4e5-943b1262dbf0"
                                 },
                                 "limit": {
                                     "type": "string",
-                                    "description": "A comma separated of nodes, groups or roles to which the session will be limited. Components are treated as OR operations unless preceded by \"&\" for AND or \"!\" for NOT.\n"
+                                    "description": "A comma-separated of nodes, groups, or roles to which the session will be limited. Components are treated as OR operations unless preceded by \"&\" for AND or \"!\" for NOT.\n"
                                 },
                                 "links": {
                                     "type": "array",
@@ -3919,7 +3927,7 @@
                     "application/json": {
                         "schema": {
                             "type": "object",
-                            "description": "A Session Template object represents a collection of resources and metadata.\nA session template is used to create a Session which when combined with an\naction (i.e. boot, reconfigure, reboot, shutdown) will create a K8s BOA job\nto complete the required tasks for the operation.\n\nA Session Template can be created from a JSON structure.  It will return\na SessionTemplate name if successful.\nThis name is required when creating a Session.\n\n## Link Relationships\n\n* self : The session object\n",
+                            "description": "A Session Template object represents a collection of resources and metadata.\nA session template is used to create a Session which when combined with an\naction (i.e. boot, reconfigure, reboot, shutdown) will create a Kubernetes BOA job\nto complete the required tasks for the operation.\n\nA Session Template can be created from a JSON structure.  It will return\na SessionTemplate name if successful.\nThis name is required when creating a Session.\n\n## Link Relationships\n\n* self : The session object\n",
                             "properties": {
                                 "templateUrl": {
                                     "type": "string",
@@ -3983,7 +3991,7 @@
                                 "boot_sets": {
                                     "type": "object",
                                     "additionalProperties": {
-                                        "description": "A boot set defines a collection of nodes and the information about the\nboot artifacts and parameters to be sent to each node over the specified\nnetwork to enable these nodes to boot. When multiple boot sets are used\nin a session template, the boot_ordinal and shtudown_ordinal indicate\nthe order in which boot sets need to be acted upon. Boot sets sharing\nthe same ordinal number will be addressed at the same time.\n",
+                                        "description": "A boot set defines a collection of nodes and the information about the\nboot artifacts and parameters to be sent to each node over the specified\nnetwork to enable these nodes to boot. When multiple boot sets are used\nin a session template, the boot_ordinal and shutdown_ordinal indicate\nthe order in which boot sets need to be acted upon. Boot sets sharing\nthe same ordinal number will be addressed at the same time.\n",
                                         "type": "object",
                                         "properties": {
                                             "name": {
@@ -4042,7 +4050,7 @@
                                                     "type": "string"
                                                 },
                                                 "minItems": 1,
-                                                "description": "The node groups list. Allows actions against associated nodes by logical groupings. Logical groups are user defined groups in SMD.\n"
+                                                "description": "The node groups list. Allows actions against associated nodes by logical groupings. Logical groups are user-defined groups in SMD.\n"
                                             },
                                             "rootfs_provider": {
                                                 "type": "string",
@@ -4182,7 +4190,7 @@
                                                     "type": "string"
                                                 },
                                                 "minItems": 1,
-                                                "description": "The node groups list. Allows actions against associated nodes by logical groupings. Logical groups are user defined groups in SMD.\n"
+                                                "description": "The node groups list. Allows actions against associated nodes by logical groupings. Logical groups are user-defined groups in SMD.\n"
                                             },
                                             "rootfs_provider": {
                                                 "type": "string",
@@ -4322,7 +4330,7 @@
                                                         "type": "string"
                                                     },
                                                     "minItems": 1,
-                                                    "description": "The node groups list. Allows actions against associated nodes by logical groupings. Logical groups are user defined groups in SMD.\n"
+                                                    "description": "The node groups list. Allows actions against associated nodes by logical groupings. Logical groups are user-defined groups in SMD.\n"
                                                 },
                                                 "rootfs_provider": {
                                                     "type": "string",
@@ -4404,7 +4412,7 @@
                                 },
                                 "limit": {
                                     "type": "string",
-                                    "description": "A comma separated of nodes, groups or roles to which the session will be limited. Components are treated as OR operations unless preceded by \"&\" for AND or \"!\" for NOT.\n"
+                                    "description": "A comma-separated of nodes, groups, or roles to which the session will be limited. Components are treated as OR operations unless preceded by \"&\" for AND or \"!\" for NOT.\n"
                                 },
                                 "stage": {
                                     "type": "boolean",
@@ -4412,7 +4420,7 @@
                                 },
                                 "components": {
                                     "type": "string",
-                                    "description": "A comma separated list of nodes, representing the initial list of nodes the session should operate against.  The list will remain even if other sessions have taken over management of the nodes.\n"
+                                    "description": "A comma-separated list of nodes, representing the initial list of nodes the session should operate against.  The list will remain even if other sessions have taken over management of the nodes.\n"
                                 },
                                 "status": {
                                     "type": "object",
@@ -4480,7 +4488,7 @@
                                     },
                                     "limit": {
                                         "type": "string",
-                                        "description": "A comma separated of nodes, groups or roles to which the session will be limited. Components are treated as OR operations unless preceded by \"&\" for AND or \"!\" for NOT.\n"
+                                        "description": "A comma-separated of nodes, groups, or roles to which the session will be limited. Components are treated as OR operations unless preceded by \"&\" for AND or \"!\" for NOT.\n"
                                     },
                                     "stage": {
                                         "type": "boolean",
@@ -4488,7 +4496,7 @@
                                     },
                                     "components": {
                                         "type": "string",
-                                        "description": "A comma separated list of nodes, representing the initial list of nodes the session should operate against.  The list will remain even if other sessions have taken over management of the nodes.\n"
+                                        "description": "A comma-separated list of nodes, representing the initial list of nodes the session should operate against.  The list will remain even if other sessions have taken over management of the nodes.\n"
                                     },
                                     "status": {
                                         "type": "object",
@@ -5091,6 +5099,10 @@
                                     "type": "string",
                                     "description": "Delete complete sessions that are older than cleanup_completed_session_ttl (in hours). 0h disables cleanup behavior."
                                 },
+                                "clear_stage": {
+                                    "type": "boolean",
+                                    "description": "Allows components staged information to be cleared when the requested staging action has been started. Defaults to false."
+                                },
                                 "component_actual_state_ttl": {
                                     "type": "string",
                                     "description": "The maximum amount of time a component's actual state is considered valid (in hours). 0h disables cleanup behavior for newly booted nodes and instructs bos-state-reporter to report once instead of periodically."
@@ -5447,7 +5459,7 @@
                                     "description": "Service health status",
                                     "type": "object",
                                     "properties": {
-                                        "etcdStatus": {
+                                        "dbStatus": {
                                             "type": "string"
                                         },
                                         "apiStatus": {
@@ -5554,7 +5566,7 @@
                         "application/json": {
                             "schema": {
                                 "type": "object",
-                                "description": "A Session Template object represents a collection of resources and metadata.\nA session template is used to create a Session which when combined with an\naction (i.e. boot, reconfigure, reboot, shutdown) will create a K8s BOA job\nto complete the required tasks for the operation.\n\nA Session Template can be created from a JSON structure.  It will return\na SessionTemplate name if successful.\nThis name is required when creating a Session.\n\n## Link Relationships\n\n* self : The session object\n",
+                                "description": "A Session Template object represents a collection of resources and metadata.\nA session template is used to create a Session which when combined with an\naction (i.e. boot, reconfigure, reboot, shutdown) will create a Kubernetes BOA job\nto complete the required tasks for the operation.\n\nA Session Template can be created from a JSON structure.  It will return\na SessionTemplate name if successful.\nThis name is required when creating a Session.\n\n## Link Relationships\n\n* self : The session object\n",
                                 "properties": {
                                     "templateUrl": {
                                         "type": "string",
@@ -5618,7 +5630,7 @@
                                     "boot_sets": {
                                         "type": "object",
                                         "additionalProperties": {
-                                            "description": "A boot set defines a collection of nodes and the information about the\nboot artifacts and parameters to be sent to each node over the specified\nnetwork to enable these nodes to boot. When multiple boot sets are used\nin a session template, the boot_ordinal and shtudown_ordinal indicate\nthe order in which boot sets need to be acted upon. Boot sets sharing\nthe same ordinal number will be addressed at the same time.\n",
+                                            "description": "A boot set defines a collection of nodes and the information about the\nboot artifacts and parameters to be sent to each node over the specified\nnetwork to enable these nodes to boot. When multiple boot sets are used\nin a session template, the boot_ordinal and shutdown_ordinal indicate\nthe order in which boot sets need to be acted upon. Boot sets sharing\nthe same ordinal number will be addressed at the same time.\n",
                                             "type": "object",
                                             "properties": {
                                                 "name": {
@@ -5677,7 +5689,7 @@
                                                         "type": "string"
                                                     },
                                                     "minItems": 1,
-                                                    "description": "The node groups list. Allows actions against associated nodes by logical groupings. Logical groups are user defined groups in SMD.\n"
+                                                    "description": "The node groups list. Allows actions against associated nodes by logical groupings. Logical groups are user-defined groups in SMD.\n"
                                                 },
                                                 "rootfs_provider": {
                                                     "type": "string",
@@ -5728,7 +5740,7 @@
                             "application/json": {
                                 "schema": {
                                     "type": "object",
-                                    "description": "A Session Template object represents a collection of resources and metadata.\nA session template is used to create a Session which when combined with an\naction (i.e. boot, reconfigure, reboot, shutdown) will create a K8s BOA job\nto complete the required tasks for the operation.\n\nA Session Template can be created from a JSON structure.  It will return\na SessionTemplate name if successful.\nThis name is required when creating a Session.\n\n## Link Relationships\n\n* self : The session object\n",
+                                    "description": "A Session Template object represents a collection of resources and metadata.\nA session template is used to create a Session which when combined with an\naction (i.e. boot, reconfigure, reboot, shutdown) will create a Kubernetes BOA job\nto complete the required tasks for the operation.\n\nA Session Template can be created from a JSON structure.  It will return\na SessionTemplate name if successful.\nThis name is required when creating a Session.\n\n## Link Relationships\n\n* self : The session object\n",
                                     "properties": {
                                         "templateUrl": {
                                             "type": "string",
@@ -5792,7 +5804,7 @@
                                         "boot_sets": {
                                             "type": "object",
                                             "additionalProperties": {
-                                                "description": "A boot set defines a collection of nodes and the information about the\nboot artifacts and parameters to be sent to each node over the specified\nnetwork to enable these nodes to boot. When multiple boot sets are used\nin a session template, the boot_ordinal and shtudown_ordinal indicate\nthe order in which boot sets need to be acted upon. Boot sets sharing\nthe same ordinal number will be addressed at the same time.\n",
+                                                "description": "A boot set defines a collection of nodes and the information about the\nboot artifacts and parameters to be sent to each node over the specified\nnetwork to enable these nodes to boot. When multiple boot sets are used\nin a session template, the boot_ordinal and shutdown_ordinal indicate\nthe order in which boot sets need to be acted upon. Boot sets sharing\nthe same ordinal number will be addressed at the same time.\n",
                                                 "type": "object",
                                                 "properties": {
                                                     "name": {
@@ -5851,7 +5863,7 @@
                                                             "type": "string"
                                                         },
                                                         "minItems": 1,
-                                                        "description": "The node groups list. Allows actions against associated nodes by logical groupings. Logical groups are user defined groups in SMD.\n"
+                                                        "description": "The node groups list. Allows actions against associated nodes by logical groupings. Logical groups are user-defined groups in SMD.\n"
                                                     },
                                                     "rootfs_provider": {
                                                         "type": "string",
@@ -5952,7 +5964,7 @@
                                     "type": "array",
                                     "items": {
                                         "type": "object",
-                                        "description": "A Session Template object represents a collection of resources and metadata.\nA session template is used to create a Session which when combined with an\naction (i.e. boot, reconfigure, reboot, shutdown) will create a K8s BOA job\nto complete the required tasks for the operation.\n\nA Session Template can be created from a JSON structure.  It will return\na SessionTemplate name if successful.\nThis name is required when creating a Session.\n\n## Link Relationships\n\n* self : The session object\n",
+                                        "description": "A Session Template object represents a collection of resources and metadata.\nA session template is used to create a Session which when combined with an\naction (i.e. boot, reconfigure, reboot, shutdown) will create a Kubernetes BOA job\nto complete the required tasks for the operation.\n\nA Session Template can be created from a JSON structure.  It will return\na SessionTemplate name if successful.\nThis name is required when creating a Session.\n\n## Link Relationships\n\n* self : The session object\n",
                                         "properties": {
                                             "templateUrl": {
                                                 "type": "string",
@@ -6016,7 +6028,7 @@
                                             "boot_sets": {
                                                 "type": "object",
                                                 "additionalProperties": {
-                                                    "description": "A boot set defines a collection of nodes and the information about the\nboot artifacts and parameters to be sent to each node over the specified\nnetwork to enable these nodes to boot. When multiple boot sets are used\nin a session template, the boot_ordinal and shtudown_ordinal indicate\nthe order in which boot sets need to be acted upon. Boot sets sharing\nthe same ordinal number will be addressed at the same time.\n",
+                                                    "description": "A boot set defines a collection of nodes and the information about the\nboot artifacts and parameters to be sent to each node over the specified\nnetwork to enable these nodes to boot. When multiple boot sets are used\nin a session template, the boot_ordinal and shutdown_ordinal indicate\nthe order in which boot sets need to be acted upon. Boot sets sharing\nthe same ordinal number will be addressed at the same time.\n",
                                                     "type": "object",
                                                     "properties": {
                                                         "name": {
@@ -6075,7 +6087,7 @@
                                                                 "type": "string"
                                                             },
                                                             "minItems": 1,
-                                                            "description": "The node groups list. Allows actions against associated nodes by logical groupings. Logical groups are user defined groups in SMD.\n"
+                                                            "description": "The node groups list. Allows actions against associated nodes by logical groupings. Logical groups are user-defined groups in SMD.\n"
                                                         },
                                                         "rootfs_provider": {
                                                             "type": "string",
@@ -6150,7 +6162,7 @@
                             "application/json": {
                                 "schema": {
                                     "type": "object",
-                                    "description": "A Session Template object represents a collection of resources and metadata.\nA session template is used to create a Session which when combined with an\naction (i.e. boot, reconfigure, reboot, shutdown) will create a K8s BOA job\nto complete the required tasks for the operation.\n\nA Session Template can be created from a JSON structure.  It will return\na SessionTemplate name if successful.\nThis name is required when creating a Session.\n\n## Link Relationships\n\n* self : The session object\n",
+                                    "description": "A Session Template object represents a collection of resources and metadata.\nA session template is used to create a Session which when combined with an\naction (i.e. boot, reconfigure, reboot, shutdown) will create a Kubernetes BOA job\nto complete the required tasks for the operation.\n\nA Session Template can be created from a JSON structure.  It will return\na SessionTemplate name if successful.\nThis name is required when creating a Session.\n\n## Link Relationships\n\n* self : The session object\n",
                                     "properties": {
                                         "templateUrl": {
                                             "type": "string",
@@ -6214,7 +6226,7 @@
                                         "boot_sets": {
                                             "type": "object",
                                             "additionalProperties": {
-                                                "description": "A boot set defines a collection of nodes and the information about the\nboot artifacts and parameters to be sent to each node over the specified\nnetwork to enable these nodes to boot. When multiple boot sets are used\nin a session template, the boot_ordinal and shtudown_ordinal indicate\nthe order in which boot sets need to be acted upon. Boot sets sharing\nthe same ordinal number will be addressed at the same time.\n",
+                                                "description": "A boot set defines a collection of nodes and the information about the\nboot artifacts and parameters to be sent to each node over the specified\nnetwork to enable these nodes to boot. When multiple boot sets are used\nin a session template, the boot_ordinal and shutdown_ordinal indicate\nthe order in which boot sets need to be acted upon. Boot sets sharing\nthe same ordinal number will be addressed at the same time.\n",
                                                 "type": "object",
                                                 "properties": {
                                                     "name": {
@@ -6273,7 +6285,7 @@
                                                             "type": "string"
                                                         },
                                                         "minItems": 1,
-                                                        "description": "The node groups list. Allows actions against associated nodes by logical groupings. Logical groups are user defined groups in SMD.\n"
+                                                        "description": "The node groups list. Allows actions against associated nodes by logical groupings. Logical groups are user-defined groups in SMD.\n"
                                                     },
                                                     "rootfs_provider": {
                                                         "type": "string",
@@ -6426,7 +6438,7 @@
                             "application/json": {
                                 "schema": {
                                     "type": "object",
-                                    "description": "A Session Template object represents a collection of resources and metadata.\nA session template is used to create a Session which when combined with an\naction (i.e. boot, reconfigure, reboot, shutdown) will create a K8s BOA job\nto complete the required tasks for the operation.\n\nA Session Template can be created from a JSON structure.  It will return\na SessionTemplate name if successful.\nThis name is required when creating a Session.\n\n## Link Relationships\n\n* self : The session object\n",
+                                    "description": "A Session Template object represents a collection of resources and metadata.\nA session template is used to create a Session which when combined with an\naction (i.e. boot, reconfigure, reboot, shutdown) will create a Kubernetes BOA job\nto complete the required tasks for the operation.\n\nA Session Template can be created from a JSON structure.  It will return\na SessionTemplate name if successful.\nThis name is required when creating a Session.\n\n## Link Relationships\n\n* self : The session object\n",
                                     "properties": {
                                         "templateUrl": {
                                             "type": "string",
@@ -6490,7 +6502,7 @@
                                         "boot_sets": {
                                             "type": "object",
                                             "additionalProperties": {
-                                                "description": "A boot set defines a collection of nodes and the information about the\nboot artifacts and parameters to be sent to each node over the specified\nnetwork to enable these nodes to boot. When multiple boot sets are used\nin a session template, the boot_ordinal and shtudown_ordinal indicate\nthe order in which boot sets need to be acted upon. Boot sets sharing\nthe same ordinal number will be addressed at the same time.\n",
+                                                "description": "A boot set defines a collection of nodes and the information about the\nboot artifacts and parameters to be sent to each node over the specified\nnetwork to enable these nodes to boot. When multiple boot sets are used\nin a session template, the boot_ordinal and shutdown_ordinal indicate\nthe order in which boot sets need to be acted upon. Boot sets sharing\nthe same ordinal number will be addressed at the same time.\n",
                                                 "type": "object",
                                                 "properties": {
                                                     "name": {
@@ -6549,7 +6561,7 @@
                                                             "type": "string"
                                                         },
                                                         "minItems": 1,
-                                                        "description": "The node groups list. Allows actions against associated nodes by logical groupings. Logical groups are user defined groups in SMD.\n"
+                                                        "description": "The node groups list. Allows actions against associated nodes by logical groupings. Logical groups are user-defined groups in SMD.\n"
                                                     },
                                                     "rootfs_provider": {
                                                         "type": "string",
@@ -6616,7 +6628,7 @@
                                 "properties": {
                                     "operation": {
                                         "type": "string",
-                                        "description": "A Session represents an operation on a SessionTemplate. The creation of a session effectively results in the creation of a K8s Boot Orchestration Agent (BOA) job to perform the duties required to complete the operation.\nOperation -- An operation to perform on nodes in this session.\n\n    Boot         Boot nodes that are off.\n\n    Configure    Reconfigure the nodes using the Configuration Framework\n                 Service (CFS).\n\n    Reboot       Gracefully power down nodes that are on and then power\n                 them back up.\n\n    Shutdown     Gracefully power down nodes that are on.\n",
+                                        "description": "A Session represents an operation on a SessionTemplate. The creation of a session effectively results in the creation of a Kubernetes Boot Orchestration Agent (BOA) job to perform the duties required to complete the operation.\nOperation -- An operation to perform on nodes in this session.\n\n    Boot         Boot nodes that are off.\n\n    Configure    Reconfigure the nodes using the Configuration Framework\n                 Service (CFS).\n\n    Reboot       Gracefully power down nodes that are on and then power\n                 them back up.\n\n    Shutdown     Gracefully power down nodes that are on.\n",
                                         "pattern": "^(?i)boot|configure|reboot|shutdown$"
                                     },
                                     "templateUuid": {
@@ -6635,12 +6647,12 @@
                                         "type": "string",
                                         "maxLength": 64,
                                         "readOnly": true,
-                                        "description": "The identity of the k8s job that is created to handle the session.\n",
+                                        "description": "The identity of the Kubernetes job that is created to handle the session.\n",
                                         "example": "boa-07877de1-09bb-4ca8-a4e5-943b1262dbf0"
                                     },
                                     "limit": {
                                         "type": "string",
-                                        "description": "A comma separated of nodes, groups or roles to which the session will be limited. Components are treated as OR operations unless preceded by \"&\" for AND or \"!\" for NOT.\n"
+                                        "description": "A comma-separated of nodes, groups, or roles to which the session will be limited. Components are treated as OR operations unless preceded by \"&\" for AND or \"!\" for NOT.\n"
                                     },
                                     "links": {
                                         "type": "array",
@@ -6679,7 +6691,7 @@
                                     "properties": {
                                         "operation": {
                                             "type": "string",
-                                            "description": "A Session represents an operation on a SessionTemplate. The creation of a session effectively results in the creation of a K8s Boot Orchestration Agent (BOA) job to perform the duties required to complete the operation.\nOperation -- An operation to perform on nodes in this session.\n\n    Boot         Boot nodes that are off.\n\n    Configure    Reconfigure the nodes using the Configuration Framework\n                 Service (CFS).\n\n    Reboot       Gracefully power down nodes that are on and then power\n                 them back up.\n\n    Shutdown     Gracefully power down nodes that are on.\n",
+                                            "description": "A Session represents an operation on a SessionTemplate. The creation of a session effectively results in the creation of a Kubernetes Boot Orchestration Agent (BOA) job to perform the duties required to complete the operation.\nOperation -- An operation to perform on nodes in this session.\n\n    Boot         Boot nodes that are off.\n\n    Configure    Reconfigure the nodes using the Configuration Framework\n                 Service (CFS).\n\n    Reboot       Gracefully power down nodes that are on and then power\n                 them back up.\n\n    Shutdown     Gracefully power down nodes that are on.\n",
                                             "pattern": "^(?i)boot|configure|reboot|shutdown$"
                                         },
                                         "templateUuid": {
@@ -6698,12 +6710,12 @@
                                             "type": "string",
                                             "maxLength": 64,
                                             "readOnly": true,
-                                            "description": "The identity of the k8s job that is created to handle the session.\n",
+                                            "description": "The identity of the Kubernetes job that is created to handle the session.\n",
                                             "example": "boa-07877de1-09bb-4ca8-a4e5-943b1262dbf0"
                                         },
                                         "limit": {
                                             "type": "string",
-                                            "description": "A comma separated of nodes, groups or roles to which the session will be limited. Components are treated as OR operations unless preceded by \"&\" for AND or \"!\" for NOT.\n"
+                                            "description": "A comma-separated of nodes, groups, or roles to which the session will be limited. Components are treated as OR operations unless preceded by \"&\" for AND or \"!\" for NOT.\n"
                                         },
                                         "links": {
                                             "type": "array",
@@ -6792,7 +6804,7 @@
                                         "properties": {
                                             "operation": {
                                                 "type": "string",
-                                                "description": "A Session represents an operation on a SessionTemplate. The creation of a session effectively results in the creation of a K8s Boot Orchestration Agent (BOA) job to perform the duties required to complete the operation.\nOperation -- An operation to perform on nodes in this session.\n\n    Boot         Boot nodes that are off.\n\n    Configure    Reconfigure the nodes using the Configuration Framework\n                 Service (CFS).\n\n    Reboot       Gracefully power down nodes that are on and then power\n                 them back up.\n\n    Shutdown     Gracefully power down nodes that are on.\n",
+                                                "description": "A Session represents an operation on a SessionTemplate. The creation of a session effectively results in the creation of a Kubernetes Boot Orchestration Agent (BOA) job to perform the duties required to complete the operation.\nOperation -- An operation to perform on nodes in this session.\n\n    Boot         Boot nodes that are off.\n\n    Configure    Reconfigure the nodes using the Configuration Framework\n                 Service (CFS).\n\n    Reboot       Gracefully power down nodes that are on and then power\n                 them back up.\n\n    Shutdown     Gracefully power down nodes that are on.\n",
                                                 "pattern": "^(?i)boot|configure|reboot|shutdown$"
                                             },
                                             "templateUuid": {
@@ -6811,12 +6823,12 @@
                                                 "type": "string",
                                                 "maxLength": 64,
                                                 "readOnly": true,
-                                                "description": "The identity of the k8s job that is created to handle the session.\n",
+                                                "description": "The identity of the Kubernetes job that is created to handle the session.\n",
                                                 "example": "boa-07877de1-09bb-4ca8-a4e5-943b1262dbf0"
                                             },
                                             "limit": {
                                                 "type": "string",
-                                                "description": "A comma separated of nodes, groups or roles to which the session will be limited. Components are treated as OR operations unless preceded by \"&\" for AND or \"!\" for NOT.\n"
+                                                "description": "A comma-separated of nodes, groups, or roles to which the session will be limited. Components are treated as OR operations unless preceded by \"&\" for AND or \"!\" for NOT.\n"
                                             },
                                             "links": {
                                                 "type": "array",
@@ -6868,7 +6880,7 @@
                                     "properties": {
                                         "operation": {
                                             "type": "string",
-                                            "description": "A Session represents an operation on a SessionTemplate. The creation of a session effectively results in the creation of a K8s Boot Orchestration Agent (BOA) job to perform the duties required to complete the operation.\nOperation -- An operation to perform on nodes in this session.\n\n    Boot         Boot nodes that are off.\n\n    Configure    Reconfigure the nodes using the Configuration Framework\n                 Service (CFS).\n\n    Reboot       Gracefully power down nodes that are on and then power\n                 them back up.\n\n    Shutdown     Gracefully power down nodes that are on.\n",
+                                            "description": "A Session represents an operation on a SessionTemplate. The creation of a session effectively results in the creation of a Kubernetes Boot Orchestration Agent (BOA) job to perform the duties required to complete the operation.\nOperation -- An operation to perform on nodes in this session.\n\n    Boot         Boot nodes that are off.\n\n    Configure    Reconfigure the nodes using the Configuration Framework\n                 Service (CFS).\n\n    Reboot       Gracefully power down nodes that are on and then power\n                 them back up.\n\n    Shutdown     Gracefully power down nodes that are on.\n",
                                             "pattern": "^(?i)boot|configure|reboot|shutdown$"
                                         },
                                         "templateUuid": {
@@ -6887,12 +6899,12 @@
                                             "type": "string",
                                             "maxLength": 64,
                                             "readOnly": true,
-                                            "description": "The identity of the k8s job that is created to handle the session.\n",
+                                            "description": "The identity of the Kubernetes job that is created to handle the session.\n",
                                             "example": "boa-07877de1-09bb-4ca8-a4e5-943b1262dbf0"
                                         },
                                         "limit": {
                                             "type": "string",
-                                            "description": "A comma separated of nodes, groups or roles to which the session will be limited. Components are treated as OR operations unless preceded by \"&\" for AND or \"!\" for NOT.\n"
+                                            "description": "A comma-separated of nodes, groups, or roles to which the session will be limited. Components are treated as OR operations unless preceded by \"&\" for AND or \"!\" for NOT.\n"
                                         },
                                         "links": {
                                             "type": "array",
@@ -9022,7 +9034,7 @@
                                     "description": "Service health status",
                                     "type": "object",
                                     "properties": {
-                                        "etcdStatus": {
+                                        "dbStatus": {
                                             "type": "string"
                                         },
                                         "apiStatus": {
@@ -9223,7 +9235,7 @@
                                                                 "type": "string"
                                                             },
                                                             "minItems": 1,
-                                                            "description": "The node groups list. Allows actions against associated nodes by logical groupings. Logical groups are user defined groups in SMD.\n"
+                                                            "description": "The node groups list. Allows actions against associated nodes by logical groupings. Logical groups are user-defined groups in SMD.\n"
                                                         },
                                                         "rootfs_provider": {
                                                             "type": "string",
@@ -9460,7 +9472,7 @@
                                                             "type": "string"
                                                         },
                                                         "minItems": 1,
-                                                        "description": "The node groups list. Allows actions against associated nodes by logical groupings. Logical groups are user defined groups in SMD.\n"
+                                                        "description": "The node groups list. Allows actions against associated nodes by logical groupings. Logical groups are user-defined groups in SMD.\n"
                                                     },
                                                     "rootfs_provider": {
                                                         "type": "string",
@@ -9647,7 +9659,7 @@
                                                         "type": "string"
                                                     },
                                                     "minItems": 1,
-                                                    "description": "The node groups list. Allows actions against associated nodes by logical groupings. Logical groups are user defined groups in SMD.\n"
+                                                    "description": "The node groups list. Allows actions against associated nodes by logical groupings. Logical groups are user-defined groups in SMD.\n"
                                                 },
                                                 "rootfs_provider": {
                                                     "type": "string",
@@ -9785,7 +9797,7 @@
                                                             "type": "string"
                                                         },
                                                         "minItems": 1,
-                                                        "description": "The node groups list. Allows actions against associated nodes by logical groupings. Logical groups are user defined groups in SMD.\n"
+                                                        "description": "The node groups list. Allows actions against associated nodes by logical groupings. Logical groups are user-defined groups in SMD.\n"
                                                     },
                                                     "rootfs_provider": {
                                                         "type": "string",
@@ -9971,7 +9983,7 @@
                                                         "type": "string"
                                                     },
                                                     "minItems": 1,
-                                                    "description": "The node groups list. Allows actions against associated nodes by logical groupings. Logical groups are user defined groups in SMD.\n"
+                                                    "description": "The node groups list. Allows actions against associated nodes by logical groupings. Logical groups are user-defined groups in SMD.\n"
                                                 },
                                                 "rootfs_provider": {
                                                     "type": "string",
@@ -10109,7 +10121,7 @@
                                                             "type": "string"
                                                         },
                                                         "minItems": 1,
-                                                        "description": "The node groups list. Allows actions against associated nodes by logical groupings. Logical groups are user defined groups in SMD.\n"
+                                                        "description": "The node groups list. Allows actions against associated nodes by logical groupings. Logical groups are user-defined groups in SMD.\n"
                                                     },
                                                     "rootfs_provider": {
                                                         "type": "string",
@@ -10351,7 +10363,7 @@
                                                             "type": "string"
                                                         },
                                                         "minItems": 1,
-                                                        "description": "The node groups list. Allows actions against associated nodes by logical groupings. Logical groups are user defined groups in SMD.\n"
+                                                        "description": "The node groups list. Allows actions against associated nodes by logical groupings. Logical groups are user-defined groups in SMD.\n"
                                                     },
                                                     "rootfs_provider": {
                                                         "type": "string",
@@ -10416,7 +10428,7 @@
                                 "properties": {
                                     "name": {
                                         "type": "string",
-                                        "description": "Name of the session. A uuid name is generated if a name is not provided.",
+                                        "description": "Name of the session. A UUID name is generated if a name is not provided.",
                                         "example": "session-20190728032600",
                                         "minLength": 1,
                                         "maxLength": 45,
@@ -10439,7 +10451,7 @@
                                     },
                                     "limit": {
                                         "type": "string",
-                                        "description": "A comma separated of nodes, groups or roles to which the session will be limited. Components are treated as OR operations unless preceded by \"&\" for AND or \"!\" for NOT.\n"
+                                        "description": "A comma-separated of nodes, groups, or roles to which the session will be limited. Components are treated as OR operations unless preceded by \"&\" for AND or \"!\" for NOT.\n"
                                     },
                                     "stage": {
                                         "type": "boolean",
@@ -10486,7 +10498,7 @@
                                         },
                                         "limit": {
                                             "type": "string",
-                                            "description": "A comma separated of nodes, groups or roles to which the session will be limited. Components are treated as OR operations unless preceded by \"&\" for AND or \"!\" for NOT.\n"
+                                            "description": "A comma-separated of nodes, groups, or roles to which the session will be limited. Components are treated as OR operations unless preceded by \"&\" for AND or \"!\" for NOT.\n"
                                         },
                                         "stage": {
                                             "type": "boolean",
@@ -10494,7 +10506,7 @@
                                         },
                                         "components": {
                                             "type": "string",
-                                            "description": "A comma separated list of nodes, representing the initial list of nodes the session should operate against.  The list will remain even if other sessions have taken over management of the nodes.\n"
+                                            "description": "A comma-separated list of nodes, representing the initial list of nodes the session should operate against.  The list will remain even if other sessions have taken over management of the nodes.\n"
                                         },
                                         "status": {
                                             "type": "object",
@@ -10643,7 +10655,7 @@
                                             },
                                             "limit": {
                                                 "type": "string",
-                                                "description": "A comma separated of nodes, groups or roles to which the session will be limited. Components are treated as OR operations unless preceded by \"&\" for AND or \"!\" for NOT.\n"
+                                                "description": "A comma-separated of nodes, groups, or roles to which the session will be limited. Components are treated as OR operations unless preceded by \"&\" for AND or \"!\" for NOT.\n"
                                             },
                                             "stage": {
                                                 "type": "boolean",
@@ -10651,7 +10663,7 @@
                                             },
                                             "components": {
                                                 "type": "string",
-                                                "description": "A comma separated list of nodes, representing the initial list of nodes the session should operate against.  The list will remain even if other sessions have taken over management of the nodes.\n"
+                                                "description": "A comma-separated list of nodes, representing the initial list of nodes the session should operate against.  The list will remain even if other sessions have taken over management of the nodes.\n"
                                             },
                                             "status": {
                                                 "type": "object",
@@ -10815,7 +10827,7 @@
                                         },
                                         "limit": {
                                             "type": "string",
-                                            "description": "A comma separated of nodes, groups or roles to which the session will be limited. Components are treated as OR operations unless preceded by \"&\" for AND or \"!\" for NOT.\n"
+                                            "description": "A comma-separated of nodes, groups, or roles to which the session will be limited. Components are treated as OR operations unless preceded by \"&\" for AND or \"!\" for NOT.\n"
                                         },
                                         "stage": {
                                             "type": "boolean",
@@ -10823,7 +10835,7 @@
                                         },
                                         "components": {
                                             "type": "string",
-                                            "description": "A comma separated list of nodes, representing the initial list of nodes the session should operate against.  The list will remain even if other sessions have taken over management of the nodes.\n"
+                                            "description": "A comma-separated list of nodes, representing the initial list of nodes the session should operate against.  The list will remain even if other sessions have taken over management of the nodes.\n"
                                         },
                                         "status": {
                                             "type": "object",
@@ -10938,7 +10950,7 @@
                                     },
                                     "limit": {
                                         "type": "string",
-                                        "description": "A comma separated of nodes, groups or roles to which the session will be limited. Components are treated as OR operations unless preceded by \"&\" for AND or \"!\" for NOT.\n"
+                                        "description": "A comma-separated of nodes, groups, or roles to which the session will be limited. Components are treated as OR operations unless preceded by \"&\" for AND or \"!\" for NOT.\n"
                                     },
                                     "stage": {
                                         "type": "boolean",
@@ -10946,7 +10958,7 @@
                                     },
                                     "components": {
                                         "type": "string",
-                                        "description": "A comma separated list of nodes, representing the initial list of nodes the session should operate against.  The list will remain even if other sessions have taken over management of the nodes.\n"
+                                        "description": "A comma-separated list of nodes, representing the initial list of nodes the session should operate against.  The list will remain even if other sessions have taken over management of the nodes.\n"
                                     },
                                     "status": {
                                         "type": "object",
@@ -11012,7 +11024,7 @@
                                         },
                                         "limit": {
                                             "type": "string",
-                                            "description": "A comma separated of nodes, groups or roles to which the session will be limited. Components are treated as OR operations unless preceded by \"&\" for AND or \"!\" for NOT.\n"
+                                            "description": "A comma-separated of nodes, groups, or roles to which the session will be limited. Components are treated as OR operations unless preceded by \"&\" for AND or \"!\" for NOT.\n"
                                         },
                                         "stage": {
                                             "type": "boolean",
@@ -11020,7 +11032,7 @@
                                         },
                                         "components": {
                                             "type": "string",
-                                            "description": "A comma separated list of nodes, representing the initial list of nodes the session should operate against.  The list will remain even if other sessions have taken over management of the nodes.\n"
+                                            "description": "A comma-separated list of nodes, representing the initial list of nodes the session should operate against.  The list will remain even if other sessions have taken over management of the nodes.\n"
                                         },
                                         "status": {
                                             "type": "object",
@@ -11375,7 +11387,7 @@
                                         },
                                         "limit": {
                                             "type": "string",
-                                            "description": "A comma separated of nodes, groups or roles to which the session will be limited. Components are treated as OR operations unless preceded by \"&\" for AND or \"!\" for NOT.\n"
+                                            "description": "A comma-separated of nodes, groups, or roles to which the session will be limited. Components are treated as OR operations unless preceded by \"&\" for AND or \"!\" for NOT.\n"
                                         },
                                         "stage": {
                                             "type": "boolean",
@@ -11383,7 +11395,7 @@
                                         },
                                         "components": {
                                             "type": "string",
-                                            "description": "A comma separated list of nodes, representing the initial list of nodes the session should operate against.  The list will remain even if other sessions have taken over management of the nodes.\n"
+                                            "description": "A comma-separated list of nodes, representing the initial list of nodes the session should operate against.  The list will remain even if other sessions have taken over management of the nodes.\n"
                                         },
                                         "status": {
                                             "type": "object",
@@ -12516,7 +12528,7 @@
                                                 "properties": {
                                                     "ids": {
                                                         "type": "string",
-                                                        "description": "A comma separated list of component ids"
+                                                        "description": "A comma-separated list of component IDs"
                                                     },
                                                     "session": {
                                                         "type": "string",
@@ -14547,6 +14559,10 @@
                                             "type": "string",
                                             "description": "Delete complete sessions that are older than cleanup_completed_session_ttl (in hours). 0h disables cleanup behavior."
                                         },
+                                        "clear_stage": {
+                                            "type": "boolean",
+                                            "description": "Allows components staged information to be cleared when the requested staging action has been started. Defaults to false."
+                                        },
                                         "component_actual_state_ttl": {
                                             "type": "string",
                                             "description": "The maximum amount of time a component's actual state is considered valid (in hours). 0h disables cleanup behavior for newly booted nodes and instructs bos-state-reporter to report once instead of periodically."
@@ -14614,6 +14630,10 @@
                                         "type": "string",
                                         "description": "Delete complete sessions that are older than cleanup_completed_session_ttl (in hours). 0h disables cleanup behavior."
                                     },
+                                    "clear_stage": {
+                                        "type": "boolean",
+                                        "description": "Allows components staged information to be cleared when the requested staging action has been started. Defaults to false."
+                                    },
                                     "component_actual_state_ttl": {
                                         "type": "string",
                                         "description": "The maximum amount of time a component's actual state is considered valid (in hours). 0h disables cleanup behavior for newly booted nodes and instructs bos-state-reporter to report once instead of periodically."
@@ -14669,6 +14689,10 @@
                                         "cleanup_completed_session_ttl": {
                                             "type": "string",
                                             "description": "Delete complete sessions that are older than cleanup_completed_session_ttl (in hours). 0h disables cleanup behavior."
+                                        },
+                                        "clear_stage": {
+                                            "type": "boolean",
+                                            "description": "Allows components staged information to be cleared when the requested staging action has been started. Defaults to false."
                                         },
                                         "component_actual_state_ttl": {
                                             "type": "string",
