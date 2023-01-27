@@ -2,7 +2,7 @@
 
 MIT License
 
-(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+(C) Copyright 2020-2023 Hewlett Packard Enterprise Development LP
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -58,7 +58,7 @@ def md5(filename):
 
 def get_s3_client():
     """ Retrieve a boto3 client using creds from STS """
-    # Assumes running in k8s somewhere like this
+    # Assumes running in Kubernetes somewhere like this
     resp = request('PUT', 'apis/sts/token')
     if not resp.ok:
         raise BadResponseError(resp)
