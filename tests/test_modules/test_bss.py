@@ -2,7 +2,7 @@
 
 MIT License
 
-(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+(C) Copyright 2020-2023 Hewlett Packard Enterprise Development LP
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -38,7 +38,7 @@ def test_cray_bss_help_info(cli_runner, rest_mock):
 
     outputs = [
         "cli bss [OPTIONS] COMMAND [ARGS]...",
-        "Boot Script Service API",
+        "Boot Script Service",
         "bootparameters",
         "bootscript",
         "dumpstate",
