@@ -21,7 +21,7 @@ info:
     of the system that other services may use. SLS thus does not need to change as
     hardware within the system is replaced. Interaction with SLS is required if
     the system setup changes – for example, if system cabling is altered or during 
-    installation, expansion or reduction. SLS does not interact with the hardware.
+    installation, expansion, or reduction. SLS does not interact with the hardware.
    
     Each object in SLS has the following basic properties:
     * Parent – Each object in SLS has a parent object except the system root (s0).
@@ -437,7 +437,7 @@ paths:
           required: false
           schema:
             $ref: '#/components/schemas/xname'
-          description: "Matches all objects with the given xname in thier node_nics property"
+          description: "Matches all objects with the given xname in their node_nics property"
         - in: query
           name: networks
           required: false
@@ -766,7 +766,7 @@ components:
       example: "x0c0s0b0"
     hwtype:
       type: string
-      # Regenerate thispattern by running "grep "HMSType = " pkg/base/hmstypes.go | awk '{print "^" $4 "$"}' | tr -d '"' | grep -v -e INVALID -e 'All*' -e Partition | tr '\n' '|'"
+      # Regenerate this pattern by running "grep "HMSType = " pkg/base/hmstypes.go | awk '{print "^" $4 "$"}' | tr -d '"' | grep -v -e INVALID -e 'All*' -e Partition | tr '\n' '|'"
       pattern: &hwtype_pattern "^CDU$|^CabinetCDU$|^Cabinet$|^CabinetBMC$|^CabinetPDUController$|^CabinetPDU$|^CabinetPDUNic$|^CabinetPDUOutlet$|^Chassis$|^ChassisBMC$|^CMMRectifier$|^CMMFpga$|^CEC$|^ComputeModule$|^RouterModule$|^NodeBMC$|^NodeBMCNic$|^NodeEnclosure$|^NodePowerConnector$|^Node$|^Processor$|^NodeNIC$|^NodeHsnNIC$|^Memory$|^NodeAccel$|^NodeFpga$|^HSNAsic$|^RouterFpga$|^RouterTORFpga$|^RouterBMC$|^RouterBMCNic$|^HSNBoard$|^HSNLink$|^HSNConnector$|^HSNConnectorPort$|^MgmtSwitch$|^MgmtSwitchConnector$|^SMSBox$|^System$"
       description: &hwtype_description "The type of this piece of hardware.  This is an optional hint during upload; it will be ignored if it does not match the xname"
       example: &hwtype_example "comptype_ncard"
@@ -911,10 +911,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/xname'
-          description: "An array of Xnames that the hardware_mgmt_switch_connector is connected to.  Excludes the parent."
+          description: "An array of xnames that the hardware_mgmt_switch_connector is connected to.  Excludes the parent."
         VendorName:
           type: string
-          description: "The vendor-assigned name for this port, as it appears in the switch management software.  Typically this is something like \"GigabitEthernet 1/31\" (berkley-style names), but may be any string."
+          description: "The vendor-assigned name for this port, as it appears in the switch management software.  Typically this is something like \"GigabitEthernet 1/31\" (Berkeley-style names), but may be any string."
     hardware_comptype_rtr_bmc:
       $ref: '#/components/schemas/hardware_bmc'
     hardware_comptype_bmc_nic:
@@ -927,12 +927,12 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/xname'
-          description: "An array of network names that this nic is connected to"
+          description: "An array of network names that this NIC is connected to"
         Peers:
           type: array
           items:
             $ref: '#/components/schemas/xname'
-          description: 'An array of xnames this nic is connected directly to.  These ideally connector xnames, not switches'
+          description: 'An array of xnames this NIC is connected directly to.  These ideally connector xnames, not switches'
     hardware_comptype_rtmod:
       $ref: '#/components/schemas/hardware_powered_device'
     hardware_comptype_mgmt_switch:
