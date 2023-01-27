@@ -5,7 +5,7 @@ info:
   description: >-
     The Firmware Action Service (FAS) provides a common interface for managing the firmware versions of
     hardware in a system via Redfish. FAS tracks and performs actions like upgrade, downgrade,
-    create or restore snapshots for system firmware. FAS processes an *image list*, which is a json file containing firmware
+    create, or restore snapshots for system firmware. FAS processes an *image list*, which is a JSON file containing firmware
     versions for each component on a node.
 
 
@@ -33,7 +33,7 @@ info:
 
     Initiate a firmware action. An action is a collection of operations initiated by user
     request to update the firmware images on a set of hardware.
-    Example: Update the gigabyte BMC targets to the latest version.
+    Example: Update the Gigabyte BMC targets to the latest version.
 
     ### /snapshots
 
@@ -132,14 +132,14 @@ info:
 servers:
   - url: https://rocket-ncn-w001.us.cray.com/apis/fas/v1
   - url: http://localhost:28800/v1
-  - url: http://localhost:28800/
+  - url: http://localhost:28800
 
 paths:
   /actions:
     get:
       summary: Retrieve all firmware action sets with summary information
       description: |
-        Retrieve all valid action IDs along with start time, and
+        Retrieve all valid action IDs along with start time and
         end time for completed and in-progress actions.
       responses:
         200:
@@ -180,7 +180,7 @@ paths:
         targetFilter:  -> determines the targets to run on
           * targets
 
-        imageFilter:   -> can specify a specific image uuid to use.
+        imageFilter:   -> can specify a specific image UUID to use.
           * imageID
 
         commands:
@@ -195,9 +195,9 @@ paths:
           * timeLimit -> time in seconds to let any operation execute
           * description
           * version - latest, earliest, explicit (used in conjunction with imageFilter)
-          * overwriteSameImage -> If the ‘fromFirmwareVersion’ and ‘toFirmwareVersion’
+          * overwriteSameImage -> If the 'fromFirmwareVersion' and 'toFirmwareVersion'
             of an operation are the same, FAS will not update the firmware image on the
-            device. Setting this parameter to ‘true’ causes FAS to send the update command
+            device. Setting this parameter to 'true' causes FAS to send the update command
             to the device. It cannot be verified via FAS if the firmware image was updated.
             Also note that FAS will send the update command to the device, but some devices
             are smart enough to realize the same image and not execute the command.
@@ -447,7 +447,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Problem7807'
         409:
-          description: Imaage Record Already Exists
+          description: Image Record Already Exists
           content:
             application/error:
               schema:
@@ -802,7 +802,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Problem7807'
         500:
-          description: Inernal Server Error
+          description: Internal Server Error
           content:
             application/error:
               schema:
@@ -825,7 +825,7 @@ paths:
 
   /loader/{loaderRunID}:
     get:
-      summary: Return the resutls of a loader run
+      summary: Return the results of a loader run
       description: Return the results of a loader run
       parameters:
         - name: loaderRunID
@@ -960,6 +960,10 @@ components:
           items:
             type: string
             format: uuid
+        errors:
+          type: array
+          items:
+            type: string
 
     ActionSummarys:
       type: object
@@ -1010,6 +1014,10 @@ components:
           items:
             type: string
             format: uuid
+        errors:
+          type: array
+          items:
+            type: string
 
     ActionDetail:
       type: object
@@ -1052,6 +1060,10 @@ components:
           items:
             type: string
             format: uuid
+        errors:
+          type: array
+          items:
+            type: string
 
     ActionID:
       type: object
@@ -1170,7 +1182,7 @@ components:
             $ref: '#/components/schemas/Target'
         error:
           type: string
-          description: any error that was encoutered while populating device information
+          description: any error that was encountered while populating device information
 
     ImageCreate:
       type: object
@@ -1223,7 +1235,7 @@ components:
           description: amount of time to wait between requests to the device to avoid overloading it
         forceResetType:
           type: string
-          description: the command to issue to the redfish device to force a reboot
+          description: the command to issue to the Redfish device to force a reboot
         s3URL:
           type: string
           example: s3://firmware/f1.1123.24.xz.iso
@@ -1295,7 +1307,7 @@ components:
           description: amount of time to wait between requests to the device to avoid overloading it
         forceResetType:
           type: string
-          description: the command to issue to the redfish device to force a reboot
+          description: the command to issue to the Redfish device to force a reboot
         s3URL:
           type: string
           example: s3://firmware/f1.1123.24.xz.iso
@@ -1341,19 +1353,19 @@ components:
           format: date-time
         state:
           type: string
-          enum: ['initial','configured','blocked','inProgress','needsVerifed','verifying','abort','noOperation','noSolution','succeeded','failed']
+          enum: ['initial','configured','blocked','inProgress','needsVerified','verifying','abort','noOperation','noSolution','succeeded','failed']
           description:  >-
             The state of the operation -
               *initial* - not yet started
               *configured* - configured, but not yet started
               *blocked* - cannot run because another operation is blocking this
               *inProgress* - operation started - sent update command
-              *needsVerifed* - operation was sent update command, waiting for finish to verify
-              *verifing* - opertion verifing operation
+              *needsVerified* - operation was sent update command, waiting for finish to verify
+              *verifying* - operation verifying operation
               *aborted* - operation was aborted
               *noOperation* - operation has nothing to do - already at firmware level
               *noSolution* - operation could not find a firmware to flash
-              *succeeded* - opeartion completed successfully
+              *succeeded* - operation completed successfully
               *failed* - operation failed
         error:
           type: string
@@ -1434,7 +1446,7 @@ components:
           type: integer
           example: 32
         failed:
-          description: count of operations that have failed to compelete firmware task
+          description: count of operations that have failed to complete firmware task
           type: integer
           example: 10
         success:
@@ -1442,7 +1454,7 @@ components:
           type: integer
           example: 58
         noSolution:
-          description: count of operations that have no viable solution to satisfy the request.  This is usally because no suitable imabe exists.
+          description: count of operations that have no viable solution to satisfy the request.  This is usually because no suitable image exists.
           type: integer
           example: 4
         noOperation:
@@ -1450,7 +1462,7 @@ components:
           type: integer
           example: 6
         aborted:
-          description: count of operations that have been aborted.  It is in-determinate if their firmware task was executed.
+          description: count of operations that have been aborted.  It is indeterminate if their firmware task was executed.
           type: integer
           example: 0
         unknown:
@@ -1492,7 +1504,7 @@ components:
           items:
             $ref: '#/components/schemas/OperationKey'
         failed:
-          description: count of operations that have failed to compelete firmware task
+          description: count of operations that have failed to complete firmware task
           type: array
           items:
             $ref: '#/components/schemas/OperationKey'
@@ -1502,7 +1514,7 @@ components:
           items:
             $ref: '#/components/schemas/OperationKey'
         noSolution:
-          description: count of operations that have no viable solution to satisfy the request.  This is usally because no suitable imabe exists.
+          description: count of operations that have no viable solution to satisfy the request.  This is usually because no suitable image exists.
           type: array
           items:
             $ref: '#/components/schemas/OperationKey'
@@ -1512,7 +1524,7 @@ components:
           items:
             $ref: '#/components/schemas/OperationKey'
         aborted:
-          description: count of operations that have been aborted.  It is in-determinate if their firmware task was executed.
+          description: count of operations that have been aborted.  It is indeterminate if their firmware task was executed.
           type: array
           items:
             $ref: '#/components/schemas/OperationKey'
@@ -1556,7 +1568,7 @@ components:
           items:
             $ref: '#/components/schemas/Operation'
         failed:
-          description: count of operations that have failed to compelete firmware task
+          description: count of operations that have failed to complete firmware task
           type: array
           items:
             $ref: '#/components/schemas/Operation'
@@ -1566,7 +1578,7 @@ components:
           items:
             $ref: '#/components/schemas/Operation'
         noSolution:
-          description: count of operations that have no viable solution to satisfy the request.  This is usally because no suitable imabe exists.
+          description: count of operations that have no viable solution to satisfy the request.  This is usually because no suitable image exists.
           type: array
           items:
             $ref: '#/components/schemas/Operation'
@@ -1576,7 +1588,7 @@ components:
           items:
             $ref: '#/components/schemas/Operation'
         aborted:
-          description: count of operations that have been aborted.  It is in-determinate if their firmware task was executed.
+          description: count of operations that have been aborted.  It is indeterminate if their firmware task was executed.
           type: array
           items:
             $ref: '#/components/schemas/Operation'
@@ -1711,6 +1723,10 @@ components:
             $ref: '#/components/schemas/DeviceFirmware'
         parameters:
           $ref: "#/components/schemas/SnapshotParameters"
+        errors:
+          type: array
+          items:
+            type: string
 
     SnapshotAll:
       type: object
@@ -1736,7 +1752,7 @@ components:
         expirationTime:
           type: string
           format: date-time
-          description: time at which the snapshot expires and is automatically Deleted
+          description: time at which the snapshot expires and is automatically deleted
         stateComponentFilter:
           $ref: '#/components/schemas/ActionParameters_StateComponentFilter'
         inventoryHardwareFilter:
@@ -1782,4 +1798,4 @@ components:
           format: uuid
         error:
           type: string
-          description: any error that was encoutered while populating target information
+          description: any error that was encountered while populating target information
