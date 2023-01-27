@@ -1,7 +1,7 @@
 #
 # MIT License
 #
-# (C) Copyright 2020,2022 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2020-2023 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -106,12 +106,12 @@ def _setup_hardware_options(cmd, is_update=False):
     option('--'+option_extra_properties, nargs=1, type=click.STRING, multiple=False,
            payload_name=option_extra_properties,
            callback=_opt_callback,
-           help="The extra properties as a json string")(cmd)
+           help="The extra properties as a JSON string")(cmd)
 
     option('--'+option_payload_file, nargs=1, type=click.STRING, multiple=False,
            payload_name=option_payload_file,
            callback=_opt_callback,
-           help="A file that contains the json for the hardware")(cmd)
+           help="A file that contains the JSON for the hardware")(cmd)
 
     params = []
     for p in cmd.params:

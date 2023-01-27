@@ -2,7 +2,7 @@
 
 MIT License
 
-(C) Copyright [2022] Hewlett Packard Enterprise Development LP
+(C) Copyright 2022-2023 Hewlett Packard Enterprise Development LP
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -182,7 +182,7 @@ def execute_transition(ctx, xnames, include, op):
     tReq = {}
     tReq['location'] = []
     # CrayCLI doesn't allow the use of 'init' as a subcommand. Reinit is used
-    # for the PCS CLI but needs converstion to the PCS API's 'init'.
+    # for the PCS CLI but needs conversion to the PCS API's 'init'.
     if op == 'reinit':
         tReq['operation'] = 'init'
     else:

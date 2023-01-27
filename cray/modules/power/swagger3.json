@@ -1,23 +1,44 @@
 {
     "openapi": "3.0.0",
     "info": {
-        "title": "Power Control Service",
-        "description": "",
-        "version": "1.0.0"
+        "title": "Power Control Service (PCS)",
+        "license": {
+            "name": "MIT"
+        },
+        "version": "1.0",
+        "description": "The Power Control Service (PCS) performs power-related operations on  system components - nodes, blades, and chassis.  PCS refers to system components by their xname, or system identifier. \n\nThis REST API provides the following functions:\n* Turn xnames on or off.\n* Perform hard and soft reset actions.\n* Set and retrieve power capping parameters and capabilities.\n* Get node rules which are various parameters relating to power operations.\n\n## Resources\n### /transitions\nPower xname on or off.\n### /power-status\nGet power status of xnames.\n### /power-cap\n### /power-cap-snapshot\nGet and set power capping parameters.\n## Workflows\n### Set Power Cap for a list of targets\n#### PATCH /power-cap\nSend a JSON payload with a list of targets and power capping parameters to be applied to the targets.  This is a non-blocking operation. A task ID is returned, used to query the status of the task and get the requested information.\n### Get Power Cap status and information for a power cap task\n#### GET /power-cap/{taskID}\nRetrieve status of specified power cap PATCH operation and current values.\n### Get Power Cap parameters and capabilities for a list of targets\n#### POST /power-cap/snapshot\nSend a JSON payload with a list of target xnames.  This will launch a task and return a snapshot ID which can be queried for status.\n### Get status and current Power Cap settings from recent power cap snapshot\n#### GET /power-cap/{taskID}\nQuery the status of a power cap snapshot task.  If completed, contains the current power cap values as read from the hardware."
     },
     "tags": [
         {
-            "name": "component control"
+            "name": "transitions",
+            "description": "Endpoints that perform power operations to a set of xnames"
         },
         {
-            "name": "power capping"
+            "name": "power-status",
+            "description": "Endpoints that retrieve power status of xnames"
+        },
+        {
+            "name": "power-cap",
+            "description": "Endpoints that retrieve or set power cap parameters"
         }
     ],
     "servers": [
         {
-            "url": "http://api-gw-service-nmn.local/apis/power-control/v1"
+            "url": "https://api-gw-service-nmn.local/apis/power-control/v1",
+            "description": "Production API service.  Access from outside the service mesh."
+        },
+        {
+            "url": "http://cray-power-control/v1",
+            "description": "Access from inside the service mesh."
+        },
+        {
+            "url": "https://loki-ncn-m001.us.cray.com/apis/power-control/v1",
+            "description": "External API access."
+        },
+        {
+            "url": "http://localhost:26970",
+            "description": "Localhost access to power-control"
         }
     ],
     "paths": {}
-
 }

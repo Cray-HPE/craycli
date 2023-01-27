@@ -1,6 +1,6 @@
 # MIT License
 #
-# (C) Copyright [2020-2022] Hewlett Packard Enterprise Development LP
+# (C) Copyright 2020-2023 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -72,7 +72,7 @@ def setup_groups_partitions_create(hsm_cli, command):
     create_command = hsm_cli.commands[command].commands['create']
 
     option('--members-file', callback=_opt_callback, type=str, metavar='TEXT',
-           help="A file containing a comma separated list of xnames to be added as members."
+           help="A file containing a comma-separated list of xnames to be added as members."
            " This overrides --members-ids.")(create_command)
     new_params = create_command.params[-1:]
     for param in create_command.params[:-1]:

@@ -3,7 +3,7 @@
     "info": {
         "version": "0.1",
         "title": "System Layout Service",
-        "description": "System Layout Service (SLS) holds information on the complete, designed system.\nSLS gets this information from an input file on the system.\nBesides information like what hardware should be present in a system, SLS\nalso stores information about what network connections exist and what power\nconnections exist. SLS details the physical locations of network hardware,\ncompute nodes and cabinets. Further, it stores information about the network,\nsuch as which port on which switch should be connected to each compute node.\nThe API allows updating this information as well.\n\n\nNote that SLS is not responsible for verifying that the system is set up\ncorrectly. It only lets the Shasta system know what the system should be\nconfigured with. SLS does not store the details of the actual\nhardware like hardware identifiers. Instead it stores a generalized abstraction\nof the system that other services may use. SLS thus does not need to change as\nhardware within the system is replaced. Interaction with SLS is required if\nthe system setup changes – for example, if system cabling is altered or during \ninstallation, expansion or reduction. SLS does not interact with the hardware.\n\nEach object in SLS has the following basic properties:\n* Parent – Each object in SLS has a parent object except the system root (s0).\n* Children – Objects may have children.\n* xname – Every object has an xname – a unique identifier for that object.\n* Type – a hardware type like \"comptype_ncard\", \"comptype_cabinet\".\n* Class – kind of hardware like \"River\" or \"Mountain\"\n* TypeString – a human readable type like \"Cabinet\"\n\nSome objects may have additional properties depending on their type. For example, additional\nproperties for cabinets include \"Network\", \"IP6Prefix\", \"IP4Base\", \"MACprefix\" etc.\n\n\n## Resources\n\n### /hardware\n\nCreate hardware entries in SLS. This resource can be used when you add new\ncomponents or expand your system. Interaction with this resource is not required if a\ncomponent is removed or replaced.\n\n### /hardware/{xname}\n\nRetrieve, update, or delete information about specific xnames.\n\n\n### /search/hardware\n\nUses HTTP query parameters to find hardware entries with matching properties. Returns a\nJSON list of xnames. If multiple query parameters are passed, any returned hardware must\nmatch all parameters.\n\nFor example, a query string of \"?parent=x0\" would return a list of all children of cabinet\nx0. A query string of \"?type=comptype_node\" would return a list of all compute\nnodes.\n\nValid query parameters are: xname, parent, class, type, power_connector, node_nics, networks, peers.\n\n\n### /search/networks\n\nUses HTTP query parameters to find network entries with matching properties.\n\n### /networks\n\nCreate new network objects or retrieve networks available in the system.\n\n### /networks/{network}\n\nRetrieve, update, or delete information about specific networks.\n\n### /dumpstate\n\nDumps the current database state of the service. This may be useful\nwhen you are backing up the system or planning a reinstall of the system.\n\n### /loadstate\n\nUpload and overwrite the current database with the contents of the posted data. The posted\ndata should be a state dump from /dumpstate. This may be useful to restore the SLS database\nafter you have reinstalled the system.\n\n\n## Workflows\n\n### Backup and Restore the SLS Database for Reinstallation\n\n#### GET /dumpstate\n\nPerform a dump of the current state of the SLS data. This should be done before reinstalling\nthe system. The database dump is a JSON blob in an SLS-specific format.\n\n#### POST /loadstate\n\nReimport the dump from /dumpstate and restore the SLS database after reinstall.\n    \n### Expand System\n\n#### POST /hardware\n\nAdd the new hardware objects.\n\n#### GET /hardware/{xname}\n\nReview hardware properties of the xname from the JSON array.\n\n### Remove Hardware\n\n#### DELETE /hardware\n\nRemove hardware from SLS\n\n### Modify Hardware Properties\n\n#### PATCH /hardware\n\nModify hardware properties in SLS. Only additional properties can be modified. Basic properties\nlike xname, parent, children, type, class, typestring cannot be modified. \n",
+        "description": "System Layout Service (SLS) holds information on the complete, designed system.\nSLS gets this information from an input file on the system.\nBesides information like what hardware should be present in a system, SLS\nalso stores information about what network connections exist and what power\nconnections exist. SLS details the physical locations of network hardware,\ncompute nodes and cabinets. Further, it stores information about the network,\nsuch as which port on which switch should be connected to each compute node.\nThe API allows updating this information as well.\n\n\nNote that SLS is not responsible for verifying that the system is set up\ncorrectly. It only lets the Shasta system know what the system should be\nconfigured with. SLS does not store the details of the actual\nhardware like hardware identifiers. Instead it stores a generalized abstraction\nof the system that other services may use. SLS thus does not need to change as\nhardware within the system is replaced. Interaction with SLS is required if\nthe system setup changes – for example, if system cabling is altered or during \ninstallation, expansion, or reduction. SLS does not interact with the hardware.\n\nEach object in SLS has the following basic properties:\n* Parent – Each object in SLS has a parent object except the system root (s0).\n* Children – Objects may have children.\n* xname – Every object has an xname – a unique identifier for that object.\n* Type – a hardware type like \"comptype_ncard\", \"comptype_cabinet\".\n* Class – kind of hardware like \"River\" or \"Mountain\"\n* TypeString – a human readable type like \"Cabinet\"\n\nSome objects may have additional properties depending on their type. For example, additional\nproperties for cabinets include \"Network\", \"IP6Prefix\", \"IP4Base\", \"MACprefix\" etc.\n\n\n## Resources\n\n### /hardware\n\nCreate hardware entries in SLS. This resource can be used when you add new\ncomponents or expand your system. Interaction with this resource is not required if a\ncomponent is removed or replaced.\n\n### /hardware/{xname}\n\nRetrieve, update, or delete information about specific xnames.\n\n\n### /search/hardware\n\nUses HTTP query parameters to find hardware entries with matching properties. Returns a\nJSON list of xnames. If multiple query parameters are passed, any returned hardware must\nmatch all parameters.\n\nFor example, a query string of \"?parent=x0\" would return a list of all children of cabinet\nx0. A query string of \"?type=comptype_node\" would return a list of all compute\nnodes.\n\nValid query parameters are: xname, parent, class, type, power_connector, node_nics, networks, peers.\n\n\n### /search/networks\n\nUses HTTP query parameters to find network entries with matching properties.\n\n### /networks\n\nCreate new network objects or retrieve networks available in the system.\n\n### /networks/{network}\n\nRetrieve, update, or delete information about specific networks.\n\n### /dumpstate\n\nDumps the current database state of the service. This may be useful\nwhen you are backing up the system or planning a reinstall of the system.\n\n### /loadstate\n\nUpload and overwrite the current database with the contents of the posted data. The posted\ndata should be a state dump from /dumpstate. This may be useful to restore the SLS database\nafter you have reinstalled the system.\n\n\n## Workflows\n\n### Backup and Restore the SLS Database for Reinstallation\n\n#### GET /dumpstate\n\nPerform a dump of the current state of the SLS data. This should be done before reinstalling\nthe system. The database dump is a JSON blob in an SLS-specific format.\n\n#### POST /loadstate\n\nReimport the dump from /dumpstate and restore the SLS database after reinstall.\n    \n### Expand System\n\n#### POST /hardware\n\nAdd the new hardware objects.\n\n#### GET /hardware/{xname}\n\nReview hardware properties of the xname from the JSON array.\n\n### Remove Hardware\n\n#### DELETE /hardware\n\nRemove hardware from SLS\n\n### Modify Hardware Properties\n\n#### PATCH /hardware\n\nModify hardware properties in SLS. Only additional properties can be modified. Basic properties\nlike xname, parent, children, type, class, typestring cannot be modified. \n",
         "license": {
             "name": "Cray Proprietary"
         }
@@ -473,11 +473,11 @@
                                                                     "description": "The xname of this piece of hardware",
                                                                     "example": "x0c0s0b0"
                                                                 },
-                                                                "description": "An array of Xnames that the hardware_mgmt_switch_connector is connected to.  Excludes the parent."
+                                                                "description": "An array of xnames that the hardware_mgmt_switch_connector is connected to.  Excludes the parent."
                                                             },
                                                             "VendorName": {
                                                                 "type": "string",
-                                                                "description": "The vendor-assigned name for this port, as it appears in the switch management software.  Typically this is something like \"GigabitEthernet 1/31\" (berkley-style names), but may be any string."
+                                                                "description": "The vendor-assigned name for this port, as it appears in the switch management software.  Typically this is something like \"GigabitEthernet 1/31\" (Berkeley-style names), but may be any string."
                                                             }
                                                         }
                                                     },
@@ -525,7 +525,7 @@
                                                                     "description": "The xname of this piece of hardware",
                                                                     "example": "x0c0s0b0"
                                                                 },
-                                                                "description": "An array of network names that this nic is connected to"
+                                                                "description": "An array of network names that this NIC is connected to"
                                                             },
                                                             "Peers": {
                                                                 "type": "array",
@@ -535,7 +535,7 @@
                                                                     "description": "The xname of this piece of hardware",
                                                                     "example": "x0c0s0b0"
                                                                 },
-                                                                "description": "An array of xnames this nic is connected directly to.  These ideally connector xnames, not switches"
+                                                                "description": "An array of xnames this NIC is connected directly to.  These ideally connector xnames, not switches"
                                                             }
                                                         }
                                                     },
@@ -554,7 +554,7 @@
                                                                     "description": "The xname of this piece of hardware",
                                                                     "example": "x0c0s0b0"
                                                                 },
-                                                                "description": "An array of network names that this nic is connected to"
+                                                                "description": "An array of network names that this NIC is connected to"
                                                             },
                                                             "Peers": {
                                                                 "type": "array",
@@ -564,7 +564,7 @@
                                                                     "description": "The xname of this piece of hardware",
                                                                     "example": "x0c0s0b0"
                                                                 },
-                                                                "description": "An array of xnames this nic is connected directly to.  These ideally connector xnames, not switches"
+                                                                "description": "An array of xnames this NIC is connected directly to.  These ideally connector xnames, not switches"
                                                             }
                                                         }
                                                     },
@@ -794,11 +794,11 @@
                                                             "description": "The xname of this piece of hardware",
                                                             "example": "x0c0s0b0"
                                                         },
-                                                        "description": "An array of Xnames that the hardware_mgmt_switch_connector is connected to.  Excludes the parent."
+                                                        "description": "An array of xnames that the hardware_mgmt_switch_connector is connected to.  Excludes the parent."
                                                     },
                                                     "VendorName": {
                                                         "type": "string",
-                                                        "description": "The vendor-assigned name for this port, as it appears in the switch management software.  Typically this is something like \"GigabitEthernet 1/31\" (berkley-style names), but may be any string."
+                                                        "description": "The vendor-assigned name for this port, as it appears in the switch management software.  Typically this is something like \"GigabitEthernet 1/31\" (Berkeley-style names), but may be any string."
                                                     }
                                                 }
                                             },
@@ -846,7 +846,7 @@
                                                             "description": "The xname of this piece of hardware",
                                                             "example": "x0c0s0b0"
                                                         },
-                                                        "description": "An array of network names that this nic is connected to"
+                                                        "description": "An array of network names that this NIC is connected to"
                                                     },
                                                     "Peers": {
                                                         "type": "array",
@@ -856,7 +856,7 @@
                                                             "description": "The xname of this piece of hardware",
                                                             "example": "x0c0s0b0"
                                                         },
-                                                        "description": "An array of xnames this nic is connected directly to.  These ideally connector xnames, not switches"
+                                                        "description": "An array of xnames this NIC is connected directly to.  These ideally connector xnames, not switches"
                                                     }
                                                 }
                                             },
@@ -875,7 +875,7 @@
                                                             "description": "The xname of this piece of hardware",
                                                             "example": "x0c0s0b0"
                                                         },
-                                                        "description": "An array of network names that this nic is connected to"
+                                                        "description": "An array of network names that this NIC is connected to"
                                                     },
                                                     "Peers": {
                                                         "type": "array",
@@ -885,7 +885,7 @@
                                                             "description": "The xname of this piece of hardware",
                                                             "example": "x0c0s0b0"
                                                         },
-                                                        "description": "An array of xnames this nic is connected directly to.  These ideally connector xnames, not switches"
+                                                        "description": "An array of xnames this NIC is connected directly to.  These ideally connector xnames, not switches"
                                                     }
                                                 }
                                             },
@@ -1146,11 +1146,11 @@
                                                                 "description": "The xname of this piece of hardware",
                                                                 "example": "x0c0s0b0"
                                                             },
-                                                            "description": "An array of Xnames that the hardware_mgmt_switch_connector is connected to.  Excludes the parent."
+                                                            "description": "An array of xnames that the hardware_mgmt_switch_connector is connected to.  Excludes the parent."
                                                         },
                                                         "VendorName": {
                                                             "type": "string",
-                                                            "description": "The vendor-assigned name for this port, as it appears in the switch management software.  Typically this is something like \"GigabitEthernet 1/31\" (berkley-style names), but may be any string."
+                                                            "description": "The vendor-assigned name for this port, as it appears in the switch management software.  Typically this is something like \"GigabitEthernet 1/31\" (Berkeley-style names), but may be any string."
                                                         }
                                                     }
                                                 },
@@ -1198,7 +1198,7 @@
                                                                 "description": "The xname of this piece of hardware",
                                                                 "example": "x0c0s0b0"
                                                             },
-                                                            "description": "An array of network names that this nic is connected to"
+                                                            "description": "An array of network names that this NIC is connected to"
                                                         },
                                                         "Peers": {
                                                             "type": "array",
@@ -1208,7 +1208,7 @@
                                                                 "description": "The xname of this piece of hardware",
                                                                 "example": "x0c0s0b0"
                                                             },
-                                                            "description": "An array of xnames this nic is connected directly to.  These ideally connector xnames, not switches"
+                                                            "description": "An array of xnames this NIC is connected directly to.  These ideally connector xnames, not switches"
                                                         }
                                                     }
                                                 },
@@ -1227,7 +1227,7 @@
                                                                 "description": "The xname of this piece of hardware",
                                                                 "example": "x0c0s0b0"
                                                             },
-                                                            "description": "An array of network names that this nic is connected to"
+                                                            "description": "An array of network names that this NIC is connected to"
                                                         },
                                                         "Peers": {
                                                             "type": "array",
@@ -1237,7 +1237,7 @@
                                                                 "description": "The xname of this piece of hardware",
                                                                 "example": "x0c0s0b0"
                                                             },
-                                                            "description": "An array of xnames this nic is connected directly to.  These ideally connector xnames, not switches"
+                                                            "description": "An array of xnames this NIC is connected directly to.  These ideally connector xnames, not switches"
                                                         }
                                                     }
                                                 },
@@ -1531,11 +1531,11 @@
                                                                 "description": "The xname of this piece of hardware",
                                                                 "example": "x0c0s0b0"
                                                             },
-                                                            "description": "An array of Xnames that the hardware_mgmt_switch_connector is connected to.  Excludes the parent."
+                                                            "description": "An array of xnames that the hardware_mgmt_switch_connector is connected to.  Excludes the parent."
                                                         },
                                                         "VendorName": {
                                                             "type": "string",
-                                                            "description": "The vendor-assigned name for this port, as it appears in the switch management software.  Typically this is something like \"GigabitEthernet 1/31\" (berkley-style names), but may be any string."
+                                                            "description": "The vendor-assigned name for this port, as it appears in the switch management software.  Typically this is something like \"GigabitEthernet 1/31\" (Berkeley-style names), but may be any string."
                                                         }
                                                     }
                                                 },
@@ -1583,7 +1583,7 @@
                                                                 "description": "The xname of this piece of hardware",
                                                                 "example": "x0c0s0b0"
                                                             },
-                                                            "description": "An array of network names that this nic is connected to"
+                                                            "description": "An array of network names that this NIC is connected to"
                                                         },
                                                         "Peers": {
                                                             "type": "array",
@@ -1593,7 +1593,7 @@
                                                                 "description": "The xname of this piece of hardware",
                                                                 "example": "x0c0s0b0"
                                                             },
-                                                            "description": "An array of xnames this nic is connected directly to.  These ideally connector xnames, not switches"
+                                                            "description": "An array of xnames this NIC is connected directly to.  These ideally connector xnames, not switches"
                                                         }
                                                     }
                                                 },
@@ -1612,7 +1612,7 @@
                                                                 "description": "The xname of this piece of hardware",
                                                                 "example": "x0c0s0b0"
                                                             },
-                                                            "description": "An array of network names that this nic is connected to"
+                                                            "description": "An array of network names that this NIC is connected to"
                                                         },
                                                         "Peers": {
                                                             "type": "array",
@@ -1622,7 +1622,7 @@
                                                                 "description": "The xname of this piece of hardware",
                                                                 "example": "x0c0s0b0"
                                                             },
-                                                            "description": "An array of xnames this nic is connected directly to.  These ideally connector xnames, not switches"
+                                                            "description": "An array of xnames this NIC is connected directly to.  These ideally connector xnames, not switches"
                                                         }
                                                     }
                                                 },
@@ -1858,11 +1858,11 @@
                                                             "description": "The xname of this piece of hardware",
                                                             "example": "x0c0s0b0"
                                                         },
-                                                        "description": "An array of Xnames that the hardware_mgmt_switch_connector is connected to.  Excludes the parent."
+                                                        "description": "An array of xnames that the hardware_mgmt_switch_connector is connected to.  Excludes the parent."
                                                     },
                                                     "VendorName": {
                                                         "type": "string",
-                                                        "description": "The vendor-assigned name for this port, as it appears in the switch management software.  Typically this is something like \"GigabitEthernet 1/31\" (berkley-style names), but may be any string."
+                                                        "description": "The vendor-assigned name for this port, as it appears in the switch management software.  Typically this is something like \"GigabitEthernet 1/31\" (Berkeley-style names), but may be any string."
                                                     }
                                                 }
                                             },
@@ -1910,7 +1910,7 @@
                                                             "description": "The xname of this piece of hardware",
                                                             "example": "x0c0s0b0"
                                                         },
-                                                        "description": "An array of network names that this nic is connected to"
+                                                        "description": "An array of network names that this NIC is connected to"
                                                     },
                                                     "Peers": {
                                                         "type": "array",
@@ -1920,7 +1920,7 @@
                                                             "description": "The xname of this piece of hardware",
                                                             "example": "x0c0s0b0"
                                                         },
-                                                        "description": "An array of xnames this nic is connected directly to.  These ideally connector xnames, not switches"
+                                                        "description": "An array of xnames this NIC is connected directly to.  These ideally connector xnames, not switches"
                                                     }
                                                 }
                                             },
@@ -1939,7 +1939,7 @@
                                                             "description": "The xname of this piece of hardware",
                                                             "example": "x0c0s0b0"
                                                         },
-                                                        "description": "An array of network names that this nic is connected to"
+                                                        "description": "An array of network names that this NIC is connected to"
                                                     },
                                                     "Peers": {
                                                         "type": "array",
@@ -1949,7 +1949,7 @@
                                                             "description": "The xname of this piece of hardware",
                                                             "example": "x0c0s0b0"
                                                         },
-                                                        "description": "An array of xnames this nic is connected directly to.  These ideally connector xnames, not switches"
+                                                        "description": "An array of xnames this NIC is connected directly to.  These ideally connector xnames, not switches"
                                                     }
                                                 }
                                             },
@@ -2210,11 +2210,11 @@
                                                                 "description": "The xname of this piece of hardware",
                                                                 "example": "x0c0s0b0"
                                                             },
-                                                            "description": "An array of Xnames that the hardware_mgmt_switch_connector is connected to.  Excludes the parent."
+                                                            "description": "An array of xnames that the hardware_mgmt_switch_connector is connected to.  Excludes the parent."
                                                         },
                                                         "VendorName": {
                                                             "type": "string",
-                                                            "description": "The vendor-assigned name for this port, as it appears in the switch management software.  Typically this is something like \"GigabitEthernet 1/31\" (berkley-style names), but may be any string."
+                                                            "description": "The vendor-assigned name for this port, as it appears in the switch management software.  Typically this is something like \"GigabitEthernet 1/31\" (Berkeley-style names), but may be any string."
                                                         }
                                                     }
                                                 },
@@ -2262,7 +2262,7 @@
                                                                 "description": "The xname of this piece of hardware",
                                                                 "example": "x0c0s0b0"
                                                             },
-                                                            "description": "An array of network names that this nic is connected to"
+                                                            "description": "An array of network names that this NIC is connected to"
                                                         },
                                                         "Peers": {
                                                             "type": "array",
@@ -2272,7 +2272,7 @@
                                                                 "description": "The xname of this piece of hardware",
                                                                 "example": "x0c0s0b0"
                                                             },
-                                                            "description": "An array of xnames this nic is connected directly to.  These ideally connector xnames, not switches"
+                                                            "description": "An array of xnames this NIC is connected directly to.  These ideally connector xnames, not switches"
                                                         }
                                                     }
                                                 },
@@ -2291,7 +2291,7 @@
                                                                 "description": "The xname of this piece of hardware",
                                                                 "example": "x0c0s0b0"
                                                             },
-                                                            "description": "An array of network names that this nic is connected to"
+                                                            "description": "An array of network names that this NIC is connected to"
                                                         },
                                                         "Peers": {
                                                             "type": "array",
@@ -2301,7 +2301,7 @@
                                                                 "description": "The xname of this piece of hardware",
                                                                 "example": "x0c0s0b0"
                                                             },
-                                                            "description": "An array of xnames this nic is connected directly to.  These ideally connector xnames, not switches"
+                                                            "description": "An array of xnames this NIC is connected directly to.  These ideally connector xnames, not switches"
                                                         }
                                                     }
                                                 },
@@ -2561,11 +2561,11 @@
                                                                 "description": "The xname of this piece of hardware",
                                                                 "example": "x0c0s0b0"
                                                             },
-                                                            "description": "An array of Xnames that the hardware_mgmt_switch_connector is connected to.  Excludes the parent."
+                                                            "description": "An array of xnames that the hardware_mgmt_switch_connector is connected to.  Excludes the parent."
                                                         },
                                                         "VendorName": {
                                                             "type": "string",
-                                                            "description": "The vendor-assigned name for this port, as it appears in the switch management software.  Typically this is something like \"GigabitEthernet 1/31\" (berkley-style names), but may be any string."
+                                                            "description": "The vendor-assigned name for this port, as it appears in the switch management software.  Typically this is something like \"GigabitEthernet 1/31\" (Berkeley-style names), but may be any string."
                                                         }
                                                     }
                                                 },
@@ -2613,7 +2613,7 @@
                                                                 "description": "The xname of this piece of hardware",
                                                                 "example": "x0c0s0b0"
                                                             },
-                                                            "description": "An array of network names that this nic is connected to"
+                                                            "description": "An array of network names that this NIC is connected to"
                                                         },
                                                         "Peers": {
                                                             "type": "array",
@@ -2623,7 +2623,7 @@
                                                                 "description": "The xname of this piece of hardware",
                                                                 "example": "x0c0s0b0"
                                                             },
-                                                            "description": "An array of xnames this nic is connected directly to.  These ideally connector xnames, not switches"
+                                                            "description": "An array of xnames this NIC is connected directly to.  These ideally connector xnames, not switches"
                                                         }
                                                     }
                                                 },
@@ -2642,7 +2642,7 @@
                                                                 "description": "The xname of this piece of hardware",
                                                                 "example": "x0c0s0b0"
                                                             },
-                                                            "description": "An array of network names that this nic is connected to"
+                                                            "description": "An array of network names that this NIC is connected to"
                                                         },
                                                         "Peers": {
                                                             "type": "array",
@@ -2652,7 +2652,7 @@
                                                                 "description": "The xname of this piece of hardware",
                                                                 "example": "x0c0s0b0"
                                                             },
-                                                            "description": "An array of xnames this nic is connected directly to.  These ideally connector xnames, not switches"
+                                                            "description": "An array of xnames this NIC is connected directly to.  These ideally connector xnames, not switches"
                                                         }
                                                     }
                                                 },
@@ -2934,7 +2934,7 @@
                             "description": "The xname of this piece of hardware",
                             "example": "x0c0s0b0"
                         },
-                        "description": "Matches all objects with the given xname in thier node_nics property"
+                        "description": "Matches all objects with the given xname in their node_nics property"
                     },
                     {
                         "in": "query",
@@ -3074,11 +3074,11 @@
                                                                     "description": "The xname of this piece of hardware",
                                                                     "example": "x0c0s0b0"
                                                                 },
-                                                                "description": "An array of Xnames that the hardware_mgmt_switch_connector is connected to.  Excludes the parent."
+                                                                "description": "An array of xnames that the hardware_mgmt_switch_connector is connected to.  Excludes the parent."
                                                             },
                                                             "VendorName": {
                                                                 "type": "string",
-                                                                "description": "The vendor-assigned name for this port, as it appears in the switch management software.  Typically this is something like \"GigabitEthernet 1/31\" (berkley-style names), but may be any string."
+                                                                "description": "The vendor-assigned name for this port, as it appears in the switch management software.  Typically this is something like \"GigabitEthernet 1/31\" (Berkeley-style names), but may be any string."
                                                             }
                                                         }
                                                     },
@@ -3126,7 +3126,7 @@
                                                                     "description": "The xname of this piece of hardware",
                                                                     "example": "x0c0s0b0"
                                                                 },
-                                                                "description": "An array of network names that this nic is connected to"
+                                                                "description": "An array of network names that this NIC is connected to"
                                                             },
                                                             "Peers": {
                                                                 "type": "array",
@@ -3136,7 +3136,7 @@
                                                                     "description": "The xname of this piece of hardware",
                                                                     "example": "x0c0s0b0"
                                                                 },
-                                                                "description": "An array of xnames this nic is connected directly to.  These ideally connector xnames, not switches"
+                                                                "description": "An array of xnames this NIC is connected directly to.  These ideally connector xnames, not switches"
                                                             }
                                                         }
                                                     },
@@ -3155,7 +3155,7 @@
                                                                     "description": "The xname of this piece of hardware",
                                                                     "example": "x0c0s0b0"
                                                                 },
-                                                                "description": "An array of network names that this nic is connected to"
+                                                                "description": "An array of network names that this NIC is connected to"
                                                             },
                                                             "Peers": {
                                                                 "type": "array",
@@ -3165,7 +3165,7 @@
                                                                     "description": "The xname of this piece of hardware",
                                                                     "example": "x0c0s0b0"
                                                                 },
-                                                                "description": "An array of xnames this nic is connected directly to.  These ideally connector xnames, not switches"
+                                                                "description": "An array of xnames this NIC is connected directly to.  These ideally connector xnames, not switches"
                                                             }
                                                         }
                                                     },
@@ -4506,11 +4506,11 @@
                                                                             "description": "The xname of this piece of hardware",
                                                                             "example": "x0c0s0b0"
                                                                         },
-                                                                        "description": "An array of Xnames that the hardware_mgmt_switch_connector is connected to.  Excludes the parent."
+                                                                        "description": "An array of xnames that the hardware_mgmt_switch_connector is connected to.  Excludes the parent."
                                                                     },
                                                                     "VendorName": {
                                                                         "type": "string",
-                                                                        "description": "The vendor-assigned name for this port, as it appears in the switch management software.  Typically this is something like \"GigabitEthernet 1/31\" (berkley-style names), but may be any string."
+                                                                        "description": "The vendor-assigned name for this port, as it appears in the switch management software.  Typically this is something like \"GigabitEthernet 1/31\" (Berkeley-style names), but may be any string."
                                                                     }
                                                                 }
                                                             },
@@ -4558,7 +4558,7 @@
                                                                             "description": "The xname of this piece of hardware",
                                                                             "example": "x0c0s0b0"
                                                                         },
-                                                                        "description": "An array of network names that this nic is connected to"
+                                                                        "description": "An array of network names that this NIC is connected to"
                                                                     },
                                                                     "Peers": {
                                                                         "type": "array",
@@ -4568,7 +4568,7 @@
                                                                             "description": "The xname of this piece of hardware",
                                                                             "example": "x0c0s0b0"
                                                                         },
-                                                                        "description": "An array of xnames this nic is connected directly to.  These ideally connector xnames, not switches"
+                                                                        "description": "An array of xnames this NIC is connected directly to.  These ideally connector xnames, not switches"
                                                                     }
                                                                 }
                                                             },
@@ -4587,7 +4587,7 @@
                                                                             "description": "The xname of this piece of hardware",
                                                                             "example": "x0c0s0b0"
                                                                         },
-                                                                        "description": "An array of network names that this nic is connected to"
+                                                                        "description": "An array of network names that this NIC is connected to"
                                                                     },
                                                                     "Peers": {
                                                                         "type": "array",
@@ -4597,7 +4597,7 @@
                                                                             "description": "The xname of this piece of hardware",
                                                                             "example": "x0c0s0b0"
                                                                         },
-                                                                        "description": "An array of xnames this nic is connected directly to.  These ideally connector xnames, not switches"
+                                                                        "description": "An array of xnames this NIC is connected directly to.  These ideally connector xnames, not switches"
                                                                     }
                                                                 }
                                                             },
@@ -5034,11 +5034,11 @@
                                                                                 "description": "The xname of this piece of hardware",
                                                                                 "example": "x0c0s0b0"
                                                                             },
-                                                                            "description": "An array of Xnames that the hardware_mgmt_switch_connector is connected to.  Excludes the parent."
+                                                                            "description": "An array of xnames that the hardware_mgmt_switch_connector is connected to.  Excludes the parent."
                                                                         },
                                                                         "VendorName": {
                                                                             "type": "string",
-                                                                            "description": "The vendor-assigned name for this port, as it appears in the switch management software.  Typically this is something like \"GigabitEthernet 1/31\" (berkley-style names), but may be any string."
+                                                                            "description": "The vendor-assigned name for this port, as it appears in the switch management software.  Typically this is something like \"GigabitEthernet 1/31\" (Berkeley-style names), but may be any string."
                                                                         }
                                                                     }
                                                                 },
@@ -5086,7 +5086,7 @@
                                                                                 "description": "The xname of this piece of hardware",
                                                                                 "example": "x0c0s0b0"
                                                                             },
-                                                                            "description": "An array of network names that this nic is connected to"
+                                                                            "description": "An array of network names that this NIC is connected to"
                                                                         },
                                                                         "Peers": {
                                                                             "type": "array",
@@ -5096,7 +5096,7 @@
                                                                                 "description": "The xname of this piece of hardware",
                                                                                 "example": "x0c0s0b0"
                                                                             },
-                                                                            "description": "An array of xnames this nic is connected directly to.  These ideally connector xnames, not switches"
+                                                                            "description": "An array of xnames this NIC is connected directly to.  These ideally connector xnames, not switches"
                                                                         }
                                                                     }
                                                                 },
@@ -5115,7 +5115,7 @@
                                                                                 "description": "The xname of this piece of hardware",
                                                                                 "example": "x0c0s0b0"
                                                                             },
-                                                                            "description": "An array of network names that this nic is connected to"
+                                                                            "description": "An array of network names that this NIC is connected to"
                                                                         },
                                                                         "Peers": {
                                                                             "type": "array",
@@ -5125,7 +5125,7 @@
                                                                                 "description": "The xname of this piece of hardware",
                                                                                 "example": "x0c0s0b0"
                                                                             },
-                                                                            "description": "An array of xnames this nic is connected directly to.  These ideally connector xnames, not switches"
+                                                                            "description": "An array of xnames this NIC is connected directly to.  These ideally connector xnames, not switches"
                                                                         }
                                                                     }
                                                                 },
@@ -5888,11 +5888,11 @@
                                             "description": "The xname of this piece of hardware",
                                             "example": "x0c0s0b0"
                                         },
-                                        "description": "An array of Xnames that the hardware_mgmt_switch_connector is connected to.  Excludes the parent."
+                                        "description": "An array of xnames that the hardware_mgmt_switch_connector is connected to.  Excludes the parent."
                                     },
                                     "VendorName": {
                                         "type": "string",
-                                        "description": "The vendor-assigned name for this port, as it appears in the switch management software.  Typically this is something like \"GigabitEthernet 1/31\" (berkley-style names), but may be any string."
+                                        "description": "The vendor-assigned name for this port, as it appears in the switch management software.  Typically this is something like \"GigabitEthernet 1/31\" (Berkeley-style names), but may be any string."
                                     }
                                 }
                             },
@@ -5940,7 +5940,7 @@
                                             "description": "The xname of this piece of hardware",
                                             "example": "x0c0s0b0"
                                         },
-                                        "description": "An array of network names that this nic is connected to"
+                                        "description": "An array of network names that this NIC is connected to"
                                     },
                                     "Peers": {
                                         "type": "array",
@@ -5950,7 +5950,7 @@
                                             "description": "The xname of this piece of hardware",
                                             "example": "x0c0s0b0"
                                         },
-                                        "description": "An array of xnames this nic is connected directly to.  These ideally connector xnames, not switches"
+                                        "description": "An array of xnames this NIC is connected directly to.  These ideally connector xnames, not switches"
                                     }
                                 }
                             },
@@ -5969,7 +5969,7 @@
                                             "description": "The xname of this piece of hardware",
                                             "example": "x0c0s0b0"
                                         },
-                                        "description": "An array of network names that this nic is connected to"
+                                        "description": "An array of network names that this NIC is connected to"
                                     },
                                     "Peers": {
                                         "type": "array",
@@ -5979,7 +5979,7 @@
                                             "description": "The xname of this piece of hardware",
                                             "example": "x0c0s0b0"
                                         },
-                                        "description": "An array of xnames this nic is connected directly to.  These ideally connector xnames, not switches"
+                                        "description": "An array of xnames this NIC is connected directly to.  These ideally connector xnames, not switches"
                                     }
                                 }
                             },
@@ -6194,11 +6194,11 @@
                                             "description": "The xname of this piece of hardware",
                                             "example": "x0c0s0b0"
                                         },
-                                        "description": "An array of Xnames that the hardware_mgmt_switch_connector is connected to.  Excludes the parent."
+                                        "description": "An array of xnames that the hardware_mgmt_switch_connector is connected to.  Excludes the parent."
                                     },
                                     "VendorName": {
                                         "type": "string",
-                                        "description": "The vendor-assigned name for this port, as it appears in the switch management software.  Typically this is something like \"GigabitEthernet 1/31\" (berkley-style names), but may be any string."
+                                        "description": "The vendor-assigned name for this port, as it appears in the switch management software.  Typically this is something like \"GigabitEthernet 1/31\" (Berkeley-style names), but may be any string."
                                     }
                                 }
                             },
@@ -6246,7 +6246,7 @@
                                             "description": "The xname of this piece of hardware",
                                             "example": "x0c0s0b0"
                                         },
-                                        "description": "An array of network names that this nic is connected to"
+                                        "description": "An array of network names that this NIC is connected to"
                                     },
                                     "Peers": {
                                         "type": "array",
@@ -6256,7 +6256,7 @@
                                             "description": "The xname of this piece of hardware",
                                             "example": "x0c0s0b0"
                                         },
-                                        "description": "An array of xnames this nic is connected directly to.  These ideally connector xnames, not switches"
+                                        "description": "An array of xnames this NIC is connected directly to.  These ideally connector xnames, not switches"
                                     }
                                 }
                             },
@@ -6275,7 +6275,7 @@
                                             "description": "The xname of this piece of hardware",
                                             "example": "x0c0s0b0"
                                         },
-                                        "description": "An array of network names that this nic is connected to"
+                                        "description": "An array of network names that this NIC is connected to"
                                     },
                                     "Peers": {
                                         "type": "array",
@@ -6285,7 +6285,7 @@
                                             "description": "The xname of this piece of hardware",
                                             "example": "x0c0s0b0"
                                         },
-                                        "description": "An array of xnames this nic is connected directly to.  These ideally connector xnames, not switches"
+                                        "description": "An array of xnames this NIC is connected directly to.  These ideally connector xnames, not switches"
                                     }
                                 }
                             },
@@ -6538,11 +6538,11 @@
                                             "description": "The xname of this piece of hardware",
                                             "example": "x0c0s0b0"
                                         },
-                                        "description": "An array of Xnames that the hardware_mgmt_switch_connector is connected to.  Excludes the parent."
+                                        "description": "An array of xnames that the hardware_mgmt_switch_connector is connected to.  Excludes the parent."
                                     },
                                     "VendorName": {
                                         "type": "string",
-                                        "description": "The vendor-assigned name for this port, as it appears in the switch management software.  Typically this is something like \"GigabitEthernet 1/31\" (berkley-style names), but may be any string."
+                                        "description": "The vendor-assigned name for this port, as it appears in the switch management software.  Typically this is something like \"GigabitEthernet 1/31\" (Berkeley-style names), but may be any string."
                                     }
                                 }
                             },
@@ -6590,7 +6590,7 @@
                                             "description": "The xname of this piece of hardware",
                                             "example": "x0c0s0b0"
                                         },
-                                        "description": "An array of network names that this nic is connected to"
+                                        "description": "An array of network names that this NIC is connected to"
                                     },
                                     "Peers": {
                                         "type": "array",
@@ -6600,7 +6600,7 @@
                                             "description": "The xname of this piece of hardware",
                                             "example": "x0c0s0b0"
                                         },
-                                        "description": "An array of xnames this nic is connected directly to.  These ideally connector xnames, not switches"
+                                        "description": "An array of xnames this NIC is connected directly to.  These ideally connector xnames, not switches"
                                     }
                                 }
                             },
@@ -6619,7 +6619,7 @@
                                             "description": "The xname of this piece of hardware",
                                             "example": "x0c0s0b0"
                                         },
-                                        "description": "An array of network names that this nic is connected to"
+                                        "description": "An array of network names that this NIC is connected to"
                                     },
                                     "Peers": {
                                         "type": "array",
@@ -6629,7 +6629,7 @@
                                             "description": "The xname of this piece of hardware",
                                             "example": "x0c0s0b0"
                                         },
-                                        "description": "An array of xnames this nic is connected directly to.  These ideally connector xnames, not switches"
+                                        "description": "An array of xnames this NIC is connected directly to.  These ideally connector xnames, not switches"
                                     }
                                 }
                             },
@@ -6891,11 +6891,11 @@
                             "description": "The xname of this piece of hardware",
                             "example": "x0c0s0b0"
                         },
-                        "description": "An array of Xnames that the hardware_mgmt_switch_connector is connected to.  Excludes the parent."
+                        "description": "An array of xnames that the hardware_mgmt_switch_connector is connected to.  Excludes the parent."
                     },
                     "VendorName": {
                         "type": "string",
-                        "description": "The vendor-assigned name for this port, as it appears in the switch management software.  Typically this is something like \"GigabitEthernet 1/31\" (berkley-style names), but may be any string."
+                        "description": "The vendor-assigned name for this port, as it appears in the switch management software.  Typically this is something like \"GigabitEthernet 1/31\" (Berkeley-style names), but may be any string."
                     }
                 }
             },
@@ -6943,7 +6943,7 @@
                             "description": "The xname of this piece of hardware",
                             "example": "x0c0s0b0"
                         },
-                        "description": "An array of network names that this nic is connected to"
+                        "description": "An array of network names that this NIC is connected to"
                     },
                     "Peers": {
                         "type": "array",
@@ -6953,7 +6953,7 @@
                             "description": "The xname of this piece of hardware",
                             "example": "x0c0s0b0"
                         },
-                        "description": "An array of xnames this nic is connected directly to.  These ideally connector xnames, not switches"
+                        "description": "An array of xnames this NIC is connected directly to.  These ideally connector xnames, not switches"
                     }
                 }
             },
@@ -6972,7 +6972,7 @@
                             "description": "The xname of this piece of hardware",
                             "example": "x0c0s0b0"
                         },
-                        "description": "An array of network names that this nic is connected to"
+                        "description": "An array of network names that this NIC is connected to"
                     },
                     "Peers": {
                         "type": "array",
@@ -6982,7 +6982,7 @@
                             "description": "The xname of this piece of hardware",
                             "example": "x0c0s0b0"
                         },
-                        "description": "An array of xnames this nic is connected directly to.  These ideally connector xnames, not switches"
+                        "description": "An array of xnames this NIC is connected directly to.  These ideally connector xnames, not switches"
                     }
                 }
             },
@@ -7170,11 +7170,11 @@
                                     "description": "The xname of this piece of hardware",
                                     "example": "x0c0s0b0"
                                 },
-                                "description": "An array of Xnames that the hardware_mgmt_switch_connector is connected to.  Excludes the parent."
+                                "description": "An array of xnames that the hardware_mgmt_switch_connector is connected to.  Excludes the parent."
                             },
                             "VendorName": {
                                 "type": "string",
-                                "description": "The vendor-assigned name for this port, as it appears in the switch management software.  Typically this is something like \"GigabitEthernet 1/31\" (berkley-style names), but may be any string."
+                                "description": "The vendor-assigned name for this port, as it appears in the switch management software.  Typically this is something like \"GigabitEthernet 1/31\" (Berkeley-style names), but may be any string."
                             }
                         }
                     },
@@ -7222,7 +7222,7 @@
                                     "description": "The xname of this piece of hardware",
                                     "example": "x0c0s0b0"
                                 },
-                                "description": "An array of network names that this nic is connected to"
+                                "description": "An array of network names that this NIC is connected to"
                             },
                             "Peers": {
                                 "type": "array",
@@ -7232,7 +7232,7 @@
                                     "description": "The xname of this piece of hardware",
                                     "example": "x0c0s0b0"
                                 },
-                                "description": "An array of xnames this nic is connected directly to.  These ideally connector xnames, not switches"
+                                "description": "An array of xnames this NIC is connected directly to.  These ideally connector xnames, not switches"
                             }
                         }
                     },
@@ -7251,7 +7251,7 @@
                                     "description": "The xname of this piece of hardware",
                                     "example": "x0c0s0b0"
                                 },
-                                "description": "An array of network names that this nic is connected to"
+                                "description": "An array of network names that this NIC is connected to"
                             },
                             "Peers": {
                                 "type": "array",
@@ -7261,7 +7261,7 @@
                                     "description": "The xname of this piece of hardware",
                                     "example": "x0c0s0b0"
                                 },
-                                "description": "An array of xnames this nic is connected directly to.  These ideally connector xnames, not switches"
+                                "description": "An array of xnames this NIC is connected directly to.  These ideally connector xnames, not switches"
                             }
                         }
                     },
@@ -7517,11 +7517,11 @@
                                                         "description": "The xname of this piece of hardware",
                                                         "example": "x0c0s0b0"
                                                     },
-                                                    "description": "An array of Xnames that the hardware_mgmt_switch_connector is connected to.  Excludes the parent."
+                                                    "description": "An array of xnames that the hardware_mgmt_switch_connector is connected to.  Excludes the parent."
                                                 },
                                                 "VendorName": {
                                                     "type": "string",
-                                                    "description": "The vendor-assigned name for this port, as it appears in the switch management software.  Typically this is something like \"GigabitEthernet 1/31\" (berkley-style names), but may be any string."
+                                                    "description": "The vendor-assigned name for this port, as it appears in the switch management software.  Typically this is something like \"GigabitEthernet 1/31\" (Berkeley-style names), but may be any string."
                                                 }
                                             }
                                         },
@@ -7569,7 +7569,7 @@
                                                         "description": "The xname of this piece of hardware",
                                                         "example": "x0c0s0b0"
                                                     },
-                                                    "description": "An array of network names that this nic is connected to"
+                                                    "description": "An array of network names that this NIC is connected to"
                                                 },
                                                 "Peers": {
                                                     "type": "array",
@@ -7579,7 +7579,7 @@
                                                         "description": "The xname of this piece of hardware",
                                                         "example": "x0c0s0b0"
                                                     },
-                                                    "description": "An array of xnames this nic is connected directly to.  These ideally connector xnames, not switches"
+                                                    "description": "An array of xnames this NIC is connected directly to.  These ideally connector xnames, not switches"
                                                 }
                                             }
                                         },
@@ -7598,7 +7598,7 @@
                                                         "description": "The xname of this piece of hardware",
                                                         "example": "x0c0s0b0"
                                                     },
-                                                    "description": "An array of network names that this nic is connected to"
+                                                    "description": "An array of network names that this NIC is connected to"
                                                 },
                                                 "Peers": {
                                                     "type": "array",
@@ -7608,7 +7608,7 @@
                                                         "description": "The xname of this piece of hardware",
                                                         "example": "x0c0s0b0"
                                                     },
-                                                    "description": "An array of xnames this nic is connected directly to.  These ideally connector xnames, not switches"
+                                                    "description": "An array of xnames this NIC is connected directly to.  These ideally connector xnames, not switches"
                                                 }
                                             }
                                         },

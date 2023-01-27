@@ -1,32 +1,9 @@
-#
-# MIT License
-#
-# (C) Copyright 2022 Hewlett Packard Enterprise Development LP
-#
-# Permission is hereby granted, free of charge, to any person obtaining a
-# copy of this software and associated documentation files (the "Software"),
-# to deal in the Software without restriction, including without limitation
-# the rights to use, copy, modify, merge, publish, distribute, sublicense,
-# and/or sell copies of the Software, and to permit persons to whom the
-# Software is furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included
-# in all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-# THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
-# OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-# ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-# OTHER DEALINGS IN THE SOFTWARE.
-#
 """
 Parses OpenAPI spec files and other related classes
 
 MIT License
 
-(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+(C) Copyright 2020-2023 Hewlett Packard Enterprise Development LP
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -50,7 +27,7 @@ import json
 from copy import copy
 
 from cray.nesteddict import NestedDict
-from cray.constants import IGNORE_TAG, CONVERSTION_FLAG
+from cray.constants import IGNORE_TAG, CONVERSION_FLAG
 
 
 class Schema(object):
@@ -300,7 +277,7 @@ class Swagger(object):
     def _parse_body(self, body):
         data = NestedDict(**body['content'])
 
-        mime = self._get_prefered_mime(data.keys())
+        mime = self._get_preferred_mime(data.keys())
         self.mime = mime
         schema = data[mime]['schema']
         # Assume top level schemas are object type if not provided.
@@ -314,7 +291,7 @@ class Swagger(object):
         return optional
 
     @classmethod
-    def _get_prefered_mime(cls, mimes):
+    def _get_preferred_mime(cls, mimes):
         supported = [m for m in mimes if m in cls._SUPPORTED_MIMES]
         msg = 'Provided mime(s) not supported: {}'.format(mimes)
         if not supported:
@@ -434,7 +411,7 @@ class Swagger(object):
                     command = self._get_command(self._get_key(commands, verb),
                                                 route, method)
                     self.parsed[endpoint_key].set_deep(command, command_data)
-        self.parsed[CONVERSTION_FLAG] = True
+        self.parsed[CONVERSION_FLAG] = True
 
 
 def parse(path, **kwargs):
