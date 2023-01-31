@@ -45,6 +45,10 @@ CONTROL_VALUE = 1
 ###########################################################################
 cli = generate(__file__, name="power", condense=True)
 
+# The CLI commands for PCS are manually crafted in this file. Commands read in from
+# the Swagger file should be cleared out.
+cli.commands.clear()
+
 def xname_array(xnames):
     """
     Take the xnames tuple and pass each element through the hostlist expansion.
