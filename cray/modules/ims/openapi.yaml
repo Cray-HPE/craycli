@@ -2026,6 +2026,17 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/RecipeKeyValuePair'
+        arch:
+          description: Target architecture for the recipe.
+          example: aarch64
+          enum:
+            - aarch64
+            - x86_64
+          type: string
+        require_dkms:
+          description: Whether to enable DKMS for the job
+          type: boolean
+          example: false
     DeletedRecipeRecord:
       description: A Deleted Recipe Record
       type: object
@@ -2062,6 +2073,17 @@ components:
             - packer
           example: kiwi-ng
           type: string
+        arch:
+          description: Target architecture for the recipe.
+          example: aarch64
+          enum:
+            - aarch64
+            - x86_64
+          type: string
+        require_dkms:
+          description: Whether to enable DKMS for the job
+          type: boolean
+          example: false
         linux_distribution:
           description: Linux distribution being built
           enum:
@@ -2080,6 +2102,22 @@ components:
       properties:
         link:
           $ref: '#/components/schemas/ArtifactLinkRecord'
+        arch:
+          description: Target architecture for the recipe.
+          example: aarch64
+          enum:
+            - aarch64
+            - x86_64
+          type: string
+        require_dkms:
+          description: Whether enable DKMS for the job
+          type: boolean
+          example: false
+        template_dictionary:
+          description: List of key/value pairs to be templated into the recipe when building the image.
+          type: array
+          items:
+            $ref: '#/components/schemas/RecipeKeyValuePair'
     ImageRecord:
       description: An Image Record
       type: object
@@ -2105,6 +2143,13 @@ components:
           minLength: 1
         link:
           $ref: '#/components/schemas/ArtifactLinkRecord'
+        arch:
+          description: Target architecture for the recipe.
+          example: aarch64
+          enum:
+            - aarch64
+            - x86_64
+          type: string
     DeletedImageRecord:
       description: A Deleted Image Record
       type: object
@@ -2137,12 +2182,26 @@ components:
           minLength: 1
         link:
           $ref: '#/components/schemas/ArtifactLinkRecord'
+        arch:
+          description: Target architecture for the recipe.
+          example: aarch64
+          enum:
+            - aarch64
+            - x86_64
+          type: string
     ImagePatchRecord:
       description: Values to update an ImageRecord with
       type: object
       properties:
         link:
           $ref: '#/components/schemas/ArtifactLinkRecord'
+        arch:
+          description: Target architecture for the recipe.
+          example: aarch64
+          enum:
+            - aarch64
+            - x86_64
+          type: string
     JobRecord:
       description: A Job Record
       type: object
@@ -2244,6 +2303,18 @@ components:
           default: default
           type: string
           readOnly: true
+        arch:
+          readOnly: true
+          description: Target architecture for the recipe.
+          example: aarch64
+          enum:
+            - aarch64
+            - x86_64
+          type: string
+        require_dkms:
+          description: Whether enable DKMS for the job
+          type: boolean
+          example: false
     JobPatchRecord:
       description: Values to update a JobRecord with
       type: object

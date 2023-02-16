@@ -319,6 +319,7 @@ def test_cray_ims_recipes_create(cli_runner, rest_mock):
     s3_link_etag = new_random_string()
     test_key = new_random_string()
     test_value = new_random_string()
+    test_arch = "aarch64"
     result = runner.invoke(
         cli, ['ims', 'recipes', 'create',
               '--name', 'foo',
@@ -328,7 +329,9 @@ def test_cray_ims_recipes_create(cli_runner, rest_mock):
               '--link-path', s3_link_path,
               '--link-etag', s3_link_etag,
               '--template-dictionary-key', test_key,
-              '--template-dictionary-value', test_value]
+              '--template-dictionary-value', test_value,
+              '--require-dkms', True,
+              '--arch', test_arch]
     )
     assert result.exit_code == 0
     data = json.loads(result.output)
@@ -343,7 +346,22 @@ def test_cray_ims_recipes_create(cli_runner, rest_mock):
     assert data['body']['link'].get('etag', None) == s3_link_etag
     assert data['body'].get('template_dictionary') == [
         {'key': test_key, 'value': test_value}]
+    assert data['body'].get('arch', None) == test_arch
+    assert data['body'].get('require_dkms', None) is True
 
+
+# pylint: disable=redefined-outer-name
+def test_cray_ims_recipes_create_bad_arch(cli_runner, rest_mock):
+    """ Test cray ims recipes create ... happy path """
+    runner, cli, _ = cli_runner
+    test_arch = "junk"
+    result = runner.invoke(cli, ['ims', 'recipes', 'create',
+                                 '--name', 'foo',
+                                 '--linux-distribution', 'sles15',
+                                 '--recipe-type', 'kiwi-ng',
+                                 '--arch', test_arch])
+    assert result.exit_code == 2
+    assert '--arch' in result.output
 
 def test_cray_ims_recipes_create_missing_required(cli_runner, rest_mock):
     """Test cray ims recipes create ... when a required parameter is
@@ -494,12 +512,14 @@ def test_cray_ims_images_create(cli_runner, rest_mock):
     runner, cli, config = cli_runner
     s3_link_path = new_random_string()
     s3_link_etag = new_random_string()
+    test_arch = "aarch64"
     result = runner.invoke(
         cli, ['ims', 'images', 'create',
               '--name', 'foo',
               '--link-type', 's3',
               '--link-path', s3_link_path,
-              '--link-etag', s3_link_etag]
+              '--link-etag', s3_link_etag,
+              '--arch', test_arch]
     )
     assert result.exit_code == 0
     data = json.loads(result.output)
@@ -510,6 +530,7 @@ def test_cray_ims_images_create(cli_runner, rest_mock):
     assert data['body']['link'].get('type', None) == 's3'
     assert data['body']['link'].get('path', None) == s3_link_path
     assert data['body']['link'].get('etag', None) == s3_link_etag
+    assert 'arch' in data['body'] and data['body']['arch'] == test_arch
 
 
 def test_cray_ims_images_create_missing_required(cli_runner, rest_mock):
@@ -520,6 +541,24 @@ def test_cray_ims_images_create_missing_required(cli_runner, rest_mock):
     assert '--name' in result.output
 
 
+# pylint: disable=redefined-outer-name
+def test_cray_ims_images_create_bad_arch(cli_runner, rest_mock):
+    """ Test cray ims images create ... happy path """
+    runner, cli, _ = cli_runner
+    s3_link_path = new_random_string()
+    s3_link_etag = new_random_string()
+    test_arch = "junk"
+    result = runner.invoke(cli, ['ims', 'images', 'create',
+                                 '--name', 'foo',
+                                 '--link-type', 's3',
+                                 '--link-path', s3_link_path,
+                                 '--link-etag', s3_link_etag,
+                                 '--arch', test_arch])
+    assert result.exit_code == 2
+    assert '--arch' in result.output
+
+
+# pylint: disable=redefined-outer-name
 def test_cray_ims_images_update(cli_runner, rest_mock):
     """ Test cray ims images update ... """
     runner, cli, config = cli_runner
@@ -670,7 +709,7 @@ def test_cray_ims_jobs_describe(cli_runner, rest_mock):
     assert data['method'] == 'GET'
     assert data['url'] == f'{config["default"]["hostname"]}/apis/ims/v3/jobs/foo'
 
-
+# pylint: disable=too-many-locals
 def test_cray_ims_jobs_create_create(cli_runner, rest_mock):
     """ Test cray ims jobs create ... happy path """
     runner, cli, config = cli_runner
@@ -682,6 +721,7 @@ def test_cray_ims_jobs_create_create(cli_runner, rest_mock):
     test_kernel_file_name = new_random_string()
     test_image_root_archive_name = new_random_string()
     test_job_type = "create"
+    test_require_dkms = True
     result = runner.invoke(
         cli,
         ['ims', 'jobs', 'create',
@@ -692,48 +732,8 @@ def test_cray_ims_jobs_create_create(cli_runner, rest_mock):
          '--initrd-file-name', test_initrd_file_name,
          '--kernel-file-name', test_kernel_file_name,
          '--image-root-archive-name', test_image_root_archive_name,
-         '--job-type', test_job_type]
-
-    )
-    assert result.exit_code == 0
-    data = json.loads(result.output)
-    assert data['method'] == 'POST'
-    assert data['url'] == f'{config["default"]["hostname"]}/apis/ims/v3/jobs'
-    assert data['body'] == {
-        'build_env_size': int(test_build_env_size),
-        'enable_debug': True,
-        'public_key_id': test_public_key,
-        'artifact_id': test_artifact_id,
-        'initrd_file_name': test_initrd_file_name,
-        'kernel_file_name': test_kernel_file_name,
-        'image_root_archive_name': test_image_root_archive_name,
-        'kernel_parameters_file_name': 'kernel-parameters',
-        'job_type': test_job_type
-    }
-
-
-def test_cray_ims_jobs_create_customize(cli_runner, rest_mock):
-    """ Test cray ims jobs create ... happy path """
-    runner, cli, config = cli_runner
-    test_build_env_size = '15'
-    test_enable_debug = 'True'
-    test_public_key = new_random_string()
-    test_artifact_id = new_random_string()
-    test_initrd_file_name = new_random_string()
-    test_kernel_file_name = new_random_string()
-    test_image_root_archive_name = new_random_string()
-    test_job_type = "customize"
-    result = runner.invoke(
-        cli,
-        ['ims', 'jobs', 'create',
-         '--build-env-size', test_build_env_size,
-         '--enable-debug', test_enable_debug,
-         '--public-key-id', test_public_key,
-         '--artifact-id', test_artifact_id,
-         '--initrd-file-name', test_initrd_file_name,
-         '--kernel-file-name', test_kernel_file_name,
-         '--image-root-archive-name', test_image_root_archive_name,
-         '--job-type', test_job_type]
+         '--job-type', test_job_type,
+         '--require-dkms', test_require_dkms]
 
     )
     assert result.exit_code == 0
@@ -750,6 +750,51 @@ def test_cray_ims_jobs_create_customize(cli_runner, rest_mock):
         'image_root_archive_name': test_image_root_archive_name,
         'kernel_parameters_file_name': 'kernel-parameters',
         'job_type': test_job_type,
+        'require_dkms': test_require_dkms,
+    }
+
+# pylint: disable=too-many-locals
+def test_cray_ims_jobs_create_customize(cli_runner, rest_mock):
+    """ Test cray ims jobs create ... happy path """
+    runner, cli, config = cli_runner
+    test_build_env_size = '15'
+    test_enable_debug = 'True'
+    test_public_key = new_random_string()
+    test_artifact_id = new_random_string()
+    test_initrd_file_name = new_random_string()
+    test_kernel_file_name = new_random_string()
+    test_image_root_archive_name = new_random_string()
+    test_job_type = "customize"
+    test_require_dkms = True
+    result = runner.invoke(
+        cli,
+        ['ims', 'jobs', 'create',
+         '--build-env-size', test_build_env_size,
+         '--enable-debug', test_enable_debug,
+         '--public-key-id', test_public_key,
+         '--artifact-id', test_artifact_id,
+         '--initrd-file-name', test_initrd_file_name,
+         '--kernel-file-name', test_kernel_file_name,
+         '--image-root-archive-name', test_image_root_archive_name,
+         '--job-type', test_job_type,
+         '--require-dkms', test_require_dkms]
+
+    )
+    assert result.exit_code == 0
+    data = json.loads(result.output)
+    assert data['method'] == 'POST'
+    assert data['url'] == f'{config["default"]["hostname"]}/apis/ims/v3/jobs'
+    assert data['body'] == {
+        'build_env_size': int(test_build_env_size),
+        'enable_debug': True,
+        'public_key_id': test_public_key,
+        'artifact_id': test_artifact_id,
+        'initrd_file_name': test_initrd_file_name,
+        'kernel_file_name': test_kernel_file_name,
+        'image_root_archive_name': test_image_root_archive_name,
+        'kernel_parameters_file_name': 'kernel-parameters',
+        'job_type': test_job_type,
+        'require_dkms': test_require_dkms,
     }
 
 
