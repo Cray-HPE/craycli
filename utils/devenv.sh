@@ -23,7 +23,7 @@
 
 DIR=${1:-$PWD}
 CUR=$PWD
-IMAGE="arti.dev.cray.com/csm-internal-docker-stable-local/craycli/craycli-devenv:latest"
+IMAGE="arti.hpc.amslabs.hpecorp.net/csm-internal-docker-stable-local/craycli/craycli-devenv:latest"
 
 cd $DIR
 find . | grep -E "(__pycache__|\.pyc|\.pyo$)" | xargs rm -rf

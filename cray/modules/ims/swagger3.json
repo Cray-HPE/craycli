@@ -164,6 +164,20 @@
                                                         }
                                                     }
                                                 }
+                                            },
+                                            "platform": {
+                                                "description": "Target platform for the recipe.",
+                                                "example": "aarch64",
+                                                "enum": [
+                                                    "aarch64",
+                                                    "x86_64"
+                                                ],
+                                                "type": "string"
+                                            },
+                                            "require_dkms": {
+                                                "description": "Whether enable DKMS for the job",
+                                                "type": "boolean",
+                                                "example": false
                                             }
                                         }
                                     },
@@ -321,6 +335,20 @@
                                                 }
                                             }
                                         }
+                                    },
+                                    "platform": {
+                                        "description": "Target platform for the recipe.",
+                                        "example": "aarch64",
+                                        "enum": [
+                                            "aarch64",
+                                            "x86_64"
+                                        ],
+                                        "type": "string"
+                                    },
+                                    "require_dkms": {
+                                        "description": "Whether enable DKMS for the job",
+                                        "type": "boolean",
+                                        "example": false
                                     }
                                 }
                             }
@@ -429,6 +457,20 @@
                                                     }
                                                 }
                                             }
+                                        },
+                                        "platform": {
+                                            "description": "Target platform for the recipe.",
+                                            "example": "aarch64",
+                                            "enum": [
+                                                "aarch64",
+                                                "x86_64"
+                                            ],
+                                            "type": "string"
+                                        },
+                                        "require_dkms": {
+                                            "description": "Whether enable DKMS for the job",
+                                            "type": "boolean",
+                                            "example": false
                                         }
                                     }
                                 }
@@ -738,6 +780,20 @@
                                                     }
                                                 }
                                             }
+                                        },
+                                        "platform": {
+                                            "description": "Target platform for the recipe.",
+                                            "example": "aarch64",
+                                            "enum": [
+                                                "aarch64",
+                                                "x86_64"
+                                            ],
+                                            "type": "string"
+                                        },
+                                        "require_dkms": {
+                                            "description": "Whether enable DKMS for the job",
+                                            "type": "boolean",
+                                            "example": false
                                         }
                                     }
                                 }
@@ -824,6 +880,44 @@
                                                 "description": "Identifier specifying the artifact repository where the artifact is located",
                                                 "example": "s3",
                                                 "type": "string"
+                                            }
+                                        }
+                                    },
+                                    "platform": {
+                                        "description": "Target platform for the recipe.",
+                                        "example": "aarch64",
+                                        "enum": [
+                                            "aarch64",
+                                            "x86_64"
+                                        ],
+                                        "type": "string"
+                                    },
+                                    "require_dkms": {
+                                        "description": "Whether enable DKMS for the job",
+                                        "type": "boolean",
+                                        "example": false
+                                    },
+                                    "template_dictionary": {
+                                        "description": "List of key/value pairs to be templated into the recipe when building the image.",
+                                        "type": "array",
+                                        "items": {
+                                            "description": "Key/value pair used to template an IMS recipe",
+                                            "type": "object",
+                                            "required": [
+                                                "key",
+                                                "value"
+                                            ],
+                                            "properties": {
+                                                "key": {
+                                                    "description": "Template variable to replace in the IMS recipe",
+                                                    "example": "CSM_RELEASE_VERSION",
+                                                    "type": "string"
+                                                },
+                                                "value": {
+                                                    "description": "Value to replace the template variable in the IMS recipe",
+                                                    "example": "1.0.0",
+                                                    "type": "string"
+                                                }
                                             }
                                         }
                                     }
@@ -934,6 +1028,20 @@
                                                     }
                                                 }
                                             }
+                                        },
+                                        "platform": {
+                                            "description": "Target platform for the recipe.",
+                                            "example": "aarch64",
+                                            "enum": [
+                                                "aarch64",
+                                                "x86_64"
+                                            ],
+                                            "type": "string"
+                                        },
+                                        "require_dkms": {
+                                            "description": "Whether enable DKMS for the job",
+                                            "type": "boolean",
+                                            "example": false
                                         }
                                     }
                                 }
@@ -1310,6 +1418,15 @@
                                                         "type": "string"
                                                     }
                                                 }
+                                            },
+                                            "platform": {
+                                                "description": "Target platform for the recipe.",
+                                                "example": "aarch64",
+                                                "enum": [
+                                                    "aarch64",
+                                                    "x86_64"
+                                                ],
+                                                "type": "string"
                                             }
                                         }
                                     },
@@ -1423,6 +1540,15 @@
                                                 "type": "string"
                                             }
                                         }
+                                    },
+                                    "platform": {
+                                        "description": "Target platform for the recipe.",
+                                        "example": "aarch64",
+                                        "enum": [
+                                            "aarch64",
+                                            "x86_64"
+                                        ],
+                                        "type": "string"
                                     }
                                 }
                             }
@@ -1487,6 +1613,15 @@
                                                     "type": "string"
                                                 }
                                             }
+                                        },
+                                        "platform": {
+                                            "description": "Target platform for the recipe.",
+                                            "example": "aarch64",
+                                            "enum": [
+                                                "aarch64",
+                                                "x86_64"
+                                            ],
+                                            "type": "string"
                                         }
                                     }
                                 }
@@ -1752,6 +1887,15 @@
                                                     "type": "string"
                                                 }
                                             }
+                                        },
+                                        "platform": {
+                                            "description": "Target platform for the recipe.",
+                                            "example": "aarch64",
+                                            "enum": [
+                                                "aarch64",
+                                                "x86_64"
+                                            ],
+                                            "type": "string"
                                         }
                                     }
                                 }
@@ -1881,6 +2025,15 @@
                                                 "type": "string"
                                             }
                                         }
+                                    },
+                                    "platform": {
+                                        "description": "Target platform for the recipe.",
+                                        "example": "aarch64",
+                                        "enum": [
+                                            "aarch64",
+                                            "x86_64"
+                                        ],
+                                        "type": "string"
                                     }
                                 }
                             }
@@ -1945,6 +2098,15 @@
                                                     "type": "string"
                                                 }
                                             }
+                                        },
+                                        "platform": {
+                                            "description": "Target platform for the recipe.",
+                                            "example": "aarch64",
+                                            "enum": [
+                                                "aarch64",
+                                                "x86_64"
+                                            ],
+                                            "type": "string"
                                         }
                                     }
                                 }
@@ -3076,6 +3238,21 @@
                                                 "default": "default",
                                                 "type": "string",
                                                 "readOnly": true
+                                            },
+                                            "platform": {
+                                                "readOnly": true,
+                                                "description": "Target platform for the recipe.",
+                                                "example": "aarch64",
+                                                "enum": [
+                                                    "aarch64",
+                                                    "x86_64"
+                                                ],
+                                                "type": "string"
+                                            },
+                                            "require_dkms": {
+                                                "description": "Whether enable DKMS for the job",
+                                                "type": "boolean",
+                                                "example": false
                                             }
                                         }
                                     },
@@ -3321,6 +3498,21 @@
                                         "default": "default",
                                         "type": "string",
                                         "readOnly": true
+                                    },
+                                    "platform": {
+                                        "readOnly": true,
+                                        "description": "Target platform for the recipe.",
+                                        "example": "aarch64",
+                                        "enum": [
+                                            "aarch64",
+                                            "x86_64"
+                                        ],
+                                        "type": "string"
+                                    },
+                                    "require_dkms": {
+                                        "description": "Whether enable DKMS for the job",
+                                        "type": "boolean",
+                                        "example": false
                                     }
                                 }
                             }
@@ -3517,6 +3709,21 @@
                                             "default": "default",
                                             "type": "string",
                                             "readOnly": true
+                                        },
+                                        "platform": {
+                                            "readOnly": true,
+                                            "description": "Target platform for the recipe.",
+                                            "example": "aarch64",
+                                            "enum": [
+                                                "aarch64",
+                                                "x86_64"
+                                            ],
+                                            "type": "string"
+                                        },
+                                        "require_dkms": {
+                                            "description": "Whether enable DKMS for the job",
+                                            "type": "boolean",
+                                            "example": false
                                         }
                                     }
                                 }
@@ -3964,6 +4171,21 @@
                                             "default": "default",
                                             "type": "string",
                                             "readOnly": true
+                                        },
+                                        "platform": {
+                                            "readOnly": true,
+                                            "description": "Target platform for the recipe.",
+                                            "example": "aarch64",
+                                            "enum": [
+                                                "aarch64",
+                                                "x86_64"
+                                            ],
+                                            "type": "string"
+                                        },
+                                        "require_dkms": {
+                                            "description": "Whether enable DKMS for the job",
+                                            "type": "boolean",
+                                            "example": false
                                         }
                                     }
                                 }
@@ -4246,6 +4468,21 @@
                                             "default": "default",
                                             "type": "string",
                                             "readOnly": true
+                                        },
+                                        "platform": {
+                                            "readOnly": true,
+                                            "description": "Target platform for the recipe.",
+                                            "example": "aarch64",
+                                            "enum": [
+                                                "aarch64",
+                                                "x86_64"
+                                            ],
+                                            "type": "string"
+                                        },
+                                        "require_dkms": {
+                                            "description": "Whether enable DKMS for the job",
+                                            "type": "boolean",
+                                            "example": false
                                         }
                                     }
                                 }
@@ -4593,6 +4830,20 @@
                                                 ],
                                                 "example": "kiwi-ng",
                                                 "type": "string"
+                                            },
+                                            "platform": {
+                                                "description": "Target platform for the recipe.",
+                                                "example": "aarch64",
+                                                "enum": [
+                                                    "aarch64",
+                                                    "x86_64"
+                                                ],
+                                                "type": "string"
+                                            },
+                                            "require_dkms": {
+                                                "description": "Whether enable DKMS for the job",
+                                                "type": "boolean",
+                                                "example": false
                                             },
                                             "linux_distribution": {
                                                 "description": "Linux distribution being built",
@@ -5046,6 +5297,20 @@
                                             ],
                                             "example": "kiwi-ng",
                                             "type": "string"
+                                        },
+                                        "platform": {
+                                            "description": "Target platform for the recipe.",
+                                            "example": "aarch64",
+                                            "enum": [
+                                                "aarch64",
+                                                "x86_64"
+                                            ],
+                                            "type": "string"
+                                        },
+                                        "require_dkms": {
+                                            "description": "Whether enable DKMS for the job",
+                                            "type": "boolean",
+                                            "example": false
                                         },
                                         "linux_distribution": {
                                             "description": "Linux distribution being built",
@@ -5521,6 +5786,15 @@
                                                         "type": "string"
                                                     }
                                                 }
+                                            },
+                                            "platform": {
+                                                "description": "Target platform for the recipe.",
+                                                "example": "aarch64",
+                                                "enum": [
+                                                    "aarch64",
+                                                    "x86_64"
+                                                ],
+                                                "type": "string"
                                             }
                                         }
                                     },
@@ -5954,6 +6228,15 @@
                                                     "type": "string"
                                                 }
                                             }
+                                        },
+                                        "platform": {
+                                            "description": "Target platform for the recipe.",
+                                            "example": "aarch64",
+                                            "enum": [
+                                                "aarch64",
+                                                "x86_64"
+                                            ],
+                                            "type": "string"
                                         }
                                     }
                                 }
@@ -7390,6 +7673,20 @@
                                                         }
                                                     }
                                                 }
+                                            },
+                                            "platform": {
+                                                "description": "Target platform for the recipe.",
+                                                "example": "aarch64",
+                                                "enum": [
+                                                    "aarch64",
+                                                    "x86_64"
+                                                ],
+                                                "type": "string"
+                                            },
+                                            "require_dkms": {
+                                                "description": "Whether enable DKMS for the job",
+                                                "type": "boolean",
+                                                "example": false
                                             }
                                         }
                                     },
@@ -7547,6 +7844,20 @@
                                                 }
                                             }
                                         }
+                                    },
+                                    "platform": {
+                                        "description": "Target platform for the recipe.",
+                                        "example": "aarch64",
+                                        "enum": [
+                                            "aarch64",
+                                            "x86_64"
+                                        ],
+                                        "type": "string"
+                                    },
+                                    "require_dkms": {
+                                        "description": "Whether enable DKMS for the job",
+                                        "type": "boolean",
+                                        "example": false
                                     }
                                 }
                             }
@@ -7655,6 +7966,20 @@
                                                     }
                                                 }
                                             }
+                                        },
+                                        "platform": {
+                                            "description": "Target platform for the recipe.",
+                                            "example": "aarch64",
+                                            "enum": [
+                                                "aarch64",
+                                                "x86_64"
+                                            ],
+                                            "type": "string"
+                                        },
+                                        "require_dkms": {
+                                            "description": "Whether enable DKMS for the job",
+                                            "type": "boolean",
+                                            "example": false
                                         }
                                     }
                                 }
@@ -7976,6 +8301,20 @@
                                                     }
                                                 }
                                             }
+                                        },
+                                        "platform": {
+                                            "description": "Target platform for the recipe.",
+                                            "example": "aarch64",
+                                            "enum": [
+                                                "aarch64",
+                                                "x86_64"
+                                            ],
+                                            "type": "string"
+                                        },
+                                        "require_dkms": {
+                                            "description": "Whether enable DKMS for the job",
+                                            "type": "boolean",
+                                            "example": false
                                         }
                                     }
                                 }
@@ -8062,6 +8401,44 @@
                                                 "description": "Identifier specifying the artifact repository where the artifact is located",
                                                 "example": "s3",
                                                 "type": "string"
+                                            }
+                                        }
+                                    },
+                                    "platform": {
+                                        "description": "Target platform for the recipe.",
+                                        "example": "aarch64",
+                                        "enum": [
+                                            "aarch64",
+                                            "x86_64"
+                                        ],
+                                        "type": "string"
+                                    },
+                                    "require_dkms": {
+                                        "description": "Whether enable DKMS for the job",
+                                        "type": "boolean",
+                                        "example": false
+                                    },
+                                    "template_dictionary": {
+                                        "description": "List of key/value pairs to be templated into the recipe when building the image.",
+                                        "type": "array",
+                                        "items": {
+                                            "description": "Key/value pair used to template an IMS recipe",
+                                            "type": "object",
+                                            "required": [
+                                                "key",
+                                                "value"
+                                            ],
+                                            "properties": {
+                                                "key": {
+                                                    "description": "Template variable to replace in the IMS recipe",
+                                                    "example": "CSM_RELEASE_VERSION",
+                                                    "type": "string"
+                                                },
+                                                "value": {
+                                                    "description": "Value to replace the template variable in the IMS recipe",
+                                                    "example": "1.0.0",
+                                                    "type": "string"
+                                                }
                                             }
                                         }
                                     }
@@ -8172,6 +8549,20 @@
                                                     }
                                                 }
                                             }
+                                        },
+                                        "platform": {
+                                            "description": "Target platform for the recipe.",
+                                            "example": "aarch64",
+                                            "enum": [
+                                                "aarch64",
+                                                "x86_64"
+                                            ],
+                                            "type": "string"
+                                        },
+                                        "require_dkms": {
+                                            "description": "Whether enable DKMS for the job",
+                                            "type": "boolean",
+                                            "example": false
                                         }
                                     }
                                 }
@@ -8559,6 +8950,15 @@
                                                         "type": "string"
                                                     }
                                                 }
+                                            },
+                                            "platform": {
+                                                "description": "Target platform for the recipe.",
+                                                "example": "aarch64",
+                                                "enum": [
+                                                    "aarch64",
+                                                    "x86_64"
+                                                ],
+                                                "type": "string"
                                             }
                                         }
                                     },
@@ -8672,6 +9072,15 @@
                                                 "type": "string"
                                             }
                                         }
+                                    },
+                                    "platform": {
+                                        "description": "Target platform for the recipe.",
+                                        "example": "aarch64",
+                                        "enum": [
+                                            "aarch64",
+                                            "x86_64"
+                                        ],
+                                        "type": "string"
                                     }
                                 }
                             }
@@ -8743,6 +9152,15 @@
                                                     "type": "string"
                                                 }
                                             }
+                                        },
+                                        "platform": {
+                                            "description": "Target platform for the recipe.",
+                                            "example": "aarch64",
+                                            "enum": [
+                                                "aarch64",
+                                                "x86_64"
+                                            ],
+                                            "type": "string"
                                         }
                                     }
                                 }
@@ -9020,6 +9438,15 @@
                                                     "type": "string"
                                                 }
                                             }
+                                        },
+                                        "platform": {
+                                            "description": "Target platform for the recipe.",
+                                            "example": "aarch64",
+                                            "enum": [
+                                                "aarch64",
+                                                "x86_64"
+                                            ],
+                                            "type": "string"
                                         }
                                     }
                                 }
@@ -9149,6 +9576,15 @@
                                                 "type": "string"
                                             }
                                         }
+                                    },
+                                    "platform": {
+                                        "description": "Target platform for the recipe.",
+                                        "example": "aarch64",
+                                        "enum": [
+                                            "aarch64",
+                                            "x86_64"
+                                        ],
+                                        "type": "string"
                                     }
                                 }
                             }
@@ -9213,6 +9649,15 @@
                                                     "type": "string"
                                                 }
                                             }
+                                        },
+                                        "platform": {
+                                            "description": "Target platform for the recipe.",
+                                            "example": "aarch64",
+                                            "enum": [
+                                                "aarch64",
+                                                "x86_64"
+                                            ],
+                                            "type": "string"
                                         }
                                     }
                                 }
@@ -10356,6 +10801,21 @@
                                                 "default": "default",
                                                 "type": "string",
                                                 "readOnly": true
+                                            },
+                                            "platform": {
+                                                "readOnly": true,
+                                                "description": "Target platform for the recipe.",
+                                                "example": "aarch64",
+                                                "enum": [
+                                                    "aarch64",
+                                                    "x86_64"
+                                                ],
+                                                "type": "string"
+                                            },
+                                            "require_dkms": {
+                                                "description": "Whether enable DKMS for the job",
+                                                "type": "boolean",
+                                                "example": false
                                             }
                                         }
                                     },
@@ -10601,6 +11061,21 @@
                                         "default": "default",
                                         "type": "string",
                                         "readOnly": true
+                                    },
+                                    "platform": {
+                                        "readOnly": true,
+                                        "description": "Target platform for the recipe.",
+                                        "example": "aarch64",
+                                        "enum": [
+                                            "aarch64",
+                                            "x86_64"
+                                        ],
+                                        "type": "string"
+                                    },
+                                    "require_dkms": {
+                                        "description": "Whether enable DKMS for the job",
+                                        "type": "boolean",
+                                        "example": false
                                     }
                                 }
                             }
@@ -10797,6 +11272,21 @@
                                             "default": "default",
                                             "type": "string",
                                             "readOnly": true
+                                        },
+                                        "platform": {
+                                            "readOnly": true,
+                                            "description": "Target platform for the recipe.",
+                                            "example": "aarch64",
+                                            "enum": [
+                                                "aarch64",
+                                                "x86_64"
+                                            ],
+                                            "type": "string"
+                                        },
+                                        "require_dkms": {
+                                            "description": "Whether enable DKMS for the job",
+                                            "type": "boolean",
+                                            "example": false
                                         }
                                     }
                                 }
@@ -11245,6 +11735,21 @@
                                             "default": "default",
                                             "type": "string",
                                             "readOnly": true
+                                        },
+                                        "platform": {
+                                            "readOnly": true,
+                                            "description": "Target platform for the recipe.",
+                                            "example": "aarch64",
+                                            "enum": [
+                                                "aarch64",
+                                                "x86_64"
+                                            ],
+                                            "type": "string"
+                                        },
+                                        "require_dkms": {
+                                            "description": "Whether enable DKMS for the job",
+                                            "type": "boolean",
+                                            "example": false
                                         }
                                     }
                                 }
@@ -11527,6 +12032,21 @@
                                             "default": "default",
                                             "type": "string",
                                             "readOnly": true
+                                        },
+                                        "platform": {
+                                            "readOnly": true,
+                                            "description": "Target platform for the recipe.",
+                                            "example": "aarch64",
+                                            "enum": [
+                                                "aarch64",
+                                                "x86_64"
+                                            ],
+                                            "type": "string"
+                                        },
+                                        "require_dkms": {
+                                            "description": "Whether enable DKMS for the job",
+                                            "type": "boolean",
+                                            "example": false
                                         }
                                     }
                                 }
@@ -11906,6 +12426,20 @@
                                                         }
                                                     }
                                                 }
+                                            },
+                                            "platform": {
+                                                "description": "Target platform for the recipe.",
+                                                "example": "aarch64",
+                                                "enum": [
+                                                    "aarch64",
+                                                    "x86_64"
+                                                ],
+                                                "type": "string"
+                                            },
+                                            "require_dkms": {
+                                                "description": "Whether enable DKMS for the job",
+                                                "type": "boolean",
+                                                "example": false
                                             }
                                         }
                                     },
@@ -12063,6 +12597,20 @@
                                                 }
                                             }
                                         }
+                                    },
+                                    "platform": {
+                                        "description": "Target platform for the recipe.",
+                                        "example": "aarch64",
+                                        "enum": [
+                                            "aarch64",
+                                            "x86_64"
+                                        ],
+                                        "type": "string"
+                                    },
+                                    "require_dkms": {
+                                        "description": "Whether enable DKMS for the job",
+                                        "type": "boolean",
+                                        "example": false
                                     }
                                 }
                             }
@@ -12171,6 +12719,20 @@
                                                     }
                                                 }
                                             }
+                                        },
+                                        "platform": {
+                                            "description": "Target platform for the recipe.",
+                                            "example": "aarch64",
+                                            "enum": [
+                                                "aarch64",
+                                                "x86_64"
+                                            ],
+                                            "type": "string"
+                                        },
+                                        "require_dkms": {
+                                            "description": "Whether enable DKMS for the job",
+                                            "type": "boolean",
+                                            "example": false
                                         }
                                     }
                                 }
@@ -12492,6 +13054,20 @@
                                                     }
                                                 }
                                             }
+                                        },
+                                        "platform": {
+                                            "description": "Target platform for the recipe.",
+                                            "example": "aarch64",
+                                            "enum": [
+                                                "aarch64",
+                                                "x86_64"
+                                            ],
+                                            "type": "string"
+                                        },
+                                        "require_dkms": {
+                                            "description": "Whether enable DKMS for the job",
+                                            "type": "boolean",
+                                            "example": false
                                         }
                                     }
                                 }
@@ -12578,6 +13154,44 @@
                                                 "description": "Identifier specifying the artifact repository where the artifact is located",
                                                 "example": "s3",
                                                 "type": "string"
+                                            }
+                                        }
+                                    },
+                                    "platform": {
+                                        "description": "Target platform for the recipe.",
+                                        "example": "aarch64",
+                                        "enum": [
+                                            "aarch64",
+                                            "x86_64"
+                                        ],
+                                        "type": "string"
+                                    },
+                                    "require_dkms": {
+                                        "description": "Whether enable DKMS for the job",
+                                        "type": "boolean",
+                                        "example": false
+                                    },
+                                    "template_dictionary": {
+                                        "description": "List of key/value pairs to be templated into the recipe when building the image.",
+                                        "type": "array",
+                                        "items": {
+                                            "description": "Key/value pair used to template an IMS recipe",
+                                            "type": "object",
+                                            "required": [
+                                                "key",
+                                                "value"
+                                            ],
+                                            "properties": {
+                                                "key": {
+                                                    "description": "Template variable to replace in the IMS recipe",
+                                                    "example": "CSM_RELEASE_VERSION",
+                                                    "type": "string"
+                                                },
+                                                "value": {
+                                                    "description": "Value to replace the template variable in the IMS recipe",
+                                                    "example": "1.0.0",
+                                                    "type": "string"
+                                                }
                                             }
                                         }
                                     }
@@ -12688,6 +13302,20 @@
                                                     }
                                                 }
                                             }
+                                        },
+                                        "platform": {
+                                            "description": "Target platform for the recipe.",
+                                            "example": "aarch64",
+                                            "enum": [
+                                                "aarch64",
+                                                "x86_64"
+                                            ],
+                                            "type": "string"
+                                        },
+                                        "require_dkms": {
+                                            "description": "Whether enable DKMS for the job",
+                                            "type": "boolean",
+                                            "example": false
                                         }
                                     }
                                 }
@@ -13075,6 +13703,15 @@
                                                         "type": "string"
                                                     }
                                                 }
+                                            },
+                                            "platform": {
+                                                "description": "Target platform for the recipe.",
+                                                "example": "aarch64",
+                                                "enum": [
+                                                    "aarch64",
+                                                    "x86_64"
+                                                ],
+                                                "type": "string"
                                             }
                                         }
                                     },
@@ -13188,6 +13825,15 @@
                                                 "type": "string"
                                             }
                                         }
+                                    },
+                                    "platform": {
+                                        "description": "Target platform for the recipe.",
+                                        "example": "aarch64",
+                                        "enum": [
+                                            "aarch64",
+                                            "x86_64"
+                                        ],
+                                        "type": "string"
                                     }
                                 }
                             }
@@ -13259,6 +13905,15 @@
                                                     "type": "string"
                                                 }
                                             }
+                                        },
+                                        "platform": {
+                                            "description": "Target platform for the recipe.",
+                                            "example": "aarch64",
+                                            "enum": [
+                                                "aarch64",
+                                                "x86_64"
+                                            ],
+                                            "type": "string"
                                         }
                                     }
                                 }
@@ -13536,6 +14191,15 @@
                                                     "type": "string"
                                                 }
                                             }
+                                        },
+                                        "platform": {
+                                            "description": "Target platform for the recipe.",
+                                            "example": "aarch64",
+                                            "enum": [
+                                                "aarch64",
+                                                "x86_64"
+                                            ],
+                                            "type": "string"
                                         }
                                     }
                                 }
@@ -13665,6 +14329,15 @@
                                                 "type": "string"
                                             }
                                         }
+                                    },
+                                    "platform": {
+                                        "description": "Target platform for the recipe.",
+                                        "example": "aarch64",
+                                        "enum": [
+                                            "aarch64",
+                                            "x86_64"
+                                        ],
+                                        "type": "string"
                                     }
                                 }
                             }
@@ -13729,6 +14402,15 @@
                                                     "type": "string"
                                                 }
                                             }
+                                        },
+                                        "platform": {
+                                            "description": "Target platform for the recipe.",
+                                            "example": "aarch64",
+                                            "enum": [
+                                                "aarch64",
+                                                "x86_64"
+                                            ],
+                                            "type": "string"
                                         }
                                     }
                                 }
@@ -14872,6 +15554,21 @@
                                                 "default": "default",
                                                 "type": "string",
                                                 "readOnly": true
+                                            },
+                                            "platform": {
+                                                "readOnly": true,
+                                                "description": "Target platform for the recipe.",
+                                                "example": "aarch64",
+                                                "enum": [
+                                                    "aarch64",
+                                                    "x86_64"
+                                                ],
+                                                "type": "string"
+                                            },
+                                            "require_dkms": {
+                                                "description": "Whether enable DKMS for the job",
+                                                "type": "boolean",
+                                                "example": false
                                             }
                                         }
                                     },
@@ -15117,6 +15814,21 @@
                                         "default": "default",
                                         "type": "string",
                                         "readOnly": true
+                                    },
+                                    "platform": {
+                                        "readOnly": true,
+                                        "description": "Target platform for the recipe.",
+                                        "example": "aarch64",
+                                        "enum": [
+                                            "aarch64",
+                                            "x86_64"
+                                        ],
+                                        "type": "string"
+                                    },
+                                    "require_dkms": {
+                                        "description": "Whether enable DKMS for the job",
+                                        "type": "boolean",
+                                        "example": false
                                     }
                                 }
                             }
@@ -15313,6 +16025,21 @@
                                             "default": "default",
                                             "type": "string",
                                             "readOnly": true
+                                        },
+                                        "platform": {
+                                            "readOnly": true,
+                                            "description": "Target platform for the recipe.",
+                                            "example": "aarch64",
+                                            "enum": [
+                                                "aarch64",
+                                                "x86_64"
+                                            ],
+                                            "type": "string"
+                                        },
+                                        "require_dkms": {
+                                            "description": "Whether enable DKMS for the job",
+                                            "type": "boolean",
+                                            "example": false
                                         }
                                     }
                                 }
@@ -15761,6 +16488,21 @@
                                             "default": "default",
                                             "type": "string",
                                             "readOnly": true
+                                        },
+                                        "platform": {
+                                            "readOnly": true,
+                                            "description": "Target platform for the recipe.",
+                                            "example": "aarch64",
+                                            "enum": [
+                                                "aarch64",
+                                                "x86_64"
+                                            ],
+                                            "type": "string"
+                                        },
+                                        "require_dkms": {
+                                            "description": "Whether enable DKMS for the job",
+                                            "type": "boolean",
+                                            "example": false
                                         }
                                     }
                                 }
@@ -16043,6 +16785,21 @@
                                             "default": "default",
                                             "type": "string",
                                             "readOnly": true
+                                        },
+                                        "platform": {
+                                            "readOnly": true,
+                                            "description": "Target platform for the recipe.",
+                                            "example": "aarch64",
+                                            "enum": [
+                                                "aarch64",
+                                                "x86_64"
+                                            ],
+                                            "type": "string"
+                                        },
+                                        "require_dkms": {
+                                            "description": "Whether enable DKMS for the job",
+                                            "type": "boolean",
+                                            "example": false
                                         }
                                     }
                                 }
@@ -17047,6 +17804,20 @@
                                 }
                             }
                         }
+                    },
+                    "platform": {
+                        "description": "Target platform for the recipe.",
+                        "example": "aarch64",
+                        "enum": [
+                            "aarch64",
+                            "x86_64"
+                        ],
+                        "type": "string"
+                    },
+                    "require_dkms": {
+                        "description": "Whether enable DKMS for the job",
+                        "type": "boolean",
+                        "example": false
                     }
                 }
             },
@@ -17114,6 +17885,20 @@
                         "example": "kiwi-ng",
                         "type": "string"
                     },
+                    "platform": {
+                        "description": "Target platform for the recipe.",
+                        "example": "aarch64",
+                        "enum": [
+                            "aarch64",
+                            "x86_64"
+                        ],
+                        "type": "string"
+                    },
+                    "require_dkms": {
+                        "description": "Whether enable DKMS for the job",
+                        "type": "boolean",
+                        "example": false
+                    },
                     "linux_distribution": {
                         "description": "Linux distribution being built",
                         "enum": [
@@ -17157,6 +17942,44 @@
                                 "description": "Identifier specifying the artifact repository where the artifact is located",
                                 "example": "s3",
                                 "type": "string"
+                            }
+                        }
+                    },
+                    "platform": {
+                        "description": "Target platform for the recipe.",
+                        "example": "aarch64",
+                        "enum": [
+                            "aarch64",
+                            "x86_64"
+                        ],
+                        "type": "string"
+                    },
+                    "require_dkms": {
+                        "description": "Whether enable DKMS for the job",
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "template_dictionary": {
+                        "description": "List of key/value pairs to be templated into the recipe when building the image.",
+                        "type": "array",
+                        "items": {
+                            "description": "Key/value pair used to template an IMS recipe",
+                            "type": "object",
+                            "required": [
+                                "key",
+                                "value"
+                            ],
+                            "properties": {
+                                "key": {
+                                    "description": "Template variable to replace in the IMS recipe",
+                                    "example": "CSM_RELEASE_VERSION",
+                                    "type": "string"
+                                },
+                                "value": {
+                                    "description": "Value to replace the template variable in the IMS recipe",
+                                    "example": "1.0.0",
+                                    "type": "string"
+                                }
                             }
                         }
                     }
@@ -17213,6 +18036,15 @@
                                 "type": "string"
                             }
                         }
+                    },
+                    "platform": {
+                        "description": "Target platform for the recipe.",
+                        "example": "aarch64",
+                        "enum": [
+                            "aarch64",
+                            "x86_64"
+                        ],
+                        "type": "string"
                     }
                 }
             },
@@ -17274,6 +18106,15 @@
                                 "type": "string"
                             }
                         }
+                    },
+                    "platform": {
+                        "description": "Target platform for the recipe.",
+                        "example": "aarch64",
+                        "enum": [
+                            "aarch64",
+                            "x86_64"
+                        ],
+                        "type": "string"
                     }
                 }
             },
@@ -17305,6 +18146,15 @@
                                 "type": "string"
                             }
                         }
+                    },
+                    "platform": {
+                        "description": "Target platform for the recipe.",
+                        "example": "aarch64",
+                        "enum": [
+                            "aarch64",
+                            "x86_64"
+                        ],
+                        "type": "string"
                     }
                 }
             },
@@ -17491,6 +18341,21 @@
                         "default": "default",
                         "type": "string",
                         "readOnly": true
+                    },
+                    "platform": {
+                        "readOnly": true,
+                        "description": "Target platform for the recipe.",
+                        "example": "aarch64",
+                        "enum": [
+                            "aarch64",
+                            "x86_64"
+                        ],
+                        "type": "string"
+                    },
+                    "require_dkms": {
+                        "description": "Whether enable DKMS for the job",
+                        "type": "boolean",
+                        "example": false
                     }
                 }
             },
