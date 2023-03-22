@@ -1,7 +1,7 @@
 #
 # MIT License
 #
-# (C) Copyright 2022 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2022-2023 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -25,7 +25,7 @@
 
 MIT License
 
-(C) Copyright [2020-2021] Hewlett Packard Enterprise Development LP
+(C) Copyright [2020-2023] Hewlett Packard Enterprise Development LP
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -53,7 +53,7 @@ from ..utils.runner import cli_runner  # pylint: disable=unused-import
 from ..utils.rest import rest_mock  # pylint: disable=unused-import
 from ..utils.utils import compare_dicts
 
-DEFAULT_BOS_VERSION = 'v1'
+DEFAULT_BOS_VERSION = 'v2'
 
 
 # pylint: disable=redefined-outer-name
