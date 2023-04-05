@@ -77,6 +77,14 @@ def make_ws_url(route: str, url: str = '') -> urllib.parse.ParseResult:
     if not url:
         url = get_hostname()
 
+    # If no protocol/scheme is set, urllib will confuse anything before the
+    # port number as the scheme, and set the path to the port. To prevent
+    # this ensure that `//` is at the beginning of the string if none is
+    # set, this way urllib can work without us paying concession to a
+    # protocol (e.g. // is agnostic to http|https|etc).
+    if '//' not in url:
+        url = f'//{url}'
+
     # Split into components
     scheme, netloc, path, query, fragment = urllib.parse.urlsplit(url)
 
