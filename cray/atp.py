@@ -30,11 +30,11 @@ import ctypes
 def get_libatppalslaunch_path():
     """ If enabled, read the ATP install location from the environment (set by ATP module) """
     if os.getenv("ATP_ENABLED") == "0":
-        return None
+        return ''
 
     atp_install_dir = os.getenv("ATP_INSTALL_DIR")
     if atp_install_dir is None:
-        return None
+        return ''
 
     return atp_install_dir + "/pals/libAtpPalsLaunch.so"
 
