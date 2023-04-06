@@ -23,12 +23,12 @@
 #
 """ Tests for Image Management Service (IMS) CLI subcommand (`cray ims`)
 and options. """
+# pylint: disable=unused-argument
+# pylint: disable=invalid-name
 
-import json
 import os
+import json
 
-from cray.tests.conftest import cli_runner
-from cray.tests.conftest import rest_mock
 from cray.tests.utils import new_random_string
 
 
@@ -48,7 +48,7 @@ def compare_output(expected, cli_output):
     assert set(expected) == set(actual)
 
 
-def test_cray_ims_base(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_cray_ims_base(cli_runner, rest_mock):
     """ Test cray ims base command """
     runner, cli, _ = cli_runner
     result = runner.invoke(cli, ['ims'])
@@ -65,7 +65,7 @@ def test_cray_ims_base(cli_runner: cli_runner, rest_mock: rest_mock):
     compare_output(outputs, result.output)
 
 
-def test_cray_ims_deleted_base(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_cray_ims_deleted_base(cli_runner, rest_mock):
     """ Test cray ims base command """
     runner, cli, _ = cli_runner
     result = runner.invoke(cli, ['ims', 'deleted'])
@@ -80,10 +80,7 @@ def test_cray_ims_deleted_base(cli_runner: cli_runner, rest_mock: rest_mock):
     compare_output(outputs, result.output)
 
 
-def test_cray_ims_public_keys_base(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_ims_public_keys_base(cli_runner, rest_mock):
     """ Test cray ims public-keys base command """
     runner, cli, _ = cli_runner
     result = runner.invoke(cli, ['ims', 'public-keys'])
@@ -100,70 +97,47 @@ def test_cray_ims_public_keys_base(
     compare_output(outputs, result.output)
 
 
-def test_cray_ims_public_keys_delete(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_ims_public_keys_delete(cli_runner, rest_mock):
     """ Test cray ims public_keys delete ... """
     runner, cli, config = cli_runner
     result = runner.invoke(cli, ['ims', 'public-keys', 'delete', 'foo'])
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'DELETE'
-    assert data['url'] == '{}/apis/ims/v3/public-keys/foo'.format(
-        config['default']['hostname']
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}/apis/ims/v3/public-keys/foo'
 
 
-def test_cray_ims_public_keys_delete_all(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_ims_public_keys_delete_all(cli_runner, rest_mock):
     """ Test cray ims public_keys delete ... """
     runner, cli, config = cli_runner
     result = runner.invoke(cli, ['ims', 'public-keys', 'deleteall'])
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'DELETE'
-    assert data['url'] == '{}/apis/ims/v3/public-keys'.format(
-        config['default']['hostname']
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}/apis/ims/v3/public-keys'
 
 
-def test_cray_ims_public_keys_list(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_ims_public_keys_list(cli_runner, rest_mock):
     """ Test cray ims public_keys list """
     runner, cli, config = cli_runner
     result = runner.invoke(cli, ['ims', 'public-keys', 'list'])
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'GET'
-    assert data['url'] == '{}/apis/ims/v3/public-keys'.format(
-        config['default']['hostname']
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}/apis/ims/v3/public-keys'
 
 
-def test_cray_ims_public_keys_describe(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_ims_public_keys_describe(cli_runner, rest_mock):
     """ Test cray ims public_keys describe """
     runner, cli, config = cli_runner
     result = runner.invoke(cli, ['ims', 'public-keys', 'describe', 'foo'])
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'GET'
-    assert data['url'] == '{}/apis/ims/v3/public-keys/foo'.format(
-        config['default']['hostname']
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}/apis/ims/v3/public-keys/foo'
 
 
-def test_cray_ims_public_keys_create(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_ims_public_keys_create(cli_runner, rest_mock):
     """ Test cray ims public_keys create ... happy path """
     runner, cli, config = cli_runner
     usersshpubkeyfile = os.path.join(
@@ -180,19 +154,14 @@ def test_cray_ims_public_keys_create(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'POST'
-    assert data['url'] == '{}/apis/ims/v3/public-keys'.format(
-        config['default']['hostname']
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}/apis/ims/v3/public-keys'
     assert data['body'] == {
         'name': 'foo',
         'public_key': pubkeydata
     }
 
 
-def test_cray_ims_public_keys_create_missing_required(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_ims_public_keys_create_missing_required(cli_runner, rest_mock):
     """Test cray ims public_keys create ... when a required parameter is
     missing
 
@@ -206,10 +175,7 @@ def test_cray_ims_public_keys_create_missing_required(
     assert '--public-key' in result.output
 
 
-def test_cray_ims_deleted_public_keys_base(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_ims_deleted_public_keys_base(cli_runner, rest_mock):
     """ Test cray ims public-keys base command """
     runner, cli, _ = cli_runner
     result = runner.invoke(cli, ['ims', 'deleted', 'public-keys'])
@@ -226,10 +192,7 @@ def test_cray_ims_deleted_public_keys_base(
     compare_output(outputs, result.output)
 
 
-def test_cray_ims_deleted_public_keys_delete(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_ims_deleted_public_keys_delete(cli_runner, rest_mock):
     """ Test cray ims public_keys delete ... """
     runner, cli, config = cli_runner
     result = runner.invoke(
@@ -239,30 +202,20 @@ def test_cray_ims_deleted_public_keys_delete(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'DELETE'
-    assert data['url'] == '{}/apis/ims/v3/deleted/public-keys/foo'.format(
-        config['default']['hostname']
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}/apis/ims/v3/deleted/public-keys/foo'
 
 
-def test_cray_ims_deleted_public_keys_delete_all(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_ims_deleted_public_keys_delete_all(cli_runner, rest_mock):
     """ Test cray ims public_keys delete ... """
     runner, cli, config = cli_runner
     result = runner.invoke(cli, ['ims', 'deleted', 'public-keys', 'deleteall'])
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'DELETE'
-    assert data['url'] == '{}/apis/ims/v3/deleted/public-keys'.format(
-        config['default']['hostname']
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}/apis/ims/v3/deleted/public-keys'
 
 
-def test_cray_ims_deleted_public_keys_update(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_ims_deleted_public_keys_update(cli_runner, rest_mock):
     """ Test cray ims deleted public_keys update ... """
     runner, cli, config = cli_runner
     result = runner.invoke(
@@ -272,33 +225,23 @@ def test_cray_ims_deleted_public_keys_update(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'PATCH'
-    assert data['url'] == '{}/apis/ims/v3/deleted/public-keys/foo'.format(
-        config['default']['hostname']
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}/apis/ims/v3/deleted/public-keys/foo'
     assert data['body'] == {
         'operation': 'undelete'
     }
 
 
-def test_cray_ims_deleted_public_keys_list(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_ims_deleted_public_keys_list(cli_runner, rest_mock):
     """ Test cray ims deleted public_keys list """
     runner, cli, config = cli_runner
     result = runner.invoke(cli, ['ims', 'deleted', 'public-keys', 'list'])
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'GET'
-    assert data['url'] == '{}/apis/ims/v3/deleted/public-keys'.format(
-        config['default']['hostname']
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}/apis/ims/v3/deleted/public-keys'
 
 
-def test_cray_ims_deleted_public_keys_describe(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_ims_deleted_public_keys_describe(cli_runner, rest_mock):
     """ Test cray ims deleted public_keys describe """
     runner, cli, config = cli_runner
     result = runner.invoke(
@@ -308,12 +251,10 @@ def test_cray_ims_deleted_public_keys_describe(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'GET'
-    assert data['url'] == '{}/apis/ims/v3/deleted/public-keys/foo'.format(
-        config['default']['hostname']
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}/apis/ims/v3/deleted/public-keys/foo'
 
 
-def test_cray_ims_recipes_base(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_cray_ims_recipes_base(cli_runner, rest_mock):
     """ Test cray ims recipes base command """
     runner, cli, _ = cli_runner
     result = runner.invoke(cli, ['ims', 'recipes'])
@@ -331,61 +272,47 @@ def test_cray_ims_recipes_base(cli_runner: cli_runner, rest_mock: rest_mock):
     compare_output(outputs, result.output)
 
 
-def test_cray_ims_recipes_delete(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_cray_ims_recipes_delete(cli_runner, rest_mock):
     """ Test cray ims recipes delete ... """
     runner, cli, config = cli_runner
     result = runner.invoke(cli, ['ims', 'recipes', 'delete', 'foo'])
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'DELETE'
-    assert data['url'] == '{}/apis/ims/v3/recipes/foo'.format(
-        config['default']['hostname']
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}/apis/ims/v3/recipes/foo'
 
 
-def test_cray_ims_recipes_delete_all(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_ims_recipes_delete_all(cli_runner, rest_mock):
     """ Test cray ims recipes delete ... """
     runner, cli, config = cli_runner
     result = runner.invoke(cli, ['ims', 'recipes', 'deleteall'])
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'DELETE'
-    assert data['url'] == '{}/apis/ims/v3/recipes'.format(
-        config['default']['hostname']
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}/apis/ims/v3/recipes'
 
 
-def test_cray_ims_recipes_list(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_cray_ims_recipes_list(cli_runner, rest_mock):
     """ Test cray ims recipes list """
     runner, cli, config = cli_runner
     result = runner.invoke(cli, ['ims', 'recipes', 'list'])
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'GET'
-    assert data['url'] == '{}/apis/ims/v3/recipes'.format(
-        config['default']['hostname']
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}/apis/ims/v3/recipes'
 
 
-def test_cray_ims_recipes_describe(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_ims_recipes_describe(cli_runner, rest_mock):
     """ Test cray ims recipes describe """
     runner, cli, config = cli_runner
     result = runner.invoke(cli, ['ims', 'recipes', 'describe', 'foo'])
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'GET'
-    assert data['url'] == '{}/apis/ims/v3/recipes/foo'.format(
-        config['default']['hostname']
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}/apis/ims/v3/recipes/foo'
 
 
-def test_cray_ims_recipes_create(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_cray_ims_recipes_create(cli_runner, rest_mock):
     """ Test cray ims recipes create ... happy path """
     runner, cli, config = cli_runner
     s3_link_path = new_random_string()
@@ -406,9 +333,7 @@ def test_cray_ims_recipes_create(cli_runner: cli_runner, rest_mock: rest_mock):
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'POST'
-    assert data['url'] == '{}/apis/ims/v3/recipes'.format(
-        config['default']['hostname']
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}/apis/ims/v3/recipes'
     assert data['body'].get('name', None) == 'foo'
     assert data['body'].get('linux_distribution', None) == 'sles15'
     assert data['body'].get('recipe_type', None) == 'kiwi-ng'
@@ -420,10 +345,7 @@ def test_cray_ims_recipes_create(cli_runner: cli_runner, rest_mock: rest_mock):
         {'key': test_key, 'value': test_value}]
 
 
-def test_cray_ims_recipes_create_missing_required(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_ims_recipes_create_missing_required(cli_runner, rest_mock):
     """Test cray ims recipes create ... when a required parameter is
     missing
 
@@ -439,10 +361,7 @@ def test_cray_ims_recipes_create_missing_required(
     assert '--linux-distribution' in result.output
 
 
-def test_cray_ims_deleted_recipes_base(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_ims_deleted_recipes_base(cli_runner, rest_mock):
     """ Test cray ims recipes base command """
     runner, cli, _ = cli_runner
     result = runner.invoke(cli, ['ims', 'deleted', 'recipes'])
@@ -459,70 +378,47 @@ def test_cray_ims_deleted_recipes_base(
     compare_output(outputs, result.output)
 
 
-def test_cray_ims_deleted_recipes_delete(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_ims_deleted_recipes_delete(cli_runner, rest_mock):
     """ Test cray ims recipes delete ... """
     runner, cli, config = cli_runner
     result = runner.invoke(cli, ['ims', 'deleted', 'recipes', 'delete', 'foo'])
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'DELETE'
-    assert data['url'] == '{}/apis/ims/v3/deleted/recipes/foo'.format(
-        config['default']['hostname']
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}/apis/ims/v3/deleted/recipes/foo'
 
 
-def test_cray_ims_deleted_recipes_delete_all(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_ims_deleted_recipes_delete_all(cli_runner, rest_mock):
     """ Test cray ims recipes delete ... """
     runner, cli, config = cli_runner
     result = runner.invoke(cli, ['ims', 'deleted', 'recipes', 'deleteall'])
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'DELETE'
-    assert data['url'] == '{}/apis/ims/v3/deleted/recipes'.format(
-        config['default']['hostname']
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}/apis/ims/v3/deleted/recipes'
 
 
-def test_cray_ims_deleted_recipes_update(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_ims_deleted_recipes_update(cli_runner, rest_mock):
     """ Test cray ims deleted recipes update ... """
     runner, cli, config = cli_runner
     result = runner.invoke(cli, ['ims', 'deleted', 'recipes', 'update', 'foo'])
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'PATCH'
-    assert data['url'] == '{}/apis/ims/v3/deleted/recipes/foo'.format(
-        config['default']['hostname']
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}/apis/ims/v3/deleted/recipes/foo'
 
 
-def test_cray_ims_deleted_recipes_list(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_ims_deleted_recipes_list(cli_runner, rest_mock):
     """ Test cray ims deleted recipes list """
     runner, cli, config = cli_runner
     result = runner.invoke(cli, ['ims', 'deleted', 'recipes', 'list'])
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'GET'
-    assert data['url'] == '{}/apis/ims/v3/deleted/recipes'.format(
-        config['default']['hostname']
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}/apis/ims/v3/deleted/recipes'
 
 
-def test_cray_ims_deleted_recipes_describe(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_ims_deleted_recipes_describe(cli_runner, rest_mock):
     """ Test cray ims deleted recipes describe """
     runner, cli, config = cli_runner
     result = runner.invoke(
@@ -532,12 +428,10 @@ def test_cray_ims_deleted_recipes_describe(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'GET'
-    assert data['url'] == '{}/apis/ims/v3/deleted/recipes/foo'.format(
-        config['default']['hostname']
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}/apis/ims/v3/deleted/recipes/foo'
 
 
-def test_cray_ims_images_base(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_cray_ims_images_base(cli_runner, rest_mock):
     """ Test cray ims images base command """
     runner, cli, _ = cli_runner
     result = runner.invoke(cli, ['ims', 'images'])
@@ -555,61 +449,47 @@ def test_cray_ims_images_base(cli_runner: cli_runner, rest_mock: rest_mock):
     compare_output(outputs, result.output)
 
 
-def test_cray_ims_images_delete(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_cray_ims_images_delete(cli_runner, rest_mock):
     """ Test cray ims images delete ... """
     runner, cli, config = cli_runner
     result = runner.invoke(cli, ['ims', 'images', 'delete', 'foo'])
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'DELETE'
-    assert data['url'] == '{}/apis/ims/v3/images/foo'.format(
-        config['default']['hostname']
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}/apis/ims/v3/images/foo'
 
 
-def test_cray_ims_images_delete_all(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_ims_images_delete_all(cli_runner, rest_mock):
     """ Test cray ims images delete ... """
     runner, cli, config = cli_runner
     result = runner.invoke(cli, ['ims', 'images', 'deleteall'])
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'DELETE'
-    assert data['url'] == '{}/apis/ims/v3/images'.format(
-        config['default']['hostname']
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}/apis/ims/v3/images'
 
 
-def test_cray_ims_images_list(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_cray_ims_images_list(cli_runner, rest_mock):
     """ Test cray ims images list """
     runner, cli, config = cli_runner
     result = runner.invoke(cli, ['ims', 'images', 'list'])
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'GET'
-    assert data['url'] == '{}/apis/ims/v3/images'.format(
-        config['default']['hostname']
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}/apis/ims/v3/images'
 
 
-def test_cray_ims_images_describe(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_ims_images_describe(cli_runner, rest_mock):
     """ Test cray ims images describe """
     runner, cli, config = cli_runner
     result = runner.invoke(cli, ['ims', 'images', 'describe', 'foo'])
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'GET'
-    assert data['url'] == '{}/apis/ims/v3/images/foo'.format(
-        config['default']['hostname']
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}/apis/ims/v3/images/foo'
 
 
-def test_cray_ims_images_create(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_cray_ims_images_create(cli_runner, rest_mock):
     """ Test cray ims images create ... happy path """
     runner, cli, config = cli_runner
     s3_link_path = new_random_string()
@@ -624,9 +504,7 @@ def test_cray_ims_images_create(cli_runner: cli_runner, rest_mock: rest_mock):
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'POST'
-    assert data['url'] == '{}/apis/ims/v3/images'.format(
-        config['default']['hostname']
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}/apis/ims/v3/images'
     assert 'name' in data['body'] and data['body']['name'] == 'foo'
     assert 'link' in data['body']
     assert data['body']['link'].get('type', None) == 's3'
@@ -634,10 +512,7 @@ def test_cray_ims_images_create(cli_runner: cli_runner, rest_mock: rest_mock):
     assert data['body']['link'].get('etag', None) == s3_link_etag
 
 
-def test_cray_ims_images_create_missing_required(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_ims_images_create_missing_required(cli_runner, rest_mock):
     """ Test cray ims images create ... happy path """
     runner, cli, _ = cli_runner
     result = runner.invoke(cli, ['ims', 'images', 'create'])
@@ -645,7 +520,7 @@ def test_cray_ims_images_create_missing_required(
     assert '--name' in result.output
 
 
-def test_cray_ims_images_update(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_cray_ims_images_update(cli_runner, rest_mock):
     """ Test cray ims images update ... """
     runner, cli, config = cli_runner
     test_link_type = 's3'
@@ -660,9 +535,7 @@ def test_cray_ims_images_update(cli_runner: cli_runner, rest_mock: rest_mock):
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'PATCH'
-    assert data['url'] == '{}/apis/ims/v3/images/foo'.format(
-        config['default']['hostname']
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}/apis/ims/v3/images/foo'
     assert data['body'] == {
         'link': {
             'type': test_link_type,
@@ -672,10 +545,7 @@ def test_cray_ims_images_update(cli_runner: cli_runner, rest_mock: rest_mock):
     }
 
 
-def test_cray_ims_deleted_images_base(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_ims_deleted_images_base(cli_runner, rest_mock):
     """ Test cray ims images base command """
     runner, cli, _ = cli_runner
     result = runner.invoke(cli, ['ims', 'deleted', 'images'])
@@ -692,70 +562,47 @@ def test_cray_ims_deleted_images_base(
     compare_output(outputs, result.output)
 
 
-def test_cray_ims_deleted_images_delete(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_ims_deleted_images_delete(cli_runner, rest_mock):
     """ Test cray ims images delete ... """
     runner, cli, config = cli_runner
     result = runner.invoke(cli, ['ims', 'deleted', 'images', 'delete', 'foo'])
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'DELETE'
-    assert data['url'] == '{}/apis/ims/v3/deleted/images/foo'.format(
-        config['default']['hostname']
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}/apis/ims/v3/deleted/images/foo'
 
 
-def test_cray_ims_deleted_images_delete_all(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_ims_deleted_images_delete_all(cli_runner, rest_mock):
     """ Test cray ims images delete ... """
     runner, cli, config = cli_runner
     result = runner.invoke(cli, ['ims', 'deleted', 'images', 'deleteall'])
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'DELETE'
-    assert data['url'] == '{}/apis/ims/v3/deleted/images'.format(
-        config['default']['hostname']
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}/apis/ims/v3/deleted/images'
 
 
-def test_cray_ims_deleted_images_update(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_ims_deleted_images_update(cli_runner, rest_mock):
     """ Test cray ims deleted images update ... """
     runner, cli, config = cli_runner
     result = runner.invoke(cli, ['ims', 'deleted', 'images', 'update', 'foo'])
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'PATCH'
-    assert data['url'] == '{}/apis/ims/v3/deleted/images/foo'.format(
-        config['default']['hostname']
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}/apis/ims/v3/deleted/images/foo'
 
 
-def test_cray_ims_deleted_images_list(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_ims_deleted_images_list(cli_runner, rest_mock):
     """ Test cray ims deleted images list """
     runner, cli, config = cli_runner
     result = runner.invoke(cli, ['ims', 'deleted', 'images', 'list'])
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'GET'
-    assert data['url'] == '{}/apis/ims/v3/deleted/images'.format(
-        config['default']['hostname']
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}/apis/ims/v3/deleted/images'
 
 
-def test_cray_ims_deleted_images_describe(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_ims_deleted_images_describe(cli_runner, rest_mock):
     """ Test cray ims deleted images describe """
     runner, cli, config = cli_runner
     result = runner.invoke(
@@ -765,12 +612,10 @@ def test_cray_ims_deleted_images_describe(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'GET'
-    assert data['url'] == '{}/apis/ims/v3/deleted/images/foo'.format(
-        config['default']['hostname']
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}/apis/ims/v3/deleted/images/foo'
 
 
-def test_cray_ims_jobs_base(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_cray_ims_jobs_base(cli_runner, rest_mock):
     """ Test cray ims jobs base command """
     runner, cli, _ = cli_runner
     result = runner.invoke(cli, ['ims', 'jobs'])
@@ -786,61 +631,47 @@ def test_cray_ims_jobs_base(cli_runner: cli_runner, rest_mock: rest_mock):
     compare_output(outputs, result.output)
 
 
-def test_cray_ims_jobs_delete(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_cray_ims_jobs_delete(cli_runner, rest_mock):
     """ Test cray ims jobs delete ... """
     runner, cli, config = cli_runner
     result = runner.invoke(cli, ['ims', 'jobs', 'delete', 'foo'])
     assert result.exit_code == 0
     data = json.loads(result.output)
+    assert data['url'] == f'{config["default"]["hostname"]}/apis/ims/v3/jobs/foo'
     assert data['method'] == 'DELETE'
-    assert data['url'] == '{}/apis/ims/v3/jobs/foo'.format(
-        config['default']['hostname']
-    )
 
 
-def test_cray_ims_jobs_delete_all(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_ims_jobs_delete_all(cli_runner, rest_mock):
     """ Test cray ims jobs delete ... """
     runner, cli, config = cli_runner
     result = runner.invoke(cli, ['ims', 'jobs', 'deleteall'])
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'DELETE'
-    assert data['url'] == '{}/apis/ims/v3/jobs'.format(
-        config['default']['hostname']
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}/apis/ims/v3/jobs'
 
 
-def test_cray_ims_jobs_list(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_cray_ims_jobs_list(cli_runner, rest_mock):
     """ Test cray ims jobs list """
     runner, cli, config = cli_runner
     result = runner.invoke(cli, ['ims', 'jobs', 'list'])
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'GET'
-    assert data['url'] == '{}/apis/ims/v3/jobs'.format(
-        config['default']['hostname']
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}/apis/ims/v3/jobs'
 
 
-def test_cray_ims_jobs_describe(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_cray_ims_jobs_describe(cli_runner, rest_mock):
     """ Test cray ims jobs describe """
     runner, cli, config = cli_runner
     result = runner.invoke(cli, ['ims', 'jobs', 'describe', 'foo'])
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'GET'
-    assert data['url'] == '{}/apis/ims/v3/jobs/foo'.format(
-        config['default']['hostname']
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}/apis/ims/v3/jobs/foo'
 
 
-def test_cray_ims_jobs_create_create(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_ims_jobs_create_create(cli_runner, rest_mock):
     """ Test cray ims jobs create ... happy path """
     runner, cli, config = cli_runner
     test_build_env_size = '15'
@@ -867,9 +698,7 @@ def test_cray_ims_jobs_create_create(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'POST'
-    assert data['url'] == '{}/apis/ims/v3/jobs'.format(
-        config['default']['hostname']
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}/apis/ims/v3/jobs'
     assert data['body'] == {
         'build_env_size': int(test_build_env_size),
         'enable_debug': True,
@@ -883,10 +712,7 @@ def test_cray_ims_jobs_create_create(
     }
 
 
-def test_cray_ims_jobs_create_customize(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_ims_jobs_create_customize(cli_runner, rest_mock):
     """ Test cray ims jobs create ... happy path """
     runner, cli, config = cli_runner
     test_build_env_size = '15'
@@ -913,9 +739,7 @@ def test_cray_ims_jobs_create_customize(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'POST'
-    assert data['url'] == '{}/apis/ims/v3/jobs'.format(
-        config['default']['hostname']
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}/apis/ims/v3/jobs'
     assert data['body'] == {
         'build_env_size': int(test_build_env_size),
         'enable_debug': True,
@@ -929,10 +753,7 @@ def test_cray_ims_jobs_create_customize(
     }
 
 
-def test_cray_ims_jobs_create_missing_required(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_ims_jobs_create_missing_required(cli_runner, rest_mock):
     """Test cray ims jobs create ... when a required parameter is
     missing
 

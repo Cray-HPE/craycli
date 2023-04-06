@@ -1,57 +1,36 @@
 #
-# MIT License
+#  MIT License
 #
-# (C) Copyright 2022 Hewlett Packard Enterprise Development LP
+#  (C) Copyright 2020-2023 Hewlett Packard Enterprise Development LP
 #
-# Permission is hereby granted, free of charge, to any person obtaining a
-# copy of this software and associated documentation files (the "Software"),
-# to deal in the Software without restriction, including without limitation
-# the rights to use, copy, modify, merge, publish, distribute, sublicense,
-# and/or sell copies of the Software, and to permit persons to whom the
-# Software is furnished to do so, subject to the following conditions:
+#  Permission is hereby granted, free of charge, to any person obtaining a
+#  copy of this software and associated documentation files (the "Software"),
+#  to deal in the Software without restriction, including without limitation
+#  the rights to use, copy, modify, merge, publish, distribute, sublicense,
+#  and/or sell copies of the Software, and to permit persons to whom the
+#  Software is furnished to do so, subject to the following conditions:
 #
-# The above copyright notice and this permission notice shall be included
-# in all copies or substantial portions of the Software.
+#  The above copyright notice and this permission notice shall be included
+#  in all copies or substantial portions of the Software.
 #
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-# THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
-# OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-# ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-# OTHER DEALINGS IN THE SOFTWARE.
+#  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+#  THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+#  OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+#  ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+#  OTHER DEALINGS IN THE SOFTWARE.
 #
 """
 CAPMC - Cray Advanced Platform Monitoring and Control
-
-MIT License
-
-(C) Copyright [2020-2022] Hewlett Packard Enterprise Development LP
-
-Permission is hereby granted, free of charge, to any person obtaining a
-copy of this software and associated documentation files (the "Software"),
-to deal in the Software without restriction, including without limitation
-the rights to use, copy, modify, merge, publish, distribute, sublicense,
-and/or sell copies of the Software, and to permit persons to whom the
-Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included
-in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
-OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-OTHER DEALINGS IN THE SOFTWARE.
 """
 # pylint: disable=invalid-name
 import click
 
-from cray.core import option
-from cray.generator import generate, _opt_callback
 from cray.constants import FROM_FILE_TAG
+from cray.core import option
+from cray.generator import _opt_callback
+from cray.generator import generate
 
 cli = generate(__file__, condense=False)
 
@@ -69,8 +48,10 @@ SPC_OLD_NIDS = 'nids-nid'
 
 CREATE_CMD = cli.commands['set_power_cap'].commands['create']
 
+
 def _set_power_cap_callback(cb):
     """ Manage the command line options """
+
     def _cb(ctx, param, value):
         nids = []
         for x in value:
@@ -79,29 +60,35 @@ def _set_power_cap_callback(cb):
         if cb:
             return cb(ctx, param, nids)
         return nids
+
     return _cb
 
-option('--'+SPC_NIDS_ARG, nargs=1, type=click.STRING, multiple=True,
-       payload_name=SPC_NIDS_ARG,
-       callback=_set_power_cap_callback(_opt_callback),
-       metavar='INTEGER,...',
-       help="Specify the NIDs to apply the specified power caps. The syntax "
-            "allows a comma-separated list of nids (e.g. 1,4,5). This option "
-            "may not be omitted. Ths specified NIDs must be in the ready "
-            "state per the node_status command.")(CREATE_CMD)
 
-option('--'+SPC_CTL_ARG, type=(click.STRING, click.INT),
-       payload_name=SPC_CTL_ARG, multiple=True,
-       help="Specify the desired power cap for the specified control. The "
-            "value given must be within the range returned in the "
-            "capabilities output. A value of zero may be supplied to "
-            "explicitly clear an existing power cap. Nodes with high powered "
-            "accelerators and high TDP processors will be automatically power "
-            "capped at the supply limit returned per the "
-            "get_power_cap_capabilities command. If a power cap is specified "
-            "that is within the control range but exceeds the supply limit, "
-            "the actual power cap assigned will be clamped at the supply "
-            "limit.")(CREATE_CMD)
+option(
+    '--' + SPC_NIDS_ARG, nargs=1, type=click.STRING, multiple=True,
+    payload_name=SPC_NIDS_ARG,
+    callback=_set_power_cap_callback(_opt_callback),
+    metavar='INTEGER,...',
+    help="Specify the NIDs to apply the specified power caps. The syntax "
+         "allows a comma-separated list of nids (e.g. 1,4,5). This option "
+         "may not be omitted. Ths specified NIDs must be in the ready "
+         "state per the node_status command."
+)(CREATE_CMD)
+
+option(
+    '--' + SPC_CTL_ARG, type=(click.STRING, click.INT),
+    payload_name=SPC_CTL_ARG, multiple=True,
+    help="Specify the desired power cap for the specified control. The "
+         "value given must be within the range returned in the "
+         "capabilities output. A value of zero may be supplied to "
+         "explicitly clear an existing power cap. Nodes with high powered "
+         "accelerators and high TDP processors will be automatically power "
+         "capped at the supply limit returned per the "
+         "get_power_cap_capabilities command. If a power cap is specified "
+         "that is within the control range but exceeds the supply limit, "
+         "the actual power cap assigned will be clamped at the supply "
+         "limit."
+)(CREATE_CMD)
 
 # Remove the generated params for the group names and group member lists.
 # Add the new target-groups option.
@@ -121,8 +108,10 @@ for p in CREATE_CMD.params:
 # Update the command with the new params
 CREATE_CMD.params = params
 
+
 def set_power_cap_shim(func):
     """ Callback function to create our own payload """
+
     def _decorator(nids, control, **kwargs):
         if not nids['value']:
             raise click.BadParameter("--nids option required")
@@ -130,9 +119,9 @@ def set_power_cap_shim(func):
         if not control:
             raise click.BadParameter("--control must be supplied.")
 
-        payload = {'nids':[]}
+        payload = {'nids': []}
         for n in nids['value']:
-            e = {'nid': n, 'controls':[]}
+            e = {'nid': n, 'controls': []}
             for ctl in control:
                 c = {
                     'name': ctl[0],
@@ -145,7 +134,9 @@ def set_power_cap_shim(func):
         # Inform the CLI that we are passing our own payload and don't generate it
         kwargs[FROM_FILE_TAG] = {"value": payload, "name": FROM_FILE_TAG}
         return func(**kwargs)
+
     return _decorator
+
 
 # Update to create command with the callback
 CREATE_CMD.callback = set_power_cap_shim(CREATE_CMD.callback)

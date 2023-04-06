@@ -1,35 +1,35 @@
-""" Click specific subclassing and utilities
-
-MIT License
-
-(C) Copyright [2020] Hewlett Packard Enterprise Development LP
-
-Permission is hereby granted, free of charge, to any person obtaining a
-copy of this software and associated documentation files (the "Software"),
-to deal in the Software without restriction, including without limitation
-the rights to use, copy, modify, merge, publish, distribute, sublicense,
-and/or sell copies of the Software, and to permit persons to whom the
-Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included
-in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
-OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-OTHER DEALINGS IN THE SOFTWARE.
-"""
-# pylint: disable=invalid-name
+#
+#  MIT License
+#
+#  (C) Copyright 2020-2023 Hewlett Packard Enterprise Development LP
+#
+#  Permission is hereby granted, free of charge, to any person obtaining a
+#  copy of this software and associated documentation files (the "Software"),
+#  to deal in the Software without restriction, including without limitation
+#  the rights to use, copy, modify, merge, publish, distribute, sublicense,
+#  and/or sell copies of the Software, and to permit persons to whom the
+#  Software is furnished to do so, subject to the following conditions:
+#
+#  The above copyright notice and this permission notice shall be included
+#  in all copies or substantial portions of the Software.
+#
+#  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+#  THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+#  OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+#  ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+#  OTHER DEALINGS IN THE SOFTWARE.
+#
+""" Click specific subclassing and utilities. """
 import os
-
 import click
 
+
+# pylint: disable=invalid-name
+
+
 # Custom class decorators
-
-
 def pass_context(f, *args, **kwargs):
     """ pass context wrapper """
     return click.pass_context(f, *args, **kwargs)
@@ -37,17 +37,21 @@ def pass_context(f, *args, **kwargs):
 
 def argument(*param_decls, **attrs):
     """ Add arguments to commands/groups """
+
     def decorator(f):  # pylint: disable=missing-docstring
         attrs.setdefault('cls', Argument)
         return click.argument(*param_decls, **attrs)(f)
+
     return decorator
 
 
 def option(*param_decls, **attrs):
     """ Use our Option class instead of clicks. """
+
     def decorator(f):  # pylint: disable=missing-docstring
         attrs.setdefault('cls', Option)
         return click.option(*param_decls, **attrs)(f)
+
     return decorator
 
 
@@ -64,9 +68,10 @@ def command(name=None, cls=None, **kwargs):
         f = click.command(name, cls, **kwargs)(f)
         if needs_globals:
             # pylint: disable=import-outside-toplevel
-            from .options import global_options
+            from cray.options import global_options
             f = global_options(f)
         return f
+
     return decorator
 
 
@@ -109,6 +114,7 @@ class Option(click.Option):
 
 class Argument(click.Argument):
     """ Argument class that allows names """
+
     # This class is needed to allow us to maintain an unaltered version
     # Click will convert names to lowercase, we need to do a .format
     # with URIs to add the path arguments, so we need the original
@@ -135,12 +141,14 @@ class Group(click.Group):
         """Adapted from click.Group class to use our command decorator instead.
         As well as add global options to all commands.
         """
+
         def decorator(f):  # pylint: disable=missing-docstring
             if 'needs_globals' not in kwargs:
                 kwargs['needs_globals'] = True
             cmd = command(*args, **kwargs)(f)
             self.add_command(cmd)
             return cmd
+
         return decorator
 
     def format_commands(self, ctx, formatter):  # pragma: NO COVER
@@ -179,10 +187,12 @@ class Group(click.Group):
     def group(self, *args, **kwargs):
         """Adapted from click.Group class to use our group decorator instead.
         """
+
         def decorator(f):  # pylint: disable=missing-docstring
             cmd = group(*args, **kwargs)(f)
             self.add_command(cmd)
             return cmd
+
         return decorator
 
 
@@ -200,8 +210,9 @@ class GeneratedCommands(Group):
     def list_commands(self, ctx):
         cmds = set(self.commands.keys())
         for module in os.listdir(self._module_dir):
-            if os.path.isdir(os.path.join(self._module_dir, module)) and \
-               not module.startswith('_'):
+            if os.path.isdir(
+                    os.path.join(self._module_dir, module)
+                    ) and not module.startswith('_'):
                 cmds.add(module)
         cmds = list(cmds)
         cmds.sort()

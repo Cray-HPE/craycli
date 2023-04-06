@@ -23,11 +23,12 @@
 #
 """ test_mpiexec.py - Functional tests for mpiexec module """
 
-from cray.tests.conftest import cli_runner
-from cray.tests.conftest import rest_mock
+
+# pylint: disable=unused-argument
+# pylint: disable=invalid-name
 
 
-def test_cray_mpiexec_help(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_cray_mpiexec_help(cli_runner, rest_mock):
     """ Test `cray mpiexec --help` """
     runner, cli, _ = cli_runner
     result = runner.invoke(cli, ['mpiexec', '--help'])
@@ -37,10 +38,7 @@ def test_cray_mpiexec_help(cli_runner: cli_runner, rest_mock: rest_mock):
     assert 'Run an application using the Parallel Application Launch Service' in result.output
 
 
-def test_cray_mpiexec_missing_param(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_mpiexec_missing_param(cli_runner, rest_mock):
     """ Test cray mpiexec without an executable """
     runner, cli, _ = cli_runner
     result = runner.invoke(cli, ['mpiexec'])

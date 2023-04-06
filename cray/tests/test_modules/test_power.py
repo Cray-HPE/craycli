@@ -22,9 +22,11 @@
 #  OTHER DEALINGS IN THE SOFTWARE.
 #
 """ Test the main CLI command hostlist expansion. """
+# pylint: disable=unused-argument
+# pylint: disable=invalid-name
+# pylint: disable=too-many-lines
+
 import json
-import pytest
-import requests_mock as req_mock
 
 from cray.modules.power.cli import get_chassis
 from cray.modules.power.cli import get_module
@@ -33,68 +35,10 @@ from cray.modules.power.cli import is_Module
 from cray.modules.power.cli import is_Node
 # from cray.modules.power.cli import component_valid
 from cray.modules.power.cli import xname_array
-from cray.tests.conftest import cli_runner
-from cray.tests.conftest import rest_mock
 
 
 # import click
 # from cray.core import pass_context
-# from cray.modules.power.cli import add_parents
-
-
-##############################################################################
-# MOCKS
-##############################################################################
-
-def _x1000c0s0_request_cb(request, context):
-    return '''{ "Components": [ { "ID": "x1000c0s0b1n0" },
-        { "ID": "x1000c0s0b0n1" }, { "ID": "x1000c0s0b1n1" },
-        { "ID": "x1000c0s0" }, { "ID": "x1000c0s0b0n0" } ] }'''
-
-
-def _x1000c0_request_cb(request, context):
-    return '''{ "Components": [
-        { "ID": "x1000c0s7" }, { "ID": "x1000c0s3b1n1" }, { "ID": "x1000c0s2" },
-        { "ID": "x1000c0s0" }, { "ID": "x1000c0s4" }, { "ID": "x1000c0s6" },
-        { "ID": "x1000c0s3" }, { "ID": "x1000c0s1" }, { "ID": "x1000c0s0b0n0" },
-        { "ID": "x1000c0s5b0n1" }, { "ID": "x1000c0s2b0n0" }, { "ID": "x1000c0s5" },
-        { "ID": "x1000c0s7b1n1" }, { "ID": "x1000c0s7b1n0" }, { "ID": "x1000c0" },
-        { "ID": "x1000c0r6" }, { "ID": "x1000c0r7" }, { "ID": "x1000c0r0" },
-        { "ID": "x1000c0r1" }, { "ID": "x1000c0r5" }, { "ID": "x1000c0r2" },
-        { "ID": "x1000c0r3" }, { "ID": "x1000c0r4" }, { "ID": "x1000c0s4b1n1" },
-        { "ID": "x1000c0s4b1n0" }, { "ID": "x1000c0s6b0n0" }, { "ID": "x1000c0s2b0n1" },
-        { "ID": "x1000c0s1b1n0" }, { "ID": "x1000c0s1b1n1" }, { "ID": "x1000c0s3b0n1" },
-        { "ID": "x1000c0s2b1n1" }, { "ID": "x1000c0s3b0n0" }, { "ID": "x1000c0s2b1n0" },
-        { "ID": "x1000c0s1b0n1" }, { "ID": "x1000c0s5b1n1" }, { "ID": "x1000c0s5b1n0" },
-        { "ID": "x1000c0s4b0n1" }, { "ID": "x1000c0s4b0n0" }, { "ID": "x1000c0s7b0n1" },
-        { "ID": "x1000c0s7b0n0" }, { "ID": "x1000c0s0b0n1" }, { "ID": "x1000c0s6b0n1" },
-        { "ID": "x1000c0s0b1n0" }, { "ID": "x1000c0s1b0n0" }, { "ID": "x1000c0s6b1n0" },
-        { "ID": "x1000c0s3b1n0" }, { "ID": "x1000c0s5b0n0" }, { "ID": "x1000c0s6b1n1" },
-        { "ID": "x1000c0s0b1n1" }
-        ] }'''
-
-
-@pytest.fixture()
-def pcs_rest_mock(requests_mock):
-    """ Catch any rest callouts and return the request info instead """
-
-    requests_mock._adapter.register_uri(
-        req_mock.GET,
-        '/apis/smd/hsm/v2/State/Components/Query/x1000c0s0?type=computemodule' +
-        '&type=routermodule&type=node',
-        text=_x1000c0s0_request_cb
-    )
-    requests_mock._adapter.register_uri(
-        req_mock.GET,
-        '/apis/smd/hsm/v2/State/Components/Query/x1000c0?type=chassis' +
-        '&type=computemodule&type=routermodule&type=node',
-        text=_x1000c0_request_cb
-    )
-    requests_mock._adapter.register_uri(
-        req_mock.GET,
-        '/apis/smd/hsm/v2/State/Components',
-        text=_x1000c0_request_cb
-    )
 
 
 ##############################################################################
@@ -264,7 +208,7 @@ def test_get_chassis():
 # Following tests fail because there is no click context. Figure out how to
 # get a click context and re-enable them.
 #####
-# def test_component_valid(rest_mock: rest_mock):
+# def test_component_valid(rest_mock):
 #     """ Test to make sure we have a valid xname """
 #     xname = 'x1000c0'
 #     output = component_valid(xname)
@@ -289,10 +233,7 @@ power_url_base = '/power-control/v1'
 # CRAY POWER TRANSITION
 ##############################################################################
 
-def test_transition_missing_xname(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_transition_missing_xname(cli_runner, rest_mock):
     """ Test `cray power transition <operation> --xnames <xname list>` """
     operations = ['on', 'off', 'soft-off', 'soft-restart', 'hard-restart',
                   'reinit', 'force-off']
@@ -309,7 +250,7 @@ def test_transition_missing_xname(
         assert out in result.output
 
 
-def test_transition_single(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_transition_single(cli_runner, rest_mock):
     """ Test `cray power transition <operation> --xnames <xname list>` """
     operations = ['on', 'off', 'soft-off', 'soft-restart', 'hard-restart',
                   'reinit', 'force-off']
@@ -335,7 +276,7 @@ def test_transition_single(cli_runner: cli_runner, rest_mock: rest_mock):
             assert data['body']['operation'] == op
 
 
-def test_transition_hostlist(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_transition_hostlist(cli_runner, rest_mock):
     """ Test `cray power transition <operation> --xnames <xname list>` """
     operations = ['on', 'off', 'soft-off', 'soft-restart', 'hard-restart',
                   'reinit', 'force-off']
@@ -363,7 +304,7 @@ def test_transition_hostlist(cli_runner: cli_runner, rest_mock: rest_mock):
             assert data['body']['operation'] == op
 
 
-def test_transition_multi(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_transition_multi(cli_runner, rest_mock):
     """ Test `cray power transition <operation> --xnames <xname list> ...` """
     operations = ['on', 'off', 'soft-off', 'soft-restart', 'hard-restart',
                   'reinit', 'force-off']
@@ -390,10 +331,7 @@ def test_transition_multi(cli_runner: cli_runner, rest_mock: rest_mock):
             assert data['body']['operation'] == op
 
 
-def test_transition_hostlist_multi(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_transition_hostlist_multi(cli_runner, rest_mock):
     """ Test `cray power transition <operation> --xnames <xname list> ...` """
     operations = ['on', 'off', 'soft-off', 'soft-restart', 'hard-restart',
                   'reinit', 'force-off']
@@ -424,10 +362,10 @@ def test_transition_hostlist_multi(
 
 
 def test_transition_parents_node(
-        cli_runner: cli_runner,
+        cli_runner,
         rest_mock,
-        pcs_rest_mock: rest_mock
-        ):
+        pcs_rest_mock
+):
     """ Test `cray power transition <operation> --xnames <xname list> --include parents` """
     operations = ['on', 'off', 'soft-off', 'soft-restart', 'hard-restart',
                   'reinit', 'force-off']
@@ -457,10 +395,10 @@ def test_transition_parents_node(
 
 
 def test_transition_parents_node_none(
-        cli_runner: cli_runner,
+        cli_runner,
         rest_mock,
-        pcs_rest_mock: rest_mock
-        ):
+        pcs_rest_mock
+):
     """ Test `cray power transition <operation> --xnames <xname list> --include parents` """
     operations = ['on', 'off', 'soft-off', 'soft-restart', 'hard-restart',
                   'reinit', 'force-off']
@@ -489,10 +427,10 @@ def test_transition_parents_node_none(
 
 
 def test_transition_parents_slot(
-        cli_runner: cli_runner,
+        cli_runner,
         rest_mock,
-        pcs_rest_mock: rest_mock
-        ):
+        pcs_rest_mock
+):
     """ Test `cray power transition <operation> --xnames <xname list> --include parents` """
     operations = ['on', 'off', 'soft-off', 'soft-restart', 'hard-restart',
                   'reinit', 'force-off']
@@ -521,10 +459,10 @@ def test_transition_parents_slot(
 
 
 def test_transition_parents_chassis(
-        cli_runner: cli_runner,
+        cli_runner,
         rest_mock,
-        pcs_rest_mock: rest_mock
-        ):
+        pcs_rest_mock
+):
     """ Test `cray power transition <operation> --xnames <xname list> --include parents` """
     operations = ['on', 'off', 'soft-off', 'soft-restart', 'hard-restart',
                   'reinit', 'force-off']
@@ -553,10 +491,10 @@ def test_transition_parents_chassis(
 
 
 def test_transition_children_slot(
-        cli_runner: cli_runner,
+        cli_runner,
         rest_mock,
-        pcs_rest_mock: rest_mock
-        ):
+        pcs_rest_mock
+):
     """ Test `cray power transition <operation> --xnames <xname list> --include children` """
     operations = ['on', 'off', 'soft-off', 'soft-restart', 'hard-restart',
                   'reinit', 'force-off']
@@ -588,10 +526,10 @@ def test_transition_children_slot(
 
 
 def test_transition_children_chassis(
-        cli_runner: cli_runner,
+        cli_runner,
         rest_mock,
-        pcs_rest_mock: rest_mock
-        ):
+        pcs_rest_mock
+):
     """ Test `cray power transition <operation> --xnames <xname list> --include children` """
     operations = ['on', 'off', 'soft-off', 'soft-restart', 'hard-restart',
                   'reinit', 'force-off']
@@ -644,10 +582,10 @@ def test_transition_children_chassis(
 
 
 def test_transition_both_slot(
-        cli_runner: cli_runner,
+        cli_runner,
         rest_mock,
-        pcs_rest_mock: rest_mock
-        ):
+        pcs_rest_mock
+):
     """
     Test `cray power transition <operation> --xnames <xname list> \
         --include parents --include children`
@@ -685,7 +623,7 @@ def test_transition_both_slot(
             assert data['body']['operation'] == op
 
 
-def test_transition_list(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_transition_list(cli_runner, rest_mock):
     """ Test `cray power transition list` """
     runner, cli, opts = cli_runner
     url_template = power_url_base + '/transitions'
@@ -700,10 +638,7 @@ def test_transition_list(cli_runner: cli_runner, rest_mock: rest_mock):
     assert url_template in uri
 
 
-def test_transition_describe_missing_id(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_transition_describe_missing_id(cli_runner, rest_mock):
     """ Test `cray power transition describe` """
     runner, cli, _ = cli_runner
     result = runner.invoke(cli, ['power', 'transition', 'describe'])
@@ -717,7 +652,7 @@ def test_transition_describe_missing_id(
         assert out in result.output
 
 
-def test_transition_describe(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_transition_describe(cli_runner, rest_mock):
     """ Test `cray power transition describe <transitionID>` """
     runner, cli, opts = cli_runner
     url_template = power_url_base + '/transitions'
@@ -736,10 +671,7 @@ def test_transition_describe(cli_runner: cli_runner, rest_mock: rest_mock):
     assert url_template + '/' + transitionID in uri
 
 
-def test_transition_delete_missing_id(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_transition_delete_missing_id(cli_runner, rest_mock):
     """ Test `cray power transition delete` """
     runner, cli, _ = cli_runner
     result = runner.invoke(cli, ['power', 'transition', 'delete'])
@@ -753,7 +685,7 @@ def test_transition_delete_missing_id(
         assert out in result.output
 
 
-def test_transition_delete(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_transition_delete(cli_runner, rest_mock):
     """ Test `cray power transition delete <transitionID>` """
     runner, cli, opts = cli_runner
     url_template = power_url_base + '/transitions'
@@ -772,7 +704,7 @@ def test_transition_delete(cli_runner: cli_runner, rest_mock: rest_mock):
     assert url_template + '/' + transitionID in uri
 
 
-def test_status_list_no_xname(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_status_list_no_xname(cli_runner, rest_mock):
     """ Test `cray power status list` """
     runner, cli, opts = cli_runner
     url_template = power_url_base + '/power-status'
@@ -787,7 +719,7 @@ def test_status_list_no_xname(cli_runner: cli_runner, rest_mock: rest_mock):
     assert url_template in uri
 
 
-def test_status_list_single(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_status_list_single(cli_runner, rest_mock):
     """ Test `cray power status list --xnames <xname>` """
     runner, cli, opts = cli_runner
     url_template = power_url_base + '/power-status'
@@ -807,10 +739,7 @@ def test_status_list_single(cli_runner: cli_runner, rest_mock: rest_mock):
     assert params == 'xname=x1000c0'
 
 
-def test_status_list_single_powerfilter(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_status_list_single_powerfilter(cli_runner, rest_mock):
     """ Test `cray power status list --xnames <xname> --powerfilter <opt>` """
     runner, cli, opts = cli_runner
     url_template = power_url_base + '/power-status'
@@ -831,10 +760,7 @@ def test_status_list_single_powerfilter(
     assert params == 'powerStateFilter=on&xname=x1000c0'
 
 
-def test_status_list_single_mgmtfilter(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_status_list_single_mgmtfilter(cli_runner, rest_mock):
     """ Test `cray power status list --xnames <xname> --mgmtfilter <opt>` """
     runner, cli, opts = cli_runner
     url_template = power_url_base + '/power-status'
@@ -855,10 +781,7 @@ def test_status_list_single_mgmtfilter(
     assert params == 'managementStateFilter=available&xname=x1000c0b0'
 
 
-def test_status_list_single_bothfilter(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_status_list_single_bothfilter(cli_runner, rest_mock):
     """ Test `cray power status list --xnames <xname> --mgmtfilter <opt> --powerfilter <opt>` """
     runner, cli, opts = cli_runner
     url_template = power_url_base + '/power-status'
@@ -880,7 +803,7 @@ def test_status_list_single_bothfilter(
     assert params == 'powerStateFilter=off&managementStateFilter=available&xname=x1000c0b0'
 
 
-def test_status_list_multi(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_status_list_multi(cli_runner, rest_mock):
     """ Test `cray power status list --xnames <xname> --xnames <xname>` """
     runner, cli, opts = cli_runner
     url_template = power_url_base + '/power-status'
@@ -900,7 +823,7 @@ def test_status_list_multi(cli_runner: cli_runner, rest_mock: rest_mock):
     assert params == 'xname=x1000c0&xname=x1000c1'
 
 
-def test_status_list_hostlist(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_status_list_hostlist(cli_runner, rest_mock):
     """ Test `cray power status list --xnames <hostlist>` """
     runner, cli, opts = cli_runner
     url_template = power_url_base + '/power-status'
@@ -920,10 +843,7 @@ def test_status_list_hostlist(cli_runner: cli_runner, rest_mock: rest_mock):
     assert params == 'xname=x1000c0&xname=x1000c1&xname=x1000c2'
 
 
-def test_status_list_hostlist_multi(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_status_list_hostlist_multi(cli_runner, rest_mock):
     """ Test `cray power status list --xnames <hostlist> --xnames <hostlist>` """
     runner, cli, opts = cli_runner
     url_template = power_url_base + '/power-status'
@@ -944,10 +864,7 @@ def test_status_list_hostlist_multi(
     assert params == 'xname=x1000c0&xname=x1000c1&xname=x1000c6&xname=x1000c7'
 
 
-def test_status_describe_missing_xname(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_status_describe_missing_xname(cli_runner, rest_mock):
     """ Test `cray power status describe` """
     runner, cli, _ = cli_runner
     result = runner.invoke(cli, ['power', 'status', 'describe'])
@@ -961,7 +878,7 @@ def test_status_describe_missing_xname(
         assert out in result.output
 
 
-def test_status_describe_good(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_status_describe_good(cli_runner, rest_mock):
     """ Test `cray power status describe XNAME` """
     xname = "x1000c0s0b0n0"
 
@@ -980,7 +897,7 @@ def test_status_describe_good(cli_runner: cli_runner, rest_mock: rest_mock):
     assert params == 'xname=x1000c0s0b0n0'
 
 
-def test_cap_snapshot_single(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_cap_snapshot_single(cli_runner, rest_mock):
     """ Test `cray power cap snapshot --xnames <xname list>` """
     runner, cli, opts = cli_runner
     url_template = power_url_base + '/power-cap/snapshot'
@@ -1001,7 +918,7 @@ def test_cap_snapshot_single(cli_runner: cli_runner, rest_mock: rest_mock):
     assert xarr == ['x1000c0s0b0n0']
 
 
-def test_cap_snapshot_multi(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_cap_snapshot_multi(cli_runner, rest_mock):
     """ Test `cray power cap snapshot --xnames <xname list>` """
     runner, cli, opts = cli_runner
     url_template = power_url_base + '/power-cap/snapshot'
@@ -1025,7 +942,7 @@ def test_cap_snapshot_multi(cli_runner: cli_runner, rest_mock: rest_mock):
                     'x1000c0s0b1n1']
 
 
-def test_cap_set_single_single(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_cap_set_single_single(cli_runner, rest_mock):
     """ Test `cray power cap set --xnames <xname> --control <name> <val>` """
     runner, cli, opts = cli_runner
     url_template = power_url_base + '/power-cap'
@@ -1058,7 +975,7 @@ def test_cap_set_single_single(cli_runner: cli_runner, rest_mock: rest_mock):
     }
 
 
-def test_cap_set_multi_single(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_cap_set_multi_single(cli_runner, rest_mock):
     """ Test `cray power cap set --xnames <xname> --control <name> <val>` """
     runner, cli, opts = cli_runner
     url_template = power_url_base + '/power-cap'
@@ -1100,7 +1017,7 @@ def test_cap_set_multi_single(cli_runner: cli_runner, rest_mock: rest_mock):
     }
 
 
-def test_cap_set_single_multi(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_cap_set_single_multi(cli_runner, rest_mock):
     """ Test `cray power cap set --xnames <xname> --control <name> <val> --control <name> <val>` """
     runner, cli, opts = cli_runner
     url_template = power_url_base + '/power-cap'
@@ -1153,7 +1070,7 @@ def test_cap_set_single_multi(cli_runner: cli_runner, rest_mock: rest_mock):
     }
 
 
-def test_cap_set_multi_multi(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_cap_set_multi_multi(cli_runner, rest_mock):
     """ Test `cray power cap set --xnames <xname> --control <name> <val> --control <name> <val>` """
     runner, cli, opts = cli_runner
     url_template = power_url_base + '/power-cap'
@@ -1231,7 +1148,7 @@ def test_cap_set_multi_multi(cli_runner: cli_runner, rest_mock: rest_mock):
     }
 
 
-def test_cap_list(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_cap_list(cli_runner, rest_mock):
     """ Test `cray power cap list` """
     runner, cli, opts = cli_runner
     url_template = power_url_base + '/power-cap'
@@ -1246,7 +1163,7 @@ def test_cap_list(cli_runner: cli_runner, rest_mock: rest_mock):
     assert url_template in uri
 
 
-def test_cap_describe_missing_id(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_cap_describe_missing_id(cli_runner, rest_mock):
     """ Test `cray power cap describe` """
     runner, cli, _ = cli_runner
     result = runner.invoke(cli, ['power', 'cap', 'describe'])
@@ -1260,7 +1177,7 @@ def test_cap_describe_missing_id(cli_runner: cli_runner, rest_mock: rest_mock):
         assert out in result.output
 
 
-def test_cap_describe(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_cap_describe(cli_runner, rest_mock):
     """ Test `cray power cap describe <powerCapID>` """
     runner, cli, opts = cli_runner
     url_template = power_url_base + '/power-cap'

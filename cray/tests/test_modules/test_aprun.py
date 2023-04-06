@@ -1,4 +1,3 @@
-""" test_aprun.py - Functional tests for aprun module """
 #
 #  MIT License
 #
@@ -22,12 +21,13 @@
 #  ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 #  OTHER DEALINGS IN THE SOFTWARE.
 #
-
-from cray.tests.conftest import cli_runner
-from cray.tests.conftest import rest_mock
+""" test_aprun.py - Functional tests for aprun module """
 
 
-def test_cray_aprun_help(cli_runner: cli_runner, rest_mock: rest_mock):
+# pylint: disable=unused-argument
+# pylint: disable=invalid-name
+
+def test_cray_aprun_help(cli_runner):
     """ Test `cray aprun --help` """
     runner, cli, _ = cli_runner
     result = runner.invoke(cli, ['aprun', '--help'])
@@ -37,10 +37,7 @@ def test_cray_aprun_help(cli_runner: cli_runner, rest_mock: rest_mock):
     assert 'Run an application using the Parallel Application Launch Service' in result.output
 
 
-def test_cray_aprun_missing_param(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_aprun_missing_param(cli_runner):
     """ Test cray aprun without an executable """
     runner, cli, _ = cli_runner
     result = runner.invoke(cli, ['aprun'])

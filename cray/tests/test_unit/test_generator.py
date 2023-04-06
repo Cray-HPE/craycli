@@ -22,16 +22,15 @@
 #  OTHER DEALINGS IN THE SOFTWARE.
 #
 """ Test the main CLI command (`cray`) and options. """
+# pylint: disable=unused-argument
+# pylint: disable=invalid-name
 
 import json
 
-from cray.tests.conftest import cli_runner
-from cray.tests.conftest import pets
-from cray.tests.conftest import rest_mock
 from cray.tests.utils import strip_confirmation
 
 
-def test_generator_help(cli_runner: cli_runner, pets):
+def test_generator_help(cli_runner, pets):
     """ Test `cray init` for creating the default configuration """
 
     runner, cli, _ = cli_runner
@@ -48,9 +47,8 @@ def test_generator_help(cli_runner: cli_runner, pets):
         assert out in result.output
 
 
-def test_generator_read_only(cli_runner: cli_runner, pets):
+def test_generator_read_only(cli_runner, pets):
     """ Test `cray init` for creating the default configuration """
-
     runner, cli, _ = cli_runner
     result = runner.invoke(cli, ['pets', 'pet', 'create', '--help'])
     print(result.output)
@@ -59,11 +57,7 @@ def test_generator_read_only(cli_runner: cli_runner, pets):
     assert "--read-only-false" in result.output
 
 
-def test_generator_execute(
-        cli_runner: cli_runner,
-        pets: pets,
-        rest_mock: rest_mock,
-        ):
+def test_generator_execute(cli_runner, rest_mock, pets):
     """ Test `cray init` for creating the default configuration """
     pet_id = '1'
     runner, cli, opts = cli_runner
@@ -72,16 +66,12 @@ def test_generator_execute(
     result = runner.invoke(cli, ['pets', 'pet', 'describe', pet_id])
     assert result.exit_code == 0
     data = json.loads(result.output)
-    assert data['url'] == '{}/v2/pet/{}'.format(hostname, pet_id)
+    assert data['url'] == f'{hostname}/v2/pet/{pet_id}'
     assert data['method'].lower() == 'get'
     assert data.get('body') is None
 
 
-def test_generator_execute_post(
-        cli_runner: cli_runner,
-        pets: pets,
-        rest_mock: rest_mock,
-        ):
+def test_generator_execute_post(cli_runner, rest_mock, pets):
     """ Test `cray init` for creating the default configuration """
     name = 'testuser'
     runner, cli, opts = cli_runner
@@ -91,18 +81,13 @@ def test_generator_execute_post(
     print(result.output)
     assert result.exit_code == 0
     data = json.loads(result.output)
-    assert data['url'] == '{}/v2/user'.format(hostname)
+    assert data['url'] == f'{hostname}/v2/user'
     assert data['method'].lower() == 'post'
     assert data['body'].get('username') == 'testuser'
 
 
-def test_generator_execute_camelcase(
-        cli_runner: cli_runner,
-        pets: pets,
-        rest_mock: rest_mock,
-        ):
+def test_generator_execute_camelcase(cli_runner, rest_mock, pets):
     """ Test `cray init` for creating the default configuration """
-    name = 'testuser'
     runner, cli, opts = cli_runner
     config = opts['default']
     hostname = config['hostname']
@@ -115,22 +100,15 @@ def test_generator_execute_camelcase(
     print(result.output)
     assert result.exit_code == 0
     data = json.loads(result.output)
-    assert data['url'] == '{}/v2/pet'.format(hostname)
+    assert data['url'] == f'{hostname}/v2/pet'
     assert data['method'].lower() == 'post'
     assert data['body'].get('name') == name
     assert data['body'].get('photoUrls') == urls
 
 
-def test_generator_danger_tag_default_abort(
-        cli_runner: cli_runner,
-        pets: pets,
-        rest_mock: rest_mock,
-        ):
+def test_generator_danger_tag_default_abort(cli_runner, pets):
     """ Test `cray init` for creating the default configuration """
-    name = 'testuser'
-    runner, cli, opts = cli_runner
-    config = opts['default']
-    hostname = config['hostname']
+    runner, cli, _ = cli_runner
     petId = "1"
     result = runner.invoke(cli, ['pets', 'pet', 'delete', petId], input='n')
     print(result.output)
@@ -142,13 +120,8 @@ def test_generator_danger_tag_default_abort(
         assert out in result.output
 
 
-def test_generator_danger_tag_default_confirm(
-        cli_runner: cli_runner,
-        pets: pets,
-        rest_mock: rest_mock,
-        ):
+def test_generator_danger_tag_default_confirm(cli_runner, rest_mock, pets):
     """ Test `cray init` for creating the default configuration """
-    name = 'testuser'
     runner, cli, opts = cli_runner
     config = opts['default']
     hostname = config['hostname']
@@ -157,20 +130,13 @@ def test_generator_danger_tag_default_confirm(
     print(result.output)
     assert result.exit_code == 0
     data = json.loads(strip_confirmation(result.output))
-    assert data['url'] == '{}/v2/pet/{}'.format(hostname, petId)
+    assert data['url'] == f'{hostname}/v2/pet/{petId}'
     assert data['method'].lower() == 'delete'
 
 
-def test_generator_danger_tag_custom_abort(
-        cli_runner: cli_runner,
-        pets: pets,
-        rest_mock: rest_mock,
-        ):
+def test_generator_danger_tag_custom_abort(cli_runner, pets):
     """ Test `cray init` for creating the default configuration """
-    name = 'testuser'
-    runner, cli, opts = cli_runner
-    config = opts['default']
-    hostname = config['hostname']
+    runner, cli, _ = cli_runner
     storeId = "1"
     result = runner.invoke(
         cli,
@@ -186,13 +152,8 @@ def test_generator_danger_tag_custom_abort(
         assert out in result.output
 
 
-def test_generator_danger_tag_custom_confirm(
-        cli_runner: cli_runner,
-        pets: pets,
-        rest_mock: rest_mock,
-        ):
+def test_generator_danger_tag_custom_confirm(cli_runner, rest_mock, pets):
     """ Test `cray init` for creating the default configuration """
-    name = 'testuser'
     runner, cli, opts = cli_runner
     config = opts['default']
     hostname = config['hostname']
@@ -205,17 +166,12 @@ def test_generator_danger_tag_custom_confirm(
     print(result.output)
     assert result.exit_code == 0
     data = json.loads(strip_confirmation(result.output))
-    assert data['url'] == '{}/v2/store/order/{}'.format(hostname, orderId)
+    assert data['url'] == f'{hostname}/v2/store/order/{orderId}'
     assert data['method'].lower() == 'delete'
 
 
-def test_generator_danger_tag_force(
-        cli_runner: cli_runner,
-        pets: pets,
-        rest_mock: rest_mock,
-        ):
+def test_generator_danger_tag_force(cli_runner, rest_mock, pets):
     """ Test `cray init` for creating the default configuration """
-    name = 'testuser'
     runner, cli, opts = cli_runner
     config = opts['default']
     hostname = config['hostname']
@@ -227,20 +183,13 @@ def test_generator_danger_tag_force(
     print(result.output)
     assert result.exit_code == 0
     data = json.loads(result.output)
-    assert data['url'] == '{}/v2/store/order/{}'.format(hostname, orderId)
+    assert data['url'] == f'{hostname}/v2/store/order/{orderId}'
     assert data['method'].lower() == 'delete'
 
 
-def test_generator_danger_tag_quiet_ignored(
-        cli_runner: cli_runner,
-        pets: pets,
-        rest_mock: rest_mock,
-        ):
+def test_generator_danger_tag_quiet_ignored(cli_runner, pets):
     """ Test `cray init` for creating the default configuration """
-    name = 'testuser'
-    runner, cli, opts = cli_runner
-    config = opts['default']
-    hostname = config['hostname']
+    runner, cli, _ = cli_runner
     orderId = "1"
     result = runner.invoke(
         cli,
@@ -256,13 +205,8 @@ def test_generator_danger_tag_quiet_ignored(
         assert out in result.output
 
 
-def test_generator_danger_tag_quiet_and_force(
-        cli_runner: cli_runner,
-        pets: pets,
-        rest_mock: rest_mock,
-        ):
+def test_generator_danger_tag_quiet_and_force(cli_runner, rest_mock, pets):
     """ Test `cray init` for creating the default configuration """
-    name = 'testuser'
     runner, cli, opts = cli_runner
     config = opts['default']
     hostname = config['hostname']
@@ -274,20 +218,13 @@ def test_generator_danger_tag_quiet_and_force(
     print(result.output)
     assert result.exit_code == 0
     data = json.loads(result.output)
-    assert data['url'] == '{}/v2/store/order/{}'.format(hostname, orderId)
+    assert data['url'] == f'{hostname}/v2/store/order/{orderId}'
     assert data['method'].lower() == 'delete'
 
 
-def test_generator_hidden_tag_not_exists(
-        cli_runner: cli_runner,
-        pets: pets,
-        rest_mock: rest_mock,
-        ):
+def test_generator_hidden_tag_not_exists(cli_runner, pets, rest_mock):
     """ Test `cray init` for creating the default configuration """
-    name = 'testuser'
-    runner, cli, opts = cli_runner
-    config = opts['default']
-    hostname = config['hostname']
+    runner, cli, _ = cli_runner
     result = runner.invoke(cli, ['pets', 'user'])
     print(result.output)
     assert result.exit_code == 0
@@ -304,13 +241,8 @@ def test_generator_hidden_tag_not_exists(
         assert out in result.output
 
 
-def test_generator_hidden_tag_is_callable(
-        cli_runner: cli_runner,
-        pets: pets,
-        rest_mock: rest_mock,
-        ):
+def test_generator_hidden_tag_is_callable(cli_runner, pets, rest_mock):
     """ Test `cray init` for creating the default configuration """
-    name = 'testuser'
     runner, cli, opts = cli_runner
     config = opts['default']
     hostname = config['hostname']
@@ -318,20 +250,13 @@ def test_generator_hidden_tag_is_callable(
     print(result.output)
     assert result.exit_code == 0
     data = json.loads(result.output)
-    assert data['url'] == '{}/v2/user/logout'.format(hostname)
+    assert data['url'] == f'{hostname}/v2/user/logout'
     assert data['method'].lower() == 'get'
 
 
-def test_generator_hidden_tag_only_hides_self(
-        cli_runner: cli_runner,
-        pets: pets,
-        rest_mock: rest_mock,
-        ):
+def test_generator_hidden_tag_only_hides_self(cli_runner, pets):
     """ Test `cray init` for creating the default configuration """
-    name = 'testuser'
-    runner, cli, opts = cli_runner
-    config = opts['default']
-    hostname = config['hostname']
+    runner, cli, _ = cli_runner
     result = runner.invoke(cli, ['pets', 'pet'])
     print(result.output)
     assert result.exit_code == 0

@@ -24,15 +24,17 @@
 """
 test_pals.py - Unit tests for the pals module
 """
+# pylint: disable=comparison-with-callable
+# pylint: disable=too-many-locals
 
-import click
 import io
 import json
 import os
-import pytest
 import resource
 import signal
 import tempfile
+import click
+import pytest
 
 from cray import pals
 from cray.tests.utils import compare_dicts
@@ -337,7 +339,7 @@ def test_split_mpmd_args():
 
 def test_get_resource_limits():
     """ Test fetching resource limits """
-
+    # pylint: disable=use-implicit-booleaness-not-comparison
     assert pals.get_resource_limits([]) == {}
 
     assert pals.get_resource_limits(["foo"]) == {}
@@ -346,7 +348,7 @@ def test_get_resource_limits():
         resource.RLIMIT_CORE
     )
     assert pals.get_resource_limits(["CORE"]) == {
-        "CORE": "%d %d" % (soft, hard)
+        "CORE": f"{soft:d} {hard:d}"
     }
 
 

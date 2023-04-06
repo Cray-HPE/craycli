@@ -22,6 +22,7 @@
 #  OTHER DEALINGS IN THE SOFTWARE.
 #
 """ Test the main CLI command (`cray`) and options. """
+# pylint: disable=invalid-name
 
 import pytest
 

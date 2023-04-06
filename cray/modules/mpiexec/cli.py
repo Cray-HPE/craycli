@@ -1,61 +1,40 @@
 #
-# MIT License
+#  MIT License
 #
-# (C) Copyright 2022 Hewlett Packard Enterprise Development LP
+#  (C) Copyright 2022-2023 Hewlett Packard Enterprise Development LP
 #
-# Permission is hereby granted, free of charge, to any person obtaining a
-# copy of this software and associated documentation files (the "Software"),
-# to deal in the Software without restriction, including without limitation
-# the rights to use, copy, modify, merge, publish, distribute, sublicense,
-# and/or sell copies of the Software, and to permit persons to whom the
-# Software is furnished to do so, subject to the following conditions:
+#  Permission is hereby granted, free of charge, to any person obtaining a
+#  copy of this software and associated documentation files (the "Software"),
+#  to deal in the Software without restriction, including without limitation
+#  the rights to use, copy, modify, merge, publish, distribute, sublicense,
+#  and/or sell copies of the Software, and to permit persons to whom the
+#  Software is furnished to do so, subject to the following conditions:
 #
-# The above copyright notice and this permission notice shall be included
-# in all copies or substantial portions of the Software.
+#  The above copyright notice and this permission notice shall be included
+#  in all copies or substantial portions of the Software.
 #
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-# THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
-# OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-# ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-# OTHER DEALINGS IN THE SOFTWARE.
+#  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+#  THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+#  OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+#  ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+#  OTHER DEALINGS IN THE SOFTWARE.
 #
-"""
-cli.py - mpiexec PALS CLI
-
-MIT License
-
-(C) Copyright [2020-2022] Hewlett Packard Enterprise Development LP
-
-Permission is hereby granted, free of charge, to any person obtaining a
-copy of this software and associated documentation files (the "Software"),
-to deal in the Software without restriction, including without limitation
-the rights to use, copy, modify, merge, publish, distribute, sublicense,
-and/or sell copies of the Software, and to permit persons to whom the
-Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included
-in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
-OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-OTHER DEALINGS IN THE SOFTWARE.
-"""
+""" cli.py - mpiexec PALS CLI """
 import argparse
 import os
 import socket
 import sys
-
 import click
 
 from cray import core
-from cray.echo import echo, LOG_WARN
-from cray.pals import PALSApp, split_mpmd_args, get_resource_limits, parse_hostfile
+from cray.echo import echo
+from cray.echo import LOG_WARN
+from cray.pals import get_resource_limits
+from cray.pals import PALSApp
+from cray.pals import parse_hostfile
+from cray.pals import split_mpmd_args
 
 SIGNAL_RECEIVED = 0  # Last signal number received
 PING_INTERVAL = 20  # WebSocket ping interval
@@ -93,7 +72,7 @@ def validate_soft(ctx, param, value):
         return vals
     except ValueError:
         # pylint: disable=raise-missing-from
-        raise click.BadParameter("%s is not a valid soft value" % value)
+        raise click.BadParameter(f"{value} is not a valid soft value")
 
 
 def soft_nprocs(soft, nprocs):
@@ -108,7 +87,9 @@ def soft_nprocs(soft, nprocs):
         return max([x for x in soft if 0 < x <= nprocs])
     except ValueError:
         # pylint: disable=raise-missing-from
-        raise click.UsageError("No soft values found between 1 and %d" % nprocs)
+        raise click.UsageError(
+            f"No soft values found between 1 and {nprocs:d}"
+        )
 
 
 def validate_umask(ctx, param, value):
@@ -118,17 +99,17 @@ def validate_umask(ctx, param, value):
         umaskint = int(value, base=8)
         if umaskint < 0:
             raise click.BadParameter(
-                "%s is smaller than the minimum valid value 0" % value
+                f"{value} is smaller than the minimum valid value 0"
             )
         if umaskint > 0o777:
             raise click.BadParameter(
-                "%s is larger than the maximum valid value 0777" % value
+                f"{value} is larger than the maximum valid value 0777"
             )
 
         return umaskint
     except ValueError:
         # pylint: disable=raise-missing-from
-        raise click.BadParameter("%s is not a valid octal value" % value)
+        raise click.BadParameter(f"{value} is not a valid octal value")
 
 
 def get_hostlist(hosts, hostfile):
@@ -156,7 +137,8 @@ def get_launch_env(envlist, envall, env, path):
     if envlist:
         # Copy the listed keys for -envlist
         environ = {
-            key: os.environ[key] for key in envlist.split(",") if key in os.environ
+            key: os.environ[key] for key in envlist.split(",") if
+            key in os.environ
         }
     elif envall:
         # Copy the whole environment for -envall
@@ -176,7 +158,7 @@ def get_launch_env(envlist, envall, env, path):
         environ["PATH"] = path
 
     # Format into array in the expected format
-    return ["%s=%s" % (key, val) for key, val in environ.items()]
+    return [f"{key}={val}" for key, val in environ.items()]
 
 
 def get_umask():
@@ -203,27 +185,47 @@ def posint(val):
     """Parse a string into a positive integer"""
     ival = int(val)
     if ival <= 0:
-        raise argparse.ArgumentTypeError("%s must be positive" % val)
+        raise argparse.ArgumentTypeError(f"{val} must be positive")
     return ival
 
 
 def parse_mpmd_args(argv, soft, def_depth, def_ppn):
     """Parse MPMD command arguments into a command dictionary"""
-    parser = argparse.ArgumentParser(prog="", description="MPMD Command Definition")
+    parser = argparse.ArgumentParser(
+        prog="",
+        description="MPMD Command Definition"
+    )
     parser.add_argument(
-        "-n", "-np", "--np", default=1, type=posint, help="number of processes to start"
+        "-n",
+        "-np",
+        "--np",
+        default=1,
+        type=posint,
+        help="number of processes to start"
     )
     parser.add_argument(
         "-wdir", "--wdir", default=get_wdir(), help="command working directory"
     )
     parser.add_argument(
-        "-umask", "--umask", default=get_umask(), type=octal, help="file creation mask"
+        "-umask",
+        "--umask",
+        default=get_umask(),
+        type=octal,
+        help="file creation mask"
     )
     parser.add_argument(
-        "-d", "--depth", default=def_depth, type=posint, help="CPUs per process"
+        "-d",
+        "--depth",
+        default=def_depth,
+        type=posint,
+        help="CPUs per process"
     )
     parser.add_argument(
-        "-ppn", "--ppn", default=def_ppn, type=posint, help="processes per node"
+        "-ppn",
+        "--ppn",
+        default=def_ppn,
+        type=posint,
+        help="processes per node"
     )
     parser.add_argument("executable", help="executable to launch")
     parser.add_argument(
@@ -236,14 +238,14 @@ def parse_mpmd_args(argv, soft, def_depth, def_ppn):
     # Format into a command dictionary
     argv = [args.executable] + list(args.args)
     nranks = soft_nprocs(soft, args.np)
-    return dict(
-        argv=argv,
-        nranks=nranks,
-        wdir=args.wdir,
-        umask=args.umask,
-        depth=args.depth,
-        ppn=args.ppn,
-    )
+    return {
+        'argv': argv,
+        'nranks': nranks,
+        'wdir': args.wdir,
+        'umask': args.umask,
+        'depth': args.depth,
+        'ppn': args.ppn
+    }
 
 
 def parse_mpmd_file(configfile, soft, def_depth, def_ppn):
@@ -259,16 +261,18 @@ def parse_mpmd_file(configfile, soft, def_depth, def_ppn):
                 if not line or line[0] == "#":
                     continue
 
-                cmds.append(parse_mpmd_args(line.split(), soft, def_depth, def_ppn))
+                cmds.append(
+                    parse_mpmd_args(line.split(), soft, def_depth, def_ppn)
+                )
 
         # Make sure we got at least one command
         if not cmds:
-            raise click.ClickException("No commands found in %s" % configfile)
+            raise click.ClickException(f"No commands found in {configfile}")
 
         return cmds
     except (IOError, OSError) as err:
         raise click.ClickException(
-            "Couldn't read config file %s: %s" % (configfile, str(err))
+            f"Couldn't read config file {configfile}: {str(err)}"
         )
 
 
@@ -282,7 +286,14 @@ def parse_mpmd(executable, args, nranks, soft, wdir, umask, depth, ppn):
     argv = [executable] + list(cmdargvs[0])
     nranks = soft_nprocs(soft, nranks)
     cmds = [
-        dict(argv=argv, nranks=nranks, wdir=wdir, umask=umask, depth=depth, ppn=ppn)
+        {
+            'argv': argv,
+            'nranks': nranks,
+            'wdir': wdir,
+            'umask': umask,
+            'depth': depth,
+            'ppn': ppn
+        }
     ]
 
     # Add other commands
@@ -323,7 +334,10 @@ def get_rlimits(rlimits):
 
 @core.command(
     name="mpiexec",
-    context_settings={"ignore_unknown_options": True, "allow_interspersed_args": False},
+    context_settings={
+        "ignore_unknown_options": True,
+        "allow_interspersed_args": False
+    },
     needs_globals=True,
 )
 @core.option(
@@ -371,7 +385,11 @@ def get_rlimits(rlimits):
     type=click.File(),
     help="file containing hostnames to run processes on",
 )
-@core.option("-arch", "--arch", help="compute node architecture to run on (ignored)")
+@core.option(
+    "-arch",
+    "--arch",
+    help="compute node architecture to run on (ignored)"
+)
 @core.option(
     "-wdir",
     "--wdir",
@@ -380,9 +398,16 @@ def get_rlimits(rlimits):
     help="application working directory",
 )
 @core.option(
-    "-path", "--path", envvar="PALS_PATH", help="list of paths to search for executable"
+    "-path",
+    "--path",
+    envvar="PALS_PATH",
+    help="list of paths to search for executable"
 )
-@core.option("-file", "--file", help="file with additional information (ignored)")
+@core.option(
+    "-file",
+    "--file",
+    help="file with additional information (ignored)"
+)
 @core.option(
     "-configfile",
     "--configfile",
@@ -394,7 +419,7 @@ def get_rlimits(rlimits):
     "--umask",
     callback=validate_umask,
     envvar="PALS_UMASK",
-    default="0%o" % get_umask(),
+    default=f"0{get_umask():o}",
     help="file creation mask",
 )
 @core.option(
@@ -423,11 +448,21 @@ def get_rlimits(rlimits):
     envvar="PALS_TRANSFER",
     help="transfer application binaries to compute nodes",
 )
-@core.option("--cpu-bind", envvar="PALS_CPU_BIND", help="CPU binding for application")
+@core.option(
+    "--cpu-bind",
+    envvar="PALS_CPU_BIND",
+    help="CPU binding for application"
+)
 @core.option(
     "--mem-bind", envvar="PALS_MEM_BIND", help="memory binding for application"
 )
-@core.option("-d", "--depth", default=1, envvar="PALS_DEPTH", help="CPUs per process")
+@core.option(
+    "-d",
+    "--depth",
+    default=1,
+    envvar="PALS_DEPTH",
+    help="CPUs per process"
+)
 @core.option(
     "-l",
     "--label/--no-label",
@@ -490,36 +525,36 @@ def get_rlimits(rlimits):
 @core.argument("executable")
 @core.argument("args", nargs=-1)
 def cli(
-    nranks,
-    ppn,
-    soft,
-    hostlist,
-    hostfile,
-    arch,
-    wdir,
-    path,
-    file,
-    configfile,
-    umask,
-    env,
-    envlist,
-    envall,
-    transfer,
-    cpu_bind,
-    mem_bind,
-    depth,
-    label,
-    include_tasks,
-    exclude_tasks,
-    exclusive,
-    line_buffer,
-    procinfo_file,
-    abort_on_failure,
-    pmi,
-    rlimits,
-    sstartup,
-    executable,
-    args,
+        nranks,
+        ppn,
+        soft,
+        hostlist,
+        hostfile,
+        arch,
+        wdir,
+        path,
+        file,
+        configfile,
+        umask,
+        env,
+        envlist,
+        envall,
+        transfer,
+        cpu_bind,
+        mem_bind,
+        depth,
+        label,
+        include_tasks,
+        exclude_tasks,
+        exclusive,
+        line_buffer,
+        procinfo_file,
+        abort_on_failure,
+        pmi,
+        rlimits,
+        sstartup,
+        executable,
+        args,
 ):
     # pylint: disable=unused-argument, too-many-arguments, too-many-locals, redefined-builtin
     """

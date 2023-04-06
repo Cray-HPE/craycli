@@ -22,16 +22,16 @@
 #  OTHER DEALINGS IN THE SOFTWARE.
 #
 """ Test the sls module. """
+# pylint: disable=unused-argument
+# pylint: disable=invalid-name
+# pylint: disable=too-many-locals
 
 import json
 import os
 import tempfile
 
-from cray.tests.conftest import cli_runner
-from cray.tests.conftest import rest_mock
 
-
-def test_sls_help_info(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_sls_help_info(cli_runner, rest_mock):
     """ Test `cray sls` to make sure the expected commands are available """
 
     runner, cli, _ = cli_runner
@@ -52,7 +52,7 @@ def test_sls_help_info(cli_runner: cli_runner, rest_mock: rest_mock):
         assert out in result.output
 
 
-def test_sls_dumpstate(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_sls_dumpstate(cli_runner, rest_mock):
     """ Test `cray sls dumpstate` """
 
     runner, cli, _ = cli_runner
@@ -68,7 +68,7 @@ def test_sls_dumpstate(cli_runner: cli_runner, rest_mock: rest_mock):
     assert result.exit_code == 0
 
 
-def test_sls_hardware(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_sls_hardware(cli_runner, rest_mock):
     """ Test `cray sls hardware` """
 
     runner, cli, _ = cli_runner
@@ -87,7 +87,7 @@ def test_sls_hardware(cli_runner: cli_runner, rest_mock: rest_mock):
     assert result.exit_code == 0
 
 
-def test_sls_loadstate(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_sls_loadstate(cli_runner, rest_mock):
     """ Test `cray sls loadstate` """
 
     runner, cli, _ = cli_runner
@@ -103,7 +103,7 @@ def test_sls_loadstate(cli_runner: cli_runner, rest_mock: rest_mock):
     assert result.exit_code == 0
 
 
-def test_sls_networks(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_sls_networks(cli_runner, rest_mock):
     """ Test `cray sls networks` """
 
     runner, cli, _ = cli_runner
@@ -123,7 +123,7 @@ def test_sls_networks(cli_runner: cli_runner, rest_mock: rest_mock):
     assert result.exit_code == 0
 
 
-def test_sls_health(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_sls_health(cli_runner, rest_mock):
     """ Test `cray sls health` """
 
     runner, cli, _ = cli_runner
@@ -139,7 +139,7 @@ def test_sls_health(cli_runner: cli_runner, rest_mock: rest_mock):
     assert result.exit_code == 0
 
 
-def test_sls_search(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_sls_search(cli_runner, rest_mock):
     """ Test `cray sls search` """
 
     runner, cli, _ = cli_runner
@@ -156,7 +156,7 @@ def test_sls_search(cli_runner: cli_runner, rest_mock: rest_mock):
     assert result.exit_code == 0
 
 
-def test_sls_version(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_sls_version(cli_runner, rest_mock):
     """ Test `cray sls version` """
 
     runner, cli, _ = cli_runner
@@ -172,7 +172,7 @@ def test_sls_version(cli_runner: cli_runner, rest_mock: rest_mock):
     assert result.exit_code == 0
 
 
-def test_sls_dumpstate_list(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_sls_dumpstate_list(cli_runner, rest_mock):
     """ Test `cray sls dumpstate` with various params """
     runner, cli, opts = cli_runner
     url_template = '/apis/sls/v1/dumpstate'
@@ -187,7 +187,7 @@ def test_sls_dumpstate_list(cli_runner: cli_runner, rest_mock: rest_mock):
     assert uri == url_template
 
 
-def test_sls_health_list(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_sls_health_list(cli_runner, rest_mock):
     """ Test `cray sls health` with various params """
     runner, cli, opts = cli_runner
     url_template = '/apis/sls/v1/health'
@@ -202,7 +202,7 @@ def test_sls_health_list(cli_runner: cli_runner, rest_mock: rest_mock):
     assert uri == url_template
 
 
-def test_sls_version_list(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_sls_version_list(cli_runner, rest_mock):
     """ Test `cray sls version` with various params """
     runner, cli, opts = cli_runner
     url_template = '/apis/sls/v1/version'
@@ -224,7 +224,7 @@ Class = 'Mountain'
 Children = ['x0c0s0b0n0', 'x0c0s0b0n1', 'x0c0s0b1n0', 'x0c0s0b1n1']
 
 
-def test_sls_hardware_create(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_sls_hardware_create(cli_runner, rest_mock):
     """ Test `cray sls hardware create` with various params """
     runner, cli, opts = cli_runner
     url_template = '/apis/sls/v1/hardware'
@@ -251,10 +251,7 @@ def test_sls_hardware_create(cli_runner: cli_runner, rest_mock: rest_mock):
     assert uri == url_template
 
 
-def test_sls_hardware_create_payload(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_sls_hardware_create_payload(cli_runner, rest_mock):
     """ Test `cray sls hardware create` using a payload file """
     runner, cli, opts = cli_runner
     url_template = '/apis/sls/v1/hardware'
@@ -297,10 +294,7 @@ def test_sls_hardware_create_payload(
         os.remove(path)
 
 
-def test_sls_hardware_create_incompatible_parameters(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_sls_hardware_create_incompatible_parameters(cli_runner, rest_mock):
     """ Test `cray sls hardware create` with incompatible parameters """
     runner, cli, _ = cli_runner
     powered_by = 'x3003'
@@ -334,7 +328,7 @@ def test_sls_hardware_create_incompatible_parameters(
         os.remove(path)
 
 
-def test_sls_hardware_update(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_sls_hardware_update(cli_runner, rest_mock):
     """ Test `cray sls hardware update` with various params """
     runner, cli, opts = cli_runner
     url_template = f'/apis/sls/v1/hardware/{Xname}'
@@ -360,10 +354,7 @@ def test_sls_hardware_update(cli_runner: cli_runner, rest_mock: rest_mock):
     assert uri == url_template
 
 
-def test_sls_hardware_update_payload(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_sls_hardware_update_payload(cli_runner, rest_mock):
     """ Test `cray sls hardware create` using a payload file """
     runner, cli, opts = cli_runner
     url_template = f'/apis/sls/v1/hardware/{Xname}'
@@ -404,10 +395,7 @@ def test_sls_hardware_update_payload(
         os.remove(path)
 
 
-def test_sls_hardware_update_incompatible_parameters(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_sls_hardware_update_incompatible_parameters(cli_runner, rest_mock):
     """ Test `cray sls hardware update` incorrect parameters """
     runner, cli, _ = cli_runner
     powered_by = 'x3006'
@@ -439,7 +427,7 @@ def test_sls_hardware_update_incompatible_parameters(
         os.remove(path)
 
 
-def test_sls_hardware_delete(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_sls_hardware_delete(cli_runner, rest_mock):
     """ Test `cray sls hardware delete` with various params """
     runner, cli, opts = cli_runner
     url_template = '/apis/sls/v1/hardware'
@@ -455,7 +443,7 @@ def test_sls_hardware_delete(cli_runner: cli_runner, rest_mock: rest_mock):
     assert uri == url_template + '/' + del_xname
 
 
-def test_sls_hardware_describe(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_sls_hardware_describe(cli_runner, rest_mock):
     """ Test `cray sls hardware describe` with various params """
     runner, cli, opts = cli_runner
     url_template = '/apis/sls/v1/hardware'
@@ -471,7 +459,7 @@ def test_sls_hardware_describe(cli_runner: cli_runner, rest_mock: rest_mock):
     assert uri == url_template + '/' + des_xname
 
 
-def test_sls_networks_create(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_sls_networks_create(cli_runner, rest_mock):
     """ Test `cray sls networks create` with various params """
     runner, cli, opts = cli_runner
     url_template = '/apis/sls/v1/networks'
@@ -508,7 +496,7 @@ def test_sls_networks_create(cli_runner: cli_runner, rest_mock: rest_mock):
         os.remove(path)
 
 
-def test_sls_networks_update(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_sls_networks_update(cli_runner, rest_mock):
     """ Test `cray sls networks update` with various params """
     runner, cli, opts = cli_runner
     network_name = 'foobar'
@@ -548,7 +536,7 @@ def test_sls_networks_update(cli_runner: cli_runner, rest_mock: rest_mock):
         os.remove(path)
 
 
-def test_sls_networks_delete(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_sls_networks_delete(cli_runner, rest_mock):
     """ Test `cray sls networks delete` with various params """
     runner, cli, opts = cli_runner
     url_template = '/apis/sls/v1/networks'
@@ -564,7 +552,7 @@ def test_sls_networks_delete(cli_runner: cli_runner, rest_mock: rest_mock):
     assert uri == url_template + '/' + del_network
 
 
-def test_sls_networks_describe(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_sls_networks_describe(cli_runner, rest_mock):
     """ Test `cray sls networks describe` with various params """
     runner, cli, opts = cli_runner
     url_template = '/apis/sls/v1/networks'
@@ -591,10 +579,7 @@ snetwork = 'foobar'
 speers = 'x0c0'
 
 
-def test_sls_search_hardware_list(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_sls_search_hardware_list(cli_runner, rest_mock):
     """ Test `cray sls search hardware list` with various params """
     runner, cli, opts = cli_runner
     url_template = '/apis/sls/v1/search/hardware'
@@ -640,10 +625,7 @@ stype = 'ComputeModule'
 sipaddr = '192.168.1.1'
 
 
-def test_sls_search_networks_list(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_sls_search_networks_list(cli_runner, rest_mock):
     """ Test `cray sls search networks list` with various params """
     runner, cli, opts = cli_runner
     url_template = '/apis/sls/v1/search/networks'

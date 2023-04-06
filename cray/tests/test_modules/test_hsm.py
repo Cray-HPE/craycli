@@ -22,12 +22,12 @@
 #  OTHER DEALINGS IN THE SOFTWARE.
 #
 """ Test the hsm module. """
+# pylint: disable=unused-argument
+# pylint: disable=invalid-name
+# pylint: disable=too-many-lines
 
-import json
 import os
-
-from cray.tests.conftest import cli_runner
-from cray.tests.conftest import rest_mock
+import json
 
 
 # ###################################################################
@@ -35,12 +35,12 @@ from cray.tests.conftest import rest_mock
 # ###################################################################
 
 
-def test_cray_hsm_V2(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_cray_hsm_V2(cli_runner, rest_mock):
     """ Switch to the v2 HSM APIs """
     os.environ["CRAY_HSM_API_VERSION"] = "v2"
 
 
-def test_cray_hsmV2(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_cray_hsmV2(cli_runner, rest_mock):
     """ Test `cray hsm` to make sure the expected commands are available """
 
     runner, cli, _ = cli_runner
@@ -63,7 +63,7 @@ def test_cray_hsmV2(cli_runner: cli_runner, rest_mock: rest_mock):
         assert out in result.output
 
 
-def test_cray_hsmV2_help(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_cray_hsmV2_help(cli_runner, rest_mock):
     """Test `cray hsm --help` to make sure the expected commands are
     available
 
@@ -89,10 +89,7 @@ def test_cray_hsmV2_help(cli_runner: cli_runner, rest_mock: rest_mock):
         assert out in result.output
 
 
-def test_cray_hsmV2_service_ready_list(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_service_ready_list(cli_runner, rest_mock):
     """ Test `cray hsm service ready list` with valid params """
 
     runner, cli, config = cli_runner
@@ -101,16 +98,10 @@ def test_cray_hsmV2_service_ready_list(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'GET'
-    assert data['url'] == '{}{}'.format(
-        config['default']['hostname'],
-        url_template
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}{url_template}'
 
 
-def test_cray_hsmV2_service_liveness_list(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_service_liveness_list(cli_runner, rest_mock):
     """ Test `cray hsm service liveness list` with valid params """
 
     runner, cli, config = cli_runner
@@ -119,16 +110,10 @@ def test_cray_hsmV2_service_liveness_list(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'GET'
-    assert data['url'] == '{}{}'.format(
-        config['default']['hostname'],
-        url_template
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}{url_template}'
 
 
-def test_cray_hsmV2_service_values(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_service_values(cli_runner, rest_mock):
     """Test `cray hsm service values` to make sure the expected commands
     are available
 
@@ -155,10 +140,7 @@ def test_cray_hsmV2_service_values(
         assert out in result.output
 
 
-def test_cray_hsmV2_service_values_help(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_service_values_help(cli_runner, rest_mock):
     """Test `cray hsm service values --help` to make sure the expected
     commands are available
 
@@ -185,10 +167,7 @@ def test_cray_hsmV2_service_values_help(
         assert out in result.output
 
 
-def test_cray_hsmV2_service_values_arch_list(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_service_values_arch_list(cli_runner, rest_mock):
     """ Test `cray hsm service values arch list` with valid params """
 
     runner, cli, config = cli_runner
@@ -197,16 +176,10 @@ def test_cray_hsmV2_service_values_arch_list(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'GET'
-    assert data['url'] == '{}{}'.format(
-        config['default']['hostname'],
-        url_template
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}{url_template}'
 
 
-def test_cray_hsmV2_service_values_class_list(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_service_values_class_list(cli_runner, rest_mock):
     """ Test `cray hsm service values class list` with valid params """
 
     runner, cli, config = cli_runner
@@ -215,16 +188,10 @@ def test_cray_hsmV2_service_values_class_list(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'GET'
-    assert data['url'] == '{}{}'.format(
-        config['default']['hostname'],
-        url_template
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}{url_template}'
 
 
-def test_cray_hsmV2_service_values_flag_list(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_service_values_flag_list(cli_runner, rest_mock):
     """ Test `cray hsm service values flag list` with valid params """
 
     runner, cli, config = cli_runner
@@ -233,16 +200,10 @@ def test_cray_hsmV2_service_values_flag_list(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'GET'
-    assert data['url'] == '{}{}'.format(
-        config['default']['hostname'],
-        url_template
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}{url_template}'
 
 
-def test_cray_hsmV2_service_values_nettype_list(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_service_values_nettype_list(cli_runner, rest_mock):
     """ Test `cray hsm service values nettype list` with valid params """
 
     runner, cli, config = cli_runner
@@ -254,16 +215,10 @@ def test_cray_hsmV2_service_values_nettype_list(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'GET'
-    assert data['url'] == '{}{}'.format(
-        config['default']['hostname'],
-        url_template
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}{url_template}'
 
 
-def test_cray_hsmV2_service_values_role_list(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_service_values_role_list(cli_runner, rest_mock):
     """ Test `cray hsm service values role list` with valid params """
 
     runner, cli, config = cli_runner
@@ -272,16 +227,10 @@ def test_cray_hsmV2_service_values_role_list(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'GET'
-    assert data['url'] == '{}{}'.format(
-        config['default']['hostname'],
-        url_template
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}{url_template}'
 
 
-def test_cray_hsmV2_service_values_state_list(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_service_values_state_list(cli_runner, rest_mock):
     """ Test `cray hsm service values state list` with valid params """
 
     runner, cli, config = cli_runner
@@ -290,16 +239,10 @@ def test_cray_hsmV2_service_values_state_list(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'GET'
-    assert data['url'] == '{}{}'.format(
-        config['default']['hostname'],
-        url_template
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}{url_template}'
 
 
-def test_cray_hsmV2_service_values_subrole_list(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_service_values_subrole_list(cli_runner, rest_mock):
     """ Test `cray hsm service values subrole list` with valid params """
 
     runner, cli, config = cli_runner
@@ -311,16 +254,10 @@ def test_cray_hsmV2_service_values_subrole_list(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'GET'
-    assert data['url'] == '{}{}'.format(
-        config['default']['hostname'],
-        url_template
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}{url_template}'
 
 
-def test_cray_hsmV2_service_values_type_list(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_service_values_type_list(cli_runner, rest_mock):
     """ Test `cray hsm service values type list` with valid params """
 
     runner, cli, config = cli_runner
@@ -329,16 +266,10 @@ def test_cray_hsmV2_service_values_type_list(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'GET'
-    assert data['url'] == '{}{}'.format(
-        config['default']['hostname'],
-        url_template
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}{url_template}'
 
 
-def test_cray_hsmV2_state_components(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_state_components(cli_runner, rest_mock):
     """ Test `cray hsm state components` with valid params """
 
     runner, cli, _ = cli_runner
@@ -373,10 +304,7 @@ def test_cray_hsmV2_state_components(
         assert out in result.output
 
 
-def test_cray_hsmV2_state_components_help(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_state_components_help(cli_runner, rest_mock):
     """ Test `cray hsm state components --help` with valid params """
 
     runner, cli, _ = cli_runner
@@ -411,10 +339,7 @@ def test_cray_hsmV2_state_components_help(
         assert out in result.output
 
 
-def test_cray_hsmV2_state_components_describe(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_state_components_describe(cli_runner, rest_mock):
     """ Test `cray hsm state components describe` with valid params """
 
     runner, cli, config = cli_runner
@@ -427,16 +352,11 @@ def test_cray_hsmV2_state_components_describe(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'GET'
-    assert data['url'] == '{}{}/{}'.format(
-        config['default']['hostname'],
-        url_template, comp
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}' \
+                          f'{url_template}/{comp}'
 
 
-def test_cray_hsmV2_state_components_list(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_state_components_list(cli_runner, rest_mock):
     """ Test `cray hsm state components list` with valid params """
 
     runner, cli, config = cli_runner
@@ -445,16 +365,10 @@ def test_cray_hsmV2_state_components_list(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'GET'
-    assert data['url'] == '{}{}'.format(
-        config['default']['hostname'],
-        url_template
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}{url_template}'
 
 
-def test_cray_hsmV2_state_components_delete(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_state_components_delete(cli_runner, rest_mock):
     """ Test `cray hsm state components delete` with valid params """
 
     runner, cli, config = cli_runner
@@ -464,17 +378,11 @@ def test_cray_hsmV2_state_components_delete(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'DELETE'
-    assert data['url'] == '{}{}/{}'.format(
-        config['default']['hostname'],
-        url_template,
-        comp
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}' \
+                          f'{url_template}/{comp}'
 
 
-def test_cray_hsmV2_state_components_clear(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_state_components_clear(cli_runner, rest_mock):
     """ Test `cray hsm state components clear` with valid params """
 
     runner, cli, config = cli_runner
@@ -483,16 +391,10 @@ def test_cray_hsmV2_state_components_clear(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'DELETE'
-    assert data['url'] == '{}{}'.format(
-        config['default']['hostname'],
-        url_template
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}{url_template}'
 
 
-def test_cray_hsmV2_state_components_bynid_describe(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_state_components_bynid_describe(cli_runner, rest_mock):
     """ Test `cray hsm state components byNID describe` with valid params """
 
     runner, cli, config = cli_runner
@@ -505,16 +407,10 @@ def test_cray_hsmV2_state_components_bynid_describe(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'GET'
-    assert data['url'] == '{}{}/{}'.format(
-        config['default']['hostname'],
-        url_template, nid
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}{url_template}/{nid}'
 
 
-def test_cray_hsmV2_state_components_bynid_query_create(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_state_components_bynid_query_create(cli_runner, rest_mock):
     """Test `cray hsm state components byNID query create` with valid params
 
     """
@@ -540,10 +436,7 @@ def test_cray_hsmV2_state_components_bynid_query_create(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'POST'
-    assert data['url'] == '{}{}'.format(
-        config['default']['hostname'],
-        url_template
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}{url_template}'
     assert data['body'] == {
         'NIDRanges': nid_ranges.split(','),
         'partition': part,
@@ -555,7 +448,7 @@ def test_cray_hsmV2_state_components_bynid_query_create(
 
 
 def test_cray_hsmV2_state_components_bulk_enabled_update(
-        cli_runner: cli_runner,
+        cli_runner,
         rest_mock
 ):
     """Test `cray hsm state components bulkEnabled update` with valid
@@ -575,10 +468,7 @@ def test_cray_hsmV2_state_components_bulk_enabled_update(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'PATCH'
-    assert data['url'] == '{}{}'.format(
-        config['default']['hostname'],
-        url_template
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}{url_template}'
     assert data['body'] == {
         'ComponentIDs': [
             'x0c0s0b0n0', 'x0c0s1b0n0'
@@ -588,9 +478,9 @@ def test_cray_hsmV2_state_components_bulk_enabled_update(
 
 
 def test_cray_hsmV2_state_components_bulk_flag_only_update(
-        cli_runner: cli_runner,
+        cli_runner,
         rest_mock
-):
+        ):
     """Test `cray hsm state components bulkFlagOnly update` with valid
     params
 
@@ -608,10 +498,7 @@ def test_cray_hsmV2_state_components_bulk_flag_only_update(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'PATCH'
-    assert data['url'] == '{}{}'.format(
-        config['default']['hostname'],
-        url_template
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}{url_template}'
     assert data['body'] == {
         'ComponentIDs': [
             'x0c0s0b0n0', 'x0c0s1b0n0'
@@ -620,10 +507,7 @@ def test_cray_hsmV2_state_components_bulk_flag_only_update(
     }
 
 
-def test_cray_hsmV2_state_components_bulk_nid_update(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_state_components_bulk_nid_update(cli_runner, rest_mock):
     """ Test `cray hsm state components bulkNID update` with valid params """
     runner, cli, config = cli_runner
     url_template = '/apis/smd/hsm/v2/State/Components/BulkNID'
@@ -638,10 +522,7 @@ def test_cray_hsmV2_state_components_bulk_nid_update(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'PATCH'
-    assert data['url'] == '{}{}'.format(
-        config['default']['hostname'],
-        url_template
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}{url_template}'
     assert data['body'] == {
         'Components': [
             {
@@ -656,10 +537,7 @@ def test_cray_hsmV2_state_components_bulk_nid_update(
     }
 
 
-def test_cray_hsmV2_state_components_bulk_role_update(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_state_components_bulk_role_update(cli_runner, rest_mock):
     """ Test `cray hsm state components bulkRole update` with valid params """
     runner, cli, config = cli_runner
     url_template = '/apis/smd/hsm/v2/State/Components/BulkRole'
@@ -674,10 +552,7 @@ def test_cray_hsmV2_state_components_bulk_role_update(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'PATCH'
-    assert data['url'] == '{}{}'.format(
-        config['default']['hostname'],
-        url_template
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}{url_template}'
     assert data['body'] == {
         'ComponentIDs': [
             'x0c0s0b0n0', 'x0c0s1b0n0'
@@ -687,7 +562,7 @@ def test_cray_hsmV2_state_components_bulk_role_update(
 
 
 def test_cray_hsmV2_state_components_bulk_software_status_update(
-        cli_runner: cli_runner,
+        cli_runner,
         rest_mock
 ):
     """Test `cray hsm state components bulkSoftwareStatus update` with
@@ -707,10 +582,7 @@ def test_cray_hsmV2_state_components_bulk_software_status_update(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'PATCH'
-    assert data['url'] == '{}{}'.format(
-        config['default']['hostname'],
-        url_template
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}{url_template}'
     assert data['body'] == {
         'ComponentIDs': [
             'x0c0s0b0n0', 'x0c0s1b0n0'
@@ -720,7 +592,7 @@ def test_cray_hsmV2_state_components_bulk_software_status_update(
 
 
 def test_cray_hsmV2_state_components_bulk_state_data_update(
-        cli_runner: cli_runner,
+        cli_runner,
         rest_mock
 ):
     """Test `cray hsm state components bulkStateData update` with valid
@@ -740,10 +612,7 @@ def test_cray_hsmV2_state_components_bulk_state_data_update(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'PATCH'
-    assert data['url'] == '{}{}'.format(
-        config['default']['hostname'],
-        url_template
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}{url_template}'
     assert data['body'] == {
         'ComponentIDs': [
             'x0c0s0b0n0', 'x0c0s1b0n0'
@@ -752,10 +621,7 @@ def test_cray_hsmV2_state_components_bulk_state_data_update(
     }
 
 
-def test_cray_hsmV2_defaults_nodemaps_create(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_defaults_nodemaps_create(cli_runner, rest_mock):
     """ Test `cray hsm defaults nodeMaps create` """
 
     runner, cli, config = cli_runner
@@ -764,16 +630,10 @@ def test_cray_hsmV2_defaults_nodemaps_create(
     url_template = '/apis/smd/hsm/v2/Defaults/NodeMaps'
     data = json.loads(result.output)
     assert data['method'] == 'POST'
-    assert data['url'] == '{}{}'.format(
-        config['default']['hostname'],
-        url_template
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}{url_template}'
 
 
-def test_cray_hsmV2_defaults_nodemaps_create_help(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_defaults_nodemaps_create_help(cli_runner, rest_mock):
     """ Test `cray hsm defaults nodeMaps create --help` """
 
     runner, cli, _ = cli_runner
@@ -794,10 +654,7 @@ def test_cray_hsmV2_defaults_nodemaps_create_help(
         assert out in result.output
 
 
-def test_cray_hsmV2_defaults_nodemaps_create_valid(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_defaults_nodemaps_create_valid(cli_runner, rest_mock):
     """ Test `cray hsm defaults nodeMaps create` with valid params """
 
     runner, cli, config = cli_runner
@@ -815,10 +672,7 @@ def test_cray_hsmV2_defaults_nodemaps_create_valid(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'POST'
-    assert data['url'] == '{}{}'.format(
-        config['default']['hostname'],
-        url_template
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}{url_template}'
     assert data['body'] == {
         'NodeMaps': [{
             'ID': ids[0],
@@ -832,10 +686,7 @@ def test_cray_hsmV2_defaults_nodemaps_create_valid(
     }
 
 
-def test_cray_hsmV2_defaults_nodemaps_delete(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_defaults_nodemaps_delete(cli_runner, rest_mock):
     """ Test `cray hsm defaults nodeMaps delete` with valid params """
 
     runner, cli, config = cli_runner
@@ -848,16 +699,11 @@ def test_cray_hsmV2_defaults_nodemaps_delete(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'DELETE'
-    assert data['url'] == '{}{}/{}'.format(
-        config['default']['hostname'],
-        url_template, comp
-    )
+    assert data['url'] == f"{config['default']['hostname']}" \
+                          f"{url_template}/{comp}"
 
 
-def test_cray_hsmV2_defaults_nodemaps_describe(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_defaults_nodemaps_describe(cli_runner, rest_mock):
     """ Test `cray hsm defaults nodeMaps describe` with valid params """
 
     runner, cli, config = cli_runner
@@ -870,17 +716,11 @@ def test_cray_hsmV2_defaults_nodemaps_describe(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'GET'
-    assert data['url'] == '{}{}/{}'.format(
-        config['default']['hostname'],
-        url_template,
-        comp
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}' \
+                          f'{url_template}/{comp}'
 
 
-def test_cray_hsmV2_defaults_nodemaps_list(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_defaults_nodemaps_list(cli_runner, rest_mock):
     """ Test `cray hsm defaults nodeMaps list` with valid params """
 
     runner, cli, config = cli_runner
@@ -889,16 +729,10 @@ def test_cray_hsmV2_defaults_nodemaps_list(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'GET'
-    assert data['url'] == '{}{}'.format(
-        config['default']['hostname'],
-        url_template
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}{url_template}'
 
 
-def test_cray_hsmV2_defaults_nodemaps_replace(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_defaults_nodemaps_replace(cli_runner, rest_mock):
     """ Test `cray hsm defaults nodeMaps replace` with valid params """
 
     runner, cli, config = cli_runner
@@ -916,17 +750,15 @@ def test_cray_hsmV2_defaults_nodemaps_replace(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'PUT'
-    assert data['url'] == '{}{}/{}'.format(
-        config['default']['hostname'],
-        url_template, comp
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}' \
+                          f'{url_template}/{comp}'
     assert data['body'] == {
         'NID': nid,
         'Role': role,
     }
 
 
-def test_cray_hsmV2_inventory(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_cray_hsmV2_inventory(cli_runner, rest_mock):
     """Test `cray hsm inventory` to make sure the expected commands are
     available
 
@@ -951,10 +783,7 @@ def test_cray_hsmV2_inventory(cli_runner: cli_runner, rest_mock: rest_mock):
         assert out in result.output
 
 
-def test_cray_hsmV2_inventory_help(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_inventory_help(cli_runner, rest_mock):
     """Test `cray hsm inventory --help` to make sure the expected
     commands are available
 
@@ -979,10 +808,7 @@ def test_cray_hsmV2_inventory_help(
         assert out in result.output
 
 
-def test_cray_hsmV2_inventory_ethernetinterfaces_clear(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_inventory_ethernetinterfaces_clear(cli_runner, rest_mock):
     """Test `cray hsm inventory ethernetInterfaces clear` with valid
     params
 
@@ -997,16 +823,10 @@ def test_cray_hsmV2_inventory_ethernetinterfaces_clear(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'DELETE'
-    assert data['url'] == '{}{}'.format(
-        config['default']['hostname'],
-        url_template
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}{url_template}'
 
 
-def test_cray_hsmV2_inventory_ethernetinterfaces_create(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_inventory_ethernetinterfaces_create(cli_runner, rest_mock):
     """Test `cray hsm inventory ethernetInterfaces create` with valid
     params
 
@@ -1027,10 +847,7 @@ def test_cray_hsmV2_inventory_ethernetinterfaces_create(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'POST'
-    assert data['url'] == '{}{}'.format(
-        config['default']['hostname'],
-        url_template
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}{url_template}'
     assert data['body'] == {
         'IPAddresses': [{'IPAddress': ip_address}],
         'MACAddress': mac_address,
@@ -1038,10 +855,7 @@ def test_cray_hsmV2_inventory_ethernetinterfaces_create(
     }
 
 
-def test_cray_hsmV2_inventory_ethernetinterfaces_delete(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_inventory_ethernetinterfaces_delete(cli_runner, rest_mock):
     """Test `cray hsm inventory ethernetInterfaces delete` with valid
     params
 
@@ -1057,15 +871,12 @@ def test_cray_hsmV2_inventory_ethernetinterfaces_delete(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'DELETE'
-    assert data['url'] == '{}{}/{}'.format(
-        config['default']['hostname'],
-        url_template,
-        ethinterface_id
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}' \
+                          f'{url_template}/{ethinterface_id}'
 
 
 def test_cray_hsmV2_inventory_ethernetinterfaces_describe(
-        cli_runner: cli_runner,
+        cli_runner,
         rest_mock
 ):
     """Test `cray hsm inventory ethernetInterfaces describe` with valid
@@ -1083,16 +894,11 @@ def test_cray_hsmV2_inventory_ethernetinterfaces_describe(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'GET'
-    assert data['url'] == '{}{}/{}'.format(
-        config['default']['hostname'],
-        url_template, ethinterface_id
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}' \
+                          f'{url_template}/{ethinterface_id}'
 
 
-def test_cray_hsmV2_inventory_ethernetinterfaces_list(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_inventory_ethernetinterfaces_list(cli_runner, rest_mock):
     """ Test `cray hsm inventory ethernetInterfaces list` with valid params """
 
     runner, cli, config = cli_runner
@@ -1104,16 +910,10 @@ def test_cray_hsmV2_inventory_ethernetinterfaces_list(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'GET'
-    assert data['url'] == '{}{}'.format(
-        config['default']['hostname'],
-        url_template
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}{url_template}'
 
 
-def test_cray_hsmV2_inventory_ethernetinterfaces_update(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_inventory_ethernetinterfaces_update(cli_runner, rest_mock):
     """Test `cray hsm inventory ethernetInterfaces update` with valid
     params
 
@@ -1133,20 +933,15 @@ def test_cray_hsmV2_inventory_ethernetinterfaces_update(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'PATCH'
-    assert data['url'] == '{}{}/{}'.format(
-        config['default']['hostname'],
-        url_template, ethinterface_id
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}' \
+                          f'{url_template}/{ethinterface_id}'
     assert data['body'] == {
         'IPAddresses': [{'IPAddress': ip_address}],
         'Description': description
     }
 
 
-def test_cray_hsmV2_groups_describe(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_groups_describe(cli_runner, rest_mock):
     """ Test `cray hsm groups describe` with valid params """
 
     runner, cli, config = cli_runner
@@ -1156,13 +951,11 @@ def test_cray_hsmV2_groups_describe(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'GET'
-    assert data['url'] == '{}{}/{}'.format(
-        config['default']['hostname'],
-        url_template, label
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}' \
+                          f'{url_template}/{label}'
 
 
-def test_cray_hsmV2_groups_list(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_cray_hsmV2_groups_list(cli_runner, rest_mock):
     """ Test `cray hsm groups list` with valid params """
 
     runner, cli, config = cli_runner
@@ -1171,16 +964,10 @@ def test_cray_hsmV2_groups_list(cli_runner: cli_runner, rest_mock: rest_mock):
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'GET'
-    assert data['url'] == '{}{}'.format(
-        config['default']['hostname'],
-        url_template
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}{url_template}'
 
 
-def test_cray_hsmV2_groups_create(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_groups_create(cli_runner, rest_mock):
     """ Test `cray hsm groups create` with valid params """
 
     runner, cli, config = cli_runner
@@ -1201,10 +988,7 @@ def test_cray_hsmV2_groups_create(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'POST'
-    assert data['url'] == '{}{}'.format(
-        config['default']['hostname'],
-        url_template
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}{url_template}'
     assert data['body'] == {
         'label': label,
         'tags': [tags],
@@ -1214,10 +998,7 @@ def test_cray_hsmV2_groups_create(
     }
 
 
-def test_cray_hsmV2_groups_create_file(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_groups_create_file(cli_runner, rest_mock):
     """ Test `cray hsm groups create` with a members file """
 
     runner, cli, config = cli_runner
@@ -1243,10 +1024,7 @@ def test_cray_hsmV2_groups_create_file(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'POST'
-    assert data['url'] == '{}{}'.format(
-        config['default']['hostname'],
-        url_template
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}{url_template}'
     assert data['body'] == {
         'label': label,
         'tags': [tags],
@@ -1256,10 +1034,7 @@ def test_cray_hsmV2_groups_create_file(
     }
 
 
-def test_cray_hsmV2_groups_create_no_members(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_groups_create_no_members(cli_runner, rest_mock):
     """ Test `cray hsm groups create` with valid params and no members """
 
     runner, cli, config = cli_runner
@@ -1278,10 +1053,7 @@ def test_cray_hsmV2_groups_create_no_members(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'POST'
-    assert data['url'] == '{}{}'.format(
-        config['default']['hostname'],
-        url_template
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}{url_template}'
     assert data['body'] == {
         'label': label,
         'tags': [tags],
@@ -1290,10 +1062,7 @@ def test_cray_hsmV2_groups_create_no_members(
     }
 
 
-def test_cray_hsmV2_group_members_list(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_group_members_list(cli_runner, rest_mock):
     """ Test `cray hsm group members list` with valid params """
 
     runner, cli, config = cli_runner
@@ -1307,18 +1076,11 @@ def test_cray_hsmV2_group_members_list(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'GET'
-    assert data['url'] == '{}{}/{}/{}?{}'.format(
-        config['default']['hostname'],
-        url_template1, label,
-        url_template2,
-        'partition=part1'
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}' \
+                          f'{url_template1}/{label}/{url_template2}?{"partition=part1"}'
 
 
-def test_cray_hsmV2_group_members_create(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_group_members_create(cli_runner, rest_mock):
     """ Test `cray hsm groups members create blue` with valid params """
 
     runner, cli, config = cli_runner
@@ -1333,20 +1095,14 @@ def test_cray_hsmV2_group_members_create(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'POST'
-    assert data['url'] == '{}{}/{}/{}'.format(
-        config['default']['hostname'],
-        url_template1,
-        label, url_template2
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}' \
+                          f'{url_template1}/{label}/{url_template2}'
     assert data['body'] == {
         'id': comp,
     }
 
 
-def test_cray_hsmV2_group_members_delete(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_group_members_delete(cli_runner, rest_mock):
     """ Test `cray hsm groups members delete xname blue` with valid params """
 
     runner, cli, config = cli_runner
@@ -1361,17 +1117,11 @@ def test_cray_hsmV2_group_members_delete(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'DELETE'
-    assert data['url'] == '{}{}/{}/{}/{}'.format(
-        config['default']['hostname'],
-        url_template1, label,
-        url_template2, comp
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}' \
+                          f'{url_template1}/{label}/{url_template2}/{comp}'
 
 
-def test_cray_hsmV2_partitions_describe(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_partitions_describe(cli_runner, rest_mock):
     """ Test `cray hsm partitions describe` with valid params """
 
     runner, cli, config = cli_runner
@@ -1381,17 +1131,11 @@ def test_cray_hsmV2_partitions_describe(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'GET'
-    assert data['url'] == '{}{}/{}'.format(
-        config['default']['hostname'],
-        url_template,
-        pname
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}' \
+                          f'{url_template}/{pname}'
 
 
-def test_cray_hsmV2_partitions_list(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_partitions_list(cli_runner, rest_mock):
     """ Test `cray hsm partitions list` with valid params """
 
     runner, cli, config = cli_runner
@@ -1400,16 +1144,10 @@ def test_cray_hsmV2_partitions_list(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'GET'
-    assert data['url'] == '{}{}'.format(
-        config['default']['hostname'],
-        url_template
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}{url_template}'
 
 
-def test_cray_hsmV2_partitions_create(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_partitions_create(cli_runner, rest_mock):
     """ Test `cray hsm partitions create` with valid params """
 
     runner, cli, config = cli_runner
@@ -1428,10 +1166,7 @@ def test_cray_hsmV2_partitions_create(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'POST'
-    assert data['url'] == '{}{}'.format(
-        config['default']['hostname'],
-        url_template
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}{url_template}'
     assert data['body'] == {
         'name': name,
         'tags': [tags],
@@ -1440,10 +1175,7 @@ def test_cray_hsmV2_partitions_create(
     }
 
 
-def test_cray_hsmV2_partitions_create_file(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_partitions_create_file(cli_runner, rest_mock):
     """ Test `cray hsm partitions create` with a members file """
 
     runner, cli, config = cli_runner
@@ -1467,10 +1199,7 @@ def test_cray_hsmV2_partitions_create_file(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'POST'
-    assert data['url'] == '{}{}'.format(
-        config['default']['hostname'],
-        url_template
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}{url_template}'
     assert data['body'] == {
         'name': name,
         'tags': [tags],
@@ -1479,10 +1208,7 @@ def test_cray_hsmV2_partitions_create_file(
     }
 
 
-def test_cray_hsmV2_partition_members_list(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_partition_members_list(cli_runner, rest_mock):
     """ Test `cray hsm partition members list` with valid params """
 
     runner, cli, config = cli_runner
@@ -1496,18 +1222,11 @@ def test_cray_hsmV2_partition_members_list(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'GET'
-    assert data['url'] == '{}{}/{}/{}'.format(
-        config['default']['hostname'],
-        url_template1,
-        pname,
-        url_template2
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}' \
+                          f'{url_template1}/{pname}/{url_template2}'
 
 
-def test_cray_hsmV2_partition_members_create(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_partition_members_create(cli_runner, rest_mock):
     """ Test `cray hsm partitions members create blue` with valid params """
 
     runner, cli, config = cli_runner
@@ -1522,21 +1241,14 @@ def test_cray_hsmV2_partition_members_create(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'POST'
-    assert data['url'] == '{}{}/{}/{}'.format(
-        config['default']['hostname'],
-        url_template1,
-        pname,
-        url_template2
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}' \
+                          f'{url_template1}/{pname}/{url_template2}'
     assert data['body'] == {
         'id': comp,
     }
 
 
-def test_cray_hsmV2_memberships_describe(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_memberships_describe(cli_runner, rest_mock):
     """ Test `cray hsm memberships describe` with valid params """
 
     runner, cli, config = cli_runner
@@ -1546,17 +1258,11 @@ def test_cray_hsmV2_memberships_describe(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'GET'
-    assert data['url'] == '{}{}/{}'.format(
-        config['default']['hostname'],
-        url_template,
-        comp
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}' \
+                          f'{url_template}/{comp}'
 
 
-def test_cray_hsmV2_memberships_list(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_memberships_list(cli_runner, rest_mock):
     """ Test `cray hsm memberships list` with valid params """
 
     runner, cli, config = cli_runner
@@ -1570,18 +1276,13 @@ def test_cray_hsmV2_memberships_list(
     assert data['method'] == 'GET'
     # Could be either order in the query params and I don't want to
     # pick the URL apart, so an ugly assert instead...
-    assert data['url'] == '{}{}?{}'.format(
-        config['default']['hostname'],
-        url_template,
-        'type=Node&group=blue'
-    ) or data['url'] == '{}{}?{}'.format(
-        config['default']['hostname'],
-        url_template,
-        'group=blue&type=Node'
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}' \
+                          f'{url_template}?{"type=Node&group=blue"}' or \
+           data['url'] == f'{config["default"]["hostname"]}' \
+                          f'{url_template}?{"group=blue&type=Node"}'
 
 
-def test_cray_hsmV2_locks(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_cray_hsmV2_locks(cli_runner, rest_mock):
     """ Test `cray hsm locks` """
 
     runner, cli, _ = cli_runner
@@ -1600,7 +1301,7 @@ def test_cray_hsmV2_locks(cli_runner: cli_runner, rest_mock: rest_mock):
         assert out in result.output
 
 
-def test_cray_hsmV2_locks_help(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_cray_hsmV2_locks_help(cli_runner, rest_mock):
     """ Test `cray hsm locks --help` """
 
     runner, cli, _ = cli_runner
@@ -1619,10 +1320,7 @@ def test_cray_hsmV2_locks_help(cli_runner: cli_runner, rest_mock: rest_mock):
         assert out in result.output
 
 
-def test_cray_hsmV2_locks_disable_help(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_locks_disable_help(cli_runner, rest_mock):
     """ Test `cray hsm locks disable --help` """
 
     runner, cli, _ = cli_runner
@@ -1637,10 +1335,7 @@ def test_cray_hsmV2_locks_disable_help(
         assert out in result.output
 
 
-def test_cray_hsmV2_locks_disable_create_help(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_locks_disable_create_help(cli_runner, rest_mock):
     """ Test `cray hsm locks disable create --help` """
 
     runner, cli, _ = cli_runner
@@ -1672,10 +1367,7 @@ def test_cray_hsmV2_locks_disable_create_help(
         assert out in result.output
 
 
-def test_cray_hsmV2_locks_disable_create(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_locks_disable_create(cli_runner, rest_mock):
     """ Test `cray hsm locks disable create` with valid params """
 
     runner, cli, config = cli_runner
@@ -1693,10 +1385,7 @@ def test_cray_hsmV2_locks_disable_create(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'POST'
-    assert data['url'] == '{}{}'.format(
-        config['default']['hostname'],
-        url_template
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}{url_template}'
     assert data['body'] == {
         'ComponentIDs': compIDs.split(','),
         'Partition': part.split(','),
@@ -1704,10 +1393,7 @@ def test_cray_hsmV2_locks_disable_create(
     }
 
 
-def test_cray_hsmV2_locks_lock_help(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_locks_lock_help(cli_runner, rest_mock):
     """ Test `cray hsm locks lock --help` """
 
     runner, cli, _ = cli_runner
@@ -1722,10 +1408,7 @@ def test_cray_hsmV2_locks_lock_help(
         assert out in result.output
 
 
-def test_cray_hsmV2_locks_lock_create_help(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_locks_lock_create_help(cli_runner, rest_mock):
     """ Test `cray hsm locks lock create --help` """
 
     runner, cli, _ = cli_runner
@@ -1754,10 +1437,7 @@ def test_cray_hsmV2_locks_lock_create_help(
         assert out in result.output
 
 
-def test_cray_hsmV2_locks_lock_create(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_locks_lock_create(cli_runner, rest_mock):
     """ Test `cray hsm locks lock create` with valid params """
 
     runner, cli, config = cli_runner
@@ -1775,10 +1455,7 @@ def test_cray_hsmV2_locks_lock_create(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'POST'
-    assert data['url'] == '{}{}'.format(
-        config['default']['hostname'],
-        url_template
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}{url_template}'
     assert data['body'] == {
         'ComponentIDs': compIDs.split(','),
         'Partition': part.split(','),
@@ -1786,10 +1463,7 @@ def test_cray_hsmV2_locks_lock_create(
     }
 
 
-def test_cray_hsmV2_locks_repair_help(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_locks_repair_help(cli_runner, rest_mock):
     """ Test `cray hsm locks repair --help` """
 
     runner, cli, _ = cli_runner
@@ -1804,10 +1478,7 @@ def test_cray_hsmV2_locks_repair_help(
         assert out in result.output
 
 
-def test_cray_hsmV2_locks_repair_create_help(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_locks_repair_create_help(cli_runner, rest_mock):
     """ Test `cray hsm locks repair create --help` """
 
     runner, cli, _ = cli_runner
@@ -1836,10 +1507,7 @@ def test_cray_hsmV2_locks_repair_create_help(
         assert out in result.output
 
 
-def test_cray_hsmV2_locks_repair_create(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_locks_repair_create(cli_runner, rest_mock):
     """ Test `cray hsm locks repair create` with valid params """
 
     runner, cli, config = cli_runner
@@ -1857,10 +1525,7 @@ def test_cray_hsmV2_locks_repair_create(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'POST'
-    assert data['url'] == '{}{}'.format(
-        config['default']['hostname'],
-        url_template
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}{url_template}'
     assert data['body'] == {
         'ComponentIDs': compIDs.split(','),
         'Partition': part.split(','),
@@ -1868,10 +1533,7 @@ def test_cray_hsmV2_locks_repair_create(
     }
 
 
-def test_cray_hsmV2_locks_unlock_help(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_locks_unlock_help(cli_runner, rest_mock):
     """ Test `cray hsm locks unlock --help` """
 
     runner, cli, _ = cli_runner
@@ -1886,10 +1548,7 @@ def test_cray_hsmV2_locks_unlock_help(
         assert out in result.output
 
 
-def test_cray_hsmV2_locks_unlock_create_help(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_locks_unlock_create_help(cli_runner, rest_mock):
     """ Test `cray hsm locks unlock create --help` """
 
     runner, cli, _ = cli_runner
@@ -1918,10 +1577,7 @@ def test_cray_hsmV2_locks_unlock_create_help(
         assert out in result.output
 
 
-def test_cray_hsmV2_locks_unlock_create(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_locks_unlock_create(cli_runner, rest_mock):
     """ Test `cray hsm locks unlock create` with valid params """
 
     runner, cli, config = cli_runner
@@ -1939,10 +1595,7 @@ def test_cray_hsmV2_locks_unlock_create(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'POST'
-    assert data['url'] == '{}{}'.format(
-        config['default']['hostname'],
-        url_template
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}{url_template}'
     assert data['body'] == {
         'ComponentIDs': compIDs.split(','),
         'Partition': part.split(','),
@@ -1950,10 +1603,7 @@ def test_cray_hsmV2_locks_unlock_create(
     }
 
 
-def test_cray_hsmV2_locks_status_help(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_locks_status_help(cli_runner, rest_mock):
     """ Test `cray hsm locks status --help` """
 
     runner, cli, _ = cli_runner
@@ -1968,10 +1618,7 @@ def test_cray_hsmV2_locks_status_help(
         assert out in result.output
 
 
-def test_cray_hsmV2_locks_status_create_help(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_locks_status_create_help(cli_runner, rest_mock):
     """ Test `cray hsm locks status create --help` """
 
     runner, cli, _ = cli_runner
@@ -1986,10 +1633,7 @@ def test_cray_hsmV2_locks_status_create_help(
         assert out in result.output
 
 
-def test_cray_hsmV2_locks_status_create(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_locks_status_create(cli_runner, rest_mock):
     """ Test `cray hsm locks status create` with valid params """
 
     runner, cli, config = cli_runner
@@ -2003,19 +1647,13 @@ def test_cray_hsmV2_locks_status_create(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'POST'
-    assert data['url'] == '{}{}'.format(
-        config['default']['hostname'],
-        url_template
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}{url_template}'
     assert data['body'] == {
         'ComponentIDs': compIDs.split(',')
     }
 
 
-def test_cray_hsmV2_locks_status_list(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_locks_status_list(cli_runner, rest_mock):
     """ Test `cray hsm locks status list` with valid params """
 
     runner, cli, config = cli_runner
@@ -2027,16 +1665,10 @@ def test_cray_hsmV2_locks_status_list(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'GET'
-    assert data['url'] == '{}{}'.format(
-        config['default']['hostname'],
-        url_template
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}{url_template}'
 
 
-def test_cray_hsmV2_sysinfo_powermaps(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_sysinfo_powermaps(cli_runner, rest_mock):
     """ Test `cray hsm sysinfo powermaps` """
 
     runner, cli, _ = cli_runner
@@ -2055,10 +1687,7 @@ def test_cray_hsmV2_sysinfo_powermaps(
         assert out in result.output
 
 
-def test_cray_hsmV2_sysinfo_powermaps_help(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_sysinfo_powermaps_help(cli_runner, rest_mock):
     """ Test `cray hsm sysinfo powermaps --help` """
 
     runner, cli, _ = cli_runner
@@ -2077,10 +1706,7 @@ def test_cray_hsmV2_sysinfo_powermaps_help(
         assert out in result.output
 
 
-def test_cray_hsmV2_sysinfo_powermaps_delete(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_sysinfo_powermaps_delete(cli_runner, rest_mock):
     """ Test `cray hsm sysinfo powermaps delete` with valid params """
 
     runner, cli, config = cli_runner
@@ -2093,16 +1719,11 @@ def test_cray_hsmV2_sysinfo_powermaps_delete(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'DELETE'
-    assert data['url'] == '{}{}/{}'.format(
-        config['default']['hostname'],
-        url_template, comp
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}' \
+                          f'{url_template}/{comp}'
 
 
-def test_cray_hsmV2_sysinfo_powermaps_describe(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_sysinfo_powermaps_describe(cli_runner, rest_mock):
     """ Test `cray hsm sysinfo powermaps describe` with valid params """
 
     runner, cli, config = cli_runner
@@ -2115,16 +1736,11 @@ def test_cray_hsmV2_sysinfo_powermaps_describe(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'GET'
-    assert data['url'] == '{}{}/{}'.format(
-        config['default']['hostname'],
-        url_template, comp
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}' \
+                          f'{url_template}/{comp}'
 
 
-def test_cray_hsmV2_sysinfo_powermaps_list(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_sysinfo_powermaps_list(cli_runner, rest_mock):
     """ Test `cray hsm sysinfo powermaps list` with valid params """
 
     runner, cli, config = cli_runner
@@ -2133,16 +1749,10 @@ def test_cray_hsmV2_sysinfo_powermaps_list(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'GET'
-    assert data['url'] == '{}{}'.format(
-        config['default']['hostname'],
-        url_template
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}{url_template}'
 
 
-def test_cray_hsmV2_sysinfo_powermaps_replace(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_hsmV2_sysinfo_powermaps_replace(cli_runner, rest_mock):
     """ Test `cray hsm sysinfo powermaps replace` with valid params """
 
     runner, cli, config = cli_runner
@@ -2156,10 +1766,8 @@ def test_cray_hsmV2_sysinfo_powermaps_replace(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'PUT'
-    assert data['url'] == '{}{}/{}'.format(
-        config['default']['hostname'],
-        url_template, comp
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}' \
+                          f'{url_template}/{comp}'
     assert data['body'] == {
         'poweredBy': poweredby
     }

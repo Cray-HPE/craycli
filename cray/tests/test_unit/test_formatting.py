@@ -22,9 +22,9 @@
 #  OTHER DEALINGS IN THE SOFTWARE.
 #
 """ Test the main CLI command (`cray`) and options. """
-
-import click
+# pylint: disable=invalid-name
 import json
+import click
 import pytest
 import toml
 

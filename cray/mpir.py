@@ -1,32 +1,35 @@
-"""
-mpir.py - MPIR attach implementation
-
-MIT License
-
-(C) Copyright [2020-2022] Hewlett Packard Enterprise Development LP
-
-Permission is hereby granted, free of charge, to any person obtaining a
-copy of this software and associated documentation files (the "Software"),
-to deal in the Software without restriction, including without limitation
-the rights to use, copy, modify, merge, publish, distribute, sublicense,
-and/or sell copies of the Software, and to permit persons to whom the
-Software is furnished to do so, subject to the following conditions:
-The above copyright notice and this permission notice shall be included
-in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
-OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-OTHER DEALINGS IN THE SOFTWARE.
-"""
-
-import os
+#
+#  MIT License
+#
+#  (C) Copyright 2020-2023 Hewlett Packard Enterprise Development LP
+#
+#  Permission is hereby granted, free of charge, to any person obtaining a
+#  copy of this software and associated documentation files (the "Software"),
+#  to deal in the Software without restriction, including without limitation
+#  the rights to use, copy, modify, merge, publish, distribute, sublicense,
+#  and/or sell copies of the Software, and to permit persons to whom the
+#  Software is furnished to do so, subject to the following conditions:
+#
+#  The above copyright notice and this permission notice shall be included
+#  in all copies or substantial portions of the Software.
+#
+#  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+#  THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+#  OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+#  ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+#  OTHER DEALINGS IN THE SOFTWARE.
+#
+""" mpir.py - MPIR attach implementation. """
+# pylint: disable=broad-exception-raised
 import ctypes
+import os
 
-from cray.echo import echo, LOG_INFO, LOG_WARN
+from cray.echo import echo
+from cray.echo import LOG_INFO
+from cray.echo import LOG_WARN
+
 
 def get_libmpirattach_path():
     """ If set, read the palsd install location from the environment """
@@ -36,17 +39,22 @@ def get_libmpirattach_path():
 
     return palsd_install_dir + "/libmpirattach.so.0"
 
+
 # pylint: disable=invalid-name
 libMpirAttach = None
 
+
 def init_libMpirAttach_functions():
     """ Try to load the MPIR attach functions from the dynamic library """
-    global libMpirAttach # pylint: disable=global-statement
+    global libMpirAttach  # pylint: disable=global-statement
 
     # pylint: disable=bare-except
     try:
         libMpirAttach_path = get_libmpirattach_path()
-        echo("Loading libMpirAttach from %s" % libMpirAttach_path, level=LOG_INFO)
+        echo(
+            f"Loading libMpirAttach from {libMpirAttach_path}",
+            level=LOG_INFO
+        )
         libMpirAttach = ctypes.CDLL(libMpirAttach_path)
 
         libMpirAttach.MPIR_Breakpoint.restype = None
@@ -60,40 +68,43 @@ def init_libMpirAttach_functions():
 
         libMpirAttach.allocate_MPIR_proctable.restype = ctypes.c_int
         libMpirAttach.allocate_MPIR_proctable.argtypes = [
-            ctypes.c_int, # proctable_size
-            ctypes.POINTER(ctypes.c_char_p), # hostname list
-            ctypes.c_int, # hostname list size
-            ctypes.POINTER(ctypes.c_char_p), # executable list
-            ctypes.c_int # executable list size
+            ctypes.c_int,  # proctable_size
+            ctypes.POINTER(ctypes.c_char_p),  # hostname list
+            ctypes.c_int,  # hostname list size
+            ctypes.POINTER(ctypes.c_char_p),  # executable list
+            ctypes.c_int  # executable list size
         ]
 
         libMpirAttach.finalize_MPIR_proctable.restype = ctypes.c_int
         libMpirAttach.finalize_MPIR_proctable.argtypes = [
-            ctypes.c_int # proctable_size
+            ctypes.c_int  # proctable_size
         ]
 
         libMpirAttach.set_MPIR_debug_state.restype = ctypes.c_int
         libMpirAttach.set_MPIR_debug_state.argtypes = [
-            ctypes.c_int # debug_state
+            ctypes.c_int  # debug_state
         ]
 
         libMpirAttach.set_MPIR_proctable_elem.restype = ctypes.c_int
         libMpirAttach.set_MPIR_proctable_elem.argtypes = [
-            ctypes.c_int, # idx
-            ctypes.c_int, # host_name idx
-            ctypes.c_int, # executable_name idx
-            ctypes.c_ulong, # pid
+            ctypes.c_int,  # idx
+            ctypes.c_int,  # host_name idx
+            ctypes.c_int,  # executable_name idx
+            ctypes.c_ulong,  # pid
         ]
 
         libMpirAttach.set_current_apid.restype = ctypes.c_int
         libMpirAttach.set_current_apid.argtypes = [
-            ctypes.c_char_p, # current_apid
+            ctypes.c_char_p,  # current_apid
         ]
 
     except:
-        echo("Failed to load library from %s. \
-            Try setting PALSD_INSTALL_DIR to the directory where libMpirAttach.so is located."
-            % libMpirAttach_path, level=LOG_WARN)
+        echo(
+            f"Failed to load library from {libMpirAttach_path}"
+            f"Try setting PALSD_INSTALL_DIR to the directory "
+            f"where libMpirAttach.so is located."
+            , level=LOG_WARN
+        )
         libMpirAttach = None
 
 
@@ -164,9 +175,11 @@ def fill_MPIR_proctable(proctable_elems):
         executable_cstr_arr[i] = ctypes.cast(exe_cstr, ctypes.c_char_p)
     executable_cstr_arr[len(executable_cstr_storage)] = None
 
-    if libMpirAttach.allocate_MPIR_proctable(len(proctable_elems),
-                                             hostname_cstr_arr, len(hostnames),
-                                             executable_cstr_arr, len(executables)):
+    if libMpirAttach.allocate_MPIR_proctable(
+            len(proctable_elems),
+            hostname_cstr_arr, len(hostnames),
+            executable_cstr_arr, len(executables)
+    ):
         raise Exception("failed: allocate_MPIR_proctable")
 
     for (idx, (hostname, executable, pid)) in enumerate(proctable_elems):

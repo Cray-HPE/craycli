@@ -22,13 +22,13 @@
 #  OTHER DEALINGS IN THE SOFTWARE.
 #
 """ Test the vnid module. """
+# pylint: disable=unused-argument
+# pylint: disable=invalid-name
+
 import json
 
-from cray.tests.conftest import cli_runner
-from cray.tests.conftest import rest_mock
 
-
-def test_vnid_help_info(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_vnid_help_info(cli_runner, rest_mock):
     """Test `cray vnid` to make sure the expected commands are available"""
     runner, cli, _ = cli_runner
     result = runner.invoke(cli, ["vnid"])
@@ -48,7 +48,7 @@ def test_vnid_help_info(cli_runner: cli_runner, rest_mock: rest_mock):
         assert out in result.output
 
 
-def test_vnid_create(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_vnid_create(cli_runner, rest_mock):
     """Test `cray vnid create` with valid params"""
     runner, cli, config = cli_runner
     result = runner.invoke(
@@ -66,9 +66,9 @@ def test_vnid_create(cli_runner: cli_runner, rest_mock: rest_mock):
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data["method"] == "POST"
-    assert data["url"] == "{}/apis/vnid/fabric/vnis".format(
-        config["default"]["hostname"]
-    )
+    assert data[
+               "url"] == f"{config['default']['hostname']}" \
+                         f"/apis/vnid/fabric/vnis"
     assert data["body"] == {
         "enforce": True,
         "vniSvcLimit": 1,
@@ -78,7 +78,7 @@ def test_vnid_create(cli_runner: cli_runner, rest_mock: rest_mock):
     }
 
 
-def test_vnid_delete(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_vnid_delete(cli_runner, rest_mock):
     """Test `cray vnid delete` with valid params"""
     runner, cli, config = cli_runner
     result = runner.invoke(
@@ -92,12 +92,12 @@ def test_vnid_delete(cli_runner: cli_runner, rest_mock: rest_mock):
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data["method"] == "DELETE"
-    assert data["url"] == "{}/apis/vnid/fabric/vnis/wlm".format(
-        config["default"]["hostname"]
-    )
+    assert data[
+               "url"] == f"{config['default']['hostname']}" \
+                         f"/apis/vnid/fabric/vnis/wlm"
 
 
-def test_vnid_describe(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_vnid_describe(cli_runner, rest_mock):
     """Test `cray vnid describe` with valid params"""
     runner, cli, config = cli_runner
     result = runner.invoke(
@@ -111,12 +111,12 @@ def test_vnid_describe(cli_runner: cli_runner, rest_mock: rest_mock):
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data["method"] == "GET"
-    assert data["url"] == "{}/apis/vnid/fabric/vnis/wlm".format(
-        config["default"]["hostname"]
-    )
+    assert data[
+               "url"] == f"{config['default']['hostname']}" \
+                         f"/apis/vnid/fabric/vnis/wlm"
 
 
-def test_vnid_list(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_vnid_list(cli_runner, rest_mock):
     """Test `cray vnid list` with valid params"""
     runner, cli, config = cli_runner
     result = runner.invoke(
@@ -126,12 +126,12 @@ def test_vnid_list(cli_runner: cli_runner, rest_mock: rest_mock):
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data["method"] == "GET"
-    assert data["url"] == "{}/apis/vnid/fabric/vnis".format(
-        config["default"]["hostname"]
-    )
+    assert data[
+               "url"] == f"{config['default']['hostname']}" \
+                         f"/apis/vnid/fabric/vnis"
 
 
-def test_vnid_jobs_create(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_vnid_jobs_create(cli_runner, rest_mock):
     """Test `cray vnid jobs create` with valid params"""
     runner, cli, config = cli_runner
     result = runner.invoke(
@@ -148,13 +148,13 @@ def test_vnid_jobs_create(cli_runner: cli_runner, rest_mock: rest_mock):
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data["method"] == "POST"
-    assert data["url"] == "{}/apis/vnid/fabric/vnis/wlm/jobs".format(
-        config["default"]["hostname"]
-    )
+    assert data[
+               "url"] == f"{config['default']['hostname']}" \
+                         f"/apis/vnid/fabric/vnis/wlm/jobs"
     assert data["body"] == {"UID": 1, "JobID": "1.pbs-server"}
 
 
-def test_vnid_jobs_delete(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_vnid_jobs_delete(cli_runner, rest_mock):
     """Test `cray vnid jobs delete` with valid params"""
     runner, cli, config = cli_runner
     result = runner.invoke(
@@ -165,12 +165,11 @@ def test_vnid_jobs_delete(cli_runner: cli_runner, rest_mock: rest_mock):
     data = json.loads(result.output)
     assert data["method"] == "DELETE"
     assert data[
-               "url"] == "{}/apis/vnid/fabric/vnis/wlm/jobs/1.pbs-server".format(
-        config["default"]["hostname"]
-    )
+               "url"] == f"{config['default']['hostname']}" \
+                         f"/apis/vnid/fabric/vnis/wlm/jobs/1.pbs-server"
 
 
-def test_vnid_jobs_describe(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_vnid_jobs_describe(cli_runner, rest_mock):
     """Test `cray vnid jobs describe` with valid params"""
     runner, cli, config = cli_runner
     result = runner.invoke(
@@ -181,12 +180,11 @@ def test_vnid_jobs_describe(cli_runner: cli_runner, rest_mock: rest_mock):
     data = json.loads(result.output)
     assert data["method"] == "GET"
     assert data[
-               "url"] == "{}/apis/vnid/fabric/vnis/wlm/jobs/1.pbs-server".format(
-        config["default"]["hostname"]
-    )
+               "url"] == f"{config['default']['hostname']}" \
+                         f"/apis/vnid/fabric/vnis/wlm/jobs/1.pbs-server"
 
 
-def test_vnid_jobs_list(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_vnid_jobs_list(cli_runner, rest_mock):
     """Test `cray vnid jobs delete` with valid params"""
     runner, cli, config = cli_runner
     result = runner.invoke(
@@ -196,12 +194,12 @@ def test_vnid_jobs_list(cli_runner: cli_runner, rest_mock: rest_mock):
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data["method"] == "GET"
-    assert data["url"] == "{}/apis/vnid/fabric/vnis/wlm/jobs".format(
-        config["default"]["hostname"]
-    )
+    assert data[
+               "url"] == f"{config['default']['hostname']}" \
+                         f"/apis/vnid/fabric/vnis/wlm/jobs"
 
 
-def test_vnid_vnis_create(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_vnid_vnis_create(cli_runner, rest_mock):
     """Test `cray vnid vnis create` with valid params"""
     runner, cli, config = cli_runner
     result = runner.invoke(
@@ -211,13 +209,13 @@ def test_vnid_vnis_create(cli_runner: cli_runner, rest_mock: rest_mock):
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data["method"] == "POST"
-    assert data["url"] == "{}/apis/vnid/fabric/vnis/wlm/vnis".format(
-        config["default"]["hostname"]
-    )
+    assert data[
+               "url"] == f"{config['default']['hostname']}" \
+                         f"/apis/vnid/fabric/vnis/wlm/vnis"
     assert data["body"] == {"vniCount": 1, "isService": False}
 
 
-def test_vnid_vnis_delete(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_vnid_vnis_delete(cli_runner, rest_mock):
     """Test `cray vnid vnis delete` with valid params"""
     runner, cli, config = cli_runner
     result = runner.invoke(
@@ -227,12 +225,12 @@ def test_vnid_vnis_delete(cli_runner: cli_runner, rest_mock: rest_mock):
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data["method"] == "DELETE"
-    assert data["url"] == "{}/apis/vnid/fabric/vnis/wlm/vnis/1024".format(
-        config["default"]["hostname"]
-    )
+    assert data[
+               "url"] == f"{config['default']['hostname']}" \
+                         f"/apis/vnid/fabric/vnis/wlm/vnis/1024"
 
 
-def test_vnid_vnis_describe(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_vnid_vnis_describe(cli_runner, rest_mock):
     """Test `cray vnid vnis describe` with valid params"""
     runner, cli, config = cli_runner
     result = runner.invoke(
@@ -242,12 +240,12 @@ def test_vnid_vnis_describe(cli_runner: cli_runner, rest_mock: rest_mock):
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data["method"] == "GET"
-    assert data["url"] == "{}/apis/vnid/fabric/vnis/wlm/vnis/1024".format(
-        config["default"]["hostname"]
-    )
+    assert data[
+               "url"] == f"{config['default']['hostname']}" \
+                         f"/apis/vnid/fabric/vnis/wlm/vnis/1024"
 
 
-def test_vnid_vnis_list(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_vnid_vnis_list(cli_runner, rest_mock):
     """Test `cray vnid vnis delete` with valid params"""
     runner, cli, config = cli_runner
     result = runner.invoke(
@@ -257,6 +255,6 @@ def test_vnid_vnis_list(cli_runner: cli_runner, rest_mock: rest_mock):
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data["method"] == "GET"
-    assert data["url"] == "{}/apis/vnid/fabric/vnis/wlm/vnis".format(
-        config["default"]["hostname"]
-    )
+    assert data[
+               "url"] == f"{config['default']['hostname']}" \
+                         f"/apis/vnid/fabric/vnis/wlm/vnis"

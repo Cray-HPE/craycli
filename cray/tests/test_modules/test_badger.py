@@ -22,14 +22,14 @@
 #  OTHER DEALINGS IN THE SOFTWARE.
 #
 """ Test the main CLI command (`cray`) and options. """
+# pylint: disable=unused-argument
+# pylint: disable=invalid-name
+# pylint: disable=too-many-locals
 
 import json
 
-from cray.tests.conftest import cli_runner
-from cray.tests.conftest import rest_mock
 
-
-def test_cray_badger_base(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_cray_badger_base(cli_runner, rest_mock):
     """ Test `cray init` for creating the default configuration """
 
     runner, cli, _ = cli_runner
@@ -47,10 +47,7 @@ def test_cray_badger_base(cli_runner: cli_runner, rest_mock: rest_mock):
         assert out in result.output
 
 
-def test_cray_badger_create_suite(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_badger_create_suite(cli_runner, rest_mock):
     """ Test `cray init` for creating the default configuration """
 
     runner, cli, opts = cli_runner
@@ -87,10 +84,7 @@ def test_cray_badger_create_suite(
     assert uri == '/apis/badger-api/v1/suites'
 
 
-def test_cray_badger_create_application(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_badger_create_application(cli_runner, rest_mock):
     """ Test `cray init` for creating the default configuration """
 
     runner, cli, opts = cli_runner
@@ -115,7 +109,7 @@ def test_cray_badger_create_application(
 
 
 def test_cray_badger_describe_applications_missing_param(
-        cli_runner: cli_runner,
+        cli_runner,
         rest_mock
 ):
     """ Test `cray init` for describing an application """
@@ -131,10 +125,7 @@ def test_cray_badger_describe_applications_missing_param(
         assert out in result.output
 
 
-def test_cray_badger_describe_suites_missing_param(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_badger_describe_suites_missing_param(cli_runner, rest_mock):
     """ Test `cray init` for describing an suite """
 
     runner, cli, _ = cli_runner
@@ -148,10 +139,7 @@ def test_cray_badger_describe_suites_missing_param(
         assert out in result.output
 
 
-def test_cray_badger_describe_sessions_missing_param(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_badger_describe_sessions_missing_param(cli_runner, rest_mock):
     """ Test `cray init` for describing an sessions """
 
     runner, cli, _ = cli_runner

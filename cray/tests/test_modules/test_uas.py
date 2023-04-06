@@ -22,14 +22,13 @@
 #  OTHER DEALINGS IN THE SOFTWARE.
 #
 """ Test the main CLI command (`cray`) and options. """
+# pylint: disable=unused-argument
+# pylint: disable=invalid-name
 
 import os
 
-from cray.tests.conftest import cli_runner
-from cray.tests.conftest import rest_mock
 
-
-def test_cray_uas_base(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_cray_uas_base(cli_runner, rest_mock):
     """ Test `cray uas` to make sure the expected commands are available """
 
     runner, cli, _ = cli_runner
@@ -50,7 +49,7 @@ def test_cray_uas_base(cli_runner: cli_runner, rest_mock: rest_mock):
         assert out in result.output
 
 
-def test_cray_uas_images(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_cray_uas_images(cli_runner, rest_mock):
     """ Test `cray uas images` to make sure the expected commands are available """
 
     runner, cli, _ = cli_runner
@@ -65,7 +64,7 @@ def test_cray_uas_images(cli_runner: cli_runner, rest_mock: rest_mock):
         assert out in result.output
 
 
-def test_cray_uas_mgr_info(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_cray_uas_mgr_info(cli_runner, rest_mock):
     """ Test `cray uas mgr-info` to make sure the expected commands are available """
 
     runner, cli, _ = cli_runner
@@ -80,7 +79,7 @@ def test_cray_uas_mgr_info(cli_runner: cli_runner, rest_mock: rest_mock):
         assert out in result.output
 
 
-def test_cray_uas_uais(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_cray_uas_uais(cli_runner, rest_mock):
     """ Test `cray uas uais` to make sure the expected commands are available """
 
     runner, cli, _ = cli_runner
@@ -96,10 +95,7 @@ def test_cray_uas_uais(cli_runner: cli_runner, rest_mock: rest_mock):
         assert out in result.output
 
 
-def test_cray_uas_create_missing_publickey_param(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_uas_create_missing_publickey_param(cli_runner, rest_mock):
     """ Test `cray uas create` to ensure an error is thrown """
 
     runner, cli, _ = cli_runner
@@ -114,7 +110,7 @@ def test_cray_uas_create_missing_publickey_param(
         assert out in result.output
 
 
-# def test_cray_uas_create(cli_runner: cli_runner, rest_mock: rest_mock):
+# def test_cray_uas_create(cli_runner, rest_mock):
 #     """ Test `cray uas create` with valid params """
 #
 #     runner, cli, opts = cli_runner
@@ -140,10 +136,7 @@ def test_cray_uas_create_missing_publickey_param(
 #     assert uri == url_template.format(image=image)
 
 
-def test_cray_uas_create_with_private_key(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_uas_create_with_private_key(cli_runner, rest_mock):
     """ Test `cray uas create` to ensure an error is thrown
 
     Specifying a file containing a private key should fail with a

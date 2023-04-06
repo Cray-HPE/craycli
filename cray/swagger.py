@@ -1,33 +1,33 @@
-"""
-Parses OpenAPI spec files and other related classes
-
-MIT License
-
-(C) Copyright 2020-2023 Hewlett Packard Enterprise Development LP
-
-Permission is hereby granted, free of charge, to any person obtaining a
-copy of this software and associated documentation files (the "Software"),
-to deal in the Software without restriction, including without limitation
-the rights to use, copy, modify, merge, publish, distribute, sublicense,
-and/or sell copies of the Software, and to permit persons to whom the
-Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included
-in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
-OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-OTHER DEALINGS IN THE SOFTWARE.
-"""
+#
+#  MIT License
+#
+#  (C) Copyright 2020-2023 Hewlett Packard Enterprise Development LP
+#
+#  Permission is hereby granted, free of charge, to any person obtaining a
+#  copy of this software and associated documentation files (the "Software"),
+#  to deal in the Software without restriction, including without limitation
+#  the rights to use, copy, modify, merge, publish, distribute, sublicense,
+#  and/or sell copies of the Software, and to permit persons to whom the
+#  Software is furnished to do so, subject to the following conditions:
+#
+#  The above copyright notice and this permission notice shall be included
+#  in all copies or substantial portions of the Software.
+#
+#  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+#  THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+#  OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+#  ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+#  OTHER DEALINGS IN THE SOFTWARE.
+#
+""" Parses OpenAPI spec files and other related classes """
 import json
 from copy import copy
 
+from cray.constants import CONVERSION_FLAG
+from cray.constants import IGNORE_TAG
 from cray.nesteddict import NestedDict
-from cray.constants import IGNORE_TAG, CONVERSION_FLAG
 
 
 class Schema(object):
@@ -91,11 +91,12 @@ class SchemaObject(Schema):
             param_type = _find_type(param, 'type', 'object')
             required_param = (name.lower() in required)
 
-            kwargs.update({
-                'prefix': fullname,
-                'required': required_param
-            })
-
+            kwargs.update(
+                {
+                    'prefix': fullname,
+                    'required': required_param
+                }
+            )
 
             parsed = parse_schema_type(param_type, param, **kwargs).parsed
             parsed_params = parsed['params']
@@ -123,19 +124,23 @@ class SchemaArray(Schema):
         items = self.schema['items']
         item_type = _find_type(items, 'type', 'object')
         item_name = self._make_name(name=self.schema.get('name'), default='')
-        kwargs.update({
-            'prefix': item_name,
-            'required': self.required or kwargs.get('required', False)
-        })
+        kwargs.update(
+            {
+                'prefix': item_name,
+                'required': self.required or kwargs.get('required', False)
+            }
+        )
         parsed = parse_schema_type(item_type, items, **kwargs).parsed
         params = parsed['params']
         for param in params:
             self._set_nesting(param, default=self._NESTED_ARRAY)
         options = parsed['options']
-        options.update({
-            'nesting': self._NESTED_ARRAY,
-            'array_item_type': item_type
-        })
+        options.update(
+            {
+                'nesting': self._NESTED_ARRAY,
+                'array_item_type': item_type
+            }
+        )
         return {'params': params, 'options': options}
 
 
@@ -162,9 +167,11 @@ class SchemaString(Schema):
         to_remove = [r for r in param.keys() if r in remove]
         for remove in to_remove:
             del param[remove]
-        param.update({
-            'name': name,
-        })
+        param.update(
+            {
+                'name': name,
+            }
+        )
         param['type'] = cls._get_type(param)
         return param
 
@@ -267,8 +274,10 @@ class Swagger(object):
 
         self.data = data
         self.ignore_endpoints = ignore_endpoints or []
-        self.vocab = dict((k.lower(), v.lower())
-                          for k, v in vocab.items())
+        self.vocab = dict(
+            (k.lower(), v.lower())
+            for k, v in vocab.items()
+        )
         self.ignore = ignore_endpoints
         self.parsed = NestedDict()
         self.mime = None
@@ -293,7 +302,7 @@ class Swagger(object):
     @classmethod
     def _get_preferred_mime(cls, mimes):
         supported = [m for m in mimes if m in cls._SUPPORTED_MIMES]
-        msg = 'Provided mime(s) not supported: {}'.format(mimes)
+        msg = f'Provided mime(s) not supported: {mimes}'
         if not supported:
             raise NotImplementedError(msg)
         found = supported[0]
@@ -311,7 +320,7 @@ class Swagger(object):
         args = []
         for k in keys:
             # Ignore parameters since we'll get those later in the spec.
-            if (lambda c: (c and c.find('{') == -1 and c.find('}') == -1))(k):
+            if k and k.find('{') == -1 and k.find('}') == -1:
                 commands.append(k)
             else:
                 args.append(k)
@@ -341,9 +350,11 @@ class Swagger(object):
         if existing is not None:  # pragma: NO COVER
             conflict = existing
             template = '{m}:{r} conflicts with {cm}:{cr}'
-            msg = template.format(m=method, r=route,
-                                  cm=conflict['method'],
-                                  cr=conflict['route'])
+            msg = template.format(
+                m=method, r=route,
+                cm=conflict['method'],
+                cr=conflict['route']
+            )
             raise ValueError(msg)
         return key
 
@@ -397,19 +408,28 @@ class Swagger(object):
                     command_data = {
                         key: value for key, value in details.items()
                         if key in keep_keys}
-                    command_data.update({
-                        'route': route,
-                        'method': method,
-                    })
+                    command_data.update(
+                        {
+                            'route': route,
+                            'method': method,
+                        }
+                    )
                     command_data.update(parameters)
-                    command_data.update(self._parse_params(details.get(
-                        'parameters', [])))
+                    command_data.update(
+                        self._parse_params(
+                            details.get(
+                                'parameters', []
+                            )
+                        )
+                    )
                     if details.get('requestBody') is not None:
                         body = self._parse_body(details['requestBody'])
                         body['mime'] = self.mime
                         command_data.update(body)
-                    command = self._get_command(self._get_key(commands, verb),
-                                                route, method)
+                    command = self._get_command(
+                        self._get_key(commands, verb),
+                        route, method
+                    )
                     self.parsed[endpoint_key].set_deep(command, command_data)
         self.parsed[CONVERSION_FLAG] = True
 

@@ -22,6 +22,8 @@
 #  OTHER DEALINGS IN THE SOFTWARE.
 #
 """ Test the main CLI command (`cray`) and options."""
+# pylint: disable=unused-argument
+# pylint: disable=invalid-name
 
 import json
 import os
@@ -39,7 +41,7 @@ def test_cray_config_describe(cli_runner):
     result = runner.invoke(cli, ['config', 'describe', '--quiet'])
     assert result.exit_code == 0
     res = json.loads(result.output)
-    filep = '.config/cray/configurations/{}'.format(configname)
+    filep = f'.config/cray/configurations/{configname}'
     assert os.path.isfile(filep)
     with open(filep, encoding='utf-8') as f:
         data = toml.load(f)
@@ -68,7 +70,7 @@ def test_cray_config_describe_format_toml(cli_runner):
     )
     assert result.exit_code == 0
     res = toml.loads(result.output)
-    filep = '.config/cray/configurations/{}'.format(configname)
+    filep = f'.config/cray/configurations/{configname}'
     assert os.path.isfile(filep)
     with open(filep, encoding='utf-8') as f:
         data = toml.load(f)
@@ -86,7 +88,7 @@ def test_cray_config_describe_w_config(cli_runner):
     )
     assert result.exit_code == 0
     res = json.loads(result.output)
-    filep = '.config/cray/configurations/{}'.format(configname)
+    filep = f'.config/cray/configurations/{configname}'
     assert os.path.isfile(filep)
     with open(filep, encoding='utf-8') as f:
         data = toml.load(f)
@@ -121,12 +123,12 @@ def test_cray_config_set_hostname(cli_runner):
     new_host = new_hostname()
     config = opts['default']
     configname = config['configname']
-    filep = '.config/cray/configurations/{}'.format(configname)
+    filep = f'.config/cray/configurations/{configname}'
     with open(filep, encoding='utf-8') as f:
         original_data = toml.load(f)
     result = runner.invoke(
         cli, ['config', 'set', 'core',
-              'hostname={}'.format(new_host)]
+              f'hostname={new_host}']
     )
     assert result.exit_code == 0
     assert os.path.isfile(filep)
@@ -142,12 +144,12 @@ def test_cray_config_set_hostname_w_config(cli_runner):
     new_host = new_hostname()
     config = opts['config']
     configname = config['configname']
-    filep = '.config/cray/configurations/{}'.format(configname)
+    filep = f'.config/cray/configurations/{configname}'
     with open(filep, encoding='utf-8') as f:
         original_data = toml.load(f)
     result = runner.invoke(
         cli, ['config', 'set', 'core',
-              'hostname={}'.format(new_host),
+              f'hostname={new_host}',
               '--configuration', configname]
     )
     assert result.exit_code == 0
@@ -165,13 +167,13 @@ def test_cray_config_set_multiple(cli_runner):
     value2 = new_random_string()
     config = opts['default']
     configname = config['configname']
-    filep = '.config/cray/configurations/{}'.format(configname)
+    filep = f'.config/cray/configurations/{configname}'
     with open(filep, encoding='utf-8') as f:
         original_data = toml.load(f)
     result = runner.invoke(
         cli, ['config', 'set', 'test.deep.config',
-              'value1={}'.format(value1),
-              'value2={}'.format(value2)]
+              f'value1={value1}',
+              f'value2={value2}']
     )
     assert result.exit_code == 0
     assert os.path.isfile(filep)
@@ -191,13 +193,13 @@ def test_cray_config_set_multiple_w_config(cli_runner):
     value2 = new_random_string()
     config = opts['config']
     configname = config['configname']
-    filep = '.config/cray/configurations/{}'.format(configname)
+    filep = f'.config/cray/configurations/{configname}'
     with open(filep, encoding='utf-8') as f:
         original_data = toml.load(f)
     result = runner.invoke(
         cli, ['config', 'set', 'test.deep.config',
-              'value1={}'.format(value1),
-              'value2={}'.format(value2),
+              f'value1={value1}',
+              f'value2={value2}',
               '--configuration', configname]
     )
     assert result.exit_code == 0
@@ -234,7 +236,7 @@ def test_cray_config_unset(cli_runner):
     runner, cli, opts = cli_runner
     config = opts['default']
     configname = config['configname']
-    filep = '.config/cray/configurations/{}'.format(configname)
+    filep = f'.config/cray/configurations/{configname}'
     with open(filep, encoding='utf-8') as f:
         original_data = toml.load(f)
     result = runner.invoke(cli, ['config', 'unset', 'auth.login.username'])
@@ -251,7 +253,7 @@ def test_cray_config_unset_w_config(cli_runner):
     runner, cli, opts = cli_runner
     config = opts['config']
     configname = config['configname']
-    filep = '.config/cray/configurations/{}'.format(configname)
+    filep = f'.config/cray/configurations/{configname}'
     with open(filep, encoding='utf-8') as f:
         original_data = toml.load(f)
     result = runner.invoke(
@@ -271,7 +273,7 @@ def test_cray_config_unset_multiple_w_config(cli_runner):
     runner, cli, opts = cli_runner
     config = opts['config']
     configname = config['configname']
-    filep = '.config/cray/configurations/{}'.format(configname)
+    filep = f'.config/cray/configurations/{configname}'
     with open(filep, encoding='utf-8') as f:
         original_data = toml.load(f)
     result = runner.invoke(

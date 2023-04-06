@@ -22,21 +22,20 @@
 #  OTHER DEALINGS IN THE SOFTWARE.
 #
 """ Test the main CLI command (`cray`) and options. """
+# pylint: disable=unused-argument
+# pylint: disable=invalid-name
 
 import os
 import pytest
 import toml
 
-from cray.tests.conftest import cli_runner
-from cray.tests.conftest import rest_mock
 from cray.tests.utils import new_configname
 
 
 @pytest.mark.parametrize(
-    'cli_runner', [{'is_init': True}],
-    indirect=['cli_runner']
+    'cli_runner', [{'is_init': True}], indirect=['cli_runner']
 )
-def test_cray_init_no_hostname(cli_runner: cli_runner):
+def test_cray_init_no_hostname(cli_runner):
     """ Test `cray init --configuration {config}`
      for validating a new configuration is created. """
     runner, cli, opts = cli_runner
@@ -44,12 +43,11 @@ def test_cray_init_no_hostname(cli_runner: cli_runner):
     hostname = config['hostname']
     configname = config['configname']
     result = runner.invoke(
-        cli, ['init', '--no-auth'],
-        input='{}\n'.format(hostname)
+        cli, ['init', '--no-auth'], input=f'{hostname}\n'
     )
     assert result.exit_code == 0
     assert "Initialization complete." in result.output
-    filep = '.config/cray/configurations/{}'.format(configname)
+    filep = f'.config/cray/configurations/{configname}'
     assert os.path.isfile(filep)
     with open(filep, encoding='utf-8') as f:
         data = toml.load(f)
@@ -57,10 +55,9 @@ def test_cray_init_no_hostname(cli_runner: cli_runner):
 
 
 @pytest.mark.parametrize(
-    'cli_runner', [{'is_init': True}],
-    indirect=['cli_runner']
+    'cli_runner', [{'is_init': True}], indirect=['cli_runner']
 )
-def test_cray_init(cli_runner: cli_runner):
+def test_cray_init(cli_runner):
     """ Test `cray init` for creating the default configuration """
     runner, cli, opts = cli_runner
     config = opts['default']
@@ -70,7 +67,7 @@ def test_cray_init(cli_runner: cli_runner):
 
     assert result.exit_code == 0
     assert "Initialization complete." in result.output
-    filep = '.config/cray/configurations/{}'.format(configname)
+    filep = f'.config/cray/configurations/{configname}'
     assert os.path.isfile(filep)
     with open(filep, encoding='utf-8') as f:
         data = toml.load(f)
@@ -78,10 +75,9 @@ def test_cray_init(cli_runner: cli_runner):
 
 
 @pytest.mark.parametrize(
-    'cli_runner', [{'is_init': True}],
-    indirect=['cli_runner']
+    'cli_runner', [{'is_init': True}], indirect=['cli_runner']
 )
-def test_cray_init_verify_no_auth(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_cray_init_verify_no_auth(cli_runner, rest_mock):
     """ Test `cray init` with no auth and confirm it doesn't error """
     runner, cli, opts = cli_runner
     config = opts['default']
@@ -94,10 +90,9 @@ def test_cray_init_verify_no_auth(cli_runner: cli_runner, rest_mock: rest_mock):
 
 
 @pytest.mark.parametrize(
-    'cli_runner', [{'is_init': True}],
-    indirect=['cli_runner']
+    'cli_runner', [{'is_init': True}], indirect=['cli_runner']
 )
-def test_cray_init_w_config(cli_runner: cli_runner):
+def test_cray_init_w_config(cli_runner):
     """ Test `cray init --configuration {config}`
      for validating a new configuration is created. """
     runner, cli, opts = cli_runner
@@ -105,24 +100,24 @@ def test_cray_init_w_config(cli_runner: cli_runner):
     hostname = config['hostname']
     configname = config['configname']
     result = runner.invoke(
-        cli, ['init', '--hostname', hostname, '--no-auth',
-              '--configuration', configname]
+        cli,
+        ['init', '--hostname', hostname, '--no-auth', '--configuration',
+         configname]
     )
 
     assert result.exit_code == 0
     assert "Initialization complete." in result.output
-    filep = '.config/cray/configurations/{}'.format(configname)
+    filep = f'.config/cray/configurations/{configname}'
     assert os.path.isfile(filep)
     with open(filep, encoding='utf-8') as f:
         data = toml.load(f)
-    assert data['core']['hostname'] == '{}'.format(hostname)
+    assert data['core']['hostname'] == f'{hostname}'
 
 
 @pytest.mark.parametrize(
-    'cli_runner', [{'is_init': True}],
-    indirect=['cli_runner']
+    'cli_runner', [{'is_init': True}], indirect=['cli_runner']
 )
-def test_cray_config_no_init(cli_runner: cli_runner):
+def test_cray_config_no_init(cli_runner):
     """ Test `cray init --configuration {config}`
      for validating a new configuration is created. """
     runner, cli, _ = cli_runner
@@ -133,17 +128,15 @@ def test_cray_config_no_init(cli_runner: cli_runner):
 
 
 @pytest.mark.parametrize(
-    'cli_runner', [{'is_init': True}],
-    indirect=['cli_runner']
+    'cli_runner', [{'is_init': True}], indirect=['cli_runner']
 )
-def test_cray_config_no_init_w_config(cli_runner: cli_runner):
+def test_cray_config_no_init_w_config(cli_runner):
     """ Test `cray init --configuration {config}`
      for validating a new configuration is created. """
     runner, cli, _ = cli_runner
     configname = new_configname()
     result = runner.invoke(
-        cli, ['config', 'list', '--configuration',
-              configname]
+        cli, ['config', 'list', '--configuration', configname]
     )
 
     assert result.exit_code == 2

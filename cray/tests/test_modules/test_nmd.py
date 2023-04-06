@@ -22,33 +22,27 @@
 #  OTHER DEALINGS IN THE SOFTWARE.
 #
 """ Test the nmd module. """
+# pylint: disable=unused-argument
+# pylint: disable=invalid-name
 
 import json
 import urllib
 
-from cray.tests.conftest import cli_runner
-from cray.tests.conftest import rest_mock
 
-
-def test_cray_nmd_help_info(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_cray_nmd_help_info(cli_runner, rest_mock):
     """ Test `cray nmd` to make sure the expected commands are available """
 
     runner, cli, _ = cli_runner
     result = runner.invoke(cli, ['nmd'])
     assert result.exit_code == 0
 
-    outputs = [
-        "Node Memory Dump Service",
-        "dumps",
-        "sdf",
-        "status",
-        "cli nmd [OPTIONS] COMMAND [ARGS].."
-    ]
+    outputs = ["Node Memory Dump Service", "dumps", "sdf", "status",
+               "cli nmd [OPTIONS] COMMAND [ARGS].."]
     for out in outputs:
         assert out in result.output
 
 
-def test_cray_nmd_dumps(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_cray_nmd_dumps(cli_runner, rest_mock):
     """ Test `cray nmd dumps` to make sure the expected dumps commands
     are available """
 
@@ -56,45 +50,32 @@ def test_cray_nmd_dumps(cli_runner: cli_runner, rest_mock: rest_mock):
     result = runner.invoke(cli, ['nmd', 'dumps'])
     assert result.exit_code == 0
 
-    outputs = [
-        "create",
-        "delete",
-        "describe",
-        "list",
-        "cli nmd dumps [OPTIONS] COMMAND [ARGS]..."
-    ]
+    outputs = ["create", "delete", "describe", "list",
+               "cli nmd dumps [OPTIONS] COMMAND [ARGS]..."]
     for out in outputs:
         assert out in result.output
 
 
-def test_cray_nmd_dumps_create(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_cray_nmd_dumps_create(cli_runner, rest_mock):
     """ Test `cray nmd dumps create` with valid params """
 
     runner, cli, config = cli_runner
     xname = ['x0c0s34b0n0']
     sys_restart = 'halt'
     dump_level = 27
-    args = [
-        'nmd',
-        'dumps',
-        'create',
-        '--xname', xname,
-        '--sysrestart', sys_restart,
-        '--dumplevel', dump_level
-    ]
+    args = ['nmd', 'dumps', 'create', '--xname', xname, '--sysrestart',
+            sys_restart, '--dumplevel', dump_level]
     result = runner.invoke(cli, args)
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'POST'
     assert data['url'] == f'{config["default"]["hostname"]}/apis/v2/nmd/dumps'
     assert data['body'] == {
-        'xname': xname,
-        'sysrestart': sys_restart,
-        'dumplevel': dump_level
+        'xname': xname, 'sysrestart': sys_restart, 'dumplevel': dump_level
     }
 
 
-def test_cray_nmd_dumps_delete(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_cray_nmd_dumps_delete(cli_runner, rest_mock):
     """ Test `cray nmd dumps delete` with valid params """
 
     runner, cli, config = cli_runner
@@ -107,7 +88,7 @@ def test_cray_nmd_dumps_delete(cli_runner: cli_runner, rest_mock: rest_mock):
     assert data['url'] == url
 
 
-def test_cray_nmd_dumps_describe(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_cray_nmd_dumps_describe(cli_runner, rest_mock):
     """ Test `cray nmd dumps describe` with valid params """
 
     runner, cli, config = cli_runner
@@ -120,7 +101,7 @@ def test_cray_nmd_dumps_describe(cli_runner: cli_runner, rest_mock: rest_mock):
     assert data['url'] == url
 
 
-def test_cray_nmd_dumps_list(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_cray_nmd_dumps_list(cli_runner, rest_mock):
     """ Test `cray nmd dumps list` with valid params """
 
     sid = 'e887d15b-9ca1-11eb-9483-663d48613468'
@@ -134,7 +115,7 @@ def test_cray_nmd_dumps_list(cli_runner: cli_runner, rest_mock: rest_mock):
     assert data['url'] == url
 
 
-def test_cray_nmd_sdf_dump(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_cray_nmd_sdf_dump(cli_runner, rest_mock):
     """ Test `cray nmd sdf dump` to make sure the expected dumps commands
     are available """
 
@@ -142,19 +123,13 @@ def test_cray_nmd_sdf_dump(cli_runner: cli_runner, rest_mock: rest_mock):
     result = runner.invoke(cli, ['nmd', 'sdf', 'dump'])
     assert result.exit_code == 0
 
-    outputs = [
-        "discover",
-        "targets",
-        "cli nmd sdf dump [OPTIONS] COMMAND [ARGS]..."
-    ]
+    outputs = ["discover", "targets",
+               "cli nmd sdf dump [OPTIONS] COMMAND [ARGS]..."]
     for out in outputs:
         assert out in result.output
 
 
-def test_cray_nmd_sdf_dump_discover(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_nmd_sdf_dump_discover(cli_runner, rest_mock):
     """ Test `cray nmd sdf dumps discover` to make sure the expected dumps
     commands are available """
 
@@ -162,18 +137,12 @@ def test_cray_nmd_sdf_dump_discover(
     result = runner.invoke(cli, ['nmd', 'sdf', 'dump', 'discover'])
     assert result.exit_code == 0
 
-    outputs = [
-        "list",
-        "cli nmd sdf dump discover [OPTIONS] COMMAND [ARGS]..."
-    ]
+    outputs = ["list", "cli nmd sdf dump discover [OPTIONS] COMMAND [ARGS]..."]
     for out in outputs:
         assert out in result.output
 
 
-def test_cray_nmd_sdf_dump_discover_list(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_nmd_sdf_dump_discover_list(cli_runner, rest_mock):
     """ Test `cray nmd sdf dump discover list` with valid params """
 
     runner, cli, config = cli_runner
@@ -184,15 +153,10 @@ def test_cray_nmd_sdf_dump_discover_list(
     end_time = '2018-07-29T03:26:01.234567+00:00'
     allow_unsafe = 'false'
 
-    args = [
-        'nmd', 'sdf', 'dump', 'discover', 'list',
-        '--session-id', session_id,
-        '--discovery-version', discovery_version,
-        '--component-ids', component_ids,
-        '--start-time', start_time,
-        '--end-time', end_time,
-        '--allow-unsafe', allow_unsafe
-    ]
+    args = ['nmd', 'sdf', 'dump', 'discover', 'list', '--session-id',
+            session_id, '--discovery-version', discovery_version,
+            '--component-ids', component_ids, '--start-time', start_time,
+            '--end-time', end_time, '--allow-unsafe', allow_unsafe]
     result = runner.invoke(cli, args)
     assert result.exit_code == 0
     data = json.loads(result.output)
@@ -206,10 +170,7 @@ def test_cray_nmd_sdf_dump_discover_list(
     assert 'component_ids=xname' in data['url']
 
 
-def test_cray_nmd_sdf_dump_targets(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_nmd_sdf_dump_targets(cli_runner, rest_mock):
     """ Test `cray nmd sdf dump targets` to make sure the expected dumps
     commands are available """
 
@@ -217,18 +178,13 @@ def test_cray_nmd_sdf_dump_targets(
     result = runner.invoke(cli, ['nmd', 'sdf', 'dump', 'targets'])
     assert result.exit_code == 0
 
-    outputs = [
-        "describe",
-        "cli nmd sdf dump targets [OPTIONS] COMMAND [ARGS]..."
-    ]
+    outputs = ["describe",
+               "cli nmd sdf dump targets [OPTIONS] COMMAND [ARGS]..."]
     for out in outputs:
         assert out in result.output
 
 
-def test_cray_nmd_sdf_dump_targets_describe(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_nmd_sdf_dump_targets_describe(cli_runner, rest_mock):
     """ Test `cray nmd sdf dump targets describe` with valid params """
 
     runner, cli, config = cli_runner
@@ -241,14 +197,11 @@ def test_cray_nmd_sdf_dump_targets_describe(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'GET'
-    url = '{0}/apis/v2/nmd/sdf/dump/targets/{1}?ftype={2}'.format(
-        config['default']['hostname'],
-        target_id, ftype
-    )
+    url = f'{config["default"]["hostname"]}/apis/v2/nmd/sdf/dump/targets/{target_id}?ftype={ftype}'
     assert data['url'] == url
 
 
-def test_cray_nmd_status(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_cray_nmd_status(cli_runner, rest_mock):
     """ Test `cray nmd status` to make sure the expected dumps commands
     are available """
 
@@ -256,18 +209,13 @@ def test_cray_nmd_status(cli_runner: cli_runner, rest_mock: rest_mock):
     result = runner.invoke(cli, ['nmd', 'status'])
     assert result.exit_code == 0
 
-    outputs = [
-        "delete",
-        "describe",
-        "update",
-        "list",
-        "cli nmd status [OPTIONS] COMMAND [ARGS]..."
-    ]
+    outputs = ["delete", "describe", "update", "list",
+               "cli nmd status [OPTIONS] COMMAND [ARGS]..."]
     for out in outputs:
         assert out in result.output
 
 
-def test_cray_nmd_status_delete(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_cray_nmd_status_delete(cli_runner, rest_mock):
     """ Test `cray nmd status delete` with valid params """
 
     runner, cli, config = cli_runner
@@ -280,7 +228,7 @@ def test_cray_nmd_status_delete(cli_runner: cli_runner, rest_mock: rest_mock):
     assert data['url'] == url
 
 
-def test_cray_nmd_status_list(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_cray_nmd_status_list(cli_runner, rest_mock):
     """ Test `cray nmd status list` with valid params """
 
     runner, cli, config = cli_runner
@@ -292,10 +240,7 @@ def test_cray_nmd_status_list(cli_runner: cli_runner, rest_mock: rest_mock):
     assert data['url'] == url
 
 
-def test_cray_nmd_status_describe(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_nmd_status_describe(cli_runner, rest_mock):
     """ Test `cray nmd status describe` with valid params """
 
     runner, cli, config = cli_runner
@@ -308,7 +253,7 @@ def test_cray_nmd_status_describe(
     assert data['url'] == url
 
 
-def test_cray_nmd_status_update(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_cray_nmd_status_update(cli_runner, rest_mock):
     """ Test `cray nmd status update` with valid params """
 
     runner, cli, config = cli_runner
@@ -317,13 +262,8 @@ def test_cray_nmd_status_update(cli_runner: cli_runner, rest_mock: rest_mock):
     etag = '262e94e91cef6a451b45eb92d8179fae-177'
     timestamp = '2018-07-28T03:26:01.234567+00:00'
     state = 'dump'
-    args = [
-        'nmd', 'status', 'update', xname,
-        '--image', image,
-        '--etag', etag,
-        '--timestamp', timestamp,
-        '--state', state
-    ]
+    args = ['nmd', 'status', 'update', xname, '--image', image, '--etag', etag,
+            '--timestamp', timestamp, '--state', state]
     result = runner.invoke(cli, args)
     assert result.exit_code == 0
     data = json.loads(result.output)

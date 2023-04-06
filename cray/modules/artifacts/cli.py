@@ -1,50 +1,51 @@
-""" Artifact - thin wrapper over S3 with ARS backwards compatibility
-
-MIT License
-
-(C) Copyright 2020-2023 Hewlett Packard Enterprise Development LP
-
-Permission is hereby granted, free of charge, to any person obtaining a
-copy of this software and associated documentation files (the "Software"),
-to deal in the Software without restriction, including without limitation
-the rights to use, copy, modify, merge, publish, distribute, sublicense,
-and/or sell copies of the Software, and to permit persons to whom the
-Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included
-in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
-OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-OTHER DEALINGS IN THE SOFTWARE.
-"""
-#pylint: disable=invalid-name,redefined-outer-name,missing-docstring,unused-argument,broad-except
+#
+#  MIT License
+#
+#  (C) Copyright 2020-2023 Hewlett Packard Enterprise Development LP
+#
+#  Permission is hereby granted, free of charge, to any person obtaining a
+#  copy of this software and associated documentation files (the "Software"),
+#  to deal in the Software without restriction, including without limitation
+#  the rights to use, copy, modify, merge, publish, distribute, sublicense,
+#  and/or sell copies of the Software, and to permit persons to whom the
+#  Software is furnished to do so, subject to the following conditions:
+#
+#  The above copyright notice and this permission notice shall be included
+#  in all copies or substantial portions of the Software.
+#
+#  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+#  THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+#  OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+#  ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+#  OTHER DEALINGS IN THE SOFTWARE.
+#
+""" Artifact - thin wrapper over S3 with ARS backwards compatibility """
+# pylint: disable=invalid-name,redefined-outer-name,missing-docstring,unused-argument,broad-except
 import datetime
 import hashlib
 import json
 import sys
 import uuid
-
 import click
-
-from botocore.exceptions import ClientError
-from boto3.s3.transfer import TransferConfig
 import boto3
+from boto3.s3.transfer import TransferConfig
+from botocore.exceptions import ClientError
 
-from cray.core import group, argument, option, pass_context
-from cray.rest import request
-from cray.errors import BadResponseError
+from cray.core import argument
+from cray.core import group
+from cray.core import option
+from cray.core import pass_context
 from cray.echo import echo
+from cray.errors import BadResponseError
+from cray.rest import request
 
 
 def datetime_handler(x):
     if isinstance(x, datetime.datetime):
         return x.isoformat()
-    raise TypeError("Unknown type: %s" % type(x))
+    raise TypeError(f"Unknown type: {type(x)}")
 
 
 def md5(filename):
@@ -143,8 +144,12 @@ def describe_object(ctx, bucket, obj):
 @argument('bucket', metavar='BUCKET')
 @argument('obj', metavar='OBJECT')
 @argument('filename', metavar='FILEPATH')
-@option('--expires', metavar='EXPIRES', help='Seconds until download url expiration.',
-        default=60*60)
+@option(
+    '--expires',
+    metavar='EXPIRES',
+    help='Seconds until download url expiration.',
+    default=60 * 60
+)
 @pass_context
 def upload_object(ctx, bucket, obj, filename, expires):
     """ Create a new object in a bucket """
@@ -153,7 +158,9 @@ def upload_object(ctx, bucket, obj, filename, expires):
     # Remove this check along with the --expires parameter when ARS is fully deprecated
     #
     if expires > 3600:
-        raise click.ClickException("Maximum download url timeout is 3600 seconds: %d" % expires)
+        raise click.ClickException(
+            f"Maximum download url timeout is 3600 seconds: {expires:d}"
+        )
 
     s3client = get_s3_client()
     md5sum = md5(filename)
@@ -181,7 +188,10 @@ def upload_object(ctx, bucket, obj, filename, expires):
         try:
             s3client.delete_object(Bucket=bucket, Key=obj_id)
         except Exception as delete_err:
-            echo("Unsuccessful upload. Unable to delete object: Error: %s" % delete_err)
+            echo(
+                f"Unsuccessful upload. Unable to delete object: Error:"
+                f" {delete_err}"
+            )
         sys.exit(str(err))
 
     try:
@@ -227,7 +237,10 @@ def upload_object(ctx, bucket, obj, filename, expires):
         try:
             s3client.delete_object(Bucket=bucket, Key=obj_id)
         except Exception as delete_err:
-            echo("Unsuccessful upload. Unable to delete object: Error: %s" % delete_err)
+            echo(
+                f"Unsuccessful upload. Unable to delete object: Error:"
+                f" {delete_err}"
+            )
         sys.exit(str(err))
 
 
@@ -259,7 +272,7 @@ def delete_object(ctx, bucket, obj):
     except (ClientError, s3client.exceptions.NoSuchKey) as err:
         if "404" in str(err):
             try:
-                Buckets =  s3client.list_buckets().get('Buckets')
+                Buckets = s3client.list_buckets().get('Buckets')
                 if bucket in [b['Name'] for b in Buckets]:
                     print("Error: Object was not found in bucket")
                 else:

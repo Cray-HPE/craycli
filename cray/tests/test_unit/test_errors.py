@@ -22,6 +22,8 @@
 #  OTHER DEALINGS IN THE SOFTWARE.
 #
 """ Test the main CLI command (`cray`) and options. """
+# pylint: disable=invalid-name
+# pylint: disable=protected-access
 import json
 import requests
 
@@ -73,10 +75,10 @@ def test_bad_response_error():
     data = {"title": title, "detail": detail}
     resp = requests.post('https://httpbin.org/anything', data={}, timeout=5)
     resp._content = json.dumps(data).encode('utf-8')
-    x = resp.json()
+    _ = resp.json()
     err = errors.BadResponseError(resp)
     assertions = [
-        "{}: {}".format(title, detail)
+        f"{title}: {detail}"
     ]
     for assertion in assertions:
         assert assertion in err.message
@@ -90,11 +92,11 @@ def test_bad_response_capmc_error():
     data = {"e": e, "err_msg": err_msg}
     resp = requests.post('https://httpbin.org/status/400', data={}, timeout=5)
     resp._content = json.dumps(data).encode('utf-8')
-    x = resp.json()
+    _ = resp.json()
     err = errors.BadResponseError(resp)
     print(err)
     assertions = [
-        "{}: {}".format("400 BAD REQUEST", err_msg)
+        f"{'400 BAD REQUEST'}: {err_msg}"
     ]
     for assertion in assertions:
         assert assertion in err.message

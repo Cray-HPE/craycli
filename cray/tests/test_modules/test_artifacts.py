@@ -25,6 +25,10 @@
 Tests for artifacts CLI subcommand (`cray artifacts/buckets`) and options.
 """
 
+
+# pylint: disable=unused-argument
+# pylint: disable=invalid-name
+
 def test_cray_buckets_help_output(cli_runner):
     """ Test cray buckets help output """
     runner, cli, _ = cli_runner
