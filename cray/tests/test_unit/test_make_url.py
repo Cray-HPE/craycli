@@ -1,7 +1,7 @@
 #
 #  MIT License
 #
-#  (C) Copyright 2023 Hewlett Packard Enterprise Development LP
+#  (C) Copyright 2020-2023 Hewlett Packard Enterprise Development LP
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a
 #  copy of this software and associated documentation files (the "Software"),
@@ -21,14 +21,32 @@
 #  ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 #  OTHER DEALINGS IN THE SOFTWARE.
 #
-recursive-include cray/modules *
-include README.md
-include LICENSE
+""" Test the main CLI command (`cray`) and options. """
+from cray import rest
 
-recursive-include cray/wheelhouse *
 
-recursive-exclude __pycache__  *.pyc *.pyo *.orig
+def test_make_url_ip():
+    """ Make url with ip """
+    base = '127.0.0.1'
+    route = '/test'
+    scheme = 'http'
+    data = rest.make_url(route, base, default_scheme=scheme)
+    assert data == '{}://{}{}'.format(scheme, base, route)
 
-prune .git
-prune venv
-prune test*
+
+def test_make_url_no_www():
+    """ Make url with no TLD """
+    base = 'test.com'
+    route = '/test'
+    scheme = 'https'
+    data = rest.make_url(route, base)
+    assert data == '{}://{}{}'.format(scheme, base, route)
+
+
+def test_make_url_no_scheme():
+    """ Make url with no scheme """
+    base = 'test.com'
+    route = '/test'
+    scheme = 'https'
+    data = rest.make_url(route, base + '/123')
+    assert data == '{}://{}{}'.format(scheme, base, route)

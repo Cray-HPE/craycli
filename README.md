@@ -14,9 +14,9 @@ The Shasta CSM CLI is intended to provide you with an industry standard approach
 ## Table of Contents
 
 1. [Overview](#Overview)
-1. [Install](#Install)
-1. [Usage](#Usage)
-1. [Environment variables](#Environment-variables)
+1. [Versioning](#versioning)
+1. [Usage](#usage)
+1. [Environment variabtles](#Environment-variables)
 1. [Configuration files](#Configuration-files)
 1. [TODO](#TODO)
 
@@ -32,30 +32,109 @@ The CLI provides built in configurations (stored in ~/.config/cray), built-in
 authentication token stores (similar to AWS/GCP), and a built-in parser
 that can take a swagger file and generate CLI commands.
 
-## Install
+## Versioning
 
-The CLI is built as an RPM and included with the "blob" and customers can install via yum:
+The version is derived from Git by the `setuptools_scm` Python module.
 
-    yum install craycli
+- ***(stable) release***: A git-tag following the `X.Y.Z` semver format is considered a stable, release version.
+  
+    ```text
+    # Format:
+    # {tag}
+    # X.Y.Z
+    # X - Major
+    # Y - Minor
+    # Z - Micro (a.k.a. patch)
+    0.1.2
+    ```
+- ***(stable) post-release***: A git-tag following the `X.Y.Z.postN` \(where `N` is an integer\), indicates a post-release.
+  These are seldom used, and are strictly for handling documentation, packaging, or other meta
+  updates after a release tag was already created where it isn't warranted to publish an
+  entirely new release.
+  
+    ```text
+    # Format:
+    # {tag}
+    # X.Y.Z.postN
+    # X - Major
+    # Y - Minor
+    # Z - Micro (a.k.a. patch)
+    # Z - Post release [1-9]+
+    0.1.2.post1
+    ```
+
+- **(unstable)** Distance and clean; the build came from a commit that is after a git-tag, and the repository folder had no modified files.
+
+    ```bash
+    # Format       {tag}.post1.dev{distance}+{scm letter}{revision hash}
+    canu, version 1.6.28.post1.dev14+g818da8a
+    ```
+
+- **(unstable/dev)** No distance and not clean; the build came from a commit that has a git-tag, and the repository had uncommitted changes.
+
+    ```bash
+    # Format       {tag}.dYYYYMMDD
+    canu, version 1.6.28.d20230123
+    ```
+
+- **(unstable/dev)** Distance and not clean; the build came from one or more commits after a git-tag, and the repository had uncommitted changes.
+
+    ```bash
+    # Format       {tag}.post1.dev{distance}+{scm letter}{revision hash}.dYYYYMMDD
+    canu, version 1.6.28.post1.dev3+g3071655.d20230123
+    ```
+
+The `setuptools_scm` module is configured by `pyproject.toml`.
+
+More information about versioning, see [version number construction][3].
 
 ## Usage
 
-    terminal: cray
+- To run `craycli` in a Python Virtualenv:
 
-    Usage: cray [OPTIONS] COMMAND [ARGS]...
+    - Prerequisites:
+        - python3
+        - pip3
+        - Python Virtualenv
 
-    Cray management and workflow tool
+          ```bash
+          python3 -m venv .venv
+          source ./.venv/bin/activate
+          python3 -m pip install 'setuptools_scm[toml]'
+          python3 -m pip install .
+          ```
 
-    Options:
-      --help  Show this message and exit.
+    - When you are done working in the Python Virtualenv.
+      Use the following command to exit out of the Python Virtualenv:
 
-    Commands:
-      auth    Manage OAuth2 credentials for the Cray CLI
-      config  View and edit Cray configuration properties
-      init    Initialize/reinitialize the Cray CLI
+      ```bash
+      deactivate
+      ```
 
-To get started run `cray init`. This will initialize the CLI on your machine and
-authenticate you with the system.
+- To install the development build of `craycli` type:
+
+  ```bash
+  python3 -m pip install --editable .
+  ```
+
+- To install SLES RPM versions
+
+    - Find the unstable and stable RPMs at the following locations.
+
+        - [Unstable RPMs][1] (e.g. main/develop/feature/bugfix branches, anything that is not a git-tag)
+        - [Stable RPMs][2] (e.g. git-tags)
+
+    - To install the latest RPM, use the following `zypper` command:
+
+        ```bash
+        ARTIFACTORY_USER=
+        ARTIFACTORY_TOKEN=
+        ```
+
+        ```bash
+        STREAM=stable
+        HTTP_PROXY=http://hpeproxy.its.hpecorp.net:443 zypper --plus-repo=https://${ARTIFACTORY_USER}:${ARTIFACTORY_TOKEN}@artifactory.algol60.net/artifactory/csm-rpms/hpe/${STREAM}/sle-15sp4 --no-gpg-checks -n in -y craycli
+        ```
 
 ## Environment variables
 
@@ -76,15 +155,17 @@ Configuration files use the TOML format for ease of readability. When you run
 
 For example:
 
-    [core]
-    hostname='https://api.gw.url'
+```ini
+[core]
+hostname='https://api.gw.url'
 
-    [auth.login]
-    username='admin'
+[auth.login]
+username='admin'
 
-    [module.command]
-    option1='foo'
-    option2='bar'
+[module.command]
+option1='foo'
+option2='bar'
+```
 
 These configuration files are abstracted away from users with the `cray config`
 commands. `--configuration` is a global variable that allows users to set the
@@ -109,3 +190,7 @@ Medium Priority Items:
 - Advanced filters to ignore endpoints, etc.
 - Run the parsers at build time, allowing to link external swagger files (git).
 - Create a functional test generator
+
+[1]: https://artifactory.algol60.net/artifactory/csm-rpms/hpe/unstable/sle-15sp4/craycli/
+[2]: https://artifactory.algol60.net/artifactory/csm-rpms/hpe/stable/sle-15sp4/craycli/
+[3]: https://github.com/pypa/setuptools_scm#version-number-construction

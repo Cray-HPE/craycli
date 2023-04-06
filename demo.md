@@ -6,9 +6,8 @@ First, we need the code and a virtual environment to work with:
 
 ``` shell
 mkvirtualenv -p /usr/local/bin/python3 clidemo   # Create and activate a python3 virtual environment
-pip3 install -r requirements.txt                 # The production requirements are small
-pip3 install -r requirements-test.txt            # We also need nox for generating OpenAPI3
-pip3 install -e .                                # Install the cray command into the virtual environment
+python -m pip install .                          # Install the cray command into the virtual environment
+python -m pip install .[ci]                      # We also need nox for generating OpenAPI3
 ```
 
 Next, we need to create a module directory and add files to it:
@@ -17,7 +16,7 @@ Next, we need to create a module directory and add files to it:
 mkdir cray/modules/petstore/
 cp cray/modules/uas/cli.py cray/modules/petstore/
 touch cray/modules/petstore/__init__.py
-cp tests/files/swagger.json cray/modules/petstore/
+cp cray/tests/files/swagger.json cray/modules/petstore/
 ```
 
 There are a few minor edits that the files need.  Make sure the `cli.py` file is fixed.
@@ -33,6 +32,6 @@ nox -s swagger
 ## Let's explore the updated CLI that now understands our petstore
 
 ``` shell
-pip3 install -e .         # Update the install in our virtualenv
+python -m pip install -U .         # Update the install in our virtualenv
 cray petstore --help
 ```

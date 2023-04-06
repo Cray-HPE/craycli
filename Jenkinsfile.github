@@ -1,5 +1,43 @@
+/*
+ *
+ *  MIT License
+ *
+ *  (C) Copyright 2021-2023 Hewlett Packard Enterprise Development LP
+ *
+ *  Permission is hereby granted, free of charge, to any person obtaining a
+ *  copy of this software and associated documentation files (the "Software"),
+ *  to deal in the Software without restriction, including without limitation
+ *  the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ *  and/or sell copies of the Software, and to permit persons to whom the
+ *  Software is furnished to do so, subject to the following conditions:
+ *
+ *  The above copyright notice and this permission notice shall be included
+ *  in all copies or substantial portions of the Software.
+ *
+ *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+ *  THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+ *  OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ *  ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ *  OTHER DEALINGS IN THE SOFTWARE.
+ *
+ */
 @Library('csm-shared-library') _
 
+def pythonImage = 'artifactory.algol60.net/csm-docker/stable/csm-docker-sle-python'
+
+// Disable pr-merge builds; not used.
+if (env.BRANCH_NAME ==~ ~"^PR-\\d+") {
+    currentBuild.result = 'SUCCESS'
+    echo "Pull-Request builds are skipped."
+    return
+}
+
+// Only consider X.Y.Z tags as stable, do not consider X.Y.Z{[a|b|rc]N} or X.Y.Z.* tags as stable.
+// The ==~ operator performs an exact match.
+def stableToken = ~/v?\d+\.\d+\.\d+/
+def isStable = (env.TAG_NAME != null & env.TAG_NAME ==~ stableToken) ? true : false
 pipeline {
     agent {
         label "metal-gcp-builder"
@@ -7,76 +45,117 @@ pipeline {
 
     options {
         buildDiscarder(logRotator(numToKeepStr: "10"))
+        timeout(time: 20, unit: 'MINUTES')
+        disableConcurrentBuilds()
         timestamps()
     }
 
     environment {
-        NAME = "craycli"
-        DESCRIPTION = "Cray CLI Tool"
-        IS_STABLE = getBuildIsStable()
-        SPEC_FILE = "craycli.spec"
-        BUILD_METADATA = getRpmRevision(isStable: env.IS_STABLE)
+        NAME = getRepoName()
+        VERSION = ''
     }
 
     stages {
-        stage("Prepare") {
-            steps {
-                sh "make DIST=dist-sp2 prepare"
-                sh "make DIST=dist-sp3 prepare"
-            }
-        }
 
-        stage("Build Prep and Build SP2") {
-            agent {
-                docker {
-                    label "metal-gcp-builder"
-                    reuseNode true
-                    image "arti.dev.cray.com/dstbuildenv-docker-master-local/cray-sle15sp2_build_environment:latest"
-                    // Run as root
-                    args "-u root"
-                }
-            }
+        stage('Prepare') {
             steps {
-                sh "make DIST=dist-sp2 build_prep"
-                sh "make DIST=dist-sp2 build"
-                sh "make DIST=dist-sp2 post"
-            }
-        }
-
-        stage("Build Prep and Build SP3") {
-            agent {
-                docker {
-                    label "metal-gcp-builder"
-                    reuseNode true
-                    image "arti.dev.cray.com/dstbuildenv-docker-master-local/cray-sle15sp3_build_environment:latest"
-                    // Run as root
-                    args "-u root"
-                }
-            }
-            steps {
-                sh "make DIST=dist-sp3 build_prep"
-                sh "make DIST=dist-sp3 build"
-                sh "make DIST=dist-sp3 post"
-            }
-        }
-
-        stage('Publish ') {
-            steps {
-                sh "sudo chown -R jenkins:jenkins $WORKSPACE/dist*/rpmbuild"
                 script {
-                    publishCsmRpms(os: 'sle-15sp2', component: env.NAME, pattern: "dist-sp2/rpmbuild/RPMS/x86_64/*.rpm", arch: "x86_64", isStable: env.IS_STABLE)
-                    publishCsmRpms(os: 'sle-15sp2', component: env.NAME, pattern: "dist-sp2/rpmbuild/SRPMS/*.rpm", arch: "src", isStable: env.IS_STABLE)
-                    publishCsmRpms(os: 'sle-15sp3', component: env.NAME, pattern: "dist-sp3/rpmbuild/RPMS/x86_64/*.rpm", arch: "x86_64", isStable: env.IS_STABLE)
-                    publishCsmRpms(os: 'sle-15sp3', component: env.NAME, pattern: "dist-sp3/rpmbuild/SRPMS/*.rpm", arch: "src", isStable: env.IS_STABLE)
+                    sh "python3 -m pip install setuptools_scm[toml]"
+
+                    // lock .git for writing - otherwise getting "content has changed" error while preparing tar.bz2 for RPM
+                    sh "chmod -R a-w .git"
                 }
             }
         }
-    }
 
-    post {
-        always {
-            // Own files so jenkins can clean them up later
-            postChownFiles()
+
+        stage('Build & Publish') {
+
+            matrix {
+
+                agent {
+                    docker {
+                        args '-v /home/jenkins/.ssh:/home/jenkins/.ssh'
+                        reuseNode true
+                        image "${pythonImage}:${PYTHON_VERSION}"
+                    }
+                }
+
+                axes {
+
+                    axis {
+                        name 'ARCH'
+                        values 'x86_64'
+                    }
+
+                    axis {
+                        name 'PYTHON_VERSION'
+                        values '3.10', '3.9'
+                    }
+
+                }
+
+                environment {
+                    BUILD_DIR = "${env.WORKSPACE}/dist/rpmbuild/${ARCH}/${PYTHON_VERSION}"
+                }
+
+                stages {
+
+                    stage('Prepare: RPMs') {
+
+                        steps {
+                            script {
+                                // Use setuptools_scm to resolve the version(s) to use for the build.
+                                sh "python3 -m pip install setuptools_scm[toml]"
+
+                                // Set env.VERSION here incase just the RPM stage is being re-ran without the starting stages.
+                                env.VERSION = sh(returnStdout: true, script: "python3 -m setuptools_scm | tr -s '-' '~' | sed 's/^v//'").trim()
+
+                                sh "make prepare"
+
+                                // Inject distro-specific metadata (e.g. which distro and service pack).
+                                dir("${env.BUILD_DIR}/SPECS/") {
+                                    runLibraryScript("addRpmMetaData.sh", "${env.NAME}.spec")
+                                }
+                            }
+                        }
+                    }
+
+                    stage('Build: RPMs') {
+                        steps {
+                            script {
+                                sh 'PATH=/home/jenkins/.local/bin:$PATH make rpm'
+                            }
+                        }
+                    }
+
+                    stage('Publish: RPMs') {
+
+                        steps {
+                            script {
+                                def sleVersion = sh(returnStdout: true, script: 'awk -F= \'/VERSION_ID/{gsub(/["]/,""); print \$NF}\' /etc/os-release').trim()
+                                def sles_version_parts = "${sleVersion}".tokenize('.')
+                                def sles_major = "${sles_version_parts[0]}"
+                                def sles_minor = "${sles_version_parts[1]}"
+                                publishCsmRpms(
+                                        arch: "${ARCH}",
+                                        component: env.NAME,
+                                        isStable: isStable,
+                                        os: "sle-${sles_major}sp${sles_minor}",
+                                        pattern: "dist/rpmbuild/${ARCH}/${PYTHON_VERSION}/RPMS/${ARCH}/*.rpm",
+                                )
+                                publishCsmRpms(
+                                        arch: "src",
+                                        component: env.NAME,
+                                        isStable: isStable,
+                                        os: "sle-${sles_major}sp${sles_minor}",
+                                        pattern: "dist/rpmbuild/${ARCH}/${PYTHON_VERSION}/SRPMS/*.rpm",
+                                )
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }

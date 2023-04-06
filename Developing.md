@@ -2,7 +2,7 @@
 
 ## Development Process
 
-Using the [Cray Service Generator](https://stash.us.cray.com/projects/CLOUD/repos/cray-generators/browse)
+Using the [Cray Service Generator](https://github.com/Cray-HPE/cray-generators)
 is the preferred method of integrating with the CLI. This will automatically
 take your swagger file and bootstrap a new CLI module from it, creating a pull
 request into the CLI along the way. The only thing you need to do after this
@@ -23,19 +23,31 @@ that you don't have to develop with an entire Cray system up and running, you
 can configure the CLI like this:
 
 ```bash
-$ cray config set core hostname=http://localhost:8080
-
+cray config set core hostname=http://localhost:8080
 ```
 
 if your server is running on port 8080. Since this localhost server is not
 running with https, you need to set `OAUTHLIB_INSECURE_TRANSPORT=1` in your
 shell.
 
+Command:
 ```bash
-$ export OAUTHLIB_INSECURE_TRANSPORT=1
-$ cray config get core.hostname
+export OAUTHLIB_INSECURE_TRANSPORT=1
+cray config get core.hostname
+```
+
+Output:
+```text
 http://localhost:8080
-$ cray mymodule things list
+```
+
+Command:
+```bash
+cray mymodule things list
+```
+
+Output:
+```text
 []
 ```
 
@@ -80,9 +92,9 @@ For development, we recommend the container below or a virtualenv with python3:
 virtualenv -p python3 cli
 cd cli
 source bin/activate
-git clone https://stash.us.cray.com/scm/cloud/craycli.git
+git clone https://github.com/Cray-HPE/craycli.git
 cd craycli
-pip install -e .
+python -m pip install .
 ```
 
 ### Dev Container
@@ -91,7 +103,7 @@ We created a container that includes all dependencies required to run nox and
 develop for the cli:
 
 ```bash
-git clone https://stash.us.cray.com/scm/cloud/craycli.git
+git clone https://github.com/Cray-HPE/craycli.git
 cd craycli
 utils/devenv.sh
 ```
@@ -105,7 +117,7 @@ This is integrated into the DST jenkins pipeline.
 
 If you find a bug in the craycli framework, feel free to open a bug in the
 casmcloud project.  We'll triage it within a day or two.
-[File Bug](https://connect.us.cray.com/jira/CreateIssue!default.jspa?selectedProjectKey=CASMCLOUD&issuetype=1)
+[File Bug](https://github.com/Cray-HPE/craycli/issues/new)
 
 ## How to update your swagger
 

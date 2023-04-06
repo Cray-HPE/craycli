@@ -1,7 +1,8 @@
+""" test_aprun.py - Functional tests for aprun module """
 #
 #  MIT License
 #
-#  (C) Copyright 2023 Hewlett Packard Enterprise Development LP
+#  (C) Copyright 2020-2023 Hewlett Packard Enterprise Development LP
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a
 #  copy of this software and associated documentation files (the "Software"),
@@ -21,14 +22,30 @@
 #  ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 #  OTHER DEALINGS IN THE SOFTWARE.
 #
-recursive-include cray/modules *
-include README.md
-include LICENSE
 
-recursive-include cray/wheelhouse *
+from cray.tests.conftest import cli_runner
+from cray.tests.conftest import rest_mock
 
-recursive-exclude __pycache__  *.pyc *.pyo *.orig
 
-prune .git
-prune venv
-prune test*
+def test_cray_aprun_help(cli_runner: cli_runner, rest_mock: rest_mock):
+    """ Test `cray aprun --help` """
+    runner, cli, _ = cli_runner
+    result = runner.invoke(cli, ['aprun', '--help'])
+
+    assert result.exit_code == 0
+    assert 'Usage: cli aprun [OPTIONS] EXECUTABLE [ARGS]...' in result.output
+    assert 'Run an application using the Parallel Application Launch Service' in result.output
+
+
+def test_cray_aprun_missing_param(
+        cli_runner: cli_runner,
+        rest_mock: rest_mock
+        ):
+    """ Test cray aprun without an executable """
+    runner, cli, _ = cli_runner
+    result = runner.invoke(cli, ['aprun'])
+
+    assert result.exit_code == 2
+    assert 'Usage: cli aprun [OPTIONS] EXECUTABLE [ARGS]...' in result.output
+    assert 'Error: Missing argument' in result.output
+    assert "EXECUTABLE" in result.output

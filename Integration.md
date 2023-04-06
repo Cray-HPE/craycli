@@ -15,7 +15,7 @@ We've provided a generator that will create a CLI from the stash URL of your swa
 
 I.e.
 
-    nox -s generate -- uas https://stash.us.cray.com/projects/UAN/repos/uan-mgr/browse/swagger_server/swagger/swagger.yaml
+    nox -s generate -- uas https://github.com/Cray-HPE/uan-mgr/blob/main/api/swagger.yaml
 
 *NOTE: The generator appends `?raw&at=refs%2Fheads%2Fmaster` to the passed in URL.
 You are required to use the master branch. For local development, you can pass a local

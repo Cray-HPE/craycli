@@ -1,6 +1,6 @@
 # MIT License
 #
-# (C) Copyright [2020-2022] Hewlett Packard Enterprise Development LP
+# (C) Copyright 2020-2023 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -74,9 +74,9 @@ cli = generate(__file__)
     swagger_file = session.posargs[1]
 
 
-    test_template = 'tests/files/template.txt'
+    test_template = 'cray/tests/files/template.txt'
     module_path = MODULE_PATH_TEMPLATE.format(module_name)
-    test_file = 'tests/test_modules/test_{}.py'.format(module_name)
+    test_file = 'cray/tests/test_modules/test_{}.py'.format(module_name)
     init_file = '{}/__init__.py'.format(module_path)
     cli_file = '{}/cli.py'.format(module_path)
 
@@ -172,9 +172,9 @@ def tests(session):
     This is meant to be run against any python version intended to be used.
     """
     # Install all test dependencies, then install this package in-place.
-    path = 'tests'
-    session.install('-r', 'requirements-test.txt')
-    session.install('-e', '.')
+    path = 'cray'
+    session.install('.[test]')
+    session.install('.')
 
     if session.posargs:
         path = session.posargs[0]
@@ -182,10 +182,9 @@ def tests(session):
 
     # Run py.test against the tests.
     session.run(
-        'py.test',
+        'pytest',
         '--quiet',
         '--cov=cray',
-        '--cov=tests',
         '--cov-append',
         '--cov-config=.coveragerc',
         '--cov-report=',
@@ -201,28 +200,20 @@ def lint(session):
     Returns a failure if the linters find linting errors or sufficiently
     serious code quality issues.
     """
+    session.install('.[lint]')
     run_cmd_code = ['pylint', 'cray']
     if 'prod' not in session.posargs:
         run_cmd_code.append('--disable=import-error')
         run_cmd_code.append('--enable=fixme')
 
-    run_cmd_tests = ['pylint', 'tests']
-    if 'prod' not in session.posargs:
-        run_cmd_tests.append('--disable=import-error')
-        run_cmd_tests.append('--disable=fixme')
-
-    session.install('-r', 'requirements-lint.txt')
-    session.install('.')
     session.run(*run_cmd_code)
-    session.run(*run_cmd_tests)
 
 
 @nox.session(python='3')
 def docs(session):
     """Run sphinx.
     """
-    session.install('-r', 'requirements-docs.txt')
-    session.install('.')
+    session.install('.[docs]')
     session.chdir('docs')
     session.run('make', 'clean', **external)
     session.run('make', 'html', **external)
@@ -234,7 +225,7 @@ def cover(session):
     This outputs the coverage report aggregating coverage from the unit
     test runs, and then erases coverage data.
     """
-    session.install('coverage', 'pytest-cov')
+    session.install('.[test]')
     session.run('coverage', 'report', '--show-missing',
                 '--fail-under={}'.format(COVERAGE_FAIL))
     session.run('coverage', 'erase')

@@ -1,7 +1,7 @@
 #
 #  MIT License
 #
-#  (C) Copyright 2023 Hewlett Packard Enterprise Development LP
+#  (C) Copyright 2020-2023 Hewlett Packard Enterprise Development LP
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a
 #  copy of this software and associated documentation files (the "Software"),
@@ -21,14 +21,34 @@
 #  ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 #  OTHER DEALINGS IN THE SOFTWARE.
 #
-recursive-include cray/modules *
-include README.md
-include LICENSE
+""" Test the main CLI command (`cray`) and options. """
 
-recursive-include cray/wheelhouse *
+from cray.tests.conftest import cli_runner
+from cray.tests.conftest import rest_mock
 
-recursive-exclude __pycache__  *.pyc *.pyo *.orig
 
-prune .git
-prune venv
-prune test*
+def test_cray_auth(cli_runner: cli_runner):
+    """ Test `cray init` for creating the default configuration """
+    runner, cli, _ = cli_runner
+    username = 'foo'
+    password = 'bar'
+    result = runner.invoke(
+        cli, ['auth', 'login', '--username', username,
+              '--password', password]
+    )
+    print(result.output)
+    assert result.exit_code == 2
+
+
+def test_cray_auth_success(cli_runner: cli_runner, rest_mock: rest_mock):
+    """ Test `cray init` for creating the default configuration """
+    runner, cli, _ = cli_runner
+    username = 'foo'
+    password = 'bar'
+    result = runner.invoke(
+        cli, ['auth', 'login', '--username', username,
+              '--password', password]
+    )
+    print(result.output)
+    assert result.exit_code == 2
+    assert 'Invalid Credentials' in result.output
