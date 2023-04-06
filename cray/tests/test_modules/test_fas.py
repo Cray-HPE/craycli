@@ -23,11 +23,11 @@
 #
 """ Test the fas module. """
 
-from cray.tests.conftest import cli_runner
-from cray.tests.conftest import rest_mock
 
+# pylint: disable=unused-argument
+# pylint: disable=invalid-name
 
-def test_cray_fas_base(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_cray_fas_base(cli_runner, rest_mock):
     """ Test `cray init` for creating the default configuration """
 
     runner, cli, _ = cli_runner
@@ -49,10 +49,7 @@ def test_cray_fas_base(cli_runner: cli_runner, rest_mock: rest_mock):
         assert out in result.output
 
 
-def test_cray_fas_describe_actions_missing_param(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_fas_describe_actions_missing_param(cli_runner, rest_mock):
     """ Test `cray init` for describing an application """
 
     runner, cli, _ = cli_runner
@@ -66,10 +63,7 @@ def test_cray_fas_describe_actions_missing_param(
         assert out in result.output
 
 
-def test_cray_fas_describe_images_missing_param(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_fas_describe_images_missing_param(cli_runner, rest_mock):
     """ Test `cray init` for describing an application """
 
     runner, cli, _ = cli_runner
@@ -83,10 +77,7 @@ def test_cray_fas_describe_images_missing_param(
         assert out in result.output
 
 
-def test_cray_fas_describe_snapshots_missing_param(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_fas_describe_snapshots_missing_param(cli_runner, rest_mock):
     """ Test `cray init` for describing an application """
 
     runner, cli, _ = cli_runner
@@ -100,10 +91,7 @@ def test_cray_fas_describe_snapshots_missing_param(
         assert out in result.output
 
 
-def test_cray_fas_describe_operations_missing_param(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_fas_describe_operations_missing_param(cli_runner, rest_mock):
     """ Test `cray init` for describing an application """
 
     runner, cli, _ = cli_runner
@@ -117,10 +105,7 @@ def test_cray_fas_describe_operations_missing_param(
         assert out in result.output
 
 
-def test_cray_fas_describe_actions_groups_missing_param(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_fas_describe_actions_groups_missing_param(cli_runner, rest_mock):
     """ Test `cray init` for describing an application """
 
     runner, cli, _ = cli_runner
@@ -136,10 +121,7 @@ def test_cray_fas_describe_actions_groups_missing_param(
         assert out in result.output
 
 
-def test_cray_fas_describe_actions_status_missing_param(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_fas_describe_actions_status_missing_param(cli_runner, rest_mock):
     """ Test `cray init` for describing an application """
 
     runner, cli, _ = cli_runner

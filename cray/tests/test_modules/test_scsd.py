@@ -22,11 +22,11 @@
 #  OTHER DEALINGS IN THE SOFTWARE.
 #
 """ Test the scsd module. """
+# pylint: disable=unused-argument
+# pylint: disable=invalid-name
+# pylint: disable=too-many-locals
 
 import json
-
-from cray.tests.conftest import cli_runner
-from cray.tests.conftest import rest_mock
 
 urlPrefix = '/apis/scsd/v1'
 
@@ -37,7 +37,10 @@ urlPrefix = '/apis/scsd/v1'
 # Dictionary comparison function.  Dicts are created from JSON payloads.
 
 def subDiff(obj, dlist):
-    """ Take a dict object and recursively walk it to produce a sorted flat KV list"""
+    """
+    Take a dict object and recursively walk
+    it to produce a sorted flat KV list
+    """
 
     for k in sorted(obj):
         if isinstance(obj[k], dict):
@@ -53,7 +56,10 @@ def subDiff(obj, dlist):
 
 
 def findDiff(d1, d2):
-    """ Compare two dicts (from JSON payloads) for equality, dict-order neutral """
+    """
+    Compare two dicts (from JSON payloads) for equality, dict-order
+    neutral
+    """
 
     diffOK = 1
     slist1 = []
@@ -70,7 +76,7 @@ def findDiff(d1, d2):
     return diffOK
 
 
-def test_scsd_help_info(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_scsd_help_info(cli_runner, rest_mock):
     """ Test `cray scsd` to make sure the expected commands are available """
 
     runner, cli, _ = cli_runner
@@ -87,7 +93,7 @@ def test_scsd_help_info(cli_runner: cli_runner, rest_mock: rest_mock):
     assert result.exit_code == 0
 
 
-def test_scsd_bmc(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_scsd_bmc(cli_runner, rest_mock):
     """ Test `cray scsd bmc` """
 
     runner, cli, _ = cli_runner
@@ -114,7 +120,7 @@ def test_scsd_bmc(cli_runner: cli_runner, rest_mock: rest_mock):
     assert result.exit_code == 0
 
 
-def test_scsd_bmc_bios_tpmstate(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_scsd_bmc_bios_tpmstate(cli_runner, rest_mock):
     """ Test `cray scsd bmc bios tpmstate` """
 
     runner, cli, _ = cli_runner
@@ -131,10 +137,7 @@ def test_scsd_bmc_bios_tpmstate(cli_runner: cli_runner, rest_mock: rest_mock):
     assert result.exit_code == 0
 
 
-def test_scsd_bmc_bios_tpmstate_update(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_scsd_bmc_bios_tpmstate_update(cli_runner, rest_mock):
     """ Test `cray scsd bmc bios update` """
 
     runner, cli, config = cli_runner
@@ -151,12 +154,8 @@ def test_scsd_bmc_bios_tpmstate_update(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'PATCH'
-    assert data['url'] == '{}{}/{}/{}'.format(
-        config['default']['hostname'],
-        url_template,
-        comp,
-        'tpmstate'
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}' \
+                          f'{url_template}/{comp}/{"tpmstate"}'
 
     expdata = {
         'Future': future
@@ -166,7 +165,7 @@ def test_scsd_bmc_bios_tpmstate_update(
     assert (ok == 1)
 
 
-def test_scsd_bmc_cfg(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_scsd_bmc_cfg(cli_runner, rest_mock):
     """ Test `cray scsd bmc cfg` """
 
     runner, cli, _ = cli_runner
@@ -183,7 +182,7 @@ def test_scsd_bmc_cfg(cli_runner: cli_runner, rest_mock: rest_mock):
     assert result.exit_code == 0
 
 
-def test_scsd_bmc_cfg_create(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_scsd_bmc_cfg_create(cli_runner, rest_mock):
     """ Test `cray scsd bmc cfg create` """
 
     runner, cli, config = cli_runner
@@ -216,11 +215,8 @@ def test_scsd_bmc_cfg_create(cli_runner: cli_runner, rest_mock: rest_mock):
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'POST'
-    assert data['url'] == '{}{}/{}'.format(
-        config['default']['hostname'],
-        url_template,
-        comp
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}' \
+                          f'{url_template}/{comp}'
 
     expdata = {
         'Force': force,
@@ -245,7 +241,7 @@ def test_scsd_bmc_cfg_create(cli_runner: cli_runner, rest_mock: rest_mock):
     assert (ok == 1)
 
 
-def test_scsd_bmc_cfg_describe(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_scsd_bmc_cfg_describe(cli_runner, rest_mock):
     """ Test `cray scsd bmc cfg describe` """
 
     runner, cli, config = cli_runner
@@ -253,23 +249,25 @@ def test_scsd_bmc_cfg_describe(cli_runner: cli_runner, rest_mock: rest_mock):
     comp = 'x0c0s0b0'
 
     result = runner.invoke(
-        cli, ['scsd', 'bmc', 'cfg', 'describe',
-              '--param', 'NTPServerInfo,SyslogServerInfo,SSHKey,SSHConsoleKey',
-              comp]
+        cli, [
+            'scsd',
+            'bmc',
+            'cfg',
+            'describe',
+            '--param',
+            'NTPServerInfo,SyslogServerInfo,SSHKey,SSHConsoleKey',
+            comp]
     )
 
     assert result.exit_code == 0
+    expected = 'NTPServerInfo%2CSyslogServerInfo%2CSSHKey%2CSSHConsoleKey'
     data = json.loads(result.output)
     assert data['method'] == 'GET'
-    assert data['url'] == '{}{}/{}?{}'.format(
-        config['default']['hostname'],
-        url_template,
-        comp,
-        'param=NTPServerInfo%2CSyslogServerInfo%2CSSHKey%2CSSHConsoleKey'
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}' \
+                          f'{url_template}/{comp}?{f"param={expected}"}'
 
 
-def test_scsd_bmc_loadcfg(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_scsd_bmc_loadcfg(cli_runner, rest_mock):
     """ Test `cray scsd bmc loadcfg` """
 
     runner, cli, _ = cli_runner
@@ -285,7 +283,7 @@ def test_scsd_bmc_loadcfg(cli_runner: cli_runner, rest_mock: rest_mock):
     assert result.exit_code == 0
 
 
-def test_scsd_bmc_loadcfg_create(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_scsd_bmc_loadcfg_create(cli_runner, rest_mock):
     """ Test `cray scsd bmc loadcfg create` """
 
     runner, cli, config = cli_runner
@@ -325,15 +323,12 @@ def test_scsd_bmc_loadcfg_create(cli_runner: cli_runner, rest_mock: rest_mock):
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'POST'
-    assert data['url'] == '{}{}'.format(
-        config['default']['hostname'],
-        url_template
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}{url_template}'
     ok = findDiff(payload, data['body'])
     assert (ok == 1)
 
 
-def test_scsd_bmc_dumpcfg_create(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_scsd_bmc_dumpcfg_create(cli_runner, rest_mock):
     """ Test `cray scsd bmc dumpcfg create` """
 
     runner, cli, config = cli_runner
@@ -364,15 +359,12 @@ def test_scsd_bmc_dumpcfg_create(cli_runner: cli_runner, rest_mock: rest_mock):
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'POST'
-    assert data['url'] == '{}{}'.format(
-        config['default']['hostname'],
-        url_template
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}{url_template}'
     ok = findDiff(payload, data['body'])
     assert (ok == 1)
 
 
-def test_scsd_bmc_creds(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_scsd_bmc_creds(cli_runner, rest_mock):
     """ Test `cray scsd bmc creds` """
 
     runner, cli, _ = cli_runner
@@ -389,7 +381,7 @@ def test_scsd_bmc_creds(cli_runner: cli_runner, rest_mock: rest_mock):
     assert result.exit_code == 0
 
 
-def test_scsd_bmc_creds_create(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_scsd_bmc_creds_create(cli_runner, rest_mock):
     """ Test `cray scsd bmc creds create` """
 
     runner, cli, config = cli_runner
@@ -411,11 +403,7 @@ def test_scsd_bmc_creds_create(cli_runner: cli_runner, rest_mock: rest_mock):
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'POST'
-    assert data['url'] == '{}{}/{}'.format(
-        config['default']['hostname'],
-        url_template,
-        comp
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}{url_template}/{comp}'
     payload = {
         'Force': force,
         'Creds': {
@@ -427,10 +415,7 @@ def test_scsd_bmc_creds_create(cli_runner: cli_runner, rest_mock: rest_mock):
     assert (ok == 1)
 
 
-def test_scsd_bmc_discreetcreds_create(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_scsd_bmc_discreetcreds_create(cli_runner, rest_mock):
     """ Test `cray scsd bmc discreetcreds create` """
 
     runner, cli, config = cli_runner
@@ -461,18 +446,12 @@ def test_scsd_bmc_discreetcreds_create(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'POST'
-    assert data['url'] == '{}{}'.format(
-        config['default']['hostname'],
-        url_template
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}{url_template}'
     ok = findDiff(payload, data['body'])
     assert (ok == 1)
 
 
-def test_scsd_bmc_globalcreds_create(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_scsd_bmc_globalcreds_create(cli_runner, rest_mock):
     """ Test `cray scsd bmc globalcreds create` """
 
     runner, cli, config = cli_runner
@@ -500,15 +479,12 @@ def test_scsd_bmc_globalcreds_create(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'POST'
-    assert data['url'] == '{}{}'.format(
-        config['default']['hostname'],
-        url_template
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}{url_template}'
     ok = findDiff(payload, data['body'])
     assert (ok == 1)
 
 
-def test_scsd_bmc_creds_list(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_scsd_bmc_creds_list(cli_runner, rest_mock):
     """ Test `cray scsd bmc list` """
     runner, cli, opts = cli_runner
     url_template = urlPrefix + '/bmc/creds'
@@ -537,7 +513,7 @@ def test_scsd_bmc_creds_list(cli_runner: cli_runner, rest_mock: rest_mock):
         assert out in uri
 
 
-def test_scsd_bmc_createcerts(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_scsd_bmc_createcerts(cli_runner, rest_mock):
     """" Test `cray scsd bmc createcerts` """
 
     runner, cli, _ = cli_runner
@@ -553,10 +529,7 @@ def test_scsd_bmc_createcerts(cli_runner: cli_runner, rest_mock: rest_mock):
     assert result.exit_code == 0
 
 
-def test_scsd_bmc_createcerts_create(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_scsd_bmc_createcerts_create(cli_runner, rest_mock):
     """" Test `cray scsd bmc createcerts create` """
 
     runner, cli, config = cli_runner
@@ -581,15 +554,12 @@ def test_scsd_bmc_createcerts_create(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'POST'
-    assert data['url'] == '{}{}'.format(
-        config['default']['hostname'],
-        url_template
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}{url_template}'
     ok = findDiff(payload, data['body'])
     assert (ok == 1)
 
 
-def test_scsd_bmc_deletecerts(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_scsd_bmc_deletecerts(cli_runner, rest_mock):
     """" Test `cray scsd bmc deletecerts` """
 
     runner, cli, _ = cli_runner
@@ -605,10 +575,7 @@ def test_scsd_bmc_deletecerts(cli_runner: cli_runner, rest_mock: rest_mock):
     assert result.exit_code == 0
 
 
-def test_scsd_bmc_deletecerts_delete(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_scsd_bmc_deletecerts_delete(cli_runner, rest_mock):
     """" Test `cray scsd bmc deletecerts create` """
 
     runner, cli, config = cli_runner
@@ -633,15 +600,12 @@ def test_scsd_bmc_deletecerts_delete(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'POST'
-    assert data['url'] == '{}{}'.format(
-        config['default']['hostname'],
-        url_template
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}{url_template}'
     ok = findDiff(payload, data['body'])
     assert (ok == 1)
 
 
-def test_scsd_bmc_fetchcerts(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_scsd_bmc_fetchcerts(cli_runner, rest_mock):
     """" Test `cray scsd bmc fetchcerts` """
 
     runner, cli, _ = cli_runner
@@ -657,10 +621,7 @@ def test_scsd_bmc_fetchcerts(cli_runner: cli_runner, rest_mock: rest_mock):
     assert result.exit_code == 0
 
 
-def test_scsd_bmc_fetchcerts_create(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_scsd_bmc_fetchcerts_create(cli_runner, rest_mock):
     """" Test `cray scsd bmc fetchcerts create` """
 
     runner, cli, config = cli_runner
@@ -685,15 +646,12 @@ def test_scsd_bmc_fetchcerts_create(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'POST'
-    assert data['url'] == '{}{}'.format(
-        config['default']['hostname'],
-        url_template
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}{url_template}'
     ok = findDiff(payload, data['body'])
     assert (ok == 1)
 
 
-def test_scsd_bmc_setcerts(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_scsd_bmc_setcerts(cli_runner, rest_mock):
     """" Test `cray scsd bmc setcerts` """
 
     runner, cli, _ = cli_runner
@@ -709,12 +667,12 @@ def test_scsd_bmc_setcerts(cli_runner: cli_runner, rest_mock: rest_mock):
     assert result.exit_code == 0
 
 
-def test_scsd_bmc_setcerts_create(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
-    # This one is capable of multiple targets from file.  Test will only use one target.
-    """" Test `cray scsd bmc setcerts create` """
+def test_scsd_bmc_setcerts_create(cli_runner, rest_mock):
+    """
+    Test `cray scsd bmc setcerts create`
+    This one is capable of multiple targets from file.
+    Test will only use one target.
+    """
 
     runner, cli, config = cli_runner
     url_template = urlPrefix + '/bmc/setcerts'
@@ -739,15 +697,12 @@ def test_scsd_bmc_setcerts_create(
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'POST'
-    assert data['url'] == '{}{}'.format(
-        config['default']['hostname'],
-        url_template
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}{url_template}'
     ok = findDiff(payload, data['body'])
     assert (ok == 1)
 
 
-def test_scsd_bmc_setcert_create(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_scsd_bmc_setcert_create(cli_runner, rest_mock):
     # This one is the single {xname} version
     """ Test `cray scsd bmc setcert create` """
 
@@ -769,7 +724,5 @@ def test_scsd_bmc_setcert_create(cli_runner: cli_runner, rest_mock: rest_mock):
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'POST'
-    assert data['url'] == '{}{}/{}{}'.format(
-        config['default']['hostname'],
-        url_template, comp, qstr
-    )
+    assert data['url'] == f'{config["default"]["hostname"]}' \
+                          f'{url_template}/{comp}{qstr}'

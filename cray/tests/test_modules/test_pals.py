@@ -22,16 +22,15 @@
 #  OTHER DEALINGS IN THE SOFTWARE.
 #
 """ Test the main CLI command (`cray`) and options. """
+# pylint: disable=unused-argument
+# pylint: disable=invalid-name
 
 import json
-from six.moves import urllib
 import uuid
-
-from cray.tests.conftest import cli_runner
-from cray.tests.conftest import rest_mock
+from six.moves import urllib
 
 
-def test_cray_pals_base(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_cray_pals_base(cli_runner, rest_mock):
     """ Test cray pals with no arguments """
 
     runner, cli, _ = cli_runner
@@ -54,7 +53,7 @@ def test_cray_pals_base(cli_runner: cli_runner, rest_mock: rest_mock):
         assert out in result.output
 
 
-def test_cray_pals_apps_create(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_cray_pals_apps_create(cli_runner, rest_mock):
     """ Test cray pals apps create """
 
     runner, cli, _ = cli_runner
@@ -68,7 +67,7 @@ def test_cray_pals_apps_create(cli_runner: cli_runner, rest_mock: rest_mock):
         assert out in result.output
 
 
-def test_cray_pals_apps_list(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_cray_pals_apps_list(cli_runner, rest_mock):
     """ Test cray pals apps list """
     # Test with no filters
     runner, cli, _ = cli_runner
@@ -96,7 +95,7 @@ def test_cray_pals_apps_list(cli_runner: cli_runner, rest_mock: rest_mock):
     assert 'nodes=nid000001' in query_args
 
 
-def test_cray_pals_apps_describe(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_cray_pals_apps_describe(cli_runner, rest_mock):
     """ Test cray pals apps describe """
     # Test with missing apid argument
     runner, cli, _ = cli_runner
@@ -116,10 +115,10 @@ def test_cray_pals_apps_describe(cli_runner: cli_runner, rest_mock: rest_mock):
     data = json.loads(result.output)
     assert data['method'] == 'GET'
     url = urllib.parse.urlparse(data['url'])
-    assert url.path == '/apis/pals/v1/apps/%s' % apid
+    assert url.path == f'/apis/pals/v1/apps/{apid}'
 
 
-def test_cray_pals_apps_delete(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_cray_pals_apps_delete(cli_runner, rest_mock):
     """ Test cancelling an application """
     # Test with missing apid argument
     runner, cli, _ = cli_runner
@@ -139,13 +138,10 @@ def test_cray_pals_apps_delete(cli_runner: cli_runner, rest_mock: rest_mock):
     data = json.loads(result.output)
     assert data['method'] == 'DELETE'
     url = urllib.parse.urlparse(data['url'])
-    assert url.path == '/apis/pals/v1/apps/%s' % apid
+    assert url.path == f'/apis/pals/v1/apps/{apid}'
 
 
-def test_cray_pals_apps_files_create(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_pals_apps_files_create(cli_runner, rest_mock):
     """ Test transferring a file """
     runner, cli, _ = cli_runner
     apid = str(uuid.uuid4())
@@ -162,10 +158,7 @@ def test_cray_pals_apps_files_create(
         assert out in result.output
 
 
-def test_cray_pals_apps_files_delete(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_pals_apps_files_delete(cli_runner, rest_mock):
     """ Test deleting a file """
     runner, cli, _ = cli_runner
     apid = str(uuid.uuid4())
@@ -179,13 +172,10 @@ def test_cray_pals_apps_files_delete(
     data = json.loads(result.output)
     assert data['method'] == 'DELETE'
     url = urllib.parse.urlparse(data['url'])
-    assert url.path == '/apis/pals/v1/apps/%s/files/%s' % (apid, fname)
+    assert url.path == f'/apis/pals/v1/apps/{apid}/files/{fname}'
 
 
-def test_cray_pals_apps_files_describe(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_pals_apps_files_describe(cli_runner, rest_mock):
     """ Test describing a file """
     runner, cli, _ = cli_runner
     apid = str(uuid.uuid4())
@@ -199,13 +189,10 @@ def test_cray_pals_apps_files_describe(
     data = json.loads(result.output)
     assert data['method'] == 'GET'
     url = urllib.parse.urlparse(data['url'])
-    assert url.path == '/apis/pals/v1/apps/%s/files/%s' % (apid, fname)
+    assert url.path == f'/apis/pals/v1/apps/{apid}/files/{fname}'
 
 
-def test_cray_pals_apps_files_list(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_pals_apps_files_list(cli_runner, rest_mock):
     """ Test listing files for an application """
     runner, cli, _ = cli_runner
     apid = str(uuid.uuid4())
@@ -216,10 +203,10 @@ def test_cray_pals_apps_files_list(
     data = json.loads(result.output)
     assert data['method'] == 'GET'
     url = urllib.parse.urlparse(data['url'])
-    assert url.path == '/apis/pals/v1/apps/%s/files' % apid
+    assert url.path == f'/apis/pals/v1/apps/{apid}/files'
 
 
-def test_cray_pals_apps_signal(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_cray_pals_apps_signal(cli_runner, rest_mock):
     """ Test signaling an application """
     runner, cli, _ = cli_runner
 
@@ -236,13 +223,10 @@ def test_cray_pals_apps_signal(cli_runner: cli_runner, rest_mock: rest_mock):
     assert data['method'] == 'POST'
     assert data['body']['signum'] == 15
     url = urllib.parse.urlparse(data['url'])
-    assert url.path == '/apis/pals/v1/apps/%s/signal' % apid
+    assert url.path == f'/apis/pals/v1/apps/{apid}/signal'
 
 
-def test_cray_pals_apps_tools_create(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_pals_apps_tools_create(cli_runner, rest_mock):
     """ Test cray pals apps tools create """
     runner, cli, _ = cli_runner
     apid = str(uuid.uuid4())
@@ -275,13 +259,10 @@ def test_cray_pals_apps_tools_create(
     assert data['method'] == 'POST'
     assert data['body']['argv'] == argv
     url = urllib.parse.urlparse(data['url'])
-    assert url.path == '/apis/pals/v1/apps/%s/tools' % apid
+    assert url.path == f'/apis/pals/v1/apps/{apid}/tools'
 
 
-def test_cray_pals_apps_tools_delete(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_pals_apps_tools_delete(cli_runner, rest_mock):
     """ Test cray pals apps tools delete """
     runner, cli, _ = cli_runner
     apid = str(uuid.uuid4())
@@ -312,13 +293,10 @@ def test_cray_pals_apps_tools_delete(
     assert result.exit_code == 0
     assert data['method'] == 'DELETE'
     url = urllib.parse.urlparse(data['url'])
-    assert url.path == '/apis/pals/v1/apps/%s/tools/%s' % (apid, toolid)
+    assert url.path == f'/apis/pals/v1/apps/{apid}/tools/{toolid}'
 
 
-def test_cray_pals_apps_tools_describe(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_pals_apps_tools_describe(cli_runner, rest_mock):
     """ Test cray pals apps tools describe """
     runner, cli, _ = cli_runner
     apid = str(uuid.uuid4())
@@ -349,13 +327,10 @@ def test_cray_pals_apps_tools_describe(
     assert result.exit_code == 0
     assert data['method'] == 'GET'
     url = urllib.parse.urlparse(data['url'])
-    assert url.path == '/apis/pals/v1/apps/%s/tools/%s' % (apid, toolid)
+    assert url.path == f'/apis/pals/v1/apps/{apid}/tools/{toolid}'
 
 
-def test_cray_pals_apps_tools_list(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_pals_apps_tools_list(cli_runner, rest_mock):
     """ Test cray pals apps tools list """
     runner, cli, _ = cli_runner
     apid = str(uuid.uuid4())
@@ -374,13 +349,10 @@ def test_cray_pals_apps_tools_list(
     assert result.exit_code == 0
     assert data['method'] == 'GET'
     url = urllib.parse.urlparse(data['url'])
-    assert url.path == '/apis/pals/v1/apps/%s/tools' % apid
+    assert url.path == f'/apis/pals/v1/apps/{apid}/tools'
 
 
-def test_cray_pals_apps_procinfo_list(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_pals_apps_procinfo_list(cli_runner, rest_mock):
     """ Test cray pals apps procinfo list """
     runner, cli, _ = cli_runner
     apid = str(uuid.uuid4())
@@ -399,4 +371,4 @@ def test_cray_pals_apps_procinfo_list(
     assert result.exit_code == 0
     assert data['method'] == 'GET'
     url = urllib.parse.urlparse(data['url'])
-    assert url.path == '/apis/pals/v1/apps/%s/procinfo' % apid
+    assert url.path == f'/apis/pals/v1/apps/{apid}/procinfo'

@@ -23,31 +23,30 @@
 #
 """ Test the main CLI command (`cray`) and options. """
 
-from cray.tests.conftest import cli_runner
-from cray.tests.conftest import rest_mock
+
+# pylint: disable=unused-argument
+# pylint: disable=invalid-name
 
 
-def test_cray_auth(cli_runner: cli_runner):
+def test_cray_auth(cli_runner):
     """ Test `cray init` for creating the default configuration """
     runner, cli, _ = cli_runner
     username = 'foo'
     password = 'bar'
     result = runner.invoke(
-        cli, ['auth', 'login', '--username', username,
-              '--password', password]
+        cli, ['auth', 'login', '--username', username, '--password', password]
     )
     print(result.output)
     assert result.exit_code == 2
 
 
-def test_cray_auth_success(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_cray_auth_success(cli_runner, rest_mock):
     """ Test `cray init` for creating the default configuration """
     runner, cli, _ = cli_runner
     username = 'foo'
     password = 'bar'
     result = runner.invoke(
-        cli, ['auth', 'login', '--username', username,
-              '--password', password]
+        cli, ['auth', 'login', '--username', username, '--password', password]
     )
     print(result.output)
     assert result.exit_code == 2

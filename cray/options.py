@@ -1,37 +1,42 @@
-""" Common options available for commands
-
-MIT License
-
-(C) Copyright [2020] Hewlett Packard Enterprise Development LP
-
-Permission is hereby granted, free of charge, to any person obtaining a
-copy of this software and associated documentation files (the "Software"),
-to deal in the Software without restriction, including without limitation
-the rights to use, copy, modify, merge, publish, distribute, sublicense,
-and/or sell copies of the Software, and to permit persons to whom the
-Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included
-in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
-OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-OTHER DEALINGS IN THE SOFTWARE.
-"""
-# pylint: disable=invalid-name
+#
+#  MIT License
+#
+#  (C) Copyright 2020-2023 Hewlett Packard Enterprise Development LP
+#
+#  Permission is hereby granted, free of charge, to any person obtaining a
+#  copy of this software and associated documentation files (the "Software"),
+#  to deal in the Software without restriction, including without limitation
+#  the rights to use, copy, modify, merge, publish, distribute, sublicense,
+#  and/or sell copies of the Software, and to permit persons to whom the
+#  Software is furnished to do so, subject to the following conditions:
+#
+#  The above copyright notice and this permission notice shall be included
+#  in all copies or substantial portions of the Software.
+#
+#  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+#  THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+#  OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+#  ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+#  OTHER DEALINGS IN THE SOFTWARE.
+#
+""" Common options available for commands. """
 import os
-
 import click
 
-from cray.constants import CONFIG_ENVVAR, QUIET_ENVVAR, FORMAT_ENVVAR, \
-                       TOKEN_ENVVAR, CONFIG_DIR_ENVVAR, NAME, ACTIVE_CONFIG, \
-                       DEFAULT_CONFIG, EMPTY_CONFIG
+from cray.auth import AuthFile
+from cray.auth import AuthUsername
 from cray.config import Config
-from cray.auth import AuthFile, AuthUsername
+from cray.constants import ACTIVE_CONFIG
+from cray.constants import CONFIG_DIR_ENVVAR
+from cray.constants import CONFIG_ENVVAR
+from cray.constants import DEFAULT_CONFIG
+from cray.constants import EMPTY_CONFIG
+from cray.constants import FORMAT_ENVVAR
+from cray.constants import NAME
+from cray.constants import QUIET_ENVVAR
+from cray.constants import TOKEN_ENVVAR
 from cray.utils import get_hostname
 
 
@@ -50,7 +55,10 @@ def _set_config(ctx, param, value):
         active_config_path = os.path.join(config_dir, ACTIVE_CONFIG)
         active_config = DEFAULT_CONFIG
         if os.path.isfile(active_config_path):
-            with open(active_config_path, encoding='utf-8') as active_config_fp:
+            with open(
+                    active_config_path,
+                    encoding='utf-8'
+            ) as active_config_fp:
                 active_config = active_config_fp.read()
         ctx.obj['globals']['active_config'] = active_config
         # If user hasn't passed in configuration, use active
@@ -64,8 +72,8 @@ def _set_config(ctx, param, value):
     if ctx.obj['config'] == {} and command_name not in ['init']:
         opt = ''
         if value != DEFAULT_CONFIG:
-            opt = " --configuration {}".format(value)
-        msg = "No configuration exists. Run `cray init{}`".format(opt)
+            opt = f" --configuration {value}"
+        msg = f"No configuration exists. Run `cray init{opt}`"
         raise click.UsageError(msg)
     return ctx.obj['globals'][param.name]
 
@@ -95,21 +103,35 @@ def _set_token(ctx, param, value):
     return token
 
 
-def global_options(f):
+def global_options(func):
     """ Set of global options that should be added to every command """
     # pylint: disable=cyclic-import,import-outside-toplevel
-    from .core import option
+    from cray.core import option
     opts = {'expose_value': False}
-    f = option('--configuration', show_envvar=True, envvar=CONFIG_ENVVAR,
-               metavar='CONFIG', default=EMPTY_CONFIG, callback=_set_config,
-               required=True, is_eager=True,
-               help="name of configuration to use. Create through `cray init`", **opts)(f)
-    f = option('--quiet', is_flag=True, callback=_set_global,
-               envvar=QUIET_ENVVAR, **opts)(f)
-    f = option('--format', default='toml', type=click.Choice(['json', 'toml', 'yaml']),
-               envvar=FORMAT_ENVVAR, callback=_set_global, **opts)(f)
-    f = option("--token", metavar='TOKEN_FILE_PATH', callback=_set_token,
-               envvar=TOKEN_ENVVAR, show_envvar=True, **opts)(f)
-    f = option('-v', '--verbose', count=True, help="Example: -vvvv",
-               callback=_set_global, default=0, is_eager=True, **opts)(f)
-    return f
+    func = option(
+        '--configuration', show_envvar=True, envvar=CONFIG_ENVVAR,
+        metavar='CONFIG', default=EMPTY_CONFIG, callback=_set_config,
+        required=True, is_eager=True,
+        help="name of configuration to use. Create through `cray init`", **opts
+    )(func)
+    func = option(
+        '--quiet', is_flag=True, callback=_set_global,
+        envvar=QUIET_ENVVAR, **opts
+    )(func)
+    func = option(
+        '--format',
+        default='toml',
+        type=click.Choice(['json', 'toml', 'yaml']),
+        envvar=FORMAT_ENVVAR,
+        callback=_set_global,
+        **opts
+    )(func)
+    func = option(
+        "--token", metavar='TOKEN_FILE_PATH', callback=_set_token,
+        envvar=TOKEN_ENVVAR, show_envvar=True, **opts
+    )(func)
+    func = option(
+        '-v', '--verbose', count=True, help="Example: -vvvv",
+        callback=_set_global, default=0, is_eager=True, **opts
+    )(func)
+    return func

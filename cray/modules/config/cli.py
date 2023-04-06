@@ -1,41 +1,44 @@
-""" Configuration commands
-
-MIT License
-
-(C) Copyright [2020] Hewlett Packard Enterprise Development LP
-
-Permission is hereby granted, free of charge, to any person obtaining a
-copy of this software and associated documentation files (the "Software"),
-to deal in the Software without restriction, including without limitation
-the rights to use, copy, modify, merge, publish, distribute, sublicense,
-and/or sell copies of the Software, and to permit persons to whom the
-Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included
-in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
-OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-OTHER DEALINGS IN THE SOFTWARE.
-"""
+#
+#  MIT License
+#
+#  (C) Copyright 2020-2023 Hewlett Packard Enterprise Development LP
+#
+#  Permission is hereby granted, free of charge, to any person obtaining a
+#  copy of this software and associated documentation files (the "Software"),
+#  to deal in the Software without restriction, including without limitation
+#  the rights to use, copy, modify, merge, publish, distribute, sublicense,
+#  and/or sell copies of the Software, and to permit persons to whom the
+#  Software is furnished to do so, subject to the following conditions:
+#
+#  The above copyright notice and this permission notice shall be included
+#  in all copies or substantial portions of the Software.
+#
+#  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+#  THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+#  OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+#  ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+#  OTHER DEALINGS IN THE SOFTWARE.
+#
+""" Configuration commands """
 
 import os
-
 import click
 
-from cray.core import group, argument, pass_context
 from cray.config import Config
-from cray.utils import delete_keys_from_dict, merge_dict
 from cray.constants import DEFAULT_CONFIG
-from cray.echo import echo, LOG_FORCE
+from cray.core import argument
+from cray.core import group
+from cray.core import pass_context
+from cray.echo import echo
+from cray.echo import LOG_FORCE
+from cray.utils import delete_keys_from_dict
+from cray.utils import merge_dict
 
 
 def _print_active(config):
-    return 'Your active configuration is: {}'.format(config)
+    return f'Your active configuration is: {config}'
 
 
 @group()  # Name for main group is inferred from the directory name.
@@ -64,10 +67,12 @@ def config_list(ctx):
     active_config = ctx.obj['globals'].get('active_config', DEFAULT_CONFIG)
     configs = []
     for config_file in config_files:
-        configs.append({
-            'name': config_file,
-            'is_active': (config_file == active_config)
-            })
+        configs.append(
+            {
+                'name': config_file,
+                'is_active': (config_file == active_config)
+            }
+        )
     return {'configurations': configs}
 
 
@@ -80,8 +85,10 @@ def config_describe(ctx):
 
     echo(_print_active(active_config), level=LOG_FORCE, ctx=ctx)
     if configuration != active_config:
-        echo('Describing configuration: {}'.format(configuration),
-             level=LOG_FORCE, ctx=ctx)
+        echo(
+            f'Describing configuration: {configuration}',
+            level=LOG_FORCE, ctx=ctx
+        )
     return Config(ctx.obj['config_dir'], configuration, True)
 
 

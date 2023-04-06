@@ -31,7 +31,7 @@ def test_make_url_ip():
     route = '/test'
     scheme = 'http'
     data = rest.make_url(route, base, default_scheme=scheme)
-    assert data == '{}://{}{}'.format(scheme, base, route)
+    assert data == f'{scheme}://{base}{route}'
 
 
 def test_make_url_no_www():
@@ -40,7 +40,7 @@ def test_make_url_no_www():
     route = '/test'
     scheme = 'https'
     data = rest.make_url(route, base)
-    assert data == '{}://{}{}'.format(scheme, base, route)
+    assert data == f'{scheme}://{base}{route}'
 
 
 def test_make_url_no_scheme():
@@ -49,4 +49,4 @@ def test_make_url_no_scheme():
     route = '/test'
     scheme = 'https'
     data = rest.make_url(route, base + '/123')
-    assert data == '{}://{}{}'.format(scheme, base, route)
+    assert data == f'{scheme}://{base}{route}'

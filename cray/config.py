@@ -1,27 +1,28 @@
-""" Classes that interact with configuration files.
+#
+#  MIT License
+#
+#  (C) Copyright 2020-2023 Hewlett Packard Enterprise Development LP
+#
+#  Permission is hereby granted, free of charge, to any person obtaining a
+#  copy of this software and associated documentation files (the "Software"),
+#  to deal in the Software without restriction, including without limitation
+#  the rights to use, copy, modify, merge, publish, distribute, sublicense,
+#  and/or sell copies of the Software, and to permit persons to whom the
+#  Software is furnished to do so, subject to the following conditions:
+#
+#  The above copyright notice and this permission notice shall be included
+#  in all copies or substantial portions of the Software.
+#
+#  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+#  THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+#  OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+#  ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+#  OTHER DEALINGS IN THE SOFTWARE.
+#
+""" Classes that interact with configuration files. """
 
-MIT License
-
-(C) Copyright [2020] Hewlett Packard Enterprise Development LP
-
-Permission is hereby granted, free of charge, to any person obtaining a
-copy of this software and associated documentation files (the "Software"),
-to deal in the Software without restriction, including without limitation
-the rights to use, copy, modify, merge, publish, distribute, sublicense,
-and/or sell copies of the Software, and to permit persons to whom the
-Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included
-in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
-OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-OTHER DEALINGS IN THE SOFTWARE.
-"""
 # pylint: disable=invalid-name
 
 import os
@@ -29,7 +30,8 @@ import os
 import click
 import toml
 
-from cray.constants import NAME, ACTIVE_CONFIG
+from cray.constants import ACTIVE_CONFIG
+from cray.constants import NAME
 from cray.nesteddict import NestedDict
 from cray.utils import open_atomic
 
@@ -98,8 +100,10 @@ class Config(NestedDict):
         return os.path.join(self._config_dir, _CONFIG_DIR_NAME)
 
     def _get_config_file_name(self):
-        return os.path.join(self._config_dir, _CONFIG_DIR_NAME,
-                            self._config_name)
+        return os.path.join(
+            self._config_dir, _CONFIG_DIR_NAME,
+            self._config_name
+        )
 
     def _load(self):
         data = _read_file(self._get_config_file_name())
@@ -126,7 +130,7 @@ class Config(NestedDict):
         """ If value is in core section return the key,
         otherwise return default """
         if value in self._CORE_KEYS:
-            'core.{}'.format(value)
+            return f'core.{value}'
         return default
 
     def get_from_ctx(self, ctx, key, default=None):

@@ -1,38 +1,40 @@
-"""
-cli.py - aprun PALS CLI
-
-MIT License
-
-(C) Copyright [2020-2022] Hewlett Packard Enterprise Development LP
-
-Permission is hereby granted, free of charge, to any person obtaining a
-copy of this software and associated documentation files (the "Software"),
-to deal in the Software without restriction, including without limitation
-the rights to use, copy, modify, merge, publish, distribute, sublicense,
-and/or sell copies of the Software, and to permit persons to whom the
-Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included
-in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
-OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-OTHER DEALINGS IN THE SOFTWARE.
-"""
+#
+#  MIT License
+#
+#  (C) Copyright 2020-2023 Hewlett Packard Enterprise Development LP
+#
+#  Permission is hereby granted, free of charge, to any person obtaining a
+#  copy of this software and associated documentation files (the "Software"),
+#  to deal in the Software without restriction, including without limitation
+#  the rights to use, copy, modify, merge, publish, distribute, sublicense,
+#  and/or sell copies of the Software, and to permit persons to whom the
+#  Software is furnished to do so, subject to the following conditions:
+#
+#  The above copyright notice and this permission notice shall be included
+#  in all copies or substantial portions of the Software.
+#
+#  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+#  THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+#  OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+#  ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+#  OTHER DEALINGS IN THE SOFTWARE.
+#
+""" cli.py - aprun PALS CLI """
 import argparse
 import base64
 import os
 import sys
-
 import click
 
 from cray import core
-from cray.echo import echo, LOG_WARN
-from cray.pals import PALSApp, split_mpmd_args, get_resource_limits, parse_hostfile
+from cray.echo import echo
+from cray.echo import LOG_WARN
+from cray.pals import get_resource_limits
+from cray.pals import PALSApp
+from cray.pals import parse_hostfile
+from cray.pals import split_mpmd_args
 
 APRUN_ENV_ALIAS = {
     "ALPS_APP_DEPTH": "PALS_DEPTH",
@@ -58,7 +60,7 @@ def parse_rangelist(rli):
                 mylist.append(start)
     except ValueError:
         # pylint: disable=raise-missing-from
-        raise click.ClickException("Invalid range list %s" % rli)
+        raise click.ClickException(f"Invalid range list {rli}")
 
     return mylist
 
@@ -75,10 +77,15 @@ def parse_rangelist_file(rlif):
 
 def nids_to_hosts(nidlist):
     """Convert a list of integer nids to a list of hostnames"""
-    return ["nid%06d" % nid for nid in nidlist]
+    return [f"nid{nid:06d}" for nid in nidlist]
 
 
-def get_hostlist(node_list, node_list_file, exclude_node_list, exclude_node_list_file):
+def get_hostlist(
+        node_list,
+        node_list_file,
+        exclude_node_list,
+        exclude_node_list_file
+):
     """Given command-line arguments, produce a host list"""
     nodelist = []
     excllist = []
@@ -121,11 +128,13 @@ def get_launch_env(environment_override, environ=None):
         for envvar in environment_override:
             key, sep, val = envvar.partition("=")
             if not sep:
-                raise click.ClickException("Invalid environment variable %s" % envvar)
+                raise click.ClickException(
+                    f"Invalid environment variable {envvar}"
+                )
             environ[key] = val
 
     # Format into array in the expected format
-    return ["%s=%s" % (key, val) for key, val in environ.items()]
+    return [f"{key}={val}" for key, val in environ.items()]
 
 
 def get_umask():
@@ -146,7 +155,7 @@ def get_wdir(wdir):
     try:
         return os.getcwd()
     except OSError as err:
-        raise click.ClickException("getcwd failed: %s" % str(err))
+        raise click.ClickException(f"getcwd failed: {str(err)}")
 
 
 def get_cpubind(cpu_binding):
@@ -164,7 +173,7 @@ def get_cpubind(cpu_binding):
         return "core"
 
     # If not a keyword, it's colon-separated rangelists
-    return "list:%s" % cpu_binding
+    return f"list:{cpu_binding}"
 
 
 def get_membind(strict_memory_containment):
@@ -185,7 +194,9 @@ def get_exclusive(access_mode):
     if access_mode[0].lower() == "s":
         return False
 
-    raise click.ClickException("Invalid -F/--access-mode argument %s" % access_mode)
+    raise click.ClickException(
+        f"Invalid -F/--access-mode argument {access_mode}"
+    )
 
 
 def print_output(params, a_file):
@@ -218,11 +229,11 @@ def posint(val):
     """Parse a string into a positive integer"""
     ival = int(val)
     if ival <= 0:
-        raise argparse.ArgumentTypeError("%s must be positive" % val)
+        raise argparse.ArgumentTypeError(f"{val} must be positive")
     return ival
 
 
-def parse_mpmd(executable, args, pes, wdir, depth, ppn):
+def parse_mpmd(executable, args, pes, wdir, depth, ppn) -> list[dict]:
     """Parse MPMD commands from the given arguments"""
 
     # Split into separate commands
@@ -231,22 +242,44 @@ def parse_mpmd(executable, args, pes, wdir, depth, ppn):
     # Create first command
     umask = get_umask()
     argv = [executable] + cmdargvs[0]
-    cmds = [dict(argv=argv, nranks=pes, umask=umask, wdir=wdir, depth=depth, ppn=ppn)]
+    cmds = [{
+        'argv': argv,
+        'nranks': pes,
+        'umask': umask,
+        'wdir': wdir,
+        'depth': depth,
+        'ppn': ppn
+    }]
 
     # Create a parser for each other MPMD command
-    parser = argparse.ArgumentParser(prog="", description="MPMD Command Definition")
+    parser = argparse.ArgumentParser(
+        prog="",
+        description="MPMD Command Definition"
+    )
     parser.add_argument(
-        "-n", "--pes", default=1, type=posint, help="number of processes to start"
+        "-n",
+        "--pes",
+        default=1,
+        type=posint,
+        help="number of processes to start"
     )
     parser.add_argument("executable", help="executable to launch")
     parser.add_argument(
         "args", nargs=argparse.REMAINDER, help="arguments to executable"
     )
     parser.add_argument(
-        "-d", "--cpus-per-pe", default=depth, type=posint, help="CPUs per process"
+        "-d",
+        "--cpus-per-pe",
+        default=depth,
+        type=posint,
+        help="CPUs per process"
     )
     parser.add_argument(
-        "-N", "--pes-per-node", default=ppn, type=posint, help="PEs per compute node"
+        "-N",
+        "--pes-per-node",
+        default=ppn,
+        type=posint,
+        help="PEs per compute node"
     )
 
     # Add other commands
@@ -257,14 +290,14 @@ def parse_mpmd(executable, args, pes, wdir, depth, ppn):
         # Create MPMD command dict
         argv = [cmdargs.executable] + list(cmdargs.args)
         cmds.append(
-            dict(
-                argv=argv,
-                nranks=cmdargs.pes,
-                umask=umask,
-                wdir=wdir,
-                depth=cmdargs.cpus_per_pe,
-                ppn=cmdargs.pes_per_node,
-            )
+            {
+                'argv': argv,
+                'nranks': cmdargs.pes,
+                'umask': umask,
+                'wdir': wdir,
+                'depth': cmdargs.cpus_per_pe,
+                'ppn': cmdargs.pes_per_node
+            }
         )
 
     return cmds
@@ -308,12 +341,22 @@ def get_rlimits(memory_per_pe):
 
 @core.command(
     name="aprun",
-    context_settings={"ignore_unknown_options": True, "allow_interspersed_args": False},
+    context_settings={
+        "ignore_unknown_options": True,
+        "allow_interspersed_args": False
+    },
     needs_globals=True,
 )
-@core.option("-a", "--architecture", help="compute node architecture (ignored)")
 @core.option(
-    "-b", "--bypass-app-transfer", is_flag=True, help="skip application binary transfer"
+    "-a",
+    "--architecture",
+    help="compute node architecture (ignored)"
+)
+@core.option(
+    "-b",
+    "--bypass-app-transfer",
+    is_flag=True,
+    help="skip application binary transfer"
 )
 @core.option(
     "-B",
@@ -322,15 +365,30 @@ def get_rlimits(memory_per_pe):
     help="reuse batch reservation arguments (ignored)",
 )
 @core.option(
-    "-C", "--reconnect", is_flag=True, help="reconnect on node failure (ignored)"
+    "-C",
+    "--reconnect",
+    is_flag=True,
+    help="reconnect on node failure (ignored)"
 )
 @core.option("--cpu-binding", "--cc", help="CPU binding for application")
-@core.option("--cpu-binding-file", "--cp", help="specify binding in a file (ignored)")
 @core.option(
-    "-d", "--cpus-per-pe", default=1, type=click.IntRange(1), help="CPUs per PE"
+    "--cpu-binding-file",
+    "--cp",
+    help="specify binding in a file (ignored)"
 )
 @core.option(
-    "-D", "--debug", default=0, type=click.IntRange(0), help="debug level (ignored)"
+    "-d",
+    "--cpus-per-pe",
+    default=1,
+    type=click.IntRange(1),
+    help="CPUs per PE"
+)
+@core.option(
+    "-D",
+    "--debug",
+    default=0,
+    type=click.IntRange(0),
+    help="debug level (ignored)"
 )
 @core.option(
     "-e",
@@ -338,7 +396,11 @@ def get_rlimits(memory_per_pe):
     multiple=True,
     help="set an application environment variable (use VARNAME=value format)",
 )
-@core.option("-E", "--exclude-node-list", help="exclude a list of nodes from placement")
+@core.option(
+    "-E",
+    "--exclude-node-list",
+    help="exclude a list of nodes from placement"
+)
 @core.option(
     "--exclude-node-list-file",
     type=click.File(),
@@ -354,10 +416,15 @@ def get_rlimits(memory_per_pe):
     help="file with list of nodes for placement",
 )
 @core.option(
-    "-m", "--memory-per-pe", envvar="APRUN_DEFAULT_MEMORY", help="memory per PE"
+    "-m",
+    "--memory-per-pe",
+    envvar="APRUN_DEFAULT_MEMORY",
+    help="memory per PE"
 )
 @core.option(
-    "--mpmd-env", multiple=True, help="set an MPMD environment variable (ignored)"
+    "--mpmd-env",
+    multiple=True,
+    help="set an MPMD environment variable (ignored)"
 )
 @core.option(
     "-n",
@@ -373,15 +440,36 @@ def get_rlimits(memory_per_pe):
     type=click.IntRange(0),
     help="PEs per compute node",
 )
-@core.option("-p", "--protection-domain", help="use protection domain (ignored)")
-@core.option("--p-governor", help="compute node performance governor (ignored)")
 @core.option(
-    "--p-state", envvar="APRUN_PSTATE", help="compute node performance state (ignored)"
+    "-p",
+    "--protection-domain",
+    help="use protection domain (ignored)"
+)
+@core.option(
+    "--p-governor",
+    help="compute node performance governor (ignored)"
+)
+@core.option(
+    "--p-state",
+    envvar="APRUN_PSTATE",
+    help="compute node performance state (ignored)"
 )
 @core.option("-q", "--quiet", "--silent", is_flag=True, help="quiet mode")
-@core.option("-r", "--specialized-cpus", help="number of system process CPUs (ignored)")
-@core.option("-R", "--relaunch", help="relaunch with fewer ranks on failure (ignored)")
-@core.option("-S", "--pes-per-numa-node", help="number of PEs per NUMA node (ignored)")
+@core.option(
+    "-r",
+    "--specialized-cpus",
+    help="number of system process CPUs (ignored)"
+)
+@core.option(
+    "-R",
+    "--relaunch",
+    help="relaunch with fewer ranks on failure (ignored)"
+)
+@core.option(
+    "-S",
+    "--pes-per-numa-node",
+    help="number of PEs per NUMA node (ignored)"
+)
 @core.option(
     "--strict-memory-containment",
     "--ss",
@@ -396,7 +484,11 @@ def get_rlimits(memory_per_pe):
     default=False,
     help="synchronize output",
 )
-@core.option("--wdir", envvar="APRUN_WDIR", help="application working directory")
+@core.option(
+    "--wdir",
+    envvar="APRUN_WDIR",
+    help="application working directory"
+)
 @core.option(
     "-z",
     "--zone-sort",
@@ -437,43 +529,43 @@ def get_rlimits(memory_per_pe):
 @core.argument("executable")
 @core.argument("args", nargs=-1)
 def cli(
-    architecture,
-    bypass_app_transfer,
-    batch_args,
-    reconnect,
-    cpu_binding,
-    cpu_binding_file,
-    cpus_per_pe,
-    debug,
-    environment_override,
-    exclude_node_list,
-    exclude_node_list_file,
-    access_mode,
-    cpus_per_cu,
-    node_list,
-    node_list_file,
-    memory_per_pe,
-    mpmd_env,
-    pes,
-    pes_per_node,
-    protection_domain,
-    p_governor,
-    p_state,
-    quiet,
-    specialized_cpus,
-    relaunch,
-    pes_per_numa_node,
-    strict_memory_containment,
-    sync_output,
-    wdir,
-    zone_sort,
-    zone_sort_secs,
-    procinfo_file,
-    abort_on_failure,
-    pmi,
-    sstartup,
-    executable,
-    args,
+        architecture,
+        bypass_app_transfer,
+        batch_args,
+        reconnect,
+        cpu_binding,
+        cpu_binding_file,
+        cpus_per_pe,
+        debug,
+        environment_override,
+        exclude_node_list,
+        exclude_node_list_file,
+        access_mode,
+        cpus_per_cu,
+        node_list,
+        node_list_file,
+        memory_per_pe,
+        mpmd_env,
+        pes,
+        pes_per_node,
+        protection_domain,
+        p_governor,
+        p_state,
+        quiet,
+        specialized_cpus,
+        relaunch,
+        pes_per_numa_node,
+        strict_memory_containment,
+        sync_output,
+        wdir,
+        zone_sort,
+        zone_sort_secs,
+        procinfo_file,
+        abort_on_failure,
+        pmi,
+        sstartup,
+        executable,
+        args,
 ):
     # pylint: disable=unused-argument, too-many-arguments, too-many-locals, redefined-builtin
     """
@@ -528,7 +620,10 @@ def cli(
             executable, args, pes, get_wdir(wdir), cpus_per_pe, pes_per_node
         ),
         "hosts": get_hostlist(
-            node_list, node_list_file, exclude_node_list, exclude_node_list_file
+            node_list,
+            node_list_file,
+            exclude_node_list,
+            exclude_node_list_file
         ),
         "ppn": pes_per_node,
         "environment": get_launch_env(environment_override),
@@ -571,7 +666,7 @@ def cli(
     exit_codes.discard(0)
     if exit_codes:
         codelist = ", ".join([str(code) for code in sorted(exit_codes)[-4:]])
-        click.echo("Application %s exit codes: %s" % (app.apid, codelist))
+        click.echo(f"Application {app.apid} exit codes: {codelist}")
         exit_code = max(exit_codes)
     else:
         exit_code = 0

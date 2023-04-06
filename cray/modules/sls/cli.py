@@ -28,25 +28,33 @@
 import json
 import os
 from contextlib import ExitStack
-
 import click
-from cray.core import option
-from cray.generator import generate, _opt_callback
+
 from cray.constants import FROM_FILE_TAG
+from cray.core import option
+from cray.generator import _opt_callback
+from cray.generator import generate
 from cray.rest import request
 
 
 def _validate_options(
-        is_update, xname_value, class_value, extra_properties_value, payload_file_value):
+        is_update,
+        xname_value,
+        class_value,
+        extra_properties_value,
+        payload_file_value
+):
     if payload_file_value:
         if is_update:
             if class_value or extra_properties_value:
                 raise click.BadParameter(
-                    "The --payload-file option cannot be combined with other options")
+                    "The --payload-file option cannot be combined with other options"
+                )
         else:
             if xname_value or class_value or extra_properties_value:
                 raise click.BadParameter(
-                    "The --payload-file option cannot be combined with other options")
+                    "The --payload-file option cannot be combined with other options"
+                )
     else:
         if not xname_value:
             raise click.BadParameter("The --xname option is required")
@@ -65,14 +73,20 @@ def _set_hardware_shim(func, is_update=False):
         payload_file_value = payload_file.get('value')
 
         _validate_options(
-            is_update, xname_value, class_value, extra_properties_value, payload_file_value)
+            is_update,
+            xname_value,
+            class_value,
+            extra_properties_value,
+            payload_file_value
+        )
 
         # build new payload
         payload = {}
         if payload_file_value:
             if not os.path.exists(payload_file_value):
                 raise click.BadParameter(
-                        f"--payload-file {payload_file_value} file does not exist.")
+                    f"--payload-file {payload_file_value} file does not exist."
+                )
 
             with open(payload_file_value, mode='r', encoding='utf-8') as f:
                 json_string = f.read()
@@ -80,14 +94,19 @@ def _set_hardware_shim(func, is_update=False):
                     payload = json.loads(json_string)
                 except ValueError as e:
                     raise click.BadParameter(
-                            f"The contents of {payload_file_value} is not valid json.") from e
+                        f"The contents of {payload_file_value} is not valid json."
+                    ) from e
         else:
             if extra_properties_value:
                 try:
-                    extra_properties_parsed = json.loads(extra_properties_value)
+                    extra_properties_parsed = json.loads(
+                        extra_properties_value
+                    )
                     payload['ExtraProperties'] = extra_properties_parsed
                 except ValueError as e:
-                    raise click.BadParameter(f"{extra_properties_value} is not valid json.") from e
+                    raise click.BadParameter(
+                        f"{extra_properties_value} is not valid json."
+                    ) from e
 
             for key, value in kwargs.items():
                 name = value.get('name') if value.get('name') else key
@@ -96,6 +115,7 @@ def _set_hardware_shim(func, is_update=False):
         # Inform the CLI that we are passing our own payload and don't generate it
         kwargs[FROM_FILE_TAG] = {"value": payload, "name": FROM_FILE_TAG}
         return func(**kwargs)
+
     return _decorator
 
 
@@ -103,15 +123,22 @@ def _setup_hardware_options(cmd, is_update=False):
     option_extra_properties = 'extra-properties'
     option_payload_file = 'payload-file'
 
-    option('--'+option_extra_properties, nargs=1, type=click.STRING, multiple=False,
-           payload_name=option_extra_properties,
-           callback=_opt_callback,
-           help="The extra properties as a JSON string")(cmd)
+    option(
+        '--' + option_extra_properties,
+        nargs=1,
+        type=click.STRING,
+        multiple=False,
+        payload_name=option_extra_properties,
+        callback=_opt_callback,
+        help="The extra properties as a JSON string"
+    )(cmd)
 
-    option('--'+option_payload_file, nargs=1, type=click.STRING, multiple=False,
-           payload_name=option_payload_file,
-           callback=_opt_callback,
-           help="A file that contains the JSON for the hardware")(cmd)
+    option(
+        '--' + option_payload_file, nargs=1, type=click.STRING, multiple=False,
+        payload_name=option_payload_file,
+        callback=_opt_callback,
+        help="A file that contains the JSON for the hardware"
+    )(cmd)
 
     params = []
     for p in cmd.params:
@@ -132,8 +159,8 @@ def _setup_hardware_options(cmd, is_update=False):
             params.append((i, p))
             i = i + 1
 
-    sorted_params = sorted(params, key = lambda x: x[0])
-    cmd.params = [ p[1] for p in sorted_params ]
+    sorted_params = sorted(params, key=lambda x: x[0])
+    cmd.params = [p[1] for p in sorted_params]
     cmd.callback = _set_hardware_shim(cmd.callback, is_update=is_update)
 
 
@@ -151,7 +178,12 @@ def _loadstate_create(**kwargs):
         payload_file = stack.enter_context(open(payload, 'rb'))
         files = {'sls_dump': payload_file}
 
-        response = request('POST', '/apis/sls/v1/loadstate', callback=None, files=files)
+        response = request(
+            'POST',
+            '/apis/sls/v1/loadstate',
+            callback=None,
+            files=files
+        )
         return response
 
 
@@ -162,6 +194,7 @@ def _create_command_for_loadstate_create(_cli):
     cmd = _cli.command(name='create')(_loadstate_create)
     click.argument('PAYLOAD', nargs=1, type=click.Path(exists=True))(cmd)
     return cmd
+
 
 # Main #
 
@@ -176,4 +209,5 @@ _clear_required_parameters(modify_cmd, ['Class'])
 _setup_hardware_options(modify_cmd, is_update=True)
 
 # replace the loadstate create command with a custom implementation
-cli.commands['loadstate'].commands['create'] = _create_command_for_loadstate_create(cli)
+cli.commands['loadstate'].commands[
+    'create'] = _create_command_for_loadstate_create(cli)

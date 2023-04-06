@@ -1,39 +1,46 @@
-"""Functions for making REST Calls
-
-MIT License
-
-(C) Copyright [2020] Hewlett Packard Enterprise Development LP
-
-Permission is hereby granted, free of charge, to any person obtaining a
-copy of this software and associated documentation files (the "Software"),
-to deal in the Software without restriction, including without limitation
-the rights to use, copy, modify, merge, publish, distribute, sublicense,
-and/or sell copies of the Software, and to permit persons to whom the
-Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included
-in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
-OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-OTHER DEALINGS IN THE SOFTWARE.
-"""
+#
+#  MIT License
+#
+#  (C) Copyright 2020-2023 Hewlett Packard Enterprise Development LP
+#
+#  Permission is hereby granted, free of charge, to any person obtaining a
+#  copy of this software and associated documentation files (the "Software"),
+#  to deal in the Software without restriction, including without limitation
+#  the rights to use, copy, modify, merge, publish, distribute, sublicense,
+#  and/or sell copies of the Software, and to permit persons to whom the
+#  Software is furnished to do so, subject to the following conditions:
+#
+#  The above copyright notice and this permission notice shall be included
+#  in all copies or substantial portions of the Software.
+#
+#  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+#  THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+#  OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+#  ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+#  OTHER DEALINGS IN THE SOFTWARE.
+#
+"""Functions for making REST Calls. """
 # pylint: disable=fixme
+
 import warnings
 
-import click
 import requests
-from six.moves import urllib
+import click
 
-from cray.errors import UnauthorizedError, InsecureError, BadResponseError
-from cray.exceptions import InsecureRequestWarning, InsecureTransportError, \
-    InvalidGrantError
+from oauthlib.oauth2 import InsecureTransportError
+from oauthlib.oauth2 import InvalidGrantError
+from six.moves import urllib
+from urllib3.exceptions import InsecureRequestWarning
+
+from cray.echo import echo
+from cray.echo import LOG_DEBUG
+from cray.echo import LOG_RAW
+from cray.errors import BadResponseError
+from cray.errors import InsecureError
+from cray.errors import UnauthorizedError
 from cray.utils import get_hostname
-from cray.echo import echo, LOG_DEBUG, LOG_RAW
 
 
 def make_url(route, url=None, default_scheme='https', ctx=None):
@@ -59,7 +66,7 @@ def _default_cb(response):
 
 
 def _log_request_error(err, ctx):
-    echo('ERROR: {}'.format(err), ctx=ctx, level=LOG_RAW)
+    echo(f'ERROR: {err}', ctx=ctx, level=LOG_RAW)
 
 
 def request(method, route, callback=None, **kwargs):
@@ -83,8 +90,8 @@ def request(method, route, callback=None, **kwargs):
 
     try:
         url = make_url(route)
-        echo('REQUEST: {} to {}'.format(method, url), ctx=ctx, level=LOG_DEBUG)
-        echo('OPTIONS: {}'.format(opts), ctx=ctx, level=LOG_RAW)
+        echo(f'REQUEST: {method} to {url}', ctx=ctx, level=LOG_DEBUG)
+        echo(f'OPTIONS: {opts}', ctx=ctx, level=LOG_RAW)
         # TODO: Find solution for this.
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore", category=InsecureRequestWarning)
@@ -114,9 +121,11 @@ def request(method, route, callback=None, **kwargs):
         raise
     except Exception as err:
         _log_request_error(err, ctx)
-        raise click.UsageError('Unable to connect to cray. Please verify' +
-                               ' your cray hostname:\n\n\t' +
-                               'cray config get core.hostname\n\t' +
-                               'cray config set core hostname=cray_hostname')
+        raise click.UsageError(
+            'Unable to connect to cray. Please verify' +
+            ' your cray hostname:\n\n\t' +
+            'cray config get core.hostname\n\t' +
+            'cray config set core hostname=cray_hostname'
+        )
 
     return callback(response)

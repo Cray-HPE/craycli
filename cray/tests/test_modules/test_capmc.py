@@ -45,11 +45,10 @@ OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 """
+# pylint: disable=unused-argument
+# pylint: disable=invalid-name
 
 import json
-
-from cray.tests.conftest import cli_runner
-from cray.tests.conftest import rest_mock
 
 
 def test_cray_capmc_get_xname_status(cli_runner):
@@ -174,10 +173,7 @@ nids = 1138
 xname = 'x0c0s0b0n0'
 
 
-def test_cray_capmc_xname_off_call(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_capmc_xname_off_call(cli_runner, rest_mock):
     """ Test `cray capmc xname_off create --xnames <xname list>` """
     runner, cli, opts = cli_runner
     url_template = capmc_url_base + '/xname_off'
@@ -197,10 +193,7 @@ def test_cray_capmc_xname_off_call(
     assert data.get('body').get('force') is None
 
 
-def test_cray_capmc_xname_off_force_call(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_capmc_xname_off_force_call(cli_runner, rest_mock):
     """ Test `cray capmc xname_off create --xnames <xname list> --force true` """
     runner, cli, opts = cli_runner
     url_template = capmc_url_base + '/xname_off'
@@ -220,10 +213,7 @@ def test_cray_capmc_xname_off_force_call(
     assert data['body']['force'] is True
 
 
-def test_cray_capmc_xname_off_recursive_call(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_capmc_xname_off_recursive_call(cli_runner, rest_mock):
     """ Test `cray capmc xname_off create --xnames <xname list> --recursive true` """
     runner, cli, opts = cli_runner
     url_template = capmc_url_base + '/xname_off'
@@ -243,10 +233,7 @@ def test_cray_capmc_xname_off_recursive_call(
     assert data['body']['recursive'] is True
 
 
-def test_cray_capmc_xname_off_force_recursive_call(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_capmc_xname_off_force_recursive_call(cli_runner, rest_mock):
     """ Test `cray capmc xname_off create --xnames <xname list> --force true --recursive true` """
     runner, cli, opts = cli_runner
     url_template = capmc_url_base + '/xname_off'
@@ -268,10 +255,7 @@ def test_cray_capmc_xname_off_force_recursive_call(
     assert data['body']['recursive'] is True
 
 
-def test_cray_capmc_xname_off_prereq_call(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_capmc_xname_off_prereq_call(cli_runner, rest_mock):
     """ Test `cray capmc xname_off create --xnames <xname list> --prereq true` """
     runner, cli, opts = cli_runner
     url_template = capmc_url_base + '/xname_off'
@@ -291,10 +275,7 @@ def test_cray_capmc_xname_off_prereq_call(
     assert data['body']['prereq'] is True
 
 
-def test_cray_capmc_xname_off_force_prereq_call(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_capmc_xname_off_force_prereq_call(cli_runner, rest_mock):
     """ Test `cray capmc xname_off create --xnames <xname list> --force true --prereq true` """
     runner, cli, opts = cli_runner
     url_template = capmc_url_base + '/xname_off'
@@ -316,10 +297,7 @@ def test_cray_capmc_xname_off_force_prereq_call(
     assert data['body']['prereq'] is True
 
 
-def test_cray_capmc_xname_on_call(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_capmc_xname_on_call(cli_runner, rest_mock):
     """ Test `cray capmc xname_on create --xnames <xname list>` """
     runner, cli, opts = cli_runner
     url_template = capmc_url_base + '/xname_on'
@@ -339,10 +317,7 @@ def test_cray_capmc_xname_on_call(
     assert data.get('body').get('force') is None
 
 
-def test_cray_capmc_xname_on_force_call(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_capmc_xname_on_force_call(cli_runner, rest_mock):
     """ Test `cray capmc xname_on create --xnames <xname list> --force true` """
     runner, cli, opts = cli_runner
     url_template = capmc_url_base + '/xname_on'
@@ -362,10 +337,7 @@ def test_cray_capmc_xname_on_force_call(
     assert data['body']['force'] is True
 
 
-def test_cray_capmc_xname_on_recursive_call(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_capmc_xname_on_recursive_call(cli_runner, rest_mock):
     """ Test `cray capmc xname_on create --xnames <xname list> --recursive true` """
     runner, cli, opts = cli_runner
     url_template = capmc_url_base + '/xname_on'
@@ -385,10 +357,7 @@ def test_cray_capmc_xname_on_recursive_call(
     assert data['body']['recursive'] is True
 
 
-def test_cray_capmc_xname_on_force_recursive_call(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_capmc_xname_on_force_recursive_call(cli_runner, rest_mock):
     """ Test `cray capmc xname_on create --xnames <xname list> --force true --recursive true` """
     runner, cli, opts = cli_runner
     url_template = capmc_url_base + '/xname_on'
@@ -410,10 +379,7 @@ def test_cray_capmc_xname_on_force_recursive_call(
     assert data['body']['recursive'] is True
 
 
-def test_cray_capmc_xname_on_prereq_call(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_capmc_xname_on_prereq_call(cli_runner, rest_mock):
     """ Test `cray capmc xname_on create --xnames <xname list> --prereq true` """
     runner, cli, opts = cli_runner
     url_template = capmc_url_base + '/xname_on'
@@ -433,10 +399,7 @@ def test_cray_capmc_xname_on_prereq_call(
     assert data['body']['prereq'] is True
 
 
-def test_cray_capmc_xname_on_force_prereq_call(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_capmc_xname_on_force_prereq_call(cli_runner, rest_mock):
     """ Test `cray capmc xname_on create --xnames <xname list> --force true --prereq true` """
     runner, cli, opts = cli_runner
     url_template = capmc_url_base + '/xname_on'
@@ -458,10 +421,7 @@ def test_cray_capmc_xname_on_force_prereq_call(
     assert data['body']['prereq'] is True
 
 
-def test_cray_capmc_xname_reinit_call(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_capmc_xname_reinit_call(cli_runner, rest_mock):
     """ Test `cray capmc xname_reinit create --xnames <xname list>` """
     runner, cli, opts = cli_runner
     url_template = capmc_url_base + '/xname_reinit'
@@ -481,10 +441,7 @@ def test_cray_capmc_xname_reinit_call(
     assert data.get('body').get('force') is None
 
 
-def test_cray_capmc_xname_reinit_force_call(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_capmc_xname_reinit_force_call(cli_runner, rest_mock):
     """ Test `cray capmc xname_reinit create --xnames <xname list> --force true` """
     runner, cli, opts = cli_runner
     url_template = capmc_url_base + '/xname_reinit'
@@ -570,10 +527,7 @@ def test_cray_capmc_get_power_cap_help(cli_runner):
     assert result.exit_code == 0
 
 
-def test_cray_capmc_get_power_cap_capabilities_create(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_capmc_get_power_cap_capabilities_create(cli_runner, rest_mock):
     """ Test `cray capmc get_power_cap_capabilities create --nids <nid list>` """
     runner, cli, opts = cli_runner
     url_template = capmc_url_base + '/get_power_cap_capabilities'
@@ -592,10 +546,7 @@ def test_cray_capmc_get_power_cap_capabilities_create(
     assert data['body']['nids'] == nids
 
 
-def test_cray_capmc_get_power_cap_create(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_capmc_get_power_cap_create(cli_runner, rest_mock):
     """ Test `cray capmc get_power_cap create --nids <nid list>` """
     runner, cli, opts = cli_runner
     url_template = capmc_url_base + '/get_power_cap'
@@ -650,10 +601,7 @@ spc_node_val = 400
 spc_accel_val = 200
 
 
-def test_cray_capmc_set_power_cap_create(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_capmc_set_power_cap_create(cli_runner, rest_mock):
     """ Test `cray capmc set_power_cap create --nids <nid list> --control <string> <int>` """
     runner, cli, opts = cli_runner
     url_template = capmc_url_base + '/set_power_cap'
@@ -671,8 +619,8 @@ def test_cray_capmc_set_power_cap_create(
     assert data['method'].lower() == 'post'
     uri = data['url'].split(hostname)[-1]
     assert url_template in uri
-    nids = data['body']['nids']
-    for i, e in enumerate(nids):
+    new_nids = data['body']['nids']
+    for i, e in enumerate(new_nids):
         assert e['nid'] == i * 2 + 1
         c = e['controls']
         assert c[0]['name'] == 'node 0'
@@ -681,10 +629,7 @@ def test_cray_capmc_set_power_cap_create(
         assert c[1]['val'] == spc_accel_val
 
 
-def test_cray_capmc_set_power_cap_create_only_node(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_capmc_set_power_cap_create_only_node(cli_runner, rest_mock):
     """ Test `cray capmc set_power_cap create --nids <nid list> --control <string> <int>` """
     runner, cli, opts = cli_runner
     url_template = capmc_url_base + '/set_power_cap'
@@ -701,18 +646,15 @@ def test_cray_capmc_set_power_cap_create_only_node(
     assert data['method'].lower() == 'post'
     uri = data['url'].split(hostname)[-1]
     assert url_template in uri
-    nids = data['body']['nids']
-    for i, e in enumerate(nids):
+    new_nids = data['body']['nids']
+    for i, e in enumerate(new_nids):
         assert e['nid'] == i * 2 + 1
         c = e['controls']
         assert c[0]['name'] == 'node 0'
         assert c[0]['val'] == spc_node_val
 
 
-def test_cray_capmc_set_power_cap_create_only_accel(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_capmc_set_power_cap_create_only_accel(cli_runner, rest_mock):
     """ Test `cray capmc set_power_cap create --nids <nid list> --control <string> <int>` """
     runner, cli, opts = cli_runner
     url_template = capmc_url_base + '/set_power_cap'
@@ -729,18 +671,15 @@ def test_cray_capmc_set_power_cap_create_only_accel(
     assert data['method'].lower() == 'post'
     uri = data['url'].split(hostname)[-1]
     assert url_template in uri
-    nids = data['body']['nids']
-    for i, e in enumerate(nids):
+    new_nids = data['body']['nids']
+    for i, e in enumerate(new_nids):
         assert e['nid'] == i * 2 + 1
         c = e['controls']
         assert c[0]['name'] == 'accel 0'
         assert c[0]['val'] == spc_accel_val
 
 
-def test_cray_capmc_set_power_cap_create_no_nids(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_capmc_set_power_cap_create_no_nids(cli_runner, rest_mock):
     """ Test `cray capmc set_power_cap create --control <string> <int> --control <string> <int>` """
     runner, cli, _ = cli_runner
     result = runner.invoke(
@@ -759,9 +698,9 @@ def test_cray_capmc_set_power_cap_create_no_nids(
 
 
 def test_cray_capmc_set_power_cap_create_no_node_or_accel(
-        cli_runner: cli_runner,
+        cli_runner,
         rest_mock
-):
+        ):
     """ Test `cray capmc set_power_cap create --nids <nid list>` """
     runner, cli, _ = cli_runner
     result = runner.invoke(

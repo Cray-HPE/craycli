@@ -22,11 +22,12 @@
 #  OTHER DEALINGS IN THE SOFTWARE.
 #
 """ Test utilities that make testing easier. """
-import names
+# pylint: disable=missing-function-docstring
 import os
-import toml
-from urllib.parse import urlparse
 import uuid
+from urllib.parse import urlparse
+import names
+import toml
 
 
 def _uuid():
@@ -38,7 +39,7 @@ def new_username():
 
 
 def new_hostname():
-    return "https://{}".format(_uuid().replace('-', ''))
+    return f"https://{_uuid().replace('-', '')}"
 
 
 def new_configname():
@@ -58,8 +59,8 @@ def create_config_file(filename, hostname, username):
     full_path = os.path.join(path, filename)
     if not os.path.exists(path):
         os.makedirs(path)
-    with open(full_path, 'w', encoding='utf-8') as f:
-        toml.dump(data, f)
+    with open(full_path, 'w', encoding='utf-8') as file:
+        toml.dump(data, file)
 
 
 def strip_confirmation(output):

@@ -24,12 +24,11 @@
 """
 test_aprun.py - Unit tests for the aprun module
 """
-
-import click
 import io
 import os
-import pytest
 import tempfile
+import click
+import pytest
 
 import cray.modules.aprun.cli as aprun
 

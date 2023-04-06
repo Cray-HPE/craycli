@@ -22,11 +22,10 @@
 #  OTHER DEALINGS IN THE SOFTWARE.
 #
 """ Test the main CLI command (`cray`) and options. """
-
+# pylint: disable=invalid-name
 import click
 
 from cray import echo
-from cray.tests.conftest import cli_runner
 
 
 def log(ctx):
@@ -38,7 +37,7 @@ def log(ctx):
     echo.echo("raw", level=echo.LOG_RAW, ctx=ctx)
 
 
-def test_logging_default(cli_runner: cli_runner):
+def test_logging_default(cli_runner):
     """ Test `cray init` for creating the default configuration """
     runner, cli, _ = cli_runner
 
@@ -58,7 +57,7 @@ def test_logging_default(cli_runner: cli_runner):
         assert have_not not in result.output
 
 
-def test_logging_v(cli_runner: cli_runner):
+def test_logging_v(cli_runner):
     """ Test `cray init` for creating the default configuration """
     runner, cli, _ = cli_runner
 
@@ -78,7 +77,7 @@ def test_logging_v(cli_runner: cli_runner):
         assert have_not not in result.output
 
 
-def test_logging_vv(cli_runner: cli_runner):
+def test_logging_vv(cli_runner):
     """ Test `cray init` for creating the default configuration """
     runner, cli, _ = cli_runner
 
@@ -98,7 +97,7 @@ def test_logging_vv(cli_runner: cli_runner):
         assert have_not not in result.output
 
 
-def test_logging_vvv(cli_runner: cli_runner):
+def test_logging_vvv(cli_runner):
     """ Test `cray init` for creating the default configuration """
     runner, cli, _ = cli_runner
 
@@ -114,7 +113,7 @@ def test_logging_vvv(cli_runner: cli_runner):
         assert have in result.output
 
 
-def test_logging_vvv_quiet(cli_runner: cli_runner):
+def test_logging_vvv_quiet(cli_runner):
     """ Test `cray init` for creating the default configuration """
     runner, cli, _ = cli_runner
 
@@ -130,7 +129,7 @@ def test_logging_vvv_quiet(cli_runner: cli_runner):
         assert have_not not in result.output
 
 
-def test_logging_quiet(cli_runner: cli_runner):
+def test_logging_quiet(cli_runner):
     """ Test `cray init` for creating the default configuration """
     runner, cli, _ = cli_runner
 

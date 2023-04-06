@@ -76,9 +76,9 @@ cli = generate(__file__)
 
     test_template = 'cray/tests/files/template.txt'
     module_path = MODULE_PATH_TEMPLATE.format(module_name)
-    test_file = 'cray/tests/test_modules/test_{}.py'.format(module_name)
-    init_file = '{}/__init__.py'.format(module_path)
-    cli_file = '{}/cli.py'.format(module_path)
+    test_file = f'cray/tests/test_modules/test_{module_name}.py'
+    init_file = f'{module_path}/__init__.py'
+    cli_file = f'{module_path}/cli.py'
 
     is_local_file = os.path.exists(swagger_file)
 
@@ -119,7 +119,7 @@ def swagger(session):
         if os.path.exists(module_path):
             walk_path = module_path
         else:
-            raise Exception("Module {} not found.".format(module))
+            raise Exception(f"Module {module} not found.")
     else:
         # If here we are doing all files so do test files too.
         convert_file(session, './tests/files/', 'swagger.json')
@@ -200,10 +200,10 @@ def lint(session):
     Returns a failure if the linters find linting errors or sufficiently
     serious code quality issues.
     """
+    session.install('.[test]')
     session.install('.[lint]')
     run_cmd_code = ['pylint', 'cray']
     if 'prod' not in session.posargs:
-        run_cmd_code.append('--disable=import-error')
         run_cmd_code.append('--enable=fixme')
 
     session.run(*run_cmd_code)
@@ -226,6 +226,10 @@ def cover(session):
     test runs, and then erases coverage data.
     """
     session.install('.[test]')
-    session.run('coverage', 'report', '--show-missing',
-                '--fail-under={}'.format(COVERAGE_FAIL))
+    session.run(
+        'coverage',
+        'report',
+        '--show-missing',
+        '--fail-under={}'.format(COVERAGE_FAIL)
+    )
     session.run('coverage', 'erase')

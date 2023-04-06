@@ -25,12 +25,12 @@
 test_mpiexec.py - Unit tests for the mpiexec module
 """
 
-import click
 import io
 import os
-import pytest
 import socket
 import tempfile
+import click
+import pytest
 
 import cray.modules.mpiexec.cli as mpiexec
 
@@ -234,46 +234,46 @@ def test_parse_mpmd_file():
         b"-n4 --wdir=/home --umask=0333 --depth=3 --ppn=4 hostname -d\n"
     )
     cmds = [
-        dict(
-            argv=["hostname"],
-            nranks=1,
-            wdir=wdir,
-            umask=umask,
-            depth=7,
-            ppn=1
-        ),
-        dict(
-            argv=["hostname", "-a"],
-            nranks=1,
-            wdir=wdir,
-            umask=umask,
-            depth=7,
-            ppn=1
-        ),
-        dict(
-            argv=["hostname", "-b"],
-            nranks=2,
-            wdir=wdir,
-            umask=umask,
-            depth=7,
-            ppn=1
-        ),
-        dict(
-            argv=["hostname", "-c"],
-            nranks=3,
-            wdir="/tmp",
-            umask=0o222,
-            depth=2,
-            ppn=3
-        ),
-        dict(
-            argv=["hostname", "-d"],
-            nranks=4,
-            wdir="/home",
-            umask=0o333,
-            depth=3,
-            ppn=4
-        ),
+        {
+            'argv': ["hostname"],
+            'nranks': 1,
+            'wdir': wdir,
+            'umask': umask,
+            'depth': 7,
+            'ppn': 1
+        },
+        {
+            'argv': ["hostname", "-a"],
+            'nranks': 1,
+            'wdir': wdir,
+            'umask': umask,
+            'depth': 7,
+            'ppn': 1
+        },
+        {
+            'argv': ["hostname", "-b"],
+            'nranks': 2,
+            'wdir': wdir,
+            'umask': umask,
+            'depth': 7,
+            'ppn': 1
+        },
+        {
+            'argv': ["hostname", "-c"],
+            'nranks': 3,
+            'wdir': "/tmp",
+            'umask': 0o222,
+            'depth': 2,
+            'ppn': 3
+        },
+        {
+            'argv': ["hostname", "-d"],
+            'nranks': 4,
+            'wdir': "/home",
+            'umask': 0o333,
+            'depth': 3,
+            'ppn': 4
+        },
     ]
     assert mpiexec.parse_mpmd_file(tmpfname, None, 7, 1) == cmds
 

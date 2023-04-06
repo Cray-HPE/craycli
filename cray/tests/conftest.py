@@ -19,10 +19,10 @@
 #  OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 #  ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 #  OTHER DEALINGS IN THE SOFTWARE.
-import os
-
+""" Fixtures for tests. """
+# pylint: disable=protected-access
 import json
-
+import os
 import requests_mock as req_mock
 
 try:
@@ -105,11 +105,11 @@ def cli_runner(request):
         'default': default,
         'config': config,
     }
-    cli_runner = CliRunner()
+    runner = CliRunner()
     old_env = {}
     old_env[CONFIG_DIR_ENVVAR] = os.environ.get(CONFIG_DIR_ENVVAR)
     old_env[CONFIG_ENVVAR] = os.environ.get(CONFIG_ENVVAR)
-    with cli_runner.isolated_filesystem():
+    with runner.isolated_filesystem():
         os.environ[CONFIG_DIR_ENVVAR] = os.getcwd()
         os.environ['CRAY_FORMAT'] = 'json'
         try:
@@ -127,7 +127,7 @@ def cli_runner(request):
                 config['username']
             )
 
-        yield cli_runner, cli.cli, opts
+        yield runner, cli.cli, opts
         # Cleanup
         for key, value in old_env.items():
             if value is None:

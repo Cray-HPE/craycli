@@ -22,22 +22,24 @@
 #  OTHER DEALINGS IN THE SOFTWARE.
 #
 """ Test the main CLI command (`cray`) and options. """
-import pytest
+# pylint: disable=unused-argument
+# pylint: disable=invalid-name
 
-from cray.tests.conftest import cli_runner
+import pytest
 
 
 @pytest.fixture
-def test_rest(cli_runner: cli_runner):
+def test_rest(cli_runner):
+    """Mock"""
     pass
 
 
-def test_cray_connection_error(cli_runner: cli_runner):
+def test_cray_connection_error(cli_runner):
     """ Test `cray init` for creating the default configuration """
 
     runner, cli, _ = cli_runner
     host = 'https://localhost'
-    runner.invoke(cli, ['config', 'set', 'core', 'hostname={}'.format(host)])
+    runner.invoke(cli, ['config', 'set', 'core', f'hostname={host}'])
     # running uas list just to force the connection failure
     result = runner.invoke(cli, ['uas', 'list'])
     print(result.output)
@@ -46,18 +48,17 @@ def test_cray_connection_error(cli_runner: cli_runner):
     outputs = [
         "Error: Unable to connect to cray. Please verify your cray hostname:",
         "cray config get core.hostname",
-        "cray config set core hostname=cray_hostname"
-    ]
+        "cray config set core hostname=cray_hostname"]
     for out in outputs:
         assert out in result.output
 
 
-def test_cray_http_error(cli_runner: cli_runner):
+def test_cray_http_error(cli_runner):
     """ Test `cray init` for creating the default configuration """
 
     runner, cli, _ = cli_runner
     host = 'http://localhost'
-    runner.invoke(cli, ['config', 'set', 'core', 'hostname={}'.format(host)])
+    runner.invoke(cli, ['config', 'set', 'core', f'hostname={host}'])
 
     # running uas list just to force the connection failure
     result = runner.invoke(cli, ['uas', 'list', '-vvvvvvv'])
@@ -65,8 +66,6 @@ def test_cray_http_error(cli_runner: cli_runner):
     assert result.exit_code == 2
 
     outputs = [
-        "You've configured your cray hostname with http. Please " +
-        "reconfigure for https."
-    ]
+        "You've configured your cray hostname with http. Please " + "reconfigure for https."]
     for out in outputs:
         assert out in result.output

@@ -1,42 +1,46 @@
-""" Generates CLI commands from parsed swagger file
-
-MIT License
-
-(C) Copyright 2020-2023 Hewlett Packard Enterprise Development LP
-
-Permission is hereby granted, free of charge, to any person obtaining a
-copy of this software and associated documentation files (the "Software"),
-to deal in the Software without restriction, including without limitation
-the rights to use, copy, modify, merge, publish, distribute, sublicense,
-and/or sell copies of the Software, and to permit persons to whom the
-Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included
-in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
-OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-OTHER DEALINGS IN THE SOFTWARE.
-"""
-import os
+#
+#  MIT License
+#
+#  (C) Copyright 2020-2023 Hewlett Packard Enterprise Development LP
+#
+#  Permission is hereby granted, free of charge, to any person obtaining a
+#  copy of this software and associated documentation files (the "Software"),
+#  to deal in the Software without restriction, including without limitation
+#  the rights to use, copy, modify, merge, publish, distribute, sublicense,
+#  and/or sell copies of the Software, and to permit persons to whom the
+#  Software is furnished to do so, subject to the following conditions:
+#
+#  The above copyright notice and this permission notice shall be included
+#  in all copies or substantial portions of the Software.
+#
+#  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+#  THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+#  OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+#  ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+#  OTHER DEALINGS IN THE SOFTWARE.
+#
+""" Generates CLI commands from parsed swagger file """
 import json
+import os
 import re
-
 import click
+from requests_toolbelt.multipart.encoder import MultipartEncoder
 from six import string_types
 from six.moves import urllib
-from requests_toolbelt.multipart.encoder import MultipartEncoder
 
 from cray import core
 from cray import hostlist
-from cray import rest, swagger
+from cray import rest
+from cray import swagger
+from cray.constants import CONVERSION_FLAG
+from cray.constants import DANGER_TAG
+from cray.constants import FROM_FILE_TAG
+from cray.constants import HIDDEN_TAG
+from cray.constants import IGNORE_TAG
+from cray.constants import TAG_SPLIT
 from cray.nesteddict import NestedDict
-from cray.constants import IGNORE_TAG, CONVERSION_FLAG, HIDDEN_TAG, \
-    DANGER_TAG, TAG_SPLIT, FROM_FILE_TAG
 
 PATH_ORIGIN = 'path'
 QUERY_ORIGIN = 'query'
@@ -53,21 +57,27 @@ def api(data, callback, base=''):
     """ Decorator that will send endpoint data into commands """
 
     def tags_decorator(func):  # pylint: disable=missing-docstring
-        def func_wrapper(*args, data_handler=None, **kwargs):  # pylint: disable=missing-docstring
+        def func_wrapper(
+                *args,
+                data_handler=None,
+                **kwargs,
+        ):  # pylint: disable=missing-docstring
             kwargs['base'] = base
             args = _parse_data(data, **kwargs)
             if data_handler:
-                args=data_handler(args)
+                args = data_handler(args)
             opts = args[-1]
             opts['callback'] = callback
             return func(*args[:-1], **opts)
+
         return func_wrapper
+
     return tags_decorator
 
 
 def _raise_missing_param(parent_name, param_name):
-    param = '--{}-{}'.format(parent_name, param_name)
-    raise click.BadParameter('Missing parameter: {}'.format(_make_name(param)))
+    param = f'--{parent_name}-{param_name}'
+    raise click.BadParameter(f'Missing parameter: {_make_name(param)}')
 
 
 def _make_object_array(values, parent_name):
@@ -98,7 +108,7 @@ def _generate_body(body, params):
             key = '.'.join(param_name.split('-'))
             if nesting == 'nested_array':
                 if param['array_item_type'] == 'object':
-                    nestings.set_deep('array_objs.{}'.format(key), item)
+                    nestings.set_deep(f'array_objs.{key}', item)
                 else:
                     resp[key.split('.', maxsplit=1)[0]] = item
             else:
@@ -115,8 +125,7 @@ def _get_endpoint(url):
 
 
 def _split_origins(data):
-    opts = {
-    }
+    opts = {}
     opts[FILE_ORIGIN] = {}
     for origin in [PATH_ORIGIN, QUERY_ORIGIN, HEADER_ORIGIN, PARAM_ORIGIN]:
         opts.setdefault(origin, {})
@@ -168,7 +177,8 @@ def _parse_data(data, base=None, **kwargs):
             # pylint: disable=consider-using-with
             fields[k] = (os.path.basename(v), open(v, 'rb'))
         args['data'] = MultipartEncoder(fields=fields)
-        args.setdefault('headers', {})['Content-Type'] = args['data'].content_type
+        args.setdefault('headers', {})['Content-Type'] = args[
+            'data'].content_type
     return (method, route, args)
 
 
@@ -259,7 +269,9 @@ def _opt_callback(ctx, param, value):  # pylint: disable=unused-argument
 
 
 def _make_name(name):
-    name = '-'.join(re.sub('([A-Z][a-z]+|[A-Z]+[s]?(?![a-rt-z]))', r' \1', name).split())
+    name = '-'.join(
+        re.sub(r'([A-Z][a-z]+|[A-Z]+[s]?(?![a-rt-z]))', r' \1', name).split()
+    )
     return name.replace('_', '-').lower()
 
 
@@ -274,22 +286,22 @@ def _generate_option(func, param):
     }
     if param.get('nesting') == "nested_array":
         metavar = opts['type'].name.upper()
-        opts['metavar'] = "{},...|EXPR".format(metavar)
+        opts['metavar'] = f"{metavar},...|EXPR"
         opts['callback'] = _array_validation_callback(opts['type'], callback)
-        # Force type back to string for arrays so we can do comma seperation.
+        # Force type back to string for arrays so we can do comma separation.
         opts['type'] = _get_type('string', param)
         if param.get('type') in 'integer':
             opts['help'] = opts['help'] + \
-                " EXPR is a hostlist of the form [1-10,12]"
+                           " EXPR is a hostlist of the form [1-10,12]"
         if param.get('type') in 'string':
             opts['help'] = opts['help'] + \
-                " EXPR is a hostlist of the form x[0-1]c[2,4]"
+                           " EXPR is a hostlist of the form x[0-1]c[2,4]"
     if param.get('default'):
         opts['default'] = param['default']
     if 'required' in param and param.get('array_item_type') != 'object':
         opts['required'] = param['required']
     opts['payload_name'] = param['name']
-    return core.option('--{}'.format(_make_name(param['name'])), **opts)(func)
+    return core.option(f'--{_make_name(param["name"])}', **opts)(func)
 
 
 def _set_params(func, command, from_file=False):
@@ -355,7 +367,12 @@ def create_commands(cli, commands, base=None, callback=None, **kwargs):
             if HIDDEN_TAG in tags:
                 opts.update({"hidden": True})
             from_file = (FROM_FILE_TAG in tags)
-            func = _set_params(api(data, callback, base)(rest.request), data, from_file)
+            decorator = api(data, callback, base)(rest.request)
+            func = _set_params(
+                decorator,
+                data,
+                from_file
+            )
             for tag in tags:
                 temp = tag.split(TAG_SPLIT)
                 if DANGER_TAG in temp:
@@ -363,14 +380,30 @@ def create_commands(cli, commands, base=None, callback=None, **kwargs):
                     if len(temp) > 1:
                         msg = temp[1]
                     func = _add_confirmation_opt(func, msg=msg)
-            cli.command(name=command_name, help=data.get('help', ''), **opts)(func)
+            cli.command(name=command_name, help=data.get('help', ''), **opts)(
+                func
+            )
         else:
             if command.lower() == parent_name:
                 # Hack to prevent duplicate groups, i.e. cray uas uas create
-                create_commands(cli, data, base=base, callback=callback, **opts)
+                create_commands(
+                    cli,
+                    data,
+                    base=base,
+                    callback=callback,
+                    **opts
+                )
             else:
-                func = cli.group(command_name, help=_find_help(data), **opts)(_base_group)
-                create_commands(func, data, base=base, callback=callback, **opts)
+                func = cli.group(command_name, help=_find_help(data), **opts)(
+                    _base_group
+                )
+                create_commands(
+                    func,
+                    data,
+                    base=base,
+                    callback=callback,
+                    **opts
+                )
                 # If all sub commands/groups are hidden, hide parent.
                 _hide_parent = True
                 for v in func.commands.values():
@@ -384,15 +417,29 @@ def create_commands(cli, commands, base=None, callback=None, **kwargs):
                 if command != command_name:
                     opts['deprecated'] = True
                     opts['hidden'] = True
-                    old_func = cli.group(command, help=_find_help(data), **opts)(_base_group)
-                    create_commands(old_func, data, base=base, callback=callback, **opts)
+                    old_func = cli.group(
+                        command,
+                        help=_find_help(data),
+                        **opts
+                    )(_base_group)
+                    create_commands(
+                        old_func,
+                        data,
+                        base=base,
+                        callback=callback,
+                        **opts
+                    )
                     cli.add_command(old_func)
 
 
-
 def _get_path(dirpath, filename):
-    return os.path.realpath(os.path.join(os.path.dirname(
-        os.path.realpath(dirpath)), filename))
+    return os.path.realpath(
+        os.path.join(
+            os.path.dirname(
+                os.path.realpath(dirpath)
+            ), filename
+        )
+    )
 
 
 def _get_data(path, opts=None):
@@ -430,8 +477,10 @@ def find_name(info, default=''):
     return default
 
 
-def generate(dirpath, filename=None, description=None, cli=None, name=None,
-             callback=None, swagger_opts=None, condense=True):
+def generate(
+        dirpath, filename=None, description=None, cli=None, name=None,
+        callback=None, swagger_opts=None, condense=True
+):
     """ Create a CLI from a swagger file and path """
     # pylint: disable=too-many-locals
     filename = filename or 'swagger3.json'
@@ -456,7 +505,8 @@ def generate(dirpath, filename=None, description=None, cli=None, name=None,
     # Grab the newest API version available
     if servers:
         urls = [server['url'] for server in servers if 'url' in server]
-        versions = {url.split('/')[-1]: url for url in urls if url.split('/')[-1]}
+        versions = {url.split('/')[-1]: url for url in urls if
+                    url.split('/')[-1]}
         base_url = versions[find_newest(versions.keys())]
 
     create_commands(cli, endpoints, base=base_url, callback=callback)

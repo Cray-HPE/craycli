@@ -1,33 +1,33 @@
-"""
-pals.py - Common functions for launching applications with PALS
-
-MIT License
-
-(C) Copyright [2020] Hewlett Packard Enterprise Development LP
-
-Permission is hereby granted, free of charge, to any person obtaining a
-copy of this software and associated documentation files (the "Software"),
-to deal in the Software without restriction, including without limitation
-the rights to use, copy, modify, merge, publish, distribute, sublicense,
-and/or sell copies of the Software, and to permit persons to whom the
-Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included
-in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
-OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-OTHER DEALINGS IN THE SOFTWARE.
-"""
+#
+#  MIT License
+#
+#  (C) Copyright 2020-2023 Hewlett Packard Enterprise Development LP
+#
+#  Permission is hereby granted, free of charge, to any person obtaining a
+#  copy of this software and associated documentation files (the "Software"),
+#  to deal in the Software without restriction, including without limitation
+#  the rights to use, copy, modify, merge, publish, distribute, sublicense,
+#  and/or sell copies of the Software, and to permit persons to whom the
+#  Software is furnished to do so, subject to the following conditions:
+#
+#  The above copyright notice and this permission notice shall be included
+#  in all copies or substantial portions of the Software.
+#
+#  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+#  THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+#  OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+#  ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+#  OTHER DEALINGS IN THE SOFTWARE.
+#
+""" pals.py - Common functions for launching applications with PALS. """
 # pylint: disable=fixme
 import base64
 import errno
 import fcntl
 import json
+import os
 import resource
 import signal
 import socket
@@ -36,19 +36,22 @@ import stat
 import sys
 import threading
 import time
-import os
 import uuid
-
-import click
 import websocket
+import click
 from six.moves import urllib
 
-from cray.echo import echo, LOG_INFO, LOG_WARN, LOG_DEBUG, LOG_RAW
+from cray import atp
+from cray import mpir
+from cray.echo import echo
+from cray.echo import LOG_DEBUG
+from cray.echo import LOG_INFO
+from cray.echo import LOG_RAW
+from cray.echo import LOG_WARN
 from cray.errors import BadResponseError
 from cray.rest import request
-from cray.utils import get_hostname, open_atomic
-
-from cray import atp, mpir
+from cray.utils import get_hostname
+from cray.utils import open_atomic
 
 SIGNAL_RECEIVED = 0  # Last signal number received
 PING_INTERVAL = 20  # WebSocket ping interval
@@ -68,7 +71,7 @@ def split_mpmd_args(args):
     return cmdargs
 
 
-def make_ws_url(route, url=None):
+def make_ws_url(route: str, url: str = '') -> urllib.parse.ParseResult:
     """ Make a websocket URL (using wss scheme). Based on make_url in rest.py """
     # If no URL given, use the configured hostname
     if not url:
@@ -91,7 +94,7 @@ def make_ws_url(route, url=None):
     return urllib.parse.urlunsplit((scheme, netloc, path, query, fragment))
 
 
-def get_ws_headers():
+def get_ws_headers() -> list:
     """ Get a list of HTTP headers to send in WebSocket request """
     ctx = click.get_current_context()
     auth = ctx.obj["auth"]
@@ -133,7 +136,7 @@ def parse_hostfile(hostfile):
     return hostlist
 
 
-def signal_handler(signum, _):
+def signal_handler(signum, *_):
     # pylint: disable=global-statement
     """ Signal handler that stores the signal value in a global """
     global SIGNAL_RECEIVED
@@ -153,16 +156,10 @@ def setup_signals():
     signal.set_wakeup_fd(sig_write)
 
     # Set up signal handlers
-    for signum in [
-        signal.SIGHUP,
-        signal.SIGINT,
-        signal.SIGQUIT,
-        signal.SIGABRT,
-        signal.SIGALRM,
-        signal.SIGTERM,
-        signal.SIGUSR1,
-        signal.SIGUSR2,
-    ]:
+    for signum in [signal.SIGHUP, signal.SIGINT, signal.SIGQUIT,
+                   signal.SIGABRT, signal.SIGALRM, signal.SIGTERM,
+                   signal.SIGUSR1,
+                   signal.SIGUSR2, ]:
         signal.signal(signum, signal_handler)
 
     # Ignore SIGTTIN so we don't stop in the background
@@ -184,7 +181,7 @@ def get_rpc(method, rpcid=None, **params):
 def send_rpc(websock, method, reqid=None, **params):
     """ Send an RPC over the socket """
     req = get_rpc(method, reqid, **params)
-    echo("Sending RPC %s" % req, level=LOG_RAW)
+    echo(f"Sending RPC {req}", level=LOG_RAW)
     websock.send(req)
 
 
@@ -224,7 +221,9 @@ def forward_signals(websock, sig_pipe):
             os.read(sig_pipe, 4096)
 
             # Send it to the app
-            send_rpc(websock, "signal", str(uuid.uuid4()), signum=SIGNAL_RECEIVED)
+            send_rpc(
+                websock, "signal", str(uuid.uuid4()), signum=SIGNAL_RECEIVED
+            )
     except (OSError, websocket.WebSocketException):
         pass
 
@@ -248,7 +247,9 @@ def spawn_threads(websock):
     stdin_thread.daemon = True
     stdin_thread.start()
 
-    signal_thread = threading.Thread(target=forward_signals, args=(websock, sig_read))
+    signal_thread = threading.Thread(
+        target=forward_signals, args=(websock, sig_read)
+    )
     signal_thread.daemon = True
     signal_thread.start()
 
@@ -266,13 +267,16 @@ def monitor_mpir(ctx, apid):
             if not mpir.MPIR_proctable_filled():
                 # Make request to procinfo endpoint
                 with ctx:
-                    resp = request("GET", "apis/pals/v1/apps/" + apid + "/procinfo")
+                    resp = request(
+                        "GET", "apis/pals/v1/apps/" + apid + "/procinfo"
+                    )
                 procinfo = resp.json()
                 # Extract MPIR information
                 proctable_elems = []
                 for rank in range(len(procinfo["cmdidxs"])):
                     hostname = procinfo["nodes"][procinfo["placement"][rank]]
-                    executable = procinfo["executables"][procinfo["cmdidxs"][rank]]
+                    executable = procinfo["executables"][
+                        procinfo["cmdidxs"][rank]]
                     pid = procinfo["pids"][rank]
                     proctable_elems.append((hostname, executable, pid))
                 # Call C library to set C MPIR variables
@@ -314,7 +318,7 @@ def print_output(params, a_file, label):
         host = params["host"]
         rankid = int(params["rankid"])
         for line in content.splitlines():
-            click.echo("%s %d: %s" % (host, rankid, line), file=a_file)
+            click.echo(f"{host} {rankid:d}: {line}", file=a_file)
     else:
         # Otherwise, print without processing
         click.echo(content, nl=False, file=a_file)
@@ -325,7 +329,7 @@ def log_rank_exit(rankid, host, status):
     if rankid == -1:
         rank = "shepherd"
     else:
-        rank = "rank %d" % rankid
+        rank = f"rank {rankid:d}"
 
     extra = ""
     level = LOG_INFO
@@ -343,7 +347,7 @@ def log_rank_exit(rankid, host, status):
         action = "invalid status"
         code = status
 
-    echo("%s: %s %s %d%s" % (host, rank, action, code, extra), level=level)
+    echo(f"{host}: {rank} {action} {code:d}{extra}", level=level)
 
 
 def write_procinfo_file(result, procinfo_file):
@@ -352,7 +356,9 @@ def write_procinfo_file(result, procinfo_file):
         with open_atomic(procinfo_file) as procinfo_fp:
             json.dump(result, procinfo_fp)
     except (IOError, OSError) as err:
-        echo("Couldn't write %s: %s" % (procinfo_file, str(err)), level=LOG_WARN)
+        echo(
+            f"Couldn't write {procinfo_file}: {str(err)}", level=LOG_WARN
+        )
 
 
 def get_executables(req, transfer):
@@ -376,7 +382,7 @@ def get_resource_limits(limitnames):
         try:
             limit = getattr(resource, "RLIMIT_" + limitname)
             soft, hard = resource.getrlimit(limit)
-            limits[limitname] = "%d %d" % (soft, hard)
+            limits[limitname] = f"{soft:d} {hard:d}"
         except (AttributeError, resource.error):
             pass
 
@@ -387,16 +393,16 @@ def connect_websock(apid):
     # pylint: disable=no-member
     """ Connect to the application websocket """
     try:
-        url = make_ws_url("apis/pals/v1/apps/%s/stdio" % apid)
+        url = make_ws_url(f"apis/pals/v1/apps/{apid}/stdio")
         headers = get_ws_headers()
         # TODO: enable SSL verification
         sslopt = {"cert_reqs": ssl.CERT_NONE}
-        echo("Connecting to %s" % url, level=LOG_DEBUG)
+        echo(f"Connecting to {url}", level=LOG_DEBUG)
         return websocket.create_connection(
             url, header=headers, sslopt=sslopt, enable_multithread=True
         )
     except (websocket.WebSocketException, socket.error) as err:
-        raise click.ClickException("Connection error: %s" % str(err))
+        raise click.ClickException(f"Connection error: {str(err)}")
 
 
 class PALSApp(object):
@@ -412,13 +418,17 @@ class PALSApp(object):
         self.complete = False
         self.started = False
 
-    def launch(self, launchreq, transfer=False, label=False, procinfo_file=None):
+    def launch(
+            self, launchreq, transfer=False, label=False, procinfo_file=None
+    ):
         """ Launch this application, transfer binaries, and run """
         executables = get_executables(launchreq, transfer)
 
         # Launch ATP frontend if enabled
         # returns list of environment variables to set for job
-        (atp_frontend_handle, atp_envlist) = atp.launch_atp_frontend(executables)
+        (atp_frontend_handle, atp_envlist) = atp.launch_atp_frontend(
+            executables
+        )
         if atp_envlist:
             launchreq["environment"] += atp_envlist
 
@@ -435,7 +445,7 @@ class PALSApp(object):
             resp = request("POST", "apis/pals/v1/apps", json=launchreq)
             self.apid = resp.json().get("apid")
             mpir.set_current_apid(self.apid)
-            echo("Launched application %s" % self.apid, level=LOG_INFO)
+            echo(f"Launched application {self.apid}", level=LOG_INFO)
 
             # Send newly-launched apid to ATP frontend to monitor
             if atp_frontend_handle:
@@ -463,21 +473,24 @@ class PALSApp(object):
     def transfer(self, executable):
         """ Transfer a file to application compute nodes """
         try:
-            mode = stat.S_IMODE(os.stat(executable).st_mode)
-            params = {"mode": "0%o" % mode, "name": os.path.basename(executable)}
+            mode: int = stat.S_IMODE(os.stat(executable).st_mode)
+            params = {
+                "mode": f"0{mode:o}", "name": os.path.basename(executable)
+            }
             headers = {"Content-Type": "application/octet-stream"}
             with open(executable, "rb") as a_execfile:
                 resp = request(
                     "POST",
-                    "apis/pals/v1/apps/%s/files" % self.apid,
+                    f"apis/pals/v1/apps/{self.apid}/files",
                     params=params,
                     headers=headers,
-                    data=a_execfile,
-                )
+                    data=a_execfile, )
                 path = resp.json().get("path")
-                echo("Transferred executable to %s" % path, level=LOG_DEBUG)
+                echo(f"Transferred executable to {path}", level=LOG_DEBUG)
         except (OSError, IOError) as err:
-            raise click.ClickException("Couldn't transfer binary: %s" % str(err))
+            raise click.ClickException(
+                f"Couldn't transfer binary: {str(err)}"
+            )
 
     def handle_rpc(self, websock, rpc, label=False, procinfo_file=None):
         """ Handle a received RPC. Return True if complete. """
@@ -510,7 +523,7 @@ class PALSApp(object):
 
         # Handle unknown RPC method
         elif method:
-            echo("Received unknown %s RPC" % method, level=LOG_WARN)
+            echo(f"Received unknown {method} RPC", level=LOG_WARN)
 
         # Handle error responses
         elif errmsg:
@@ -556,29 +569,28 @@ class PALSApp(object):
 
                 # Read an RPC off the socket
                 rpc = json.loads(websock.recv())
-                echo("Received RPC %s" % rpc, level=LOG_RAW)
+                echo(f"Received RPC {rpc}", level=LOG_RAW)
 
                 # Handle the RPC
                 self.handle_rpc(websock, rpc, label, procinfo_file)
 
             except websocket.WebSocketException as err:
                 echo(
-                    "Lost application connection (%s), reconnecting" % str(err),
-                    level=LOG_WARN,
-                )
+                    f"Lost application connection ({str(err)}), reconnecting",
+                    level=LOG_WARN, )
                 websock.close()
                 connected = False
             except socket.error as err:  # pylint: disable=no-member
                 if err.errno != errno.EINTR:
                     echo(
-                        "Lost application connection (%s), reconnecting" % str(err),
-                        level=LOG_WARN,
-                    )
+                        f"Lost application connection ({str(err)}), reconnecting",
+                        level=LOG_WARN, )
                     websock.close()
                     connected = False
             except ValueError as err:
                 echo(
-                    "Error decoding application message: %s" % str(err), level=LOG_WARN
+                    f"Error decoding application message: {str(err)}",
+                    level=LOG_WARN
                 )
 
         # Clean up after ourselves

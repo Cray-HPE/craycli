@@ -22,14 +22,13 @@
 #  OTHER DEALINGS IN THE SOFTWARE.
 #
 """ Test the bss module. """
+# pylint: disable=unused-argument
+# pylint: disable=invalid-name
 
 import json
 
-from cray.tests.conftest import cli_runner
-from cray.tests.conftest import rest_mock
 
-
-def test_cray_bss_help_info(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_cray_bss_help_info(cli_runner, rest_mock):
     """ Test `cray bss` to make sure the expected commands are available """
     runner, cli, _ = cli_runner
     result = runner.invoke(cli, ['bss'])
@@ -48,7 +47,7 @@ def test_cray_bss_help_info(cli_runner: cli_runner, rest_mock: rest_mock):
     assert result.exit_code == 0
 
 
-def test_cray_bss_bootparameters(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_cray_bss_bootparameters(cli_runner, rest_mock):
     """ Test `cray bss bootparameters` to make sure the expected commands are available """
     runner, cli, _ = cli_runner
     result = runner.invoke(cli, ['bss', 'bootparameters'])
@@ -67,7 +66,7 @@ def test_cray_bss_bootparameters(cli_runner: cli_runner, rest_mock: rest_mock):
     assert result.exit_code == 0
 
 
-def test_cray_bss_bootscript(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_cray_bss_bootscript(cli_runner, rest_mock):
     """ Test `cray bss bootscript` to make sure the expected commands are available """
     runner, cli, _ = cli_runner
     result = runner.invoke(cli, ['bss', 'bootscript'])
@@ -82,7 +81,7 @@ def test_cray_bss_bootscript(cli_runner: cli_runner, rest_mock: rest_mock):
     assert result.exit_code == 0
 
 
-def test_cray_bss_dumpstate(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_cray_bss_dumpstate(cli_runner, rest_mock):
     """ Test `cray bss dumpstate` to make sure the expected commands are available """
     runner, cli, _ = cli_runner
     result = runner.invoke(cli, ['bss', 'dumpstate'])
@@ -97,7 +96,7 @@ def test_cray_bss_dumpstate(cli_runner: cli_runner, rest_mock: rest_mock):
     assert result.exit_code == 0
 
 
-def test_cray_bss_hosts(cli_runner: cli_runner, rest_mock: rest_mock):
+def test_cray_bss_hosts(cli_runner, rest_mock):
     """ Test `cray capmc get_xname_status` to make sure the expected commands are available """
     runner, cli, _ = cli_runner
     result = runner.invoke(cli, ['bss', 'hosts'])
@@ -124,10 +123,7 @@ arch = 'x86_64'
 retry = '1'
 
 
-def test_cray_bss_rest_call_create(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_bss_rest_call_create(cli_runner, rest_mock):
     """ Test `cray bss create` with various params """
 
     runner, cli, opts = cli_runner
@@ -159,10 +155,7 @@ def test_cray_bss_rest_call_create(
     assert uri == url_template
 
 
-def test_cray_bss_rest_call_replace(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_bss_rest_call_replace(cli_runner, rest_mock):
     """ Test `cray bss create` with various params """
 
     runner, cli, opts = cli_runner
@@ -194,10 +187,7 @@ def test_cray_bss_rest_call_replace(
     assert uri == url_template
 
 
-def test_cray_bss_bootscript_call(
-        cli_runner: cli_runner,
-        rest_mock: rest_mock
-        ):
+def test_cray_bss_bootscript_call(cli_runner, rest_mock):
     """ Test `cray bss create` with various params """
 
     runner, cli, opts = cli_runner
