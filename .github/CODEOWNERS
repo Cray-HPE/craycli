@@ -1,0 +1,24 @@
+/cray/modules/ars       @Cray-HPE/cray-management-systems
+/cray/modules/artifacts @Cray-HPE/cray-management-systems
+/cray/modules/badger    @Cray-HPE/hardware-management
+/cray/modules/bos       @Cray-HPE/cms-core-bos
+/cray/modules/bss       @Cray-HPE/hardware-management
+/cray/modules/capmc     @Cray-HPE/hardware-management
+/cray/modules/cfs       @Cray-HPE/cms-core-cfs
+/cray/modules/config    @Cray-HPE/cloud
+/cray/modules/cps       @Cray-HPE/cray-management-systems
+/cray/modules/fas       @Cray-HPE/hardware-management
+/cray/modules/hsm       @Cray-HPE/hardware-management
+/cray/modules/ims       @Cray-HPE/cms-core-ims
+/cray/modules/nmd       @Cray-HPE/hardware-management
+/cray/modules/power     @Cray-HPE/hardware-management
+/cray/modules/scsd      @Cray-HPE/hardware-management
+/cray/modules/sls       @Cray-HPE/hardware-management
+/cray/modules/uas       @Cray-HPE/user-access
+/*                      @Cray-HPE/cloud
+
+# PE items, assigning cloud team since PE has no team in github.com.
+/cray/modules/aprun     @Cray-HPE/cloud
+/cray/modules/mpiexec   @Cray-HPE/cloud
+/cray/modules/pals      @Cray-HPE/cloud
+/cray/modules/vnid      @Cray-HPE/cloud
