@@ -34,9 +34,10 @@ if (env.BRANCH_NAME ==~ ~"^PR-\\d+") {
     return
 }
 
-// Only consider X.Y.Z tags as stable, do not consider X.Y.Z{[a|b|rc]N} or X.Y.Z.* tags as stable.
+// Only consider X.Y.Z and X.Y.Z.postN tags as stable.
+// Never consider X.Y.Z{[a|b|rc} or X.Y.Z.* tags (that are not post-releases) as stable.
 // The ==~ operator performs an exact match.
-def stableToken = ~/v?\d+\.\d+\.\d+/
+def stableToken = ~/v?\d+\.\d+\.\d+(\.post\d+)?/
 def isStable = (env.TAG_NAME != null & env.TAG_NAME ==~ stableToken) ? true : false
 pipeline {
     agent {
@@ -141,7 +142,7 @@ pipeline {
                                 image "${pythonImage}:${PYTHON_VERSION}-${DOCKER_ARCH}"
                             }
                         }
-                        
+
                         steps {
                             script {
                                 def sleVersion = sh(returnStdout: true, script: 'awk -F= \'/VERSION_ID/{gsub(/["]/,""); print \$NF}\' /etc/os-release').trim()
