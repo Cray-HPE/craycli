@@ -74,6 +74,23 @@ def get_hostname(ctx=None):
     return hostname
 
 
+def get_tenant(ctx=None):
+    """ Get the tenant requests are scoped to (None if not scoped to a tenant) """
+    ctx = ctx or click.get_current_context()
+    config = ctx.obj['config']
+    tenant = config.get('core.tenant', None)
+    return tenant
+
+def get_headers(ctx=None):
+    """ Get the headers which may or may not contain a tenant """
+    headers={}
+    ctx = ctx or click.get_current_context()
+    tenant = get_tenant(ctx=ctx)
+    if tenant:
+        headers={"Cray-Tenant-Name":tenant}
+    return headers
+
+
 def hostname_to_name(hostname=None, ctx=None):
     """ Convert hostname to name value for saving as filename"""
     hostname = hostname or get_hostname(ctx=ctx)

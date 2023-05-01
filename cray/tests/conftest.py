@@ -42,6 +42,7 @@ from cray.config import initialize_dirs
 from cray.tests.utils import new_username
 from cray.tests.utils import new_configname
 from cray.tests.utils import new_hostname
+from cray.tests.utils import new_tenant
 from cray.tests.utils import create_config_file
 
 
@@ -95,11 +96,13 @@ def cli_runner(request):
         'configname': 'default',
         'username': new_username(),
         'hostname': new_hostname(),
+        'tenant': '',
     }
     config = {
         'configname': new_configname(),
         'username': new_username(),
         'hostname': new_hostname(),
+        'tenant': new_tenant(),
     }
     opts = {
         'default': default,
@@ -120,11 +123,11 @@ def cli_runner(request):
             initialize_dirs(os.path.join(os.getcwd(), '.config/cray/'))
             create_config_file(
                 default['configname'], default['hostname'],
-                default['username']
+                default['tenant'], default['username']
             )
             create_config_file(
                 config['configname'], config['hostname'],
-                config['username']
+                config['tenant'], config['username']
             )
 
         yield runner, cli.cli, opts

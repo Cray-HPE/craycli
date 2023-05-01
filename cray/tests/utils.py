@@ -42,6 +42,10 @@ def new_hostname():
     return f"https://{_uuid().replace('-', '')}"
 
 
+def new_tenant():
+    return f"vcluster-{_uuid().replace('-', '')}"
+
+
 def new_configname():
     return _uuid().replace('-', '')
 
@@ -50,9 +54,9 @@ def new_random_string():
     return _uuid().replace('-', '')
 
 
-def create_config_file(filename, hostname, username):
+def create_config_file(filename, hostname, tenant, username):
     data = {
-        'core': {'hostname': hostname},
+        'core': {'hostname': hostname, 'tenant': tenant},
         'auth': {'login': {'username': username}}
     }
     path = '.config/cray/configurations'
