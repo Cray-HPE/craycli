@@ -43,7 +43,7 @@ classifiers = [
 description = 'Cray management and workflow tool'
 dependencies = [
     # DO NOT UPDATE the below boto3 and botocore - Breaks cray artifacts bucket list
-    'boto3<1.24',
+    'boto3<1.27',
     'botocore<1.27',
     # DO NOT UPDATE the above boto3 and botocore - Breaks cray artifacts bucket list
     'click==7.1.2',
