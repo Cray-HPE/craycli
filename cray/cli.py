@@ -96,6 +96,10 @@ def cli(ctx, *args, **kwargs):
     help='Hostname of cray system.'
 )
 @option(
+    "--tenant", default=None, no_global=True,
+    help='Tenant name to scope requests for.'
+)
+@option(
     "--no-auth", is_flag=True,
     help='Do not attempt to authenticate.'
 )
@@ -103,7 +107,7 @@ def cli(ctx, *args, **kwargs):
     "--overwrite", is_flag=True,
     help="Overwrite existing configuration if it exists"
 )
-def init(ctx, hostname, no_auth, overwrite, **kwargs):
+def init(ctx, hostname, no_auth, overwrite, tenant, **kwargs):
     """ Initialize/reinitialize the Cray CLI """
     # pylint: disable=line-too-long
     config_dir = ctx.obj.get('config_dir')
@@ -137,9 +141,21 @@ def init(ctx, hostname, no_auth, overwrite, **kwargs):
     if not re.match("^http(s)?://", hostname):
         hostname = f'https://{hostname}'
 
+    if tenant is None:
+        tenant = ctx.obj.get(
+            'config',
+            {}
+        ).get(
+            'core.tenant',
+            click.prompt('Tenant Name (leave blank for global scope):',
+                         default="",
+                         type=str)
+        )
+
     initialize_dirs(config_dir)  # No error if directories already exist
     config = Config(config_dir, configuration, raise_err=False)
     config.set_deep('core.hostname', hostname)
+    config.set_deep('core.tenant', tenant)
     config.save()
     config.set_active()
     ctx.obj['config'] = config
@@ -153,7 +169,8 @@ def init(ctx, hostname, no_auth, overwrite, **kwargs):
         echo(
             ctx.forward(
                 login, hostname=hostname, username=username,
-                password=password, rsa_token=rsa_token, **kwargs
+                password=password, rsa_token=rsa_token,
+                tenant=tenant, **kwargs
             ), level=LOG_FORCE, ctx=ctx
         )
     return "Initialization complete."

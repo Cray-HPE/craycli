@@ -42,8 +42,9 @@ def test_cray_init_no_hostname(cli_runner):
     config = opts['default']
     hostname = config['hostname']
     configname = config['configname']
+    tenant = config['tenant']
     result = runner.invoke(
-        cli, ['init', '--no-auth'], input=f'{hostname}\n'
+        cli, ['init', '--no-auth', '--tenant', tenant], input=f'{hostname}\n'
     )
     assert result.exit_code == 0
     assert "Initialization complete." in result.output
@@ -57,13 +58,37 @@ def test_cray_init_no_hostname(cli_runner):
 @pytest.mark.parametrize(
     'cli_runner', [{'is_init': True}], indirect=['cli_runner']
 )
+def test_cray_init_no_tenant(cli_runner):
+    """ Test `cray init --configuration {config}`
+     for validating a new configuration is created. """
+    runner, cli, opts = cli_runner
+    config = opts['default']
+    hostname = config['hostname']
+    configname = config['configname']
+    tenant = config['tenant']
+    result = runner.invoke(
+        cli, ['init', '--no-auth', '--hostname', hostname], input=f'{tenant}\n'
+    )
+    assert result.exit_code == 0
+    assert "Initialization complete." in result.output
+    filep = f'.config/cray/configurations/{configname}'
+    assert os.path.isfile(filep)
+    with open(filep, encoding='utf-8') as f:
+        data = toml.load(f)
+    assert data['core']['tenant'] == tenant
+
+
+@pytest.mark.parametrize(
+    'cli_runner', [{'is_init': True}], indirect=['cli_runner']
+)
 def test_cray_init(cli_runner):
     """ Test `cray init` for creating the default configuration """
     runner, cli, opts = cli_runner
     config = opts['default']
     hostname = config['hostname']
+    tenant = config['tenant']
     configname = config['configname']
-    result = runner.invoke(cli, ['init', '--hostname', hostname, '--no-auth'])
+    result = runner.invoke(cli, ['init', '--hostname', hostname, '--no-auth', '--tenant', tenant])
 
     assert result.exit_code == 0
     assert "Initialization complete." in result.output
@@ -72,6 +97,7 @@ def test_cray_init(cli_runner):
     with open(filep, encoding='utf-8') as f:
         data = toml.load(f)
     assert data['core']['hostname'] == hostname
+    assert data['core']['tenant'] == tenant
 
 
 @pytest.mark.parametrize(
@@ -82,7 +108,8 @@ def test_cray_init_verify_no_auth(cli_runner, rest_mock):
     runner, cli, opts = cli_runner
     config = opts['default']
     hostname = config['hostname']
-    result = runner.invoke(cli, ['init', '--hostname', hostname, '--no-auth'])
+    tenant = config['tenant']
+    result = runner.invoke(cli, ['init', '--hostname', hostname, '--no-auth', '--tenant', tenant])
     assert result.exit_code == 0
     result = runner.invoke(cli, ['uas', 'list'])
     print(result.output)
@@ -98,11 +125,12 @@ def test_cray_init_w_config(cli_runner):
     runner, cli, opts = cli_runner
     config = opts['config']
     hostname = config['hostname']
+    tenant = config['tenant']
     configname = config['configname']
     result = runner.invoke(
         cli,
-        ['init', '--hostname', hostname, '--no-auth', '--configuration',
-         configname]
+        ['init', '--hostname', hostname, '--tenant', tenant, '--no-auth',
+         '--configuration', configname]
     )
 
     assert result.exit_code == 0

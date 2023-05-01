@@ -349,10 +349,11 @@ def test_cray_config_get_shallow(cli_runner):
     runner, cli, opts = cli_runner
     config = opts['default']
     hostname = config['hostname']
+    tenant = config['tenant']
     result = runner.invoke(cli, ['config', 'get', 'core'])
     assert result.exit_code == 0
     data = json.loads(result.output)
-    assert data == {'hostname': hostname}
+    assert data == {'hostname': hostname, 'tenant': tenant}
 
 
 def test_cray_config_get_missing_param(cli_runner):

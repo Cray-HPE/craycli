@@ -41,6 +41,7 @@ from cray.errors import BadResponseError
 from cray.errors import InsecureError
 from cray.errors import UnauthorizedError
 from cray.utils import get_hostname
+from cray.utils import get_headers
 
 
 def make_url(route, url=None, default_scheme='https', ctx=None):
@@ -90,34 +91,36 @@ def request(method, route, callback=None, **kwargs):
 
     try:
         url = make_url(route)
+        headers = get_headers(ctx=ctx)
         echo(f'REQUEST: {method} to {url}', ctx=ctx, level=LOG_DEBUG)
         echo(f'OPTIONS: {opts}', ctx=ctx, level=LOG_RAW)
         # TODO: Find solution for this.
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore", category=InsecureRequestWarning)
-            response = requester.request(method, url, **opts)
+            response = requester.request(method, url, **opts, headers=headers)
             if not response.ok:
                 _log_request_error(response.text, ctx)
                 raise BadResponseError(response, ctx=ctx)
-    except InsecureTransportError as err:  # pragma: NO COVER
-        _log_request_error(err, ctx)
-        # pylint: disable=raise-missing-from
+    except InsecureTransportError as err:
+        # pragma: NO COVER
+        _log_request_error(err, ctx) # pylint: disable=raise-missing-from
         raise InsecureError(ctx=ctx)
-    except InvalidGrantError as err:  # pragma: NO COVER
-        _log_request_error(err, ctx)
-        # pylint: disable=raise-missing-from
+    except InvalidGrantError as err:
+        # pragma: NO COVER
+        _log_request_error(err, ctx) # pylint: disable=raise-missing-from
         raise UnauthorizedError(ctx=ctx)
-    except requests.exceptions.HTTPError as err:  # pragma: NO COVER
+    except requests.exceptions.HTTPError as err:
+        # pragma: NO COVER
         _log_request_error(err, ctx)
         if err.response.status_code == 401:
             # pylint: disable=raise-missing-from
             raise UnauthorizedError(ctx=ctx)
         raise click.UsageError(str(err))
-    except requests.exceptions.Timeout as err:  # pragma: NO COVER
+    except requests.exceptions.Timeout as err:
+        # pragma: NO COVER
         _log_request_error(err, ctx)
         raise click.UsageError('Timed out trying to connect to cray', ctx=ctx)
-    except click.ClickException:
-        # Don't log click specific exceptions
+    except click.ClickException: # Don't log click specific exceptions
         raise
     except Exception as err:
         _log_request_error(err, ctx)

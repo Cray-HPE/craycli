@@ -125,12 +125,13 @@ def test_generator_danger_tag_default_confirm(cli_runner, rest_mock, pets):
     runner, cli, opts = cli_runner
     config = opts['default']
     hostname = config['hostname']
-    petId = "1"
-    result = runner.invoke(cli, ['pets', 'pet', 'delete', petId], input='y')
+    orderId = "1"
+    result = runner.invoke(cli, ['pets', 'store', 'order', 'delete', orderId], 'y')
+    data = json.loads(strip_confirmation(result.output))
     print(result.output)
     assert result.exit_code == 0
     data = json.loads(strip_confirmation(result.output))
-    assert data['url'] == f'{hostname}/v2/pet/{petId}'
+    assert data['url'] == f'{hostname}/v2/store/order/{orderId}'
     assert data['method'].lower() == 'delete'
 
 

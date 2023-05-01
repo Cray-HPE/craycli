@@ -73,7 +73,7 @@ class Config(NestedDict):
     Use ctx.obj.config instead.
     """
 
-    _CORE_KEYS = ['hostname', 'quiet', 'format']
+    _CORE_KEYS = ['hostname', 'tenant', 'quiet', 'format']
 
     def __init__(self, path, config, raise_err=False):
         # pylint: disable=super-init-not-called
