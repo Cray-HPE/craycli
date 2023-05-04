@@ -126,9 +126,11 @@ Assuming you're using the .remote option for your module: (from the root of the 
 
 __Generate the swagger__
 
+Copy the new openapi.yaml file to the root of the repo.
+
 ```
 $> ./utils/devenv.sh
-bash-4.4$ nox -s swagger -- my_service_name
+bash-4.4$ nox -s generate -- my_service_name openapi.yaml
 nox > Running session swagger
 nox > Creating virtualenv using python3.6 in /work/.nox/swagger
 ... 
