@@ -31,7 +31,7 @@ pipeline {
                 docker {
                     label "metal-gcp-builder"
                     reuseNode true
-                    image "arti.dev.cray.com/dstbuildenv-docker-master-local/cray-sle15sp2_build_environment:latest"
+                    image "arti.hpc.amslabs.hpecorp.net/dstbuildenv-docker-master-local/cray-sle15sp2_build_environment:latest"
                     // Run as root
                     args "-u root"
                 }
@@ -48,7 +48,7 @@ pipeline {
                 docker {
                     label "metal-gcp-builder"
                     reuseNode true
-                    image "arti.dev.cray.com/dstbuildenv-docker-master-local/cray-sle15sp3_build_environment:latest"
+                    image "arti.hpc.amslabs.hpecorp.net/dstbuildenv-docker-master-local/cray-sle15sp3_build_environment:latest"
                     // Run as root
                     args "-u root"
                 }
