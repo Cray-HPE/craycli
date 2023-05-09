@@ -45,7 +45,7 @@ export VERSION := $(shell python3 -m setuptools_scm 2>/dev/null | tr -s '-' '~' 
 endif
 
 ifeq ($(VERSION),)
-$(error VERSION not set! Verify setuptools_scm[toml] is installed and try again.)
+$(warning VERSION not set! Verify setuptools_scm[toml] is installed and try again.)
 endif
 
 #############################################################################
@@ -123,6 +123,7 @@ help:
 	@echo '    help               	Show this help screen.'
 	@echo '    clean               	Remove build files.'
 	@echo
+	@echo '    image                Build and publish the swagger testing image.'
 	@echo '    rpm                	Build a YUM/SUSE RPM.'
 	@echo '    all 					Build all production artifacts.'
 	@echo
@@ -132,6 +133,10 @@ help:
 	@echo '    rpm_build            Builds the RPM.'
 	@echo '    rpm_build_source		Builds the SRPM.'
 	@echo '    rpm_package_source   Creates the RPM source tarball.'
+	@echo
+	@echo '    image_login   		Logs into the Docker registry for pulling and publishing images.'
+	@echo '    image_build   		Builds the swagger testing image.'
+	@echo '    image_publish   		Builds and publishes the testing image.'
 	@echo ''
 
 clean:
@@ -172,3 +177,18 @@ rpm_build:
 
 snyk:
 	$(MAKE) -s image | xargs --verbose -n 1 snyk container test
+
+#############################################################################
+# RPM targets
+#############################################################################
+
+image_login:
+	docker login artifactory.algol60.net
+
+image_build:
+	docker build -t artifactory.algol60.net/csm-docker/stable/craycli/swagger2openapi:latest utils/
+
+image_publish: image_build
+	docker push artifactory.algol60.net/csm-docker/stable/craycli/swagger2openapi:latest
+
+image: image_publish

@@ -59,7 +59,7 @@ cli = generate(__file__)
 """
 
     if len(session.posargs) != 2:
-        msg = 'Usage: nox -s generate -- [module name] [stash link to swagger]'
+        msg = 'Usage: nox -s generate -- [module name] [path to API file]'
         global ERROR_ON_GENERATE
         if ERROR_ON_GENERATE:
             raise Exception(msg)
@@ -81,7 +81,6 @@ cli = generate(__file__)
     cli_file = f'{module_path}/cli.py'
 
     is_local_file = os.path.exists(swagger_file)
-
 
     if not os.path.exists(module_path):
         os.makedirs(module_path)
@@ -107,7 +106,7 @@ cli = generate(__file__)
     convert_file(session, module_path, convert_file_name)
 
 
-@nox.session(python=None)
+@nox.session(python='3')
 def swagger(session):
     """Run each swagger file through the converter in case anything changed.
     This should be run before running unit tests"""
@@ -130,7 +129,7 @@ def swagger(session):
         swagger_file = None
         remote_file = None
         for f in files:
-            if f.startswith('swagger.'):
+            if f.startswith('swagger'):
                 swagger_file = f
                 break
             if f == '.remote':

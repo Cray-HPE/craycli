@@ -31,22 +31,26 @@ running with https, you need to set `OAUTHLIB_INSECURE_TRANSPORT=1` in your
 shell.
 
 Command:
+
 ```bash
 export OAUTHLIB_INSECURE_TRANSPORT=1
 cray config get core.hostname
 ```
 
 Output:
+
 ```text
 http://localhost:8080
 ```
 
 Command:
+
 ```bash
 cray mymodule things list
 ```
 
 Output:
+
 ```text
 []
 ```
@@ -59,8 +63,8 @@ To test against a real hardware system, build the source as a wheel and install
 in a virtual environment on the target system.
 
 ```bash
-pip install wheel
-python setup.py bdist_wheel
+python -m pip install build
+python -m build --wheel
 scp ./dist/cray-<version>.whl <target system>
 ssh <target system>
 python3 -m venv venv
@@ -86,70 +90,142 @@ nox -s tests cover
 
 ## Installation for Development
 
-For development, we recommend the container below or a virtualenv with python3:
+For development, we recommend a virtualenv with python3:
 
-```bash
-virtualenv -p python3 cli
-cd cli
-source bin/activate
-git clone https://github.com/Cray-HPE/craycli.git
-cd craycli
-python -m pip install .
-```
+> ***NOTE*** It is recommended to install the highest version of Python supported by the application \(e.g. Python 3.10\)
+> For MacOS users we recommend using [`pyenv`](https://github.com/pyenv/pyenv#homebrew-in-macos), which can be installed via
+> [Homebrew (`brew`)](https://brew.sh/). Using `pyenv` enables installing every version of Python there is, and avoids 
+> interactions with the system Python. For help using `pyenv`, see [setting up python](#setting-up-python).
 
-### Dev Container
+### Setting up Python
 
-We created a container that includes all dependencies required to run nox and
-develop for the cli:
+These steps are specific to MacOS. For other distros, please ask in the CrayCLI Slack channel.
 
-```bash
-git clone https://github.com/Cray-HPE/craycli.git
-cd craycli
-utils/devenv.sh
-```
+[`pyenv`](https://github.com/pyenv/pyenv) is a Python version manager for MacOS, it allows users to
+install multiple versions of Python. It is not recommended to use the system's Python, since it often requires root
+privileges and is a fragile dependency of the OS itself. `pyenv` installs Python versions into the user directory on
+the system, keeping the Python versions local to the user session.
+
+1. Install bew using the steps outlined on [Homebrew (`brew`)](https://brew.sh/)'s homepage.    
+
+1. Install `pyenv`, using the directions on their MacOS page [here](https://github.com/pyenv/pyenv#homebrew-in-macos).
+
+    > ***NOTE*** There are automatic installers mention on the linked page above.
+
+1. Open a new shell, and invoke `pyenv` to make sure it works.
+1. Install Python 3.10
+
+    ```bash
+    # Find latest Python 3.10
+    pyenv install -l | grep 3.10
+
+    pyenv install 3.10.10 # or w/e the latest one was
+    ```
+
+1. Install `virtualenv`
+
+    > ***NOTE*** Optionally you can run `pyenv global 3.10.10` and then `python -m pip install virtualenv`. The step below
+    > uses the installed path instead because not all users wnat to change their global Python version for their user account. 
+
+    ```bash
+    ~/.pyenv/versions/3.10.10/bin/python -m pip install virtualenv
+    ```
+
+1. Create a `virtualenv` for `craycli`
+
+    ```bash
+    mkdir -p ~/.virtualenvs
+    ~/.pyenv/versions/3.10.10/bin/python -m virtualenv ~/.virtualenvs/craycli
+    ```
+
+### Installing craycli
+
+1. Load the `virtualenv` (the example below uses the virtualenv created in [setting up python](#setting-up-python)).
+
+    ```bash
+    source ~/.virtualenvs/craycli/bin/activate
+    ```
+
+1. Clone `craycli` (if it isn't already cloned somewhere)
+
+    ```bash
+    git clone https://github.com/Cray-HPE/craycli.git
+    cd craycli
+    ```
+
+1. Install `craycli`
+
+    ```bash
+    python -m pip install .
+    cray --version
+    ```
 
 ## Building
 
-We are using pyinstaller to generate a binary and wrapping into an RPM.
-This is integrated into the DST jenkins pipeline.
+We are using `pyinstaller` to generate a binary, and then installing it on systems using an RPM.
 
 ## Bugs
 
-If you find a bug in the craycli framework, feel free to open a bug in the
-casmcloud project.  We'll triage it within a day or two.
+If you find a bug in the `craycli` framework, feel free to open a bug in the
+CASMCLOUD project.  We'll triage it within a day or two.
 [File Bug](https://github.com/Cray-HPE/craycli/issues/new)
 
 ## How to update your swagger
 
 Assuming you're using the .remote option for your module: (from the root of the forked project)
 
+#### Convert to Swagger
 
-__Generate the swagger__
+> ***NOTE*** Remember to activate your `virtualenv`, or create one following
+> [installation for development](#installation-for-development).
 
-```
-$> ./utils/devenv.sh
-bash-4.4$ nox -s swagger -- my_service_name
-nox > Running session swagger
-nox > Creating virtualenv using python3.6 in /work/.nox/swagger
-... 
-nox > Session swagger was successful.
-```
+- Install CI tools.
 
-__Run normal tests__
+    ```bash
+    python -m pip install .[ci]
+    ```
 
-```
-bash-4.4$ nox -s tests
-nox > Running session tests-2.7
-nox > Creating virtualenv using python2.7 in /work/.nox/tests-2-7
-nox > pip install --upgrade -r requirements-test.txt
-nox > pip install --upgrade -e .
-nox > py.test --quiet --cov=cray --cov=tests --cov-append --cov-config=.coveragerc --cov-report= --cov-fail-under=95 tests
-... [100%]
-Required test coverage of 95% reached. Total coverage: 95.60%
-460 passed in 110.78 seconds
-nox > Session tests-2.7 was successful.
-bash-4.4$ exit
-$>
-```
+- Generate swagger.
 
-If they pass open the PR and we’ll merge it asap.
+    ```bash
+    nox -s swagger -- my_service_name path/to/api/file
+    ```
+  
+    Potential output:
+
+    ```text
+    nox > Running session swagger
+    nox > Creating virtual environment (virtualenv) using python3 in .nox/swagger
+    nox > /bin/bash utils/convert.sh cray/modules/ims swagger3.json
+    ... 
+    Wrote /Users/rusty/gitstuffs/cray-shasta/craycli/cray/modules/my_service_name/swagger3.json
+    nox > Session swagger was successful.
+    ```
+
+#### Running `nox` (unit tests)
+
+- Install CI tools.
+
+    ```bash
+    python -m pip install .[ci]
+    ```
+
+- Run unit tests.
+
+    ```bash
+    nox -s tests
+    ```
+
+    Potential output:
+
+    ```text
+    nox > Running session tests
+    nox > Creating virtual environment (virtualenv) using python3 in .nox/tests
+    nox > python -m pip install '.[test]'
+    nox > python -m pip install .
+    nox > pytest --quiet --cov=cray --cov-append --cov-config=.coveragerc --cov-report= --cov-fail-under=85 cray
+    ... [100%]
+    Required test coverage of 85% reached. Total coverage: 91.83%
+    523 passed in 211.76s (0:03:31)
+    nox > Session tests was successful.
+    ```
