@@ -27,7 +27,6 @@
 
 import os
 import re
-import sys
 import click
 
 from cray.auth import AuthUsername
@@ -51,9 +50,12 @@ CONTEXT_SETTING = {
         'config': Config('', '', raise_err=False),
         'token': None,
         'auth': None
-    }, 'auto_envvar_prefix': NAME.upper()
+    },
+    'auto_envvar_prefix': NAME.upper(),
+    'help_option_names': ['-h', '--help'],
 }
 
+CONTEXT_SETTINGS = {}
 
 def rsa_required(config):
     """Get the value for 'auth.login.rsa_required' from the CLI
@@ -84,6 +86,7 @@ def rsa_required(config):
     context_settings=CONTEXT_SETTING
 )  # pragma: NO COVER
 @click.pass_context
+@click.version_option()
 def cli(ctx, *args, **kwargs):
     """ Cray management and workflow tool"""
     pass
@@ -212,17 +215,3 @@ def cli_cb(ctx, result, **kwargs):
     # Use click echo instead of our logging because we always want to echo
     # our results
     click.echo(format_result(result, ctx.obj['globals'].get('format')))
-
-
-if getattr(sys, 'frozen', False):
-    version = None
-    if '--version' in sys.argv:
-        # Only bother opening the file if actually asking for version
-        path = os.path.join(os.path.dirname(__file__), 'build_version')
-        if os.path.isfile(path):
-            with open(path, encoding='utf-8') as v:
-                version = v.read()
-    click.version_option(version)(cli)
-    cli(sys.argv[1:])
-else:
-    click.version_option()(cli)

@@ -67,21 +67,21 @@ The version is derived from Git by the `setuptools_scm` Python module.
 
     ```bash
     # Format       {tag}.post1.dev{distance}+{scm letter}{revision hash}
-    canu, version 1.6.28.post1.dev14+g818da8a
+    cray, version 1.6.28.post1.dev14+g818da8a
     ```
 
 - **(unstable/dev)** No distance and not clean; the build came from a commit that has a git-tag, and the repository had uncommitted changes.
 
     ```bash
     # Format       {tag}.dYYYYMMDD
-    canu, version 1.6.28.d20230123
+    cray, version 1.6.28.d20230123
     ```
 
 - **(unstable/dev)** Distance and not clean; the build came from one or more commits after a git-tag, and the repository had uncommitted changes.
 
     ```bash
     # Format       {tag}.post1.dev{distance}+{scm letter}{revision hash}.dYYYYMMDD
-    canu, version 1.6.28.post1.dev3+g3071655.d20230123
+    cray, version 1.6.28.post1.dev3+g3071655.d20230123
     ```
 
 The `setuptools_scm` module is configured by `pyproject.toml`.
