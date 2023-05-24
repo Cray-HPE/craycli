@@ -27,6 +27,7 @@
 
 import os
 import re
+import sys
 import click
 
 from cray.auth import AuthUsername
@@ -43,7 +44,7 @@ from cray.echo import LOG_FORCE
 from cray.formatting import format_result
 from cray.utils import get_hostname
 
-CONTEXT_SETTING = {
+CONTEXT_SETTINGS = {
     'obj': {
         'config_dir': '',
         'globals': {},
@@ -55,7 +56,6 @@ CONTEXT_SETTING = {
     'help_option_names': ['-h', '--help'],
 }
 
-CONTEXT_SETTINGS = {}
 
 def rsa_required(config):
     """Get the value for 'auth.login.rsa_required' from the CLI
@@ -83,10 +83,9 @@ def rsa_required(config):
 @group(
     cls=GeneratedCommands,
     base_path=os.path.dirname(__file__),
-    context_settings=CONTEXT_SETTING
+    context_settings=CONTEXT_SETTINGS
 )  # pragma: NO COVER
 @click.pass_context
-@click.version_option()
 def cli(ctx, *args, **kwargs):
     """ Cray management and workflow tool"""
     pass
@@ -215,3 +214,11 @@ def cli_cb(ctx, result, **kwargs):
     # Use click echo instead of our logging because we always want to echo
     # our results
     click.echo(format_result(result, ctx.obj['globals'].get('format')))
+
+
+# Handle the usage of ``cli`` for Pyinstaller.
+if getattr(sys, 'frozen', False):
+    click.version_option()(cli)
+    cli(sys.argv[1:])
+else:
+    click.version_option()(cli)
