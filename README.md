@@ -30,7 +30,7 @@ needs of a CLI with the ability for each team to integrate their own endpoints.
 
 The CLI provides built in configurations (stored in ~/.config/cray), built-in
 authentication token stores (similar to AWS/GCP), and a built-in parser
-that can take a swagger file and generate CLI commands.
+that can take a Swagger file and generate CLI commands.
 
 ## Versioning
 
@@ -138,13 +138,13 @@ More information about versioning, see [version number construction][3].
 
 ## Environment variables
 
-By default the cli looks for files in `~/.config/cray` (OS agnostic).
+By default the CLI looks for files in `~/.config/cray` (OS agnostic).
 If a user would like to override this, it can be configured using a `CRAY_CONFIG_DIR`
 environment variable. Users can also pass command options using variables like
 `CRAY_[{module name}_, {group name}_, ...]{command name}_{option name}=value`
 
 For example, `CRAY_AUTH_LOGIN_USERNAME=ryan` can be used instead of
-`cray auth login --username=ryan`. These are command specific, and the above
+`cray auth login --username=ryan`. These are command-specific, and the above
 environment variable will not be used for any commands other than `cray auth login`.
 
 ## Configuration files
@@ -173,11 +173,11 @@ configuration name to use for each command.
 
 ### Creating alternate configurations
 
-If you have more than one system that you intend to work with, the cli can store multiple configuration files.  To create a second, third, or more, use `cray init --configuration mynewconfig`
+If you have more than one system that you intend to work with, the CLI can store multiple configuration files.  To create a second, third, or more, use `cray init --configuration mynewconfig`
 
 ## Roadmap Items
 
-THe Shasta CSM CLI has many opportunities for enhancements. Over the course of Phase 1 of the Open Sourcing of the CSM tooling we will be refining the roadmap and priorities for the tool. Please be sure to review this document on a periodic basis for new roadmap items, and the appropriate working group in the Cray/HPE OSS community for dicsussions of the future of the CLI and all other CSM components.
+THe Shasta CSM CLI has many opportunities for enhancements. Over the course of Phase 1 of the Open Sourcing of the CSM tooling we will be refining the roadmap and priorities for the tool. Please be sure to review this document on a periodic basis for new roadmap items, and the appropriate working group in the Cray/HPE OSS community for discussions of the future of the CLI and all other CSM components.
 
 High Priority Items:
 
@@ -188,7 +188,7 @@ Medium Priority Items:
 
 - Ask the api gateway what modules should be installed.
 - Advanced filters to ignore endpoints, etc.
-- Run the parsers at build time, allowing to link external swagger files (git).
+- Run the parsers at build time, allowing to link external Swagger files (git).
 - Create a functional test generator
 
 [1]: https://artifactory.algol60.net/artifactory/csm-rpms/hpe/unstable/sle-15sp4/craycli/

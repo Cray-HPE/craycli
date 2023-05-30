@@ -4,7 +4,7 @@
 
 Using the [Cray Service Generator](https://github.com/Cray-HPE/cray-generators)
 is the preferred method of integrating with the CLI. This will automatically
-take your swagger file and bootstrap a new CLI module from it, creating a pull
+take your Swagger file and bootstrap a new CLI module from it, creating a pull
 request into the CLI along the way. The only thing you need to do after this
 process is create functional tests and add them to your pull request.
 
@@ -170,7 +170,7 @@ If you find a bug in the `craycli` framework, feel free to open a bug in the
 CASMCLOUD project.  We'll triage it within a day or two.
 [File Bug](https://github.com/Cray-HPE/craycli/issues/new)
 
-## How to update your swagger
+## How to update your Swagger
 
 Assuming you're using the .remote option for your module: (from the root of the forked project)
 
@@ -185,7 +185,7 @@ Assuming you're using the .remote option for your module: (from the root of the 
     python -m pip install .[ci]
     ```
 
-- Generate swagger.
+- Generate Swagger.
 
     ```bash
     nox -s swagger -- my_service_name path/to/api/file

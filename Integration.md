@@ -1,32 +1,36 @@
 # Integrating modules
 
-Integrating an API with the CLI is a fairly easy process once you have a valid swagger file.
+Integrating an API with the CLI is a fairly easy process once you have a valid Swagger file.
 
-1. Fork this repository to make changes (Do not attempt to branch.  You do not have write permissions)
-1. Add your module and swagger file to the `cray/modules/` directory
-1. Run the swagger parser to convert from a swagger.yaml file to a json file and validate
+1. Fork this repository to make changes (Do not attempt to branch.  You do not have write permissions).
+1. Add your module and Swagger file to the `cray/modules/` directory.
+1. Run the Swagger parser to convert from a YAML Swagger file to a JSON file and validate it.
 
 See the [demo](demo.md) for what we showed the Compass group in Jan '19.
 
-We've provided a generator that will create a CLI from the stash URL of your swagger file:
+We've provided a generator that will create a CLI from the stash URL of your Swagger file:
 
-    pip3 install nox
-    nox -s generate -- [module name] [stash swagger url]
+```text
+pip3 install nox
+nox -s generate -- [module name] [Swagger URL]
+```
 
 I.e.
 
-    nox -s generate -- uas https://github.com/Cray-HPE/uan-mgr/blob/main/api/swagger.yaml
+```text
+nox -s generate -- uas https://github.com/Cray-HPE/uan-mgr/blob/main/api/swagger.yaml
+```
 
 *NOTE: The generator appends `?raw&at=refs%2Fheads%2Fmaster` to the passed in URL.
 You are required to use the master branch. For local development, you can pass a local
 file to the generate command. However, using remote files is highly encouraged when you open your pull request.*
 
-*NOTE: Support for anyOf/allOf/oneOf keywords in OpenAPI 3 has been added. All
+*NOTE: Support for `anyOf`/`allOf`/`oneOf` keywords in OpenAPI 3 has been added. All
 options under these keywords are added to the option list for the individual
 command that uses them. Any validation of required options must be done on the
 server side.
 
-This will create everything required to create a CLI from your swagger file. You can now making any customizations required. The above command is idempotent and will not overwrite any customizations you've made. Make sure you write a few functional tests for your CLI to ensure it is working as you expect.
+This will create everything required to create a CLI from your Swagger file. You can now making any customizations required. The above command is idempotent and will not overwrite any customizations you've made. Make sure you write a few functional tests for your CLI to ensure it is working as you expect.
 
 ### Why the manual parse to generate yet another file?
 
@@ -37,10 +41,9 @@ the fly for each module will be a big performance hit. The CLI needs to parse
 each module to get a list of commands when it runs. We want to optimize this
 as much as possible.
 
-
 ### Notes on user experience
 
-We encourage all integrators to use our swagger file parser to automatically
+We encourage all integrators to use our Swagger file parser to automatically
 generate your CLI module. This will automatically create CLI commands based on
 your REST endpoints and add options/arguments based on the payload.
 
@@ -52,11 +55,11 @@ That said, we understand there are scenarios where complex APIs are required or
 manually creating CLI commands is needed. If this is the case for you please carefully
 read the documentation below.
 
-
-## Basic Example
+## Basic example
 
 An example of your cli.py will look like this:
 
+```python
     from cray.generator import generate
     from cray.core import echo
 
@@ -72,12 +75,14 @@ An example of your cli.py will look like this:
 
 
     # Pass in the CLI group you want the commands to be added to, the directory
-    # where you module lives, the name of your parsed swagger file, and an
+    # where you module lives, the name of your parsed Swagger file, and an
     # optional callback.
     cli = generate(__file__, callback=cb)
+```
 
-## Advanced Example
+## Advanced example
 
+```python
     from cray.generator import generate
     from cray.core import argument, option, echo
 
@@ -94,14 +99,15 @@ An example of your cli.py will look like this:
         if shout:
             resp = '{}!!'.format(resp.upper())
         return resp
+```
 
 ## Guidelines
 
-The CLI is an internal standard that controls how users interact with a cray system.  It makes a few assumptions about the services it is calling.  Because it is just one client and not the only possible client, services may choose to implement more sophisticated strctures than are currently supported by the CLI.  The CLI will adhere to these guidelines when making calls to services.
+The CLI is an internal standard that controls how users interact with a Cray system.  It makes a few assumptions about the services it is calling.  Because it is just one client and not the only possible client, services may choose to implement more sophisticated strctures than are currently supported by the CLI.  The CLI will adhere to these guidelines when making calls to services.
 
 ### Supported CLI MIME types
 
-```
+```text
    'application/json'
    'application/x-www-form-urlencoded'
    'application/octet-stream'
@@ -112,10 +118,10 @@ The CLI is an internal standard that controls how users interact with a cray sys
 
 For all intents and purposes, `cray.argument` and `cray.option` acts just like
 [`click.argument`](https://click.palletsprojects.com/en/7.x/arguments/) and [`click.option`](https://click.palletsprojects.com/en/7.x/options/), with one caveat. All options within
-the cray cli can have a default value defined within a configuration file. When you add an
+the Cray CLI can have a default value defined within a configuration file. When you add an
 option to a command, the framework will first attempt to find a default value from
 the configuration file before using the options `default` variable. This is why
-it is so important to only use parameters on `cray.commands`, as configuration files
+it is so important to only use parameters on `cray.commands`, because configuration files
 are not loaded until just before the command is called. Note: default values are only
 used if the option is not provided in the command.
 
@@ -141,7 +147,7 @@ they can quickly get out of hand. We recommend only using short names for option
     - PUT/PATCH: `update`
     - DELETE: `delete`
 
-### API Tags
+### API tags
 
 craycli has the ability to parse API tags to add additional functionality 
 that is only for CLI interactions. The following tags are available:
@@ -159,25 +165,28 @@ everything, continue?"
 
 Note: Tags that craycli does not recognize are ignored by the CLI.
 
-#### Usage Example
+#### Usage example
 
 The tags need to be placed on the API calls themselves, not at the top level. 
 
 Example of **cli_danger** with the optional message:
 
+```yaml
 	/uais:
       delete:
         tags:
         - "cli_danger$This will delete all running UAIs, Are you sure?"
         summary: "Delete all UAIs on the system"
+```
       
 Example of **cli_ignore**:
-	
+
+```yaml
 	/:
 	  get:
 	    tags:
 		 - "cli_ignore"
-
+```
 
 ## Non-REST functionality
 
@@ -186,28 +195,29 @@ nice features like configuration files and global options, we've had to extend
 some of their capabilities. This adds some caveats you need to know when
 developing.
 
-1. Always use cray provided decorators and classes, try to avoid using click directly
+1. Always use Cray-provided decorators and classes, try to avoid using click directly
 2. Only add arguments and options to commands, never groups[\*](#Note)
 3. Be very careful when doing anything within a group function[\*](#Note)
 4. Assume argument/options/globals can change up until the point your command function is called[\*](#Note)
-5. Use `cray.echo` for any information that can be omitted with a `--quiet`, your command should `return` your final data, whether it is text or a dict. The CLI will automatically format a returned `dict` based on the `--format` option. The returned `dict` needs to be json serializable.
+5. Use `cray.echo` for any information that can be omitted with a `--quiet`. Your command should `return` your final data, whether it is text or a dict. The CLI will automatically format a returned `dict` based on the `--format` option. The returned `dict` needs to be JSON serializable.
 
 ### Note
 
-\* We had to make some concessions in order to have a configuration file with
+We had to make some concessions in order to have a configuration file with
 automatic defaults as well as global options. Since a `--configuration` option
 is automatically added to each command, we don't load configuration files
 until right before the command is called. It's the first parameter to be handled
 for a command. Users can add default values for ANY parameter. This means
-that the loading goes:
+that the loading happens in the following order:
 
-    - Group level parameters loaded and group function called
-    - Load configuration file (based on envvar, configuration option, or default)
-    - All other parameters are loaded, default value goes in this order:
-            - Check global variables
-            - Check configuration file
-            - Check if parameter provided a default value
-            - Return None
+1. Group level parameters loaded and group function called
+2. Load configuration file (based on envvar, configuration option, or default)
+3. All other parameters are loaded, default value goes in this order:
+  1. Check global variables
+  2. Check configuration file
+  3. Check if parameter provided a default value
+  4. Return `None`
 
 As you can see, putting anything in a group level function can be called
 BEFORE the configuration file is loaded and global variables are set.
+
