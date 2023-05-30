@@ -37,6 +37,7 @@ info:
 
     ### Create a New Session
 
+
     #### GET /sessiontemplate
 
     List available session templates.
@@ -72,10 +73,9 @@ info:
     to uniquely identify a session in for the /session/{session_id}
     endpoint.
 
-
     #### GET /session/{session_id}
 
-    Get session details by session id.
+    Get session details by session ID.
 
     List all in progress and completed sessions.
 
@@ -87,9 +87,7 @@ info:
     and if *enable_cfs* is true then
     BOS will invoke CFS to configure the compute nodes.
 
-
-    All boot images specified via the session template, must be available via IMS.
-
+    All boot images specified via the session template must be available via IMS.
 
 servers:
 - url: https://api-gw-service-nmn.local/apis/bos
@@ -112,11 +110,14 @@ components:
       type: object
       properties:
         major:
-          type: integer
+          type: string
+          pattern: '^(0|[1-9][0-9]*)$'
         minor:
-          type: integer
+          type: string
+          pattern: '^(0|[1-9][0-9]*)$'
         patch:
-          type: integer
+          type: string
+          pattern: '^(0|[1-9][0-9]*)$'
         links:
           type: array
           items:
@@ -127,14 +128,14 @@ components:
       type: object
       properties:
         type:
-          description:
+          description: |
             Relative URI reference to the type of problem which includes human
             readable documentation.
           type: string
           format: uri
           default: "about:blank"
         title:
-          description:
+          description: |
             Short, human-readable summary of the problem, should not change by
             occurrence.
           type: string
@@ -143,12 +144,13 @@ components:
           type: integer
           example: 400
         instance:
-          description: A relative URI reference that identifies the specific
-            occurrence of the problem
+          description: |
+            A relative URI reference that identifies the specific occurrence of
+            the problem
           format: uri
           type: string
         detail:
-          description:
+          description: |
             A human-readable explanation specific to this occurrence of the
             problem. Focus on helping correct the problem, rather than giving
             debugging information.
@@ -158,9 +160,9 @@ components:
       description: Link to other resources
       type: object
       properties:
-        rel:
-          type: string
         href:
+          type: string
+        rel:
           type: string
       additionalProperties: false
     # V1
@@ -182,7 +184,7 @@ components:
         commit:
           type: string
           description: |
-            The commit id of the configuration that you want to
+            The commit ID of the configuration that you want to
             apply to the nodes. Mutually exclusive with branch. (DEPRECATED)
         playbook:
           type: string
@@ -194,42 +196,56 @@ components:
           description: |
             The name of configuration to be applied.
       additionalProperties: false
+    V1CompleteMetadata:
+      type: boolean
+      description: Is the object's status complete
+      example: true
+    V1ErrorCountMetadata:
+      type: integer
+      description: How many errors were encountered
+      example: 0
+    V1InProgressMetadata:
+      type: boolean
+      description: Is the object still doing something
+      example: false
+    V1StartTimeMetadata:
+      type: string
+      description: The start time
+      example: "2020-04-24T12:00"
+    V1StopTimeMetadata:
+      type: string
+      description: The stop time
+      example: "2020-04-24T12:00"
     V1GenericMetadata:
       type: object
       description: |
         The status metadata
       properties:
-        start_time:
-          type: string
-          description: |
-            The start time
-          example: "2020-04-24T12:00"
-        stop_time:
-          type: string
-          description: |
-            The stop time
-          example: "2020-04-24T12:00"
         complete:
-          type: boolean
-          description: |
-            Is the object's status complete
-          example: true
-        in_progress:
-          type: boolean
-          description: |
-            Is the object still doing something
-          example: false
+          $ref: '#/components/schemas/V1CompleteMetadata'
         error_count:
-          type: integer
-          description: |
-            How many errors were encountered
-          example: 0
+          $ref: '#/components/schemas/V1ErrorCountMetadata'
+        in_progress:
+          $ref: '#/components/schemas/V1InProgressMetadata'
+        start_time:
+          $ref: '#/components/schemas/V1StartTimeMetadata'
+        stop_time:
+          $ref: '#/components/schemas/V1StopTimeMetadata'
       additionalProperties: false
     V1NodeList:
       type: array
+      description: |
+        A list of node xnames.
       items:
         type: string
         example: ["x3000c0s19b1n0", "x3000c0s19b2n0"]
+    V1PhaseCategoryName:
+      type: string
+      description: |
+        Name of the Phase Category
+        not_started, in_progress, succeeded, failed, or excluded
+      example: "Succeeded"
+      pattern: '^([nN][oO][tT]_[sS][tT][aA][rR][tT][eE][dD]|[iI][nN]_[pP][rR][oO][gG][rR][eE][sS][sS]|[sS][uU][cC][cC][eE][eE][dD][eE][dD]|[fF][aA][iI][lL][eE][dD]|[eE][xX][cC][lL][uU][dD][eE][dD])$'
     V1PhaseCategoryStatus:
       type: object
       description: |
@@ -241,11 +257,7 @@ components:
 
       properties:
         name:
-          type: string
-          description: |
-            Name of the Phase Category
-          example: "Succeeded"
-          pattern: '^(?i)not_started|in_progress|succeeded|failed|excluded$'
+          $ref: '#/components/schemas/V1PhaseCategoryName'
         node_list:
           $ref: '#/components/schemas/V1NodeList'
     V1PhaseStatus:
@@ -263,8 +275,9 @@ components:
           type: string
           description: |
             Name of the Phase
+            boot, configure, or shutdown
           example: "Boot"
-          pattern: '^(?i)boot|configure|shutdown$'
+          pattern: '^([bB][oO][oO][tT]|[cC][oO][nN][fF][iI][gG][uU][rR][eE]|[sS][hH][uU][tT][dD][oO][wW][nN])$'
         metadata:
           $ref: '#/components/schemas/V1GenericMetadata'
         categories:
@@ -273,6 +286,11 @@ components:
             $ref: '#/components/schemas/V1PhaseCategoryStatus'
         errors:
           $ref: '#/components/schemas/V1NodeErrorsList'
+    V1SessionId:
+      type: string
+      description: Unique BOS v1 session identifier.
+      format: uuid
+      example: "8deb0746-b18c-427c-84a8-72ec6a28642c"
     V1BootSetStatus:
       type: object
       description: |
@@ -290,9 +308,7 @@ components:
           description: Name of the Boot Set
           example: "Boot-Set"
         session:
-          type: string
-          description: Session ID
-          example: "Session-ID"
+          $ref: '#/components/schemas/V1SessionId'
         metadata:
           $ref: '#/components/schemas/V1GenericMetadata'
         phases:
@@ -323,8 +339,7 @@ components:
              type: string
            minItems: 1
         id:
-          type: string
-          description: Session ID
+          $ref: '#/components/schemas/V1SessionId'
         links:
           type: array
           items:
@@ -363,7 +378,7 @@ components:
         type:
           type: string
           description: |
-            The mime type of the metadata describing the components of the boot image. This type controls how BOS processes the path attribute.
+            The MIME type of the metadata describing the components of the boot image. This type controls how BOS processes the path attribute.
         etag:
           type: string
           description: |
@@ -375,9 +390,9 @@ components:
         network:
           type: string
           description: |
-            The network over which the node will boot from.
+            The network over which the node will boot.
             Choices:  NMN -- Node Management Network
-            pattern: '^(?i)nmn$'
+          pattern: '^[nN][mM][nN]$'
         node_list:
           type: array
           items:
@@ -435,10 +450,14 @@ components:
             template parameters.
         name:
           type: string
-          description: Name of the SessionTemplate. The length of the name is restricted to 45 characters.
+          description: |
+            Name of the Session Template.
+            
+            It is recommended to use names which meet the following restrictions:
+            * Length of 1-45 characters.
+            * Use only lowercase letters, digits, periods (.), and dashes (-).
+            * Begin and end with a letter or digit.
           example: "cle-1.0.0"
-          minLength: 1
-          pattern: "[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*"
         description:
           type: string
           description: |
@@ -475,9 +494,111 @@ components:
             $ref: '#/components/schemas/Link'
       required: [name]
       additionalProperties: false
+    V1BoaKubernetesJob:
+      type: string
+      maxLength: 64
+      readOnly: true
+      description: The identity of the Kubernetes job that is created to handle the session.
+      example: "boa-07877de1-09bb-4ca8-a4e5-943b1262dbf0"
+    V1Operation:
+      type: string
+      description: >
+        A Session represents an operation on a SessionTemplate.
+        The creation of a session effectively results in the creation
+        of a Kubernetes Boot Orchestration Agent (BOA) job to perform the
+        duties required to complete the operation.
+
+        Operation -- An operation to perform on nodes in this session.
+
+            Boot         Boot nodes that are off.
+
+            Configure    Reconfigure the nodes using the Configuration Framework
+                         Service (CFS).
+
+            Reboot       Gracefully power down nodes that are on and then power
+                         them back up.
+
+            Shutdown     Gracefully power down nodes that are on.
+
+      pattern: '^([bB][oO][oO][tT]|[cC][oO][nN][fF][iI][gG][uU][rR][eE]|[rR][eE][bB][oO][oO][tT]|[sS][hH][uU][tT][dD][oO][wW][nN])$'
+      example: "boot"
+    V1TemplateName:
+       type: string
+       description: The name of the Session Template
+       example: "my-session-template"
+    V1TemplateUuid:
+      type: string
+      description: DEPRECATED - use templateName. This field is ignored if templateName is also set.
+      example: "my-session-template"
+    V1SessionLink:
+      description: Link to other resources
+      type: object
+      properties:
+        href:
+          type: string
+        jobId:
+          $ref: '#/components/schemas/V1BoaKubernetesJob'
+        rel:
+          type: string
+          enum: ['session', 'status']
+        type:
+          type: string
+          enum: ['GET']
+      additionalProperties: false
+    V1SessionStatusUri:
+      type: string
+      description: URI to the status for this session
+      format: uri
+      example: "/v1/session/90730844-094d-45a5-9b90-d661d14d9444/status"
+    V1SessionDetails:
+      description: Details about a Session.
+      type: object
+      properties:
+        complete:
+          $ref: '#/components/schemas/V1CompleteMetadata'
+        error_count:
+          $ref: '#/components/schemas/V1ErrorCountMetadata'
+        in_progress:
+          $ref: '#/components/schemas/V1InProgressMetadata'
+        job:
+          $ref: '#/components/schemas/V1BoaKubernetesJob'
+        operation:
+          $ref: '#/components/schemas/V1Operation'
+        start_time:
+          $ref: '#/components/schemas/V1StartTimeMetadata'
+        status_link:
+          $ref: '#/components/schemas/V1SessionStatusUri'
+        stop_time:
+          $ref: '#/components/schemas/V1StopTimeMetadata'
+        templateName:
+          $ref: '#/components/schemas/V1TemplateName'
+    V1SessionDetailsByTemplateUuid:
+      description: |
+        Details about a Session using templateUuid instead of templateName.
+        DEPRECATED -- these will only exist from sessions created before templateUuid was deprecated.
+      type: object
+      properties:
+        complete:
+          $ref: '#/components/schemas/V1CompleteMetadata'
+        error_count:
+          $ref: '#/components/schemas/V1ErrorCountMetadata'
+        in_progress:
+          $ref: '#/components/schemas/V1InProgressMetadata'
+        job:
+          $ref: '#/components/schemas/V1BoaKubernetesJob'
+        operation:
+          $ref: '#/components/schemas/V1Operation'
+        start_time:
+          $ref: '#/components/schemas/V1StartTimeMetadata'
+        status_link:
+          $ref: '#/components/schemas/V1SessionStatusUri'
+        stop_time:
+          $ref: '#/components/schemas/V1StopTimeMetadata'
+        templateName:
+          $ref: '#/components/schemas/V1TemplateName'
     V1Session:
       description: |
-        A Session object
+        A Session object specified by templateName
 
         ## Link Relationships
 
@@ -485,43 +606,13 @@ components:
       type: object
       properties:
         operation:
-          type: string
-          description: >
-            A Session represents an operation on a SessionTemplate.
-            The creation of a session effectively results in the creation
-            of a Kubernetes Boot Orchestration Agent (BOA) job to perform the
-            duties required to complete the operation.
-
-            Operation -- An operation to perform on nodes in this session.
-
-                Boot         Boot nodes that are off.
-
-                Configure    Reconfigure the nodes using the Configuration Framework
-                             Service (CFS).
-
-                Reboot       Gracefully power down nodes that are on and then power
-                             them back up.
-
-                Shutdown     Gracefully power down nodes that are on.
-
-          pattern: '^(?i)boot|configure|reboot|shutdown$'
+          $ref: '#/components/schemas/V1Operation'
         templateUuid:
-          type: string
-          description: DEPRECATED - use templateName
-          example: "my-session-template"
-          format: string
+          $ref: '#/components/schemas/V1TemplateUuid'
         templateName:
-          type: string
-          description: The name of the Session Template
-          example: "my-session-template"
-          format: string
+          $ref: '#/components/schemas/V1TemplateName'
         job:
-          type: string
-          maxLength: 64
-          readOnly: true
-          description: >
-            The identity of the Kubernetes job that is created to handle the session.
-          example: "boa-07877de1-09bb-4ca8-a4e5-943b1262dbf0"
+          $ref: '#/components/schemas/V1BoaKubernetesJob'
         limit:
           type: string
           description: >
@@ -532,9 +623,44 @@ components:
           type: array
           readOnly: true
           items:
-            $ref: '#/components/schemas/Link'
-      required: [operation]
+            $ref: '#/components/schemas/V1SessionLink'
+      required: [operation, templateName]
       additionalProperties: false
+    V1SessionByTemplateUuid:
+      description: |
+        A Session object specified by templateUuid (DEPRECATED -- use templateName)
+
+        ## Link Relationships
+
+        * self : The session object
+      type: object
+      properties:
+        operation:
+          $ref: '#/components/schemas/V1Operation'
+        templateUuid:
+          $ref: '#/components/schemas/V1TemplateUuid'
+        job:
+          $ref: '#/components/schemas/V1BoaKubernetesJob'
+        limit:
+          type: string
+          description: >
+            A comma-separated of nodes, groups, or roles to which the session
+            will be limited. Components are treated as OR operations unless
+            preceded by "&" for AND or "!" for NOT.
+        links:
+          type: array
+          readOnly: true
+          items:
+            $ref: '#/components/schemas/V1SessionLink'
+      required: [operation, templateUuid]
+      additionalProperties: false
+    V1PhaseName:
+      type: string
+      description: |
+        The phase that this data belongs to (boot, shutdown, or configure). If blank,
+        it belongs to the Boot Set itself, which only applies to the GenericMetadata type.
+      example: "Boot"
+      pattern: '^($|[sS][hH][uU][tT][dD][oO][wW][nN]$|[bB][oO][oO][tT]$|[cC][oO][nN][fF][iI][gG][uU][rR][eE]$)'
     V1NodeChangeList:
       type: object
       description: |
@@ -542,14 +668,11 @@ components:
         one category to another within a phase.
       properties:
         phase:
-          type: string
-          example: "Boot"
+          $ref: '#/components/schemas/V1PhaseName'
         source:
-          type: string
-          example: "in_progress"
+          $ref: '#/components/schemas/V1PhaseCategoryName'
         destination:
-          type: string
-          example: "Succeeded"
+          $ref: '#/components/schemas/V1PhaseCategoryName'
         node_list:
           $ref: '#/components/schemas/V1NodeList'
       additionalProperties: false
@@ -572,14 +695,10 @@ components:
         properties:
           update_type:
             description: The type of update data
-            pattern: "NodeChangeList"
+            pattern: '^NodeChangeList$'
             type: string
           phase:
-            description: |
-              The phase that this data belongs to. If  blank, it belongs to
-              the Boot Set itself, which only applies to the GenericMetadata type.
-            pattern: "(?i)shutdown|boot|configure"
-            type: string
+            $ref: '#/components/schemas/V1PhaseName'
           data:
             $ref: '#/components/schemas/V1NodeChangeList'
     V1UpdateRequestNodeErrorsList:
@@ -592,14 +711,10 @@ components:
         properties:
           update_type:
             description: The type of update data
-            pattern: "NodeErrorsList"
+            pattern: '^NodeErrorsList$'
             type: string
           phase:
-            description: |
-              The phase that this data belongs to. If  blank, it belongs to
-              the Boot Set itself, which only applies to the GenericMetadata type.
-            pattern: "(?i)shutdown|boot|configure"
-            type: string
+            $ref: '#/components/schemas/V1PhaseName'
           data:
             $ref: '#/components/schemas/V1NodeErrorsList'
     V1UpdateRequestGenericMetadata:
@@ -612,14 +727,10 @@ components:
         properties:
           update_type:
             description: The type of update data
-            pattern: "GenericMetadata"
+            pattern: '^GenericMetadata$'
             type: string
           phase:
-            description: |
-              The phase that this data belongs to. If the phase is boot_set, it belongs to
-              the Boot Set itself, which only applies to the GenericMetadata type.
-            pattern: '(?i)shutdown|boot|configure|boot_set'
-            type: string
+            $ref: '#/components/schemas/V1PhaseName'
           data:
             $ref: '#/components/schemas/V1GenericMetadata'
     # V2
@@ -652,12 +763,14 @@ components:
       properties:
         name:
           type: string
-          description: Name of the SessionTemplate. The length of the name is restricted to 45 characters.
+          description: |
+            Name of the Session Template.
+            
+            It is recommended to use names which meet the following restrictions:
+            * Length of 1-45 characters.
+            * Use only lowercase letters, digits, periods (.), and dashes (-).
+            * Begin and end with a letter or digit.
           example: "cle-1.0.0"
-          # These validation parameters are restricted by Kubernetes naming conventions.
-          minLength: 1
-          maxLength: 45
-          pattern: "[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*"
           readOnly: true
         description:
           type: string
@@ -681,11 +794,6 @@ components:
           items:
             $ref: '#/components/schemas/Link'
       additionalProperties: false
-    V2SessionTemplateArray:
-      description: An array of session templates.
-      type: array
-      items:
-        $ref: '#/components/schemas/V2SessionTemplate'
     V2SessionTemplateValidation:
       description: |
         Message describing errors or incompleteness in a Session Template.
@@ -720,7 +828,6 @@ components:
           type: string
           description: The name of the Session Template
           example: "my-session-template"
-          format: string
         limit:
           type: string
           description: >
@@ -732,6 +839,11 @@ components:
           description: >
             Set to stage a session which will not immediately change the state of any components.
             The "applystaged" endpoint can be called at a later time to trigger the start of this session.
+          default: false
+        include_disabled:
+          type: boolean
+          description: >
+            Set to include nodes that have been disabled as indicated in the Hardware State Manager (HSM)
           default: false
       required: [operation, template_name]
       additionalProperties: false
@@ -780,7 +892,7 @@ components:
         type:
           type: string
           description: |
-            The mime type of the metadata describing the components of the boot image. This type controls how BOS processes the path attribute.
+            The MIME type of the metadata describing the components of the boot image. This type controls how BOS processes the path attribute.
         etag:
           type: string
           description: |
@@ -852,7 +964,6 @@ components:
           type: string
           description: The name of the Session Template
           example: "my-session-template"
-          format: string
         limit:
           type: string
           description: >
@@ -870,6 +981,10 @@ components:
             A comma-separated list of nodes, representing the initial list of nodes
             the session should operate against.  The list will remain even if
             other sessions have taken over management of the nodes.
+        include_disabled:
+          type: boolean
+          description: >
+            Set to include nodes that have been disabled as indicated in the Hardware State Manager (HSM)
         status:
           $ref: '#/components/schemas/V2SessionStatus'
       additionalProperties: false
@@ -884,19 +999,19 @@ components:
         Detailed information on the phases of a session.
       properties:
         percent_complete:
-          type: number 
+          type: number
           description: |
             The percent of components currently in a completed/stable state
         percent_powering_on:
-          type: number 
+          type: number
           description: |
             The percent of components currently in the powering-on phase
         percent_powering_off:
-          type: number 
+          type: number
           description: |
             The percent of components currently in the powering-off phase
         percent_configuring:
-          type: number 
+          type: number
           description: |
             The percent of components currently in the configuring phase
       additionalProperties: false
@@ -935,19 +1050,19 @@ components:
         phases:
           $ref: '#/components/schemas/V2SessionExtendedStatusPhases'
         percent_successful:
-          type: number 
+          type: number
           description: |
             The percent of components currently in a successful state
         percent_failed:
-          type: number 
+          type: number
           description: |
             The percent of components currently in a failed state
         percent_staged:
-          type: number 
+          type: number
           description: |
             The percent of components currently still staged for this session
         error_summary:
-          type: object 
+          type: object
           description: |
             A summary of the errors currently listed by all components
         timing:
@@ -978,7 +1093,7 @@ components:
         bss_token:
           type: string
           description: >
-            A token received from the node identifying the boot artifacts. 
+            A token received from the node identifying the boot artifacts.
             For BOS use-only, users should not set this field. It will be overwritten.
         last_updated:
           type: string
@@ -1000,7 +1115,7 @@ components:
         bss_token:
           type: string
           description: >
-            A token received from BSS identifying the boot artifacts. 
+            A token received from BSS identifying the boot artifacts.
             For BOS use-only, users should not set this field. It will be overwritten.
         last_updated:
           type: string
@@ -1084,7 +1199,7 @@ components:
       properties:
         id:
           type: string
-          description: The component's id. e.g. xname for hardware components
+          description: The component's ID. e.g. xname for hardware components
         actual_state:
           $ref: '#/components/schemas/V2ComponentActualState'
         desired_state:
@@ -1185,7 +1300,7 @@ components:
           description: The maximum amount of time a component's actual state is considered valid (in hours). 0h disables cleanup behavior for newly booted nodes and instructs bos-state-reporter to report once instead of periodically.
         disable_components_on_completion:
           type: boolean
-          description: Allows for BOS components to be marked as disabled after a session has been completed. If false, BOS will continue to maintain the state of the nodes declaratively, even after a session finishes. 
+          description: Allows for BOS components to be marked as disabled after a session has been completed. If false, BOS will continue to maintain the state of the nodes declaratively, even after a session finishes.
         discovery_frequency:
           type: integer
           description: How frequently the BOS discovery agent syncs new components from HSM. (in seconds)
@@ -1209,6 +1324,14 @@ components:
           description: The default maximum number attempts per node for failed actions.
           example: 1
       additionalProperties: true
+    # Schemas that combine objects of different versions
+    SessionTemplateArray:
+      description: An array of session templates.
+      type: array
+      items:
+        anyOf:
+          - $ref: '#/components/schemas/V1SessionTemplate'
+          - $ref: '#/components/schemas/V2SessionTemplate'
   requestBodies:
     V2sessionCreateRequest:
       description: The information to create a session
@@ -1283,12 +1406,20 @@ components:
     ResourceDeleted:
       description: The resource was deleted.
     # V1
+    V1Session:
+      description: Session
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/V1Session'
     V1SessionDetails:
       description: Session details
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/V1Session'
+            oneOf:
+              - $ref: '#/components/schemas/V1SessionDetails'
+              - $ref: '#/components/schemas/V1SessionDetailsByTemplateUuid'
     V1SessionStatus:
       description: A list of Boot Set Statuses and metadata
       content:
@@ -1308,12 +1439,6 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/V2SessionTemplate'
-    V2SessionTemplateDetailsArray:
-      description: Session template details
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/V2SessionTemplateArray'
     V2SessionTemplateValidation:
       description: Session template validity details
       content:
@@ -1327,7 +1452,7 @@ components:
           schema:
             $ref: '#/components/schemas/V2Session'
     V2SessionDetailsArray:
-      description: Session details
+      description: Session details array
       content:
         application/json:
           schema:
@@ -1362,7 +1487,28 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/V2Options'
+    # Responses that may contain V1 or V2 objects
+    SessionTemplateDetails:
+      description: Session template details
+      content:
+        application/json:
+          schema:
+            anyOf:
+              - $ref: '#/components/schemas/V1SessionTemplate'
+              - $ref: '#/components/schemas/V2SessionTemplate'
+    SessionTemplateDetailsArray:
+      description: Session template details array
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SessionTemplateArray'
     # Errors
+    AlreadyExists:
+      description: The resource to be created already exists
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
     BadRequest:
       description: Bad Request
       content:
@@ -1371,6 +1517,12 @@ components:
             $ref: '#/components/schemas/ProblemDetails'
     ResourceNotFound:
       description: The resource was not found.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+    UpdateConflict:
+      description: The update was not allowed due to a conflict.
       content:
         application/problem+json:
           schema:
@@ -1397,7 +1549,13 @@ paths:
       x-openapi-router-controller: bos.server.controllers.base
       responses:
         200:
-          $ref: '#/components/responses/Version'
+          description: A collection of Versions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Version'
 # See Version guidance is in
 # https://connect.us.cray.com/confluence/display/SMA/Shasta+RESTful+Service+Design#ShastaRESTfulServiceDesign-Versioning
 #
@@ -1405,6 +1563,7 @@ paths:
   /v1:
     get:
       summary: Get API version
+      description: Return the API version
       tags:
         - version
       x-openapi-router-controller: bos.server.controllers.v1.base
@@ -1421,8 +1580,7 @@ paths:
         - healthz
       x-openapi-router-controller: bos.server.controllers.v1.healthz
       operationId: v1_get_healthz
-      description:
-        Get bos health details.
+      description: Get BOS health details.
       responses:
         200:
           $ref: '#/components/responses/ServiceHealth'
@@ -1437,8 +1595,7 @@ paths:
         - sessiontemplate
       x-openapi-router-controller: bos.server.controllers.v1.sessiontemplate
       operationId: create_v1_sessiontemplate
-      description:
-        Create a new session template.
+      description: Create a new session template.
       requestBody:
          description: A JSON object for creating a session template
          required: true
@@ -1447,7 +1604,7 @@ paths:
              schema:
                $ref: '#/components/schemas/V1SessionTemplate'
       responses:
-        200:
+        201:
           $ref: '#/components/responses/V1SessionTemplateDetails'
         400:
           $ref: '#/components/responses/BadRequest'
@@ -1462,13 +1619,7 @@ paths:
       operationId: get_v1_sessiontemplates
       responses:
         200:
-          description: A collection of SessionTemplates
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/V1SessionTemplate'
+          $ref: '#/components/responses/SessionTemplateDetailsArray'
   /v1/sessiontemplate/{session_template_id}:
     parameters:
       - name: session_template_id
@@ -1478,10 +1629,10 @@ paths:
         schema:
           type: string
     get:
-      summary: Get session template by id
+      summary: Get session template by ID
       description: |
-        Get session template by session_template_id.
-        The session_template_id corresponds to the *name*
+        Get session template by session template ID.
+        The session template ID corresponds to the *name*
         of the session template.
       tags:
         - sessiontemplate
@@ -1489,7 +1640,7 @@ paths:
       operationId: get_v1_sessiontemplate
       responses:
         200:
-          $ref: '#/components/responses/V1SessionTemplateDetails'
+          $ref: '#/components/responses/SessionTemplateDetails'
         404:
           $ref: '#/components/responses/ResourceNotFound'
     delete:
@@ -1535,33 +1686,37 @@ paths:
          content:
            application/json:
              schema:
-               $ref: '#/components/schemas/V1Session'
+               oneOf:
+                 - $ref: '#/components/schemas/V1Session'
+                 - $ref: '#/components/schemas/V1SessionByTemplateUuid'
       responses:
-        200:
-          $ref: '#/components/responses/V1SessionDetails'
+        201:
+          $ref: '#/components/responses/V1Session'
         400:
           $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/ResourceNotFound'
     get:
-      summary: List sessions
+      summary: List session IDs
       description: |
-        List all sessions, including those in progress and those complete.
+        List IDs of all sessions, including those in progress and those complete.
       tags:
         - session
       x-openapi-router-controller: bos.server.controllers.v1.session
       operationId: get_v1_sessions
       responses:
         200:
-          description: A collection of Sessions
+          description: A collection of Session IDs
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/V1Session'
+                  $ref: '#/components/schemas/V1SessionId'
   /v1/session/{session_id}:
     get:
-      summary: Get session details by id
-      description: Get session details by session_id.
+      summary: Get session details by ID
+      description: Get session details by session ID.
       tags:
         - session
       x-openapi-router-controller: bos.server.controllers.v1.session
@@ -1572,8 +1727,8 @@ paths:
         404:
           $ref: '#/components/responses/ResourceNotFound'
     delete:
-      summary: Delete session by id
-      description: Delete session by session_id.
+      summary: Delete session by ID
+      description: Delete session by session ID.
       tags:
         - session
       x-openapi-router-controller: bos.server.controllers.v1.session
@@ -1627,10 +1782,12 @@ paths:
              schema:
                $ref: '#/components/schemas/V1SessionStatus'
       responses:
-        204:
+        200:
           $ref: '#/components/responses/V1SessionStatus'
         400:
           $ref: '#/components/responses/BadRequest'
+        409:
+          $ref: '#/components/responses/AlreadyExists'
     patch:
       summary: Update the session status
       description: |
@@ -1664,6 +1821,8 @@ paths:
           $ref: '#/components/responses/ResourceDeleted'
         400:
           $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/ResourceNotFound'
   /v1/session/{session_id}/status/{boot_set_name}:
     parameters:
       - name: session_id
@@ -1687,7 +1846,7 @@ paths:
       operationId: get_v1_session_status_by_bootset
       responses:
         200:
-          description: A list of the Phase Statuses for the Boot Set and metadata
+          description: Metadata and a list of the Phase Statuses for the Boot Set
           content:
             application/json:
               schema:
@@ -1717,6 +1876,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/V1BootSetStatus'
+        409:
+          $ref: '#/components/responses/AlreadyExists'
     patch:
       summary: Update the status.
       description: |
@@ -1844,6 +2005,7 @@ paths:
         - version
       x-openapi-router-controller: bos.server.controllers.v1.base
       operationId: v1_get_version
+      description: Return the API version
       responses:
         200:
           $ref: '#/components/responses/Version'
@@ -1858,6 +2020,7 @@ paths:
         - version
       x-openapi-router-controller: bos.server.controllers.v2.base
       operationId: get_v2
+      description: Return the API version
       responses:
         200:
           $ref: '#/components/responses/Version'
@@ -1871,8 +2034,8 @@ paths:
         - healthz
       x-openapi-router-controller: bos.server.controllers.v2.healthz
       operationId: get_v2_healthz
-      description:
-        Get bos health details.
+      description: |
+        Get BOS health details.
       responses:
         200:
          $ref: '#/components/responses/ServiceHealth'
@@ -1893,7 +2056,7 @@ paths:
       operationId: get_v2_sessiontemplates
       responses:
         200:
-          $ref: '#/components/responses/V2SessionTemplateDetailsArray'
+          $ref: '#/components/responses/SessionTemplateDetailsArray'
   /v2/sessiontemplatesvalid/{session_template_id}:
     parameters:
       - name: session_template_id
@@ -1903,10 +2066,10 @@ paths:
         schema:
           type: string
     get:
-      summary: Validate the session template by id
+      summary: Validate the session template by ID
       description: |
-        Validate session template by session_template_id.
-        The session_template_id corresponds to the *name*
+        Validate session template by session template ID.
+        The session template ID corresponds to the *name*
         of the session template.
       tags:
         - v2
@@ -1927,10 +2090,10 @@ paths:
         schema:
           type: string
     get:
-      summary: Get session template by id
+      summary: Get session template by ID
       description: |
-        Get session template by session_template_id.
-        The session_template_id corresponds to the *name*
+        Get session template by session template ID.
+        The session template ID corresponds to the *name*
         of the session template.
       tags:
         - v2
@@ -1939,7 +2102,7 @@ paths:
       operationId: get_v2_sessiontemplate
       responses:
         200:
-          $ref: '#/components/responses/V2SessionTemplateDetails'
+          $ref: '#/components/responses/SessionTemplateDetails'
         404:
           $ref: '#/components/responses/ResourceNotFound'
     put:
@@ -1949,8 +2112,7 @@ paths:
         - sessiontemplates
       x-openapi-router-controller: bos.server.controllers.v2.sessiontemplates
       operationId: put_v2_sessiontemplate
-      description:
-        Create a new session template.
+      description: Create a new session template.
       requestBody:
          description: A JSON object for creating a session template
          required: true
@@ -1970,6 +2132,7 @@ paths:
         - sessiontemplates
       x-openapi-router-controller: bos.server.controllers.v2.sessiontemplates
       operationId: patch_v2_sessiontemplate
+      description: Update an existing session template.
       requestBody:
         description: A JSON object for updating a session template
         required: true
@@ -1981,7 +2144,9 @@ paths:
         200:
           $ref: '#/components/responses/V2SessionTemplateDetails'
         400:
-          $ref: '#/components/responses/BadRequest'        
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/ResourceNotFound'
     delete:
       summary: Delete a session template
       description: Delete a session template.
@@ -2068,6 +2233,9 @@ paths:
         - sessions
       x-openapi-router-controller: bos.server.controllers.v2.sessions
       operationId: delete_v2_sessions
+      description: |
+        Delete multiple sessions.  If filters are provided, only sessions matching
+        all filters will be deleted.  By default only completed sessions will be deleted.
       parameters:
         - name: min_age
           schema:
@@ -2088,9 +2256,6 @@ paths:
           in: query
           description: >-
             Return only sessions with the given status.
-      description:
-        Delete multiple sessions.  If filters are provided, only sessions matching
-        all filters will be deleted.  By default only completed sessions will be deleted.
       responses:
         204:
           $ref: '#/components/responses/ResourceDeleted'
@@ -2098,8 +2263,8 @@ paths:
           $ref: '#/components/responses/BadRequest'
   /v2/sessions/{session_id}:
     get:
-      summary: Get session details by id
-      description: Get session details by session_id.
+      summary: Get session details by ID
+      description: Get session details by session ID.
       tags:
         - v2
         - sessions
@@ -2128,8 +2293,8 @@ paths:
         404:
           $ref: '#/components/responses/ResourceNotFound'
     delete:
-      summary: Delete session by id
-      description: Delete session by session_id.
+      summary: Delete session by ID
+      description: Delete session by session ID.
       tags:
         - v2
         - sessions
@@ -2149,8 +2314,8 @@ paths:
           type: string
   /v2/sessions/{session_id}/status:
     get:
-      summary: Get session extended status information by id
-      description: Get session extended status information by id
+      summary: Get session extended status information by ID
+      description: Get session extended status information by ID
       tags:
         - v2
         - sessions
@@ -2203,7 +2368,7 @@ paths:
             type: string
           in: query
           description: >-
-            Retrieve the components with the given id
+            Retrieve the components with the given ID
             (e.g. xname for hardware components). Can be chained
             for selecting groups of components.
         - name: session
@@ -2211,13 +2376,13 @@ paths:
             type: string
           in: query
           description: >-
-            Retrieve the components with the given session id.
+            Retrieve the components with the given session ID.
         - name: staged_session
           schema:
             type: string
           in: query
           description: >-
-            Retrieve the components with the given staged session id.
+            Retrieve the components with the given staged session ID.
         - name: enabled
           schema:
             type: boolean
@@ -2323,6 +2488,8 @@ paths:
           $ref: '#/components/responses/BadRequest'
         404:
           $ref: '#/components/responses/ResourceNotFound'
+        409:
+          $ref: '#/components/responses/UpdateConflict'
     delete:
       tags:
         - v2
@@ -2340,7 +2507,7 @@ paths:
     parameters:
       - name: component_id
         in: path
-        description: Component id. e.g. xname for hardware components
+        description: Component ID. e.g. xname for hardware components
         required: true
         schema:
           type: string
@@ -2393,6 +2560,7 @@ paths:
   /v2/version:
     get:
       summary: Get API version
+      description: Return the API version
       tags:
         - v2
         - version
