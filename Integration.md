@@ -2,7 +2,6 @@
 
 Integrating an API with the CLI is a fairly easy process once you have a valid Swagger file.
 
-1. Fork this repository to make changes (Do not attempt to branch.  You do not have write permissions).
 1. Add your module and Swagger file to the `cray/modules/` directory.
 1. Run the Swagger parser to convert from a YAML Swagger file to a JSON file and validate it.
 
