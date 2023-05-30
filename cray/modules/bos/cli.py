@@ -154,7 +154,7 @@ def setup_components_patch():
         type=str,
         default='',
         metavar='TEXT',
-        help="Json component data applied to all filtered components"
+        help="JSON component data applied to all filtered components"
     )(new_command)
     option(
         '--enabled',

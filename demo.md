@@ -23,7 +23,7 @@ There are a few minor edits that the files need.  Make sure the `cli.py` file is
 
 ## Time to run the generator
 
-The cray cli framework does some simple linting and conversion to make sure that the swagger file will process before adding the module.  Since it relies on different python modules for the generator, we wrap everything in `nox`.  
+The Cray CLI framework does some simple linting and conversion to make sure that the Swagger file will process before adding the module.  Since it relies on different python modules for the generator, we wrap everything in `nox`.  
 
 ``` shell
 nox -s swagger

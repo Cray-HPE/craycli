@@ -123,11 +123,11 @@ help:
 	@echo '    help               	Show this help screen.'
 	@echo '    clean               	Remove build files.'
 	@echo
-	@echo '    image                Build and publish the swagger testing image.'
+	@echo '    image                Build and publish the Swagger testing image.'
 	@echo '    rpm                	Build a YUM/SUSE RPM.'
 	@echo '    all 					Build all production artifacts.'
 	@echo
-	@echo '    synk					Runs a snyk scan.'
+	@echo '    synk					Runs a Snyk scan.'
 	@echo
 	@echo '    prepare              Prepare for making an RPM.'
 	@echo '    rpm_build            Builds the RPM.'
@@ -135,7 +135,7 @@ help:
 	@echo '    rpm_package_source   Creates the RPM source tarball.'
 	@echo
 	@echo '    image_login   		Logs into the Docker registry for pulling and publishing images.'
-	@echo '    image_build   		Builds the swagger testing image.'
+	@echo '    image_build   		Builds the Swagger testing image.'
 	@echo '    image_publish   		Builds and publishes the testing image.'
 	@echo ''
 

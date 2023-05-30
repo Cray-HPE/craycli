@@ -33,7 +33,7 @@ ERROR_ON_GENERATE = True
 MODULE_PATH_TEMPLATE = 'cray/modules/{}'
 
 # The version available in python 3.4 doesn't support this.
-# So we have to hack around it for the jenkins pipelines.
+# So we have to hack around it for the Jenkins pipelines.
 if vars(nox).get('options'):
     nox.options.keywords = 'not generate'
     external = {"external": True}
@@ -108,7 +108,7 @@ cli = generate(__file__)
 
 @nox.session(python='3')
 def swagger(session):
-    """Run each swagger file through the converter in case anything changed.
+    """Run each Swagger file through the converter in case anything changed.
     This should be run before running unit tests"""
 
     walk_path = 'cray/modules'
@@ -162,7 +162,7 @@ def lint_modules(session):
                                "Please use a local file"), DeprecationWarning)
             continue
         if remotes and swaggers:
-            raise Exception("Both a .remote and swagger file are provided. Please choose one.")
+            raise Exception("Both a .remote and Swagger file are provided. Please choose one.")
 
 
 @nox.session(python='3')
