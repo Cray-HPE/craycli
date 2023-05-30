@@ -26,7 +26,7 @@ from cray import rest
 
 
 def test_make_url_ip():
-    """ Make url with ip """
+    """ Make URL with IP address """
     base = '127.0.0.1'
     route = '/test'
     scheme = 'http'

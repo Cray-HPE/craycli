@@ -65,7 +65,7 @@ def _formatter(format_type):
 
 
 class _NullStream:
-    """ NullStream used for yaml dump """
+    """ NullStream used for YAML dump """
 
     def write(self, *args, **kwargs):
         """ Null writer """

@@ -48,7 +48,7 @@ Hello, World!
 
 #### Subgroups
 
-If your cli is complex, you can split it up into different sub groups.
+If your CLI is complex, you can split it up into different sub groups.
 
 ```python
 import cray

@@ -95,7 +95,7 @@ def cli(ctx, *args, **kwargs):
 @click.pass_context
 @option(
     "--hostname", default=None, no_global=True,
-    help='Hostname of cray system.'
+    help='Hostname of Cray system.'
 )
 @option(
     "--tenant", default=None, no_global=True,

@@ -21,7 +21,7 @@
 #  ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 #  OTHER DEALINGS IN THE SOFTWARE.
 #
-""" Generates CLI commands from parsed swagger file """
+""" Generates CLI commands from parsed Swagger file """
 import json
 import os
 import re
@@ -348,12 +348,12 @@ def _add_confirmation_opt(func, msg=None):
         "help": "Respond yes to any confirmations."
     }
     # Note we have to use a '-y' instead of a preferred '--force' as other apis
-    # already implement a force field within their json.
+    # already implement a force field within their JSON.
     return core.option("-y", callback=_cb, **opts)(func)
 
 
 def create_commands(cli, commands, base=None, callback=None, **kwargs):
-    """ Generate CLI commands/groups from a parsed swagger file """
+    """ Generate CLI commands/groups from a parsed Swagger file """
     # pylint: disable=too-many-locals
     parent_name = cli.name.lower()
     for command, data in commands.items():
@@ -448,7 +448,7 @@ def _get_data(path, opts=None):
         data = NestedDict(json.load(parsed_file))
     parsed = swagger.Swagger(data, **opts).parsed
     if not parsed.get(CONVERSION_FLAG):
-        raise ValueError("Please convert your swagger file")
+        raise ValueError("Please convert your Swagger file")
     return parsed
 
 
@@ -470,7 +470,7 @@ def filter_servers(servers):
 
 
 def find_name(info, default=''):
-    """ Find the name of module group based on swagger info """
+    """ Find the name of module group based on Swagger info """
     for i in ['name', 'title', 'description']:
         if i in info:
             return info[i]
@@ -481,7 +481,7 @@ def generate(
         dirpath, filename=None, description=None, cli=None, name=None,
         callback=None, swagger_opts=None, condense=True
 ):
-    """ Create a CLI from a swagger file and path """
+    """ Create a CLI from a Swagger file and path """
     # pylint: disable=too-many-locals
     filename = filename or 'swagger3.json'
     swagger_path = _get_path(dirpath, filename)
