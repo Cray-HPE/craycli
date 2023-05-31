@@ -1,4 +1,3 @@
-/cray/modules/ars       @Cray-HPE/cray-management-systems
 /cray/modules/artifacts @Cray-HPE/platform-engineering
 /cray/modules/badger    @Cray-HPE/hardware-management
 /cray/modules/bos       @Cray-HPE/cray-management-systems
