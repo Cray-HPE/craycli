@@ -828,11 +828,11 @@ definitions:
       kernel:
         type: string
         description: URL or file system path specifying kernel image.
-        example: "http://10.252.100.50/apis/ars/downloads/30b96241-12ff-4185-93ea-a1f7991372d3"
+        example: "s3://boot-images/1dbb777c-2527-449b-bd6d-fb4d1cb79e88/kernel"
       initrd:
         type: string
         description: URL or file system path specifying initrd image.
-        example: "http://10.252.100.50/apis/ars/downloads/7e0bcf9f-10fc-46a9-b2f8-ba8814c1999c"
+        example: "s3://boot-images/1dbb777c-2527-449b-bd6d-fb4d1cb79e88/initrd"
       cloud-init:
         $ref: '#/definitions/CloudInit'
 

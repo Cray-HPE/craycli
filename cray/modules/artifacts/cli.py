@@ -21,21 +21,18 @@
 #  ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 #  OTHER DEALINGS IN THE SOFTWARE.
 #
-""" Artifact - thin wrapper over S3 with ARS backwards compatibility """
+""" Artifact - thin wrapper over S3 """
 # pylint: disable=invalid-name,redefined-outer-name,missing-docstring,unused-argument,broad-except
 import datetime
 import hashlib
 import json
 import sys
-import uuid
-import click
 import boto3
 from boto3.s3.transfer import TransferConfig
 from botocore.exceptions import ClientError
 
 from cray.core import argument
 from cray.core import group
-from cray.core import option
 from cray.core import pass_context
 from cray.echo import echo
 from cray.errors import BadResponseError
@@ -144,44 +141,17 @@ def describe_object(ctx, bucket, obj):
 @argument('bucket', metavar='BUCKET')
 @argument('obj', metavar='OBJECT')
 @argument('filename', metavar='FILEPATH')
-@option(
-    '--expires',
-    metavar='EXPIRES',
-    help='Seconds until download url expiration.',
-    default=60 * 60
-)
 @pass_context
 def upload_object(ctx, bucket, obj, filename, expires):
     """ Create a new object in a bucket """
 
-    #
-    # Remove this check along with the --expires parameter when ARS is fully deprecated
-    #
-    if expires > 3600:
-        raise click.ClickException(
-            f"Maximum download url timeout is 3600 seconds: {expires:d}"
-        )
-
     s3client = get_s3_client()
     md5sum = md5(filename)
+    obj_id = obj
 
-    if bucket == 'ars-app':
-        # Generate an ID, for compatibility of some services that validate that ARS
-        # artifacts are UUID, this must be a UUID and the S3 object must use it as
-        # the object name. Can be removed when ARS is fully deprecated.
-        obj_id = str(uuid.uuid4())
-    else:
-        obj_id = obj
-
-    # Create the object and a download url, then upload the file with the ARS-
-    # compatible metadata
+    # Create the object and then upload the file
     try:
         s3client.put_object(Bucket=bucket, Key=obj_id, ACL='public-read')
-        url = s3client.generate_presigned_url(
-            'get_object',
-            Params={'Bucket': bucket, 'Key': obj_id},
-            ExpiresIn=expires,
-        )
     except s3client.exceptions.NoSuchBucket as err:
         sys.exit(str(err))
     except ClientError as err:
@@ -198,35 +168,14 @@ def upload_object(ctx, bucket, obj, filename, expires):
         upload_args = (filename, bucket, obj_id)
 
         config = TransferConfig(use_threads=False)
-        if bucket == 'ars-app':
-            # ARS-compatible metadata, remove when ARS is fully deprecated
-            upload_kwargs = {
-                'Config': config,
-                'ExtraArgs': {
-                    'Metadata': {
-                        'artifact_id': obj_id,
-                        'atype': 'generic',
-                        'created': datetime.datetime.now().isoformat(),
-                        'download_url': url,
-                        'md5sum': md5sum,
-                        'name': obj,
-                        'state': 'upload-complete',
-                        'upload_id': obj_id,
-                        'uri': '/apis/ars/downloads/' + obj_id,
-                        'url': url,
-                        'version': '1',
-                    }
+        upload_kwargs = {
+            'Config': config,
+            'ExtraArgs': {
+                'Metadata': {
+                    'md5sum': md5sum,
                 }
             }
-        else:
-            upload_kwargs = {
-                'Config': config,
-                'ExtraArgs': {
-                    'Metadata': {
-                        'md5sum': md5sum,
-                    }
-                }
-            }
+        }
 
         s3client.upload_file(*upload_args, **upload_kwargs)
 
