@@ -6,7 +6,6 @@
 /cray/modules/capmc     @Cray-HPE/hardware-management
 /cray/modules/cfs       @Cray-HPE/cray-management-systems
 /cray/modules/config    @Cray-HPE/cloud
-/cray/modules/cps       @Cray-HPE/cray-management-systems
 /cray/modules/fas       @Cray-HPE/hardware-management
 /cray/modules/hsm       @Cray-HPE/hardware-management
 /cray/modules/ims       @Cray-HPE/cray-management-systems
@@ -19,6 +18,7 @@
 
 # PE items, assigning cloud team since PE has no team in github.com.
 /cray/modules/aprun     @Cray-HPE/cloud
+/cray/modules/cps       @Cray-HPE/cloud
 /cray/modules/mpiexec   @Cray-HPE/cloud
 /cray/modules/pals      @Cray-HPE/cloud
 /cray/modules/vnid      @Cray-HPE/cloud
