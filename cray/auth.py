@@ -71,7 +71,7 @@ class Auth(object):  # pylint: disable=too-many-instance-attributes
         self.ctx = ctx
         self.url = make_url(self.TOKEN_URI.format(self.tenant), hostname)
         self.path = path
-        self.client_id = kwargs.get('client_id', 'cray')
+        self.client_id = kwargs.get('client_id', 'shasta')
         self._token_path = os.path.join(self.path, self.name)
         self.session = None
 
