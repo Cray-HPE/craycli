@@ -94,7 +94,7 @@ def test_auth_load(cli_runner):
     username = opts['default']['username']
     hostname = opts['default']['hostname']
 
-    # token = {'test': 123, 'client_id': 'cray'}
+    # token = {'test': 123, 'client_id': 'shasta'}
 
     @cli.command('test')
     @click.pass_context
