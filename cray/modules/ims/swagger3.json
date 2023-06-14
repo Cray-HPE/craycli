@@ -3096,7 +3096,6 @@
                                             },
                                             "kernel_file_name": {
                                                 "description": "Name of the kernel file to extract and upload to the artifact repository from the /boot directory of the image root.",
-                                                "default": "vmlinuz",
                                                 "example": "vmlinuz",
                                                 "type": "string",
                                                 "minLength": 1
@@ -3356,7 +3355,6 @@
                                     },
                                     "kernel_file_name": {
                                         "description": "Name of the kernel file to extract and upload to the artifact repository from the /boot directory of the image root.",
-                                        "default": "vmlinuz",
                                         "example": "vmlinuz",
                                         "type": "string",
                                         "minLength": 1
@@ -3567,7 +3565,6 @@
                                         },
                                         "kernel_file_name": {
                                             "description": "Name of the kernel file to extract and upload to the artifact repository from the /boot directory of the image root.",
-                                            "default": "vmlinuz",
                                             "example": "vmlinuz",
                                             "type": "string",
                                             "minLength": 1
@@ -4029,7 +4026,6 @@
                                         },
                                         "kernel_file_name": {
                                             "description": "Name of the kernel file to extract and upload to the artifact repository from the /boot directory of the image root.",
-                                            "default": "vmlinuz",
                                             "example": "vmlinuz",
                                             "type": "string",
                                             "minLength": 1
@@ -4326,7 +4322,6 @@
                                         },
                                         "kernel_file_name": {
                                             "description": "Name of the kernel file to extract and upload to the artifact repository from the /boot directory of the image root.",
-                                            "default": "vmlinuz",
                                             "example": "vmlinuz",
                                             "type": "string",
                                             "minLength": 1
@@ -10659,7 +10654,6 @@
                                             },
                                             "kernel_file_name": {
                                                 "description": "Name of the kernel file to extract and upload to the artifact repository from the /boot directory of the image root.",
-                                                "default": "vmlinuz",
                                                 "example": "vmlinuz",
                                                 "type": "string",
                                                 "minLength": 1
@@ -10919,7 +10913,6 @@
                                     },
                                     "kernel_file_name": {
                                         "description": "Name of the kernel file to extract and upload to the artifact repository from the /boot directory of the image root.",
-                                        "default": "vmlinuz",
                                         "example": "vmlinuz",
                                         "type": "string",
                                         "minLength": 1
@@ -11130,7 +11123,6 @@
                                         },
                                         "kernel_file_name": {
                                             "description": "Name of the kernel file to extract and upload to the artifact repository from the /boot directory of the image root.",
-                                            "default": "vmlinuz",
                                             "example": "vmlinuz",
                                             "type": "string",
                                             "minLength": 1
@@ -11593,7 +11585,6 @@
                                         },
                                         "kernel_file_name": {
                                             "description": "Name of the kernel file to extract and upload to the artifact repository from the /boot directory of the image root.",
-                                            "default": "vmlinuz",
                                             "example": "vmlinuz",
                                             "type": "string",
                                             "minLength": 1
@@ -11890,7 +11881,6 @@
                                         },
                                         "kernel_file_name": {
                                             "description": "Name of the kernel file to extract and upload to the artifact repository from the /boot directory of the image root.",
-                                            "default": "vmlinuz",
                                             "example": "vmlinuz",
                                             "type": "string",
                                             "minLength": 1
@@ -15412,7 +15402,6 @@
                                             },
                                             "kernel_file_name": {
                                                 "description": "Name of the kernel file to extract and upload to the artifact repository from the /boot directory of the image root.",
-                                                "default": "vmlinuz",
                                                 "example": "vmlinuz",
                                                 "type": "string",
                                                 "minLength": 1
@@ -15672,7 +15661,6 @@
                                     },
                                     "kernel_file_name": {
                                         "description": "Name of the kernel file to extract and upload to the artifact repository from the /boot directory of the image root.",
-                                        "default": "vmlinuz",
                                         "example": "vmlinuz",
                                         "type": "string",
                                         "minLength": 1
@@ -15883,7 +15871,6 @@
                                         },
                                         "kernel_file_name": {
                                             "description": "Name of the kernel file to extract and upload to the artifact repository from the /boot directory of the image root.",
-                                            "default": "vmlinuz",
                                             "example": "vmlinuz",
                                             "type": "string",
                                             "minLength": 1
@@ -16346,7 +16333,6 @@
                                         },
                                         "kernel_file_name": {
                                             "description": "Name of the kernel file to extract and upload to the artifact repository from the /boot directory of the image root.",
-                                            "default": "vmlinuz",
                                             "example": "vmlinuz",
                                             "type": "string",
                                             "minLength": 1
@@ -16643,7 +16629,6 @@
                                         },
                                         "kernel_file_name": {
                                             "description": "Name of the kernel file to extract and upload to the artifact repository from the /boot directory of the image root.",
-                                            "default": "vmlinuz",
                                             "example": "vmlinuz",
                                             "type": "string",
                                             "minLength": 1
@@ -18199,7 +18184,6 @@
                     },
                     "kernel_file_name": {
                         "description": "Name of the kernel file to extract and upload to the artifact repository from the /boot directory of the image root.",
-                        "default": "vmlinuz",
                         "example": "vmlinuz",
                         "type": "string",
                         "minLength": 1

@@ -26,8 +26,8 @@ and options. """
 # pylint: disable=unused-argument
 # pylint: disable=invalid-name
 
-import os
 import json
+import os
 
 from cray.tests.utils import new_random_string
 
@@ -747,6 +747,46 @@ def test_cray_ims_jobs_create_create(cli_runner, rest_mock):
         'artifact_id': test_artifact_id,
         'initrd_file_name': test_initrd_file_name,
         'kernel_file_name': test_kernel_file_name,
+        'image_root_archive_name': test_image_root_archive_name,
+        'kernel_parameters_file_name': 'kernel-parameters',
+        'job_type': test_job_type,
+        'require_dkms': test_require_dkms,
+    }
+
+def test_cray_ims_jobs_create_create_kernel_file_none(cli_runner, rest_mock):
+    """ Test cray ims jobs create ... happy path shouldn't require kernel_file_name """
+    runner, cli, config = cli_runner
+    test_build_env_size = '15'
+    test_enable_debug = 'True'
+    test_public_key = new_random_string()
+    test_artifact_id = new_random_string()
+    test_initrd_file_name = new_random_string()
+    test_image_root_archive_name = new_random_string()
+    test_job_type = "create"
+    test_require_dkms = True
+    result = runner.invoke(
+        cli,
+        ['ims', 'jobs', 'create',
+         '--build-env-size', test_build_env_size,
+         '--enable-debug', test_enable_debug,
+         '--public-key-id', test_public_key,
+         '--artifact-id', test_artifact_id,
+         '--initrd-file-name', test_initrd_file_name,
+         '--image-root-archive-name', test_image_root_archive_name,
+         '--job-type', test_job_type,
+         '--require-dkms', test_require_dkms]
+
+    )
+    assert result.exit_code == 0
+    data = json.loads(result.output)
+    assert data['method'] == 'POST'
+    assert data['url'] == f'{config["default"]["hostname"]}/apis/ims/v3/jobs'
+    assert data['body'] == {
+        'build_env_size': int(test_build_env_size),
+        'enable_debug': True,
+        'public_key_id': test_public_key,
+        'artifact_id': test_artifact_id,
+        'initrd_file_name': test_initrd_file_name,
         'image_root_archive_name': test_image_root_archive_name,
         'kernel_parameters_file_name': 'kernel-parameters',
         'job_type': test_job_type,
