@@ -578,10 +578,6 @@
         "type": "object",
         "description": "A Session Template object represents a collection of resources and metadata.\nA session template is used to create a Session which when combined with an\naction (i.e. boot, reconfigure, reboot, shutdown) will create a Kubernetes BOA job\nto complete the required tasks for the operation.\n\nA Session Template can be created from a JSON structure.  It will return\na SessionTemplate name if successful.\nThis name is required when creating a Session.\n\n## Link Relationships\n\n* self : The session object\n",
         "properties": {
-          "templateUrl": {
-            "type": "string",
-            "description": "The URL to the resource providing the session template data.\nSpecify either a templateURL, or the other session\ntemplate parameters.\n"
-          },
           "name": {
             "type": "string",
             "description": "Name of the SessionTemplate. The length of the name is restricted to 45 characters.",
@@ -3929,10 +3925,6 @@
               "type": "object",
               "description": "A Session Template object represents a collection of resources and metadata.\nA session template is used to create a Session which when combined with an\naction (i.e. boot, reconfigure, reboot, shutdown) will create a Kubernetes BOA job\nto complete the required tasks for the operation.\n\nA Session Template can be created from a JSON structure.  It will return\na SessionTemplate name if successful.\nThis name is required when creating a Session.\n\n## Link Relationships\n\n* self : The session object\n",
               "properties": {
-                "templateUrl": {
-                  "type": "string",
-                  "description": "The URL to the resource providing the session template data.\nSpecify either a templateURL, or the other session\ntemplate parameters.\n"
-                },
                 "name": {
                   "type": "string",
                   "description": "Name of the SessionTemplate. The length of the name is restricted to 45 characters.",
@@ -5568,10 +5560,6 @@
                 "type": "object",
                 "description": "A Session Template object represents a collection of resources and metadata.\nA session template is used to create a Session which when combined with an\naction (i.e. boot, reconfigure, reboot, shutdown) will create a Kubernetes BOA job\nto complete the required tasks for the operation.\n\nA Session Template can be created from a JSON structure.  It will return\na SessionTemplate name if successful.\nThis name is required when creating a Session.\n\n## Link Relationships\n\n* self : The session object\n",
                 "properties": {
-                  "templateUrl": {
-                    "type": "string",
-                    "description": "The URL to the resource providing the session template data.\nSpecify either a templateURL, or the other session\ntemplate parameters.\n"
-                  },
                   "name": {
                     "type": "string",
                     "description": "Name of the SessionTemplate. The length of the name is restricted to 45 characters.",
@@ -5742,10 +5730,6 @@
                   "type": "object",
                   "description": "A Session Template object represents a collection of resources and metadata.\nA session template is used to create a Session which when combined with an\naction (i.e. boot, reconfigure, reboot, shutdown) will create a Kubernetes BOA job\nto complete the required tasks for the operation.\n\nA Session Template can be created from a JSON structure.  It will return\na SessionTemplate name if successful.\nThis name is required when creating a Session.\n\n## Link Relationships\n\n* self : The session object\n",
                   "properties": {
-                    "templateUrl": {
-                      "type": "string",
-                      "description": "The URL to the resource providing the session template data.\nSpecify either a templateURL, or the other session\ntemplate parameters.\n"
-                    },
                     "name": {
                       "type": "string",
                       "description": "Name of the SessionTemplate. The length of the name is restricted to 45 characters.",
@@ -5966,10 +5950,6 @@
                     "type": "object",
                     "description": "A Session Template object represents a collection of resources and metadata.\nA session template is used to create a Session which when combined with an\naction (i.e. boot, reconfigure, reboot, shutdown) will create a Kubernetes BOA job\nto complete the required tasks for the operation.\n\nA Session Template can be created from a JSON structure.  It will return\na SessionTemplate name if successful.\nThis name is required when creating a Session.\n\n## Link Relationships\n\n* self : The session object\n",
                     "properties": {
-                      "templateUrl": {
-                        "type": "string",
-                        "description": "The URL to the resource providing the session template data.\nSpecify either a templateURL, or the other session\ntemplate parameters.\n"
-                      },
                       "name": {
                         "type": "string",
                         "description": "Name of the SessionTemplate. The length of the name is restricted to 45 characters.",
@@ -6164,10 +6144,6 @@
                   "type": "object",
                   "description": "A Session Template object represents a collection of resources and metadata.\nA session template is used to create a Session which when combined with an\naction (i.e. boot, reconfigure, reboot, shutdown) will create a Kubernetes BOA job\nto complete the required tasks for the operation.\n\nA Session Template can be created from a JSON structure.  It will return\na SessionTemplate name if successful.\nThis name is required when creating a Session.\n\n## Link Relationships\n\n* self : The session object\n",
                   "properties": {
-                    "templateUrl": {
-                      "type": "string",
-                      "description": "The URL to the resource providing the session template data.\nSpecify either a templateURL, or the other session\ntemplate parameters.\n"
-                    },
                     "name": {
                       "type": "string",
                       "description": "Name of the SessionTemplate. The length of the name is restricted to 45 characters.",
@@ -6440,10 +6416,6 @@
                   "type": "object",
                   "description": "A Session Template object represents a collection of resources and metadata.\nA session template is used to create a Session which when combined with an\naction (i.e. boot, reconfigure, reboot, shutdown) will create a Kubernetes BOA job\nto complete the required tasks for the operation.\n\nA Session Template can be created from a JSON structure.  It will return\na SessionTemplate name if successful.\nThis name is required when creating a Session.\n\n## Link Relationships\n\n* self : The session object\n",
                   "properties": {
-                    "templateUrl": {
-                      "type": "string",
-                      "description": "The URL to the resource providing the session template data.\nSpecify either a templateURL, or the other session\ntemplate parameters.\n"
-                    },
                     "name": {
                       "type": "string",
                       "description": "Name of the SessionTemplate. The length of the name is restricted to 45 characters.",
