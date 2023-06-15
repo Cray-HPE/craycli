@@ -204,8 +204,7 @@ def test_cray_bos_sessiontemplate_create_full(cli_runner, rest_mock):
                                  '--partition', 'bar',
                                  '--enable-cfs', True,
                                  '--cfs-configuration', 'test-config',
-                                 '--description', 'desc',
-                                 '--template-url', 'test-url'])
+                                 '--description', 'desc'])
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'POST'
@@ -217,8 +216,7 @@ def test_cray_bos_sessiontemplate_create_full(cli_runner, rest_mock):
         'partition': 'bar',
         'enable_cfs': True,
         'cfs': {'configuration': 'test-config'},
-        'description': 'desc',
-        'templateUrl': 'test-url',
+        'description': 'desc'
     }
     compare_dicts(expected, data['body'])
 
