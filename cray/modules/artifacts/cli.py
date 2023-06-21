@@ -142,7 +142,7 @@ def describe_object(ctx, bucket, obj):
 @argument('obj', metavar='OBJECT')
 @argument('filename', metavar='FILEPATH')
 @pass_context
-def upload_object(ctx, bucket, obj, filename, expires):
+def upload_object(ctx, bucket, obj, filename):
     """ Create a new object in a bucket """
 
     s3client = get_s3_client()
