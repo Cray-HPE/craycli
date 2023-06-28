@@ -1292,6 +1292,11 @@
                         "type": "boolean",
                         "description": "Set to stage a session which will not immediately change the state of any components. The \"applystaged\" endpoint can be called at a later time to trigger the start of this session.\n",
                         "default": false
+                    },
+                    "include_disabled": {
+                        "type": "boolean",
+                        "description": "Set to include nodes that have been disabled as indicated in the Hardware State Manager (HSM).\n",
+                        "default": false
                     }
                 },
                 "required": [
@@ -1437,6 +1442,10 @@
                         "type": "string",
                         "description": "A comma-separated list of nodes, representing the initial list of nodes the session should operate against.  The list will remain even if other sessions have taken over management of the nodes.\n"
                     },
+                    "include_disabled": {
+                        "type": "boolean",
+                        "description": "Set to include nodes that have been disabled as indicated in the Hardware State Manager (HSM).\n"
+                    },
                     "status": {
                         "type": "object",
                         "description": "Information on the status of a session.\n",
@@ -1505,6 +1514,10 @@
                         "components": {
                             "type": "string",
                             "description": "A comma-separated list of nodes, representing the initial list of nodes the session should operate against.  The list will remain even if other sessions have taken over management of the nodes.\n"
+                        },
+                        "include_disabled": {
+                            "type": "boolean",
+                            "description": "Set to include nodes that have been disabled as indicated in the Hardware State Manager (HSM).\n"
                         },
                         "status": {
                             "type": "object",
@@ -2659,6 +2672,11 @@
                                     "type": "boolean",
                                     "description": "Set to stage a session which will not immediately change the state of any components. The \"applystaged\" endpoint can be called at a later time to trigger the start of this session.\n",
                                     "default": false
+                                },
+                                "include_disabled": {
+                                    "type": "boolean",
+                                    "description": "Set to include nodes that have been disabled as indicated in the Hardware State Manager (HSM).\n",
+                                    "default": false
                                 }
                             },
                             "required": [
@@ -3662,6 +3680,10 @@
                                     "type": "string",
                                     "description": "A comma-separated list of nodes, representing the initial list of nodes the session should operate against.  The list will remain even if other sessions have taken over management of the nodes.\n"
                                 },
+                                "include_disabled": {
+                                    "type": "boolean",
+                                    "description": "Set to include nodes that have been disabled as indicated in the Hardware State Manager (HSM).\n"
+                                },
                                 "status": {
                                     "type": "object",
                                     "description": "Information on the status of a session.\n",
@@ -4414,6 +4436,10 @@
                                     "type": "string",
                                     "description": "A comma-separated list of nodes, representing the initial list of nodes the session should operate against.  The list will remain even if other sessions have taken over management of the nodes.\n"
                                 },
+                                "include_disabled": {
+                                    "type": "boolean",
+                                    "description": "Set to include nodes that have been disabled as indicated in the Hardware State Manager (HSM).\n"
+                                },
                                 "status": {
                                     "type": "object",
                                     "description": "Information on the status of a session.\n",
@@ -4489,6 +4515,10 @@
                                     "components": {
                                         "type": "string",
                                         "description": "A comma-separated list of nodes, representing the initial list of nodes the session should operate against.  The list will remain even if other sessions have taken over management of the nodes.\n"
+                                    },
+                                    "include_disabled": {
+                                        "type": "boolean",
+                                        "description": "Set to include nodes that have been disabled as indicated in the Hardware State Manager (HSM).\n"
                                     },
                                     "status": {
                                         "type": "object",
@@ -10429,6 +10459,11 @@
                                         "type": "boolean",
                                         "description": "Set to stage a session which will not immediately change the state of any components. The \"applystaged\" endpoint can be called at a later time to trigger the start of this session.\n",
                                         "default": false
+                                    },
+                                    "include_disabled": {
+                                        "type": "boolean",
+                                        "description": "Set to include nodes that have been disabled as indicated in the Hardware State Manager (HSM).\n",
+                                        "default": false
                                     }
                                 },
                                 "required": [
@@ -10479,6 +10514,10 @@
                                         "components": {
                                             "type": "string",
                                             "description": "A comma-separated list of nodes, representing the initial list of nodes the session should operate against.  The list will remain even if other sessions have taken over management of the nodes.\n"
+                                        },
+                                        "include_disabled": {
+                                            "type": "boolean",
+                                            "description": "Set to include nodes that have been disabled as indicated in the Hardware State Manager (HSM).\n"
                                         },
                                         "status": {
                                             "type": "object",
@@ -10636,6 +10675,10 @@
                                             "components": {
                                                 "type": "string",
                                                 "description": "A comma-separated list of nodes, representing the initial list of nodes the session should operate against.  The list will remain even if other sessions have taken over management of the nodes.\n"
+                                            },
+                                            "include_disabled": {
+                                                "type": "boolean",
+                                                "description": "Set to include nodes that have been disabled as indicated in the Hardware State Manager (HSM).\n"
                                             },
                                             "status": {
                                                 "type": "object",
@@ -10809,6 +10852,10 @@
                                             "type": "string",
                                             "description": "A comma-separated list of nodes, representing the initial list of nodes the session should operate against.  The list will remain even if other sessions have taken over management of the nodes.\n"
                                         },
+                                        "include_disabled": {
+                                            "type": "boolean",
+                                            "description": "Set to include nodes that have been disabled as indicated in the Hardware State Manager (HSM).\n"
+                                        },
                                         "status": {
                                             "type": "object",
                                             "description": "Information on the status of a session.\n",
@@ -10932,6 +10979,10 @@
                                         "type": "string",
                                         "description": "A comma-separated list of nodes, representing the initial list of nodes the session should operate against.  The list will remain even if other sessions have taken over management of the nodes.\n"
                                     },
+                                    "include_disabled": {
+                                        "type": "boolean",
+                                        "description": "Set to include nodes that have been disabled as indicated in the Hardware State Manager (HSM).\n"
+                                    },
                                     "status": {
                                         "type": "object",
                                         "description": "Information on the status of a session.\n",
@@ -11005,6 +11056,10 @@
                                         "components": {
                                             "type": "string",
                                             "description": "A comma-separated list of nodes, representing the initial list of nodes the session should operate against.  The list will remain even if other sessions have taken over management of the nodes.\n"
+                                        },
+                                        "include_disabled": {
+                                            "type": "boolean",
+                                            "description": "Set to include nodes that have been disabled as indicated in the Hardware State Manager (HSM).\n"
                                         },
                                         "status": {
                                             "type": "object",
@@ -11368,6 +11423,10 @@
                                         "components": {
                                             "type": "string",
                                             "description": "A comma-separated list of nodes, representing the initial list of nodes the session should operate against.  The list will remain even if other sessions have taken over management of the nodes.\n"
+                                        },
+                                        "include_disabled": {
+                                            "type": "boolean",
+                                            "description": "Set to include nodes that have been disabled as indicated in the Hardware State Manager (HSM).\n"
                                         },
                                         "status": {
                                             "type": "object",
