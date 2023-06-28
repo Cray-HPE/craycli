@@ -727,6 +727,11 @@ components:
             Set to stage a session which will not immediately change the state of any components.
             The "applystaged" endpoint can be called at a later time to trigger the start of this session.
           default: false
+        include_disabled:
+          type: boolean
+          description: |
+            Set to include nodes that have been disabled as indicated in the Hardware State Manager (HSM).
+          default: false
       required: [operation, template_name]
       additionalProperties: false
     V2SessionStatus:
@@ -864,6 +869,10 @@ components:
             A comma-separated list of nodes, representing the initial list of nodes
             the session should operate against.  The list will remain even if
             other sessions have taken over management of the nodes.
+        include_disabled:
+          type: boolean
+          description: |
+            Set to include nodes that have been disabled as indicated in the Hardware State Manager (HSM).
         status:
           $ref: '#/components/schemas/V2SessionStatus'
       additionalProperties: false
