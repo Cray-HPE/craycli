@@ -353,7 +353,7 @@ def test_cray_bos_v2_sessions_create(cli_runner, rest_mock):
          '--name', 'bar',
          '--limit', 'harf,blah',
          '--stage', 'true',
-         '--include_disabled', 'true',
+         '--include-disabled', 'true',
          '--operation', 'boot']
     )
     assert result.exit_code == 0
