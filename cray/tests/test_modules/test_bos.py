@@ -271,7 +271,38 @@ def test_cray_bos_session_create(cli_runner, rest_mock):
         }, data['body']
     )
 
+# pylint: disable=redefined-outer-name
+def test_cray_bos_v2_sessions_create(cli_runner, rest_mock):
+    """ Test cray bos create v2 session ... happy path """
+    runner, cli, config = cli_runner
+    result = runner.invoke(
+        cli,
+        ['bos', 'v2', 'sessions', 'create',
+         '--template-name', 'foo',
+         '--name', 'bar',
+         '--limit', 'harf,blah',
+         '--stage', 'true',
+         '--include-disabled', 'true',
+         '--operation', 'boot']
+    )
+    assert result.exit_code == 0
+    data = json.loads(result.output)
+    assert data['method'] == 'POST'
+    assert data['url'] == f'{config["default"]["hostname"]}' \
+                          f'/apis/bos/v2/sessions'
+    compare_dicts(
+        {
+            'template_name': 'foo',
+            'name': 'bar',
+            'limit': 'harf,blah',
+            'stage': True,
+            'include_disabled': True,
+            'operation': 'boot',
+        },
+        data['body']
+    )
 
+# pylint: disable=redefined-outer-name
 def test_cray_bos_session_create_missing_required(cli_runner, rest_mock):
     """ Test cray bos create session ... when a required parameter is missing
 
