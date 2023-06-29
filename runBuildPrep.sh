@@ -2,7 +2,7 @@
 #
 # MIT License
 # 
-# (C) Copyright [2020] Hewlett Packard Enterprise Development LP
+# (C) Copyright [2020,2023] Hewlett Packard Enterprise Development LP
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -60,20 +60,18 @@ rm -rf .nox
 
 # Note we are running this all here as we want to break the build BEFORE an rpm is built.
 nox -s lint -- prod
-nox -s lint_modules cover
-
 # These tests have false failures intermittently, so add retries to try and avoid this
 attempt=1
 while [ true ]; do
+    echo "attempt $attempt"
     if [ $attempt -gt 6 ]; then
-        nox -s tests && break
-    elif nox -s tests ; then
+        nox -s lint_modules tests cover && break
+    elif nox -s lint_modules tests cover ; then
         break
     else
         let attempt+=1
         sleep 5
     fi
 done
-
 # Remove these files again to speed up source tar for build step.
 rm -rf .nox
