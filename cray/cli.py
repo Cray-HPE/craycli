@@ -98,7 +98,7 @@ def cli(ctx, *args, **kwargs):
     help='Hostname of Cray system.'
 )
 @option(
-    "--tenant", default=None, no_global=True,
+    "--tenant", default="", no_global=True,
     help='Tenant name to scope requests for.'
 )
 @option(
@@ -142,17 +142,6 @@ def init(ctx, hostname, no_auth, overwrite, tenant, **kwargs):
     # Add https if doesn't exist at all
     if not re.match("^http(s)?://", hostname):
         hostname = f'https://{hostname}'
-
-    if tenant is None:
-        tenant = ctx.obj.get(
-            'config',
-            {}
-        ).get(
-            'core.tenant',
-            click.prompt('Tenant Name (leave blank for global scope):',
-                         default="",
-                         type=str)
-        )
 
     initialize_dirs(config_dir)  # No error if directories already exist
     config = Config(config_dir, configuration, raise_err=False)
