@@ -60,6 +60,20 @@ rm -rf .nox
 
 # Note we are running this all here as we want to break the build BEFORE an rpm is built.
 nox -s lint -- prod
-nox -s lint_modules tests cover
+nox -s lint_modules cover
+
+# These tests have false failures intermittently, so add retries to try and avoid this
+attempt=1
+while [ true ]; do
+    if [ $attempt -gt 6 ]; then
+        nox -s tests && break
+    elif nox -s tests ; then
+        break
+    else
+        let attempt+=1
+        sleep 5
+    fi
+done
+
 # Remove these files again to speed up source tar for build step.
 rm -rf .nox

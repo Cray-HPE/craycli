@@ -26,43 +26,40 @@ pipeline {
             }
         }
 
-        stage("Build Prep and Build") {
-            parallel {
-                stage("Build Prep and Build SP2") {
-                    agent {
-                        docker {
-                            label "metal-gcp-builder"
-                            reuseNode true
-                            image "arti.hpc.amslabs.hpecorp.net/dstbuildenv-docker-master-local/cray-sle15sp2_build_environment:latest"
-                            // Run as root
-                            args "-u root"
-                        }
-                    }
-                    steps {
-                        sh "make DIST=dist-sp2 build_prep"
-                        sh "make DIST=dist-sp2 build"
-                        sh "make DIST=dist-sp2 post"
-                    }
-                }
-
-                stage("Build Prep and Build SP3") {
-                    agent {
-                        docker {
-                            label "metal-gcp-builder"
-                            reuseNode true
-                            image "arti.hpc.amslabs.hpecorp.net/dstbuildenv-docker-master-local/cray-sle15sp3_build_environment:latest"
-                            // Run as root
-                            args "-u root"
-                        }
-                    }
-                    steps {
-                        sh "make DIST=dist-sp3 build_prep"
-                        sh "make DIST=dist-sp3 build"
-                        sh "make DIST=dist-sp3 post"
-                    }
+        stage("Build Prep and Build SP2") {
+            agent {
+                docker {
+                    label "metal-gcp-builder"
+                    reuseNode true
+                    image "arti.hpc.amslabs.hpecorp.net/dstbuildenv-docker-master-local/cray-sle15sp2_build_environment:latest"
+                    // Run as root
+                    args "-u root"
                 }
             }
+            steps {
+                sh "make DIST=dist-sp2 build_prep"
+                sh "make DIST=dist-sp2 build"
+                sh "make DIST=dist-sp2 post"
+            }
         }
+
+        stage("Build Prep and Build SP3") {
+            agent {
+                docker {
+                    label "metal-gcp-builder"
+                    reuseNode true
+                    image "arti.hpc.amslabs.hpecorp.net/dstbuildenv-docker-master-local/cray-sle15sp3_build_environment:latest"
+                    // Run as root
+                    args "-u root"
+                }
+            }
+            steps {
+                sh "make DIST=dist-sp3 build_prep"
+                sh "make DIST=dist-sp3 build"
+                sh "make DIST=dist-sp3 post"
+            }
+        }
+
         stage('Publish ') {
             steps {
                 sh "sudo chown -R jenkins:jenkins $WORKSPACE/dist*/rpmbuild"
