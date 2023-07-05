@@ -111,7 +111,15 @@ def list_objects(ctx, bucket):
     # Load config to make sure it exists.
     s3client = get_s3_client()
     try:
-        files = s3client.list_objects(Bucket=bucket).get('Contents', [])
+        files = []
+        paginator = s3client.get_paginator('list_objects')
+        pages = paginator.paginate(Bucket=bucket)
+
+        for page in pages:
+            if 'Contents' in page:
+                for obj in page['Contents']:
+                    files.append(obj)
+
     except (s3client.exceptions.NoSuchBucket, ClientError) as err:
         sys.exit(str(err))
     return {
