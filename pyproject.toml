@@ -90,7 +90,7 @@ test = [
     'names~=0.3.0',
     'pytest~=7.3.1',
     'pytest-cov~=4.1.0',
-    'requests-mock~=1.10.0',
+    'requests-mock~=1.11.0',
 ]
 
 # Defines which folders belong to our package.
