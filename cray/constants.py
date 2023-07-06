@@ -44,6 +44,8 @@ HIDDEN_TAG = "cli_hidden"
 DANGER_TAG = "cli_danger"
 FROM_FILE_TAG = "cli_from_file"
 CONVERSION_FLAG = "cray_converted"
+HEADER_ORIGIN = "header"
+HEADERS_ORIGIN = "headers"
 
 # Config constants
 DEFAULT_CONFIG = 'default'
@@ -52,3 +54,6 @@ EMPTY_CONFIG = ''
 CONFIG_DIR_NAME = 'configurations'
 LOG_DIR_NAME = 'logs'
 AUTH_DIR_NAME = 'tokens'
+
+# Rest constants
+TENANT_HEADER_NAME_KEY = "Cray-Tenant-Name"
