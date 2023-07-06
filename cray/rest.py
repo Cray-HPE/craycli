@@ -34,6 +34,8 @@ from oauthlib.oauth2 import InvalidGrantError
 from six.moves import urllib
 from urllib3.exceptions import InsecureRequestWarning
 
+from cray.constants import HEADERS_ORIGIN
+from cray.constants import TENANT_HEADER_NAME_KEY
 from cray.echo import echo
 from cray.echo import LOG_DEBUG
 from cray.echo import LOG_RAW
@@ -41,7 +43,7 @@ from cray.errors import BadResponseError
 from cray.errors import InsecureError
 from cray.errors import UnauthorizedError
 from cray.utils import get_hostname
-from cray.utils import get_headers
+from cray.utils import get_tenant
 
 
 def make_url(route, url=None, default_scheme='https', ctx=None):
@@ -91,13 +93,15 @@ def request(method, route, callback=None, **kwargs):
 
     try:
         url = make_url(route)
-        headers = get_headers(ctx=ctx)
+        tenant = get_tenant(ctx=ctx)
+        if tenant:
+            opts.setdefault(HEADERS_ORIGIN, {})[TENANT_HEADER_NAME_KEY] = tenant
         echo(f'REQUEST: {method} to {url}', ctx=ctx, level=LOG_DEBUG)
         echo(f'OPTIONS: {opts}', ctx=ctx, level=LOG_RAW)
         # TODO: Find solution for this.
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore", category=InsecureRequestWarning)
-            response = requester.request(method, url, **opts, headers=headers)
+            response = requester.request(method, url, **opts)
             if not response.ok:
                 _log_request_error(response.text, ctx)
                 raise BadResponseError(response, ctx=ctx)

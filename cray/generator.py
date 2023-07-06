@@ -37,6 +37,8 @@ from cray import swagger
 from cray.constants import CONVERSION_FLAG
 from cray.constants import DANGER_TAG
 from cray.constants import FROM_FILE_TAG
+from cray.constants import HEADER_ORIGIN
+from cray.constants import HEADERS_ORIGIN
 from cray.constants import HIDDEN_TAG
 from cray.constants import IGNORE_TAG
 from cray.constants import TAG_SPLIT
@@ -44,7 +46,6 @@ from cray.nesteddict import NestedDict
 
 PATH_ORIGIN = 'path'
 QUERY_ORIGIN = 'query'
-HEADER_ORIGIN = 'header'
 PARAM_ORIGIN = 'params'
 FILE_ORIGIN = 'filepath'
 
@@ -169,7 +170,7 @@ def _parse_data(data, base=None, **kwargs):
     if opts[QUERY_ORIGIN]:
         args['params'] = opts[QUERY_ORIGIN]
     if opts[HEADER_ORIGIN]:
-        args['headers'] = opts[HEADER_ORIGIN]
+        args[HEADERS_ORIGIN] = opts[HEADER_ORIGIN]
     if opts[FILE_ORIGIN]:
         fields = {}
         for k, v in opts[FILE_ORIGIN].items():
@@ -177,7 +178,7 @@ def _parse_data(data, base=None, **kwargs):
             # pylint: disable=consider-using-with
             fields[k] = (os.path.basename(v), open(v, 'rb'))
         args['data'] = MultipartEncoder(fields=fields)
-        args.setdefault('headers', {})['Content-Type'] = args[
+        args.setdefault(HEADERS_ORIGIN, {})['Content-Type'] = args[
             'data'].content_type
     return (method, route, args)
 
