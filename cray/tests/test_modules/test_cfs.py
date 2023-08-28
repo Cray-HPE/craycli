@@ -61,41 +61,58 @@ def test_cray_cfs_sessions_base(cli_runner, rest_mock):
         assert txt in result.output
 
 
-def test_cray_cfs_session_delete(cli_runner, rest_mock):
+def test_cray_cfs_v2_sessions_base(cli_runner, rest_mock):
+    """ Test cray cfs sessions base command """
+    runner, cli, _ = cli_runner
+    result = runner.invoke(cli, ['cfs', 'v2', 'sessions'])
+    assert result.exit_code == 0
+
+    outputs = [
+        "Commands:",
+        "create",
+        "delete",
+        "describe",
+        "list",
+    ]
+    for txt in outputs:
+        assert txt in result.output
+
+
+def test_cray_cfs_v2_session_delete(cli_runner, rest_mock):
     """ Test cray cfs delete ... """
     runner, cli, config = cli_runner
-    result = runner.invoke(cli, ['cfs', 'sessions', 'delete', 'foo'])
+    result = runner.invoke(cli, ['cfs', 'v2', 'sessions', 'delete', 'foo'])
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'DELETE'
     assert data['url'] == f'{config["default"]["hostname"]}/apis/cfs/v2/sessions/foo'
 
 
-def test_cray_cfs_session_list(cli_runner, rest_mock):
+def test_cray_cfs_v2_session_list(cli_runner, rest_mock):
     """ Test cray cfs list """
     runner, cli, config = cli_runner
-    result = runner.invoke(cli, ['cfs', 'sessions', 'list'])
+    result = runner.invoke(cli, ['cfs', 'v2', 'sessions', 'list'])
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'GET'
     assert data['url'] == f'{config["default"]["hostname"]}/apis/cfs/v2/sessions'
 
 
-def test_cray_cfs_session_describe(cli_runner, rest_mock):
+def test_cray_cfs_v2_session_describe(cli_runner, rest_mock):
     """ Test cray cfs describe """
     runner, cli, config = cli_runner
-    result = runner.invoke(cli, ['cfs', 'sessions', 'describe', 'foo'])
+    result = runner.invoke(cli, ['cfs', 'v2', 'sessions', 'describe', 'foo'])
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'GET'
     assert data['url'] == f'{config["default"]["hostname"]}/apis/cfs/v2/sessions/foo'
 
 
-def test_cray_cfs_session_create(cli_runner, rest_mock):
+def test_cray_cfs_v2_session_create(cli_runner, rest_mock):
     """ Test cray cfs create ... happy path """
     runner, cli, config = cli_runner
     result = runner.invoke(
-        cli, ['cfs', 'sessions', 'create', '--name', 'foo',
+        cli, ['cfs', 'v2', 'sessions', 'create', '--name', 'foo',
               '--configuration-name', 'bar']
     )
     assert result.exit_code == 0
@@ -109,11 +126,11 @@ def test_cray_cfs_session_create(cli_runner, rest_mock):
     }
 
 
-def test_cray_cfs_session_create_full(cli_runner, rest_mock):
+def test_cray_cfs_v2_session_create_full(cli_runner, rest_mock):
     """ Test cray cfs create ... happy path """
     runner, cli, config = cli_runner
     result = runner.invoke(
-        cli, ['cfs', 'sessions', 'create', '--name', 'foo',
+        cli, ['cfs', 'v2', 'sessions', 'create', '--name', 'foo',
               '--configuration-name', 'bar',
               '--configuration-limit', 'baz',
               '--ansible-limit', 'Compute',
@@ -146,12 +163,125 @@ def test_cray_cfs_session_create_full(cli_runner, rest_mock):
     }
 
 
-def test_cray_cfs_session_create_missing_required(cli_runner, rest_mock):
+def test_cray_cfs_v2_session_create_missing_required(cli_runner, rest_mock):
     """ Test cray cfs create ... when a required parameter is missing """
     runner, cli, _ = cli_runner
     result = runner.invoke(
         cli,
-        ['cfs', 'sessions', 'create', '--configuration-name', 'foo']
+        ['cfs', 'v2', 'sessions', 'create', '--configuration-name', 'foo']
+    )
+    assert result.exit_code == 2
+    assert '--name' in result.output
+
+
+def test_cray_cfs_v3_sessions_base(cli_runner, rest_mock):
+    """ Test cray cfs sessions base command """
+    runner, cli, _ = cli_runner
+    result = runner.invoke(cli, ['cfs', 'v3', 'sessions'])
+    assert result.exit_code == 0
+
+    outputs = [
+        "Commands:",
+        "create",
+        "delete",
+        "describe",
+        "list",
+    ]
+    for txt in outputs:
+        assert txt in result.output
+
+
+def test_cray_cfs_v3_session_delete(cli_runner, rest_mock):
+    """ Test cray cfs delete ... """
+    runner, cli, config = cli_runner
+    result = runner.invoke(cli, ['cfs', 'v3', 'sessions', 'delete', 'foo'])
+    assert result.exit_code == 0
+    data = json.loads(result.output)
+    assert data['method'] == 'DELETE'
+    assert data['url'] == f'{config["default"]["hostname"]}/apis/cfs/v3/sessions/foo'
+
+
+def test_cray_cfs_v3_session_list(cli_runner, rest_mock):
+    """ Test cray cfs list """
+    runner, cli, config = cli_runner
+    result = runner.invoke(cli, ['cfs', 'v3', 'sessions', 'list'])
+    assert result.exit_code == 0
+    data = json.loads(result.output)
+    assert data['method'] == 'GET'
+    assert data['url'] == f'{config["default"]["hostname"]}/apis/cfs/v3/sessions'
+
+
+def test_cray_cfs_v3_session_describe(cli_runner, rest_mock):
+    """ Test cray cfs describe """
+    runner, cli, config = cli_runner
+    result = runner.invoke(cli, ['cfs', 'v3', 'sessions', 'describe', 'foo'])
+    assert result.exit_code == 0
+    data = json.loads(result.output)
+    assert data['method'] == 'GET'
+    assert data['url'] == f'{config["default"]["hostname"]}/apis/cfs/v3/sessions/foo'
+
+
+def test_cray_cfs_v3_session_create(cli_runner, rest_mock):
+    """ Test cray cfs create ... happy path """
+    runner, cli, config = cli_runner
+    result = runner.invoke(
+        cli, ['cfs', 'v3', 'sessions', 'create', '--name', 'foo',
+              '--configuration-name', 'bar']
+    )
+    assert result.exit_code == 0
+    data = json.loads(result.output)
+    assert data['method'] == 'POST'
+    assert data['url'] == f'{config["default"]["hostname"]}/apis/cfs/v3/sessions'
+    assert data['body'] == {
+        'name': 'foo',
+        'configuration_name': 'bar',
+        'target': {'definition': 'dynamic', 'groups': [], 'image_map': []},
+    }
+
+
+def test_cray_cfs_v3_session_create_full(cli_runner, rest_mock):
+    """ Test cray cfs create ... happy path """
+    runner, cli, config = cli_runner
+    result = runner.invoke(
+        cli, ['cfs', 'v3', 'sessions', 'create', '--name', 'foo',
+              '--configuration-name', 'bar',
+              '--configuration-limit', 'baz',
+              '--ansible-limit', 'Compute',
+              '--ansible-config', 'default-config',
+              '--ansible-verbosity', '1',
+              '--target-definition', 'spec',
+              '--target-group', 'foo', 'a, b, c',
+              '--target-group', 'bar', 'x,y,z',
+              '--target-image-map', 'foo', 'new']
+    )
+    assert result.exit_code == 0
+    data = json.loads(result.output)
+    assert data['method'] == 'POST'
+    assert data['url'] == f'{config["default"]["hostname"]}/apis/cfs/v3/sessions'
+    assert data['body'] == {
+        'name': 'foo',
+        'configuration_name': 'bar',
+        'configuration_limit': 'baz',
+        'ansible_limit': 'Compute',
+        'ansible_config': 'default-config',
+        'ansible_verbosity': 1,
+        'target': {
+            'definition': 'spec',
+            'groups': [
+                {'name': 'foo', 'members': ['a', 'b', 'c']},
+                {'name': 'bar', 'members': ['x', 'y', 'z']}
+            ],
+            'image_map': [{'source_id': 'foo', 'result_name': 'new'}]
+        },
+    }
+
+
+def test_cray_cfs_v3_session_create_missing_required(cli_runner, rest_mock):
+    """ Test cray cfs create ... when a required parameter is missing """
+    runner, cli, _ = cli_runner
+    result = runner.invoke(
+        cli,
+        ['cfs', 'v3', 'sessions', 'create', '--configuration-name', 'foo']
     )
     assert result.exit_code == 2
     assert '--name' in result.output
