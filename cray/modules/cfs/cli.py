@@ -44,6 +44,7 @@ from cray.generator import _opt_callback
 from cray.generator import generate
 
 CURRENT_VERSION = 'v2'
+PRESERVE_VERSIONS = True
 SWAGGER_OPTS = {
     'vocabulary': {
         'deleteall': 'deleteall'
@@ -51,14 +52,23 @@ SWAGGER_OPTS = {
 }
 
 cli = generate(__file__, condense=False, swagger_opts=SWAGGER_OPTS)
-cli.commands = cli.commands[CURRENT_VERSION].commands
+
+if PRESERVE_VERSIONS:
+    cli.commands.update(cli.commands[CURRENT_VERSION].commands)
+else:
+    cli.commands = cli.commands[CURRENT_VERSION].commands
 
 
 def setup(cfs_cli):
     """ Sets up all cfs overrides """
-    setup_configurations_update(cfs_cli)
-    setup_sessions_create(cfs_cli)
-    setup_components_update(cfs_cli)
+    setup_configurations_update(cfs_cli, "v2")
+    setup_sessions_create(cfs_cli, "v2")
+    remove_sessions_update(cfs_cli, "v2")
+    setup_components_update(cfs_cli, "v2")
+    setup_configurations_update(cfs_cli, "v3")
+    setup_sessions_create(cfs_cli, "v3")
+    remove_sessions_update(cfs_cli, "v3")
+    setup_components_update(cfs_cli, "v3")
 
 
 # CONFIGURATIONS #
@@ -85,7 +95,7 @@ def create_configurations_update_shim(update_callback, patch_callback):
     return _decorator
 
 
-def setup_configurations_update(cfs_cli):
+def setup_configurations_update(cfs_cli, version):
     """ Adds the --file and --update-branches parameters for configuration updates """
     tmp_swagger_opts = {
         'vocabulary': {
@@ -93,10 +103,9 @@ def setup_configurations_update(cfs_cli):
         }
     }
     tmp_cli = generate(__file__, condense=False, swagger_opts=tmp_swagger_opts)
-    tmp_cli.commands = tmp_cli.commands[CURRENT_VERSION].commands
 
-    update_command = tmp_cli.commands['configurations'].commands['update']
-    patch_command = tmp_cli.commands['configurations'].commands['patch']
+    update_command = tmp_cli.commands[version].commands['configurations'].commands['update']
+    patch_command = tmp_cli.commands[version].commands['configurations'].commands['patch']
 
     option(
         '--file', callback=_opt_callback, type=str, metavar='TEXT',
@@ -117,14 +126,18 @@ def setup_configurations_update(cfs_cli):
         patch_command.callback
     )
 
-    cfs_cli.commands['configurations'].commands['update'] = update_command
+    cfs_cli.commands[version].commands['configurations'].commands['update'] = update_command
 
 
 # SESSIONS #
 
-# Update session should only be in the api as it is not user friendly and
-# is only used by CFS to update session status.
-del cli.commands['sessions'].commands['update']
+def remove_sessions_update(cfs_cli, version):
+    """
+    Update session should only be in the api as it is not user friendly and
+    is only used by CFS to update session status.
+    """
+    del cfs_cli.commands[version].commands['sessions'].commands['update']
+
 
 
 def _target_groups_callback(cb):
@@ -201,9 +214,9 @@ IMAGE_MAP_RESULT_PAYLOAD = 'target-image_map-result_name'
 IMAGE_MAP_PAYLOAD = 'target-image-map'
 
 
-def setup_sessions_create(cfs_cli):
+def setup_sessions_create(cfs_cli, version):
     """ Adds the --tags and --target-group parameters for session creates """
-    command = cfs_cli.commands['sessions'].commands['create']
+    command = cfs_cli.commands[version].commands['sessions'].commands['create']
 
     # Create a new option which can handle multiple groups with individual names
     # and member lists. `option` acts as a decorator here.
@@ -274,9 +287,9 @@ def create_components_update_shim(func):
     return _decorator
 
 
-def setup_components_update(cfs_cli):
+def setup_components_update(cfs_cli, version):
     """ Adds the --state and --tags parameters for component updates """
-    command = cfs_cli.commands['components'].commands['update']
+    command = cfs_cli.commands[version].commands['components'].commands['update']
     option(
         '--state',
         callback=_opt_callback,
