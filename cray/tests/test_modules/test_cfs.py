@@ -285,3 +285,21 @@ def test_cray_cfs_v3_session_create_missing_required(cli_runner, rest_mock):
     )
     assert result.exit_code == 2
     assert '--name' in result.output
+
+def test_cray_cfs_v3_source_create(cli_runner, rest_mock):
+    """ Test cray cfs create ... happy path """
+    runner, cli, config = cli_runner
+    result = runner.invoke(
+        cli, ['cfs', 'v3', 'sources', 'create', '--name', 'foo', '--clone-url', 'bar',
+              '--credentials-username', 'user', '--credentials-password', 'pass']
+    )
+    assert result.exit_code == 0
+    data = json.loads(result.output)
+    assert data['method'] == 'POST'
+    assert data['url'] == f'{config["default"]["hostname"]}/apis/cfs/v3/sources'
+    assert data['body'] == {
+        'name': 'foo',
+        'clone_url': 'bar',
+        'credentials': {'username': 'user', 'password': 'pass',
+                        'authentication_method': 'password'},
+    }

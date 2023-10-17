@@ -36,6 +36,8 @@ a payload for passing on to the API.
 # pylint: disable=invalid-name
 # pylint: disable=too-many-arguments
 import json
+import urllib.parse
+
 import click
 
 from cray.constants import FROM_FILE_TAG
@@ -69,6 +71,7 @@ def setup(cfs_cli):
     setup_sessions_create(cfs_cli, "v3")
     remove_sessions_update(cfs_cli, "v3")
     setup_components_update(cfs_cli, "v3")
+    setup_sources(cfs_cli)
 
 
 # CONFIGURATIONS #
@@ -312,6 +315,29 @@ def setup_components_update(cfs_cli, version):
             new_params.append(param)
     command.params = new_params
     command.callback = create_components_update_shim(command.callback)
+
+
+# SOURCES #
+def _encode_source_name(source_name):
+    # Quote twice.  One level of decoding is automatically done the API framework,
+    # so one level of encoding produces the same problems as not encoding at all.
+    source_name = urllib.parse.quote(source_name, safe='')
+    source_name = urllib.parse.quote(source_name, safe='')
+    return source_name
+
+def create_sources_shim(func):
+    """ Callback function to custom create our own payload """
+    def _decorator(source_id, **kwargs):
+        source_id = {"name": source_id["name"], "value": _encode_source_name(source_id["value"])}
+        return func(source_id=source_id, **kwargs)
+    return _decorator
+
+
+def setup_sources(cfs_cli):
+    """ Adds the --state and --tags parameters for component updates """
+    for command_type in ["update", "delete", "describe"]:
+        command = cfs_cli.commands["v3"].commands['sources'].commands[command_type]
+        command.callback = create_sources_shim(command.callback)
 
 
 setup(cli)

@@ -3,7 +3,7 @@
     "info": {
         "title": "Configuration Framework Service",
         "version": "0000.0000.0000",
-        "description": "The Configuration Framework Service (CFS) manages the launch of Ansible Execution Environments for image customization, node personalization, and node reconfiguration. CFS manages the Ansible staging container that pulls Ansible play/role content and inventory (optional) from the git server and launches the Ansible Execution Environment.\n\nCFS includes the following components:\n\n  * CFS REST API\n  * A Kubernetes operator running on the management services infrastructure to handle\n  the lifecycle and reporting of configuration sessions.\n  * Pre-packaged Ansible Execution Environment(s) (AEE) with values tuned for performant\n  configuration for executing Ansible playbooks against Cray compute and user access nodes.\n\n\nCFS uses a Git version control server running in the management services infrastructure for management of the configuration manifest lifecycle.\n\n\n  The CFS API allows an administrator to customize the compute and user access nodes\n  in the following ways:\n* Customize the bootable images prior to their use on the system. This process is called\n  image customization. CFS uses IMS to stage images in an ssh container and then modifies\n  one or more images using Ansible.\n\n* Customize live nodes during boot or post-boot. This process is called node personalization.\n  Node personalization involves applying software and/or configuration that differentiates\n  a node or a group of nodes from all other groups of nodes.\n  This should be used in scenarios where configuration cannot be applied prior to booting\n  a node. It is typically best to make changes pre-boot via image customization. This ensures\n  Ansible only has to run once against an image, rather than against every individual booted node.\n  The BOS and IMS APIs support CFS to customize live nodes during boot time.\n\n## Resources\n/healthz - Check service health\n\n/options - Updates service options.\n\n/sessions - Create, retrieve, or delete configuration sessions.\n\n/components - Add, update, retrieve, or delete component information.\n\n/configurations - Add, update, retrieve or delete desired configuration states. (v2 api only)\n## Workflows\n### Image Customization\n\n #### GET /images\n\n Identify the IMS image that you want to customize. Note the id of the image that you want to customize.\n\n #### POST /sessions\n\n Create a configuration session and push the configuration to the specific image in IMS.\n You must specify the target definition as image and provide id of the image that you want to customize.\n This step customizes the image as per Ansible playbook and saves the image in the IMS.\n\n\n### Node Personalization\n\n #### POST /sessions\n Create a configuration framework session to push configuration to nodes that have already\n been booted, specifying the target (optional), the git repository location, inventory (optional),\n and gives the session a unique name.\n\n #### GET /sessions/{session_name}\n View details and status for the specific session_name.\n\n #### DELETE /sessions/{session_name}\n Delete all session history for session_name (as needed).\n\nThe default content type for the CFS API is `application/json`. Unsuccessful API calls return a content type of `application/problem+json` as per RFC 7807.\n"
+        "description": "The Configuration Framework Service (CFS) manages the launch of Ansible Execution Environments for image customization, node personalization, and node reconfiguration. CFS manages the Ansible staging container that pulls Ansible play/role content and inventory (optional) from the git server and launches the Ansible Execution Environment.\n\nCFS includes the following components:\n\n  * CFS REST API\n  * A Kubernetes operator running on the management services infrastructure to handle\n  the lifecycle and reporting of configuration sessions.\n  * Pre-packaged Ansible Execution Environment(s) (AEE) with values tuned for performant\n  configuration for executing Ansible playbooks against Cray compute and user access nodes.\n\n\nCFS uses a Git version control server running in the management services infrastructure for management of the configuration manifest lifecycle.\n\n\n  The CFS API allows an administrator to customize the compute and user access nodes\n  in the following ways:\n* Customize the bootable images prior to their use on the system. This process is called\n  image customization. CFS uses IMS to stage images in an ssh container and then modifies\n  one or more images using Ansible.\n\n* Customize live nodes during boot or post-boot. This process is called node personalization.\n  Node personalization involves applying software and/or configuration that differentiates\n  a node or a group of nodes from all other groups of nodes.\n  This should be used in scenarios where configuration cannot be applied prior to booting\n  a node. It is typically best to make changes pre-boot via image customization. This ensures\n  Ansible only has to run once against an image, rather than against every individual booted node.\n  The BOS and IMS APIs support CFS to customize live nodes during boot time.\n\n## Resources\n/healthz - Check service health\n\n/options - Updates service options.\n\n/sessions - Create, retrieve, or delete configuration sessions.\n\n/components - Add, update, retrieve, or delete component information.\n\n/configurations - Add, update, retrieve or delete desired configuration states.\n\n/sources - Add, update, retrieve, or delete playbook source information. (v3 api only)\n## Workflows\n### Image Customization\n\n #### GET /images\n\n Identify the IMS image that you want to customize. Note the id of the image that you want to customize.\n\n #### POST /sessions\n\n Create a configuration session and push the configuration to the specific image in IMS.\n You must specify the target definition as image and provide id of the image that you want to customize.\n This step customizes the image as per Ansible playbook and saves the image in the IMS.\n\n\n### Node Personalization\n\n #### POST /sessions\n Create a configuration framework session to push configuration to nodes that have already\n been booted, specifying the target (optional), the git repository location, inventory (optional),\n and gives the session a unique name.\n\n #### GET /sessions/{session_name}\n View details and status for the specific session_name.\n\n #### DELETE /sessions/{session_name}\n Delete all session history for session_name (as needed).\n\nThe default content type for the CFS API is `application/json`. Unsuccessful API calls return a content type of `application/problem+json` as per RFC 7807.\n"
     },
     "servers": [
         {
@@ -185,7 +185,8 @@
                                     "type": "string",
                                     "description": "Additional filtering of hosts or groups from the inventory to run against. This is especially useful when running with dynamic inventory and when you want to run on a subset of nodes or groups. This option corresponds to ansible-playbook's --limit and can be used to specify nodes or groups.",
                                     "example": "host1",
-                                    "pattern": "^[^\\s;]*$"
+                                    "pattern": "^[^\\s;]*$",
+                                    "default": ""
                                 },
                                 "ansible_config": {
                                     "type": "string",
@@ -201,7 +202,8 @@
                                 },
                                 "ansible_passthrough": {
                                     "type": "string",
-                                    "description": "Additional parameters that are added to all Ansible calls for the session. This field is currently limited to the following Ansible parameters: \"--extra-vars\", \"--forks\", \"--skip-tags\", \"--start-at-task\", and \"--tags\". WARNING: Parameters passed to Ansible in this way should be used with caution.  State will not be recorded for components when using these flags to avoid incorrect reporting of partial playbook runs."
+                                    "description": "Additional parameters that are added to all Ansible calls for the session. This field is currently limited to the following Ansible parameters: \"--extra-vars\", \"--forks\", \"--skip-tags\", \"--start-at-task\", and \"--tags\". WARNING: Parameters passed to Ansible in this way should be used with caution.  State will not be recorded for components when using these flags to avoid incorrect reporting of partial playbook runs.",
+                                    "default": ""
                                 },
                                 "target": {
                                     "type": "object",
@@ -438,11 +440,18 @@
                                 },
                                 "additional_inventory_url": {
                                     "type": "string",
-                                    "description": "The git clone URL of a repo with additional inventory files.  All files in the repo will be copied into the hosts directory of CFS.\n",
+                                    "description": "The git clone URL of a repo with additional inventory files.  All files in the repo will be copied into the hosts directory of CFS. This is mutually exclusive with the additional_inventory_source option and only one can be set.\n",
                                     "example": "https://api-gw-service-nmn.local/vcs/cray/inventory.git",
                                     "pattern": "^[^\\s;]*$",
-                                    "minLength": 1,
-                                    "maxLength": 120
+                                    "minLength": 0,
+                                    "maxLength": 240
+                                },
+                                "additional_inventory_source": {
+                                    "type": "string",
+                                    "description": "A CFS source with additional inventory files.  All files in the repo will be copied into the hosts directory of CFS. This is mutually exclusive with the additional_source_url option and only one can be set.\n",
+                                    "example": "example-source",
+                                    "minLength": 0,
+                                    "maxLength": 60
                                 },
                                 "batcher_max_backoff": {
                                     "type": "integer",
@@ -955,7 +964,7 @@
                                                 "desired_config": {
                                                     "type": "string",
                                                     "description": "A reference to a configuration",
-                                                    "minLength": 1,
+                                                    "minLength": 0,
                                                     "maxLength": 60
                                                 },
                                                 "desired_state": {
@@ -1181,7 +1190,7 @@
                                             "desired_config": {
                                                 "type": "string",
                                                 "description": "A reference to a configuration",
-                                                "minLength": 1,
+                                                "minLength": 0,
                                                 "maxLength": 60
                                             },
                                             "desired_state": {
@@ -1534,7 +1543,7 @@
                                 "desired_config": {
                                     "type": "string",
                                     "description": "A reference to a configuration",
-                                    "minLength": 1,
+                                    "minLength": 0,
                                     "maxLength": 60
                                 },
                                 "desired_state": {
@@ -1785,6 +1794,10 @@
                                                 "example": "https://api-gw-service-nmn.local/vcs/cray/config-management.git",
                                                 "pattern": "^[^\\s;]*$"
                                             },
+                                            "source": {
+                                                "type": "string",
+                                                "description": "A CFS source with directions to the configuration content repository"
+                                            },
                                             "playbook": {
                                                 "type": "string",
                                                 "description": "The Ansible playbook to run.",
@@ -1803,7 +1816,6 @@
                                             }
                                         },
                                         "required": [
-                                            "clone_url",
                                             "playbook"
                                         ],
                                         "additionalProperties": false
@@ -1826,6 +1838,10 @@
                                             "example": "https://vcs.domain/vcs/org/inventory.git",
                                             "pattern": "^[^\\s;]*$"
                                         },
+                                        "source": {
+                                            "type": "string",
+                                            "description": "A CFS source with directions to the configuration content repository"
+                                        },
                                         "commit": {
                                             "type": "string",
                                             "description": "The commit hash of the configuration repository when the state is set.",
@@ -1841,6 +1857,157 @@
                                         "clone_url"
                                     ],
                                     "additionalProperties": false
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    }
+                }
+            },
+            "V3SourceCreateRequest": {
+                "description": "A source",
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "description": "Information for retrieving git content from a source.",
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "type": "string",
+                                    "description": "The name of the configuration.  This field is optional and will default to the clone_url if not specified.",
+                                    "example": "sample-config"
+                                },
+                                "description": {
+                                    "type": "string",
+                                    "description": "A user-defined description. This field is not used by CFS."
+                                },
+                                "clone_url": {
+                                    "type": "string",
+                                    "description": "The url to access the git content"
+                                },
+                                "credentials": {
+                                    "description": "Information for retrieving the git credentials",
+                                    "type": "object",
+                                    "properties": {
+                                        "authentication_method": {
+                                            "type": "string",
+                                            "description": "The git authentication method used.",
+                                            "enum": [
+                                                "password"
+                                            ],
+                                            "default": "password"
+                                        },
+                                        "username": {
+                                            "type": "string",
+                                            "description": "The username for authenticating to git",
+                                            "writeOnly": true
+                                        },
+                                        "password": {
+                                            "type": "string",
+                                            "description": "The password for authenticating to git",
+                                            "writeOnly": true
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "username",
+                                        "password"
+                                    ]
+                                },
+                                "ca_cert": {
+                                    "description": "CA certificate info for retrieving the git credentials",
+                                    "type": "object",
+                                    "properties": {
+                                        "configmap_name": {
+                                            "type": "string",
+                                            "description": "The name of the configmap containing a necessary CA cert.",
+                                            "minLength": 1
+                                        },
+                                        "configmap_namespace": {
+                                            "type": "string",
+                                            "description": "The namespace of the CA cert configmap in kubernetes."
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "configmap_name"
+                                    ]
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "clone_url",
+                                "credentials"
+                            ]
+                        }
+                    }
+                }
+            },
+            "V3SourceUpdateRequest": {
+                "description": "A source",
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "description": "Information for retrieving git content from a source.",
+                            "type": "object",
+                            "properties": {
+                                "description": {
+                                    "type": "string",
+                                    "description": "A user-defined description. This field is not used by CFS."
+                                },
+                                "clone_url": {
+                                    "type": "string",
+                                    "description": "The url to access the git content"
+                                },
+                                "credentials": {
+                                    "description": "Information for retrieving the git credentials",
+                                    "type": "object",
+                                    "properties": {
+                                        "authentication_method": {
+                                            "type": "string",
+                                            "description": "The git authentication method used.",
+                                            "enum": [
+                                                "password"
+                                            ]
+                                        },
+                                        "secret_name": {
+                                            "type": "string",
+                                            "description": "The name of the credentials vault secret.",
+                                            "readOnly": true
+                                        },
+                                        "username": {
+                                            "type": "string",
+                                            "description": "The username for authenticating to git",
+                                            "writeOnly": true
+                                        },
+                                        "password": {
+                                            "type": "string",
+                                            "description": "The password for authenticating to git",
+                                            "writeOnly": true
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                },
+                                "ca_cert": {
+                                    "description": "CA certificate info for retrieving the git credentials",
+                                    "type": "object",
+                                    "properties": {
+                                        "configmap_name": {
+                                            "type": "string",
+                                            "description": "The name of the configmap containing a necessary CA cert.",
+                                            "minLength": 1
+                                        },
+                                        "configmap_namespace": {
+                                            "type": "string",
+                                            "description": "The namespace of the CA cert configmap in kubernetes."
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "configmap_name"
+                                    ]
                                 }
                             },
                             "additionalProperties": false
@@ -2033,11 +2200,18 @@
                                 },
                                 "additional_inventory_url": {
                                     "type": "string",
-                                    "description": "The git clone URL of a repo with additional inventory files.  All files in the repo will be copied into the hosts directory of CFS.\n",
+                                    "description": "The git clone URL of a repo with additional inventory files.  All files in the repo will be copied into the hosts directory of CFS. This is mutually exclusive with the additional_inventory_source option and only one can be set.\n",
                                     "example": "https://api-gw-service-nmn.local/vcs/cray/inventory.git",
                                     "pattern": "^[^\\s;]*$",
-                                    "minLength": 1,
-                                    "maxLength": 120
+                                    "minLength": 0,
+                                    "maxLength": 240
+                                },
+                                "additional_inventory_source": {
+                                    "type": "string",
+                                    "description": "A CFS source with additional inventory files.  All files in the repo will be copied into the hosts directory of CFS. This is mutually exclusive with the additional_source_url option and only one can be set.\n",
+                                    "example": "example-source",
+                                    "minLength": 0,
+                                    "maxLength": 60
                                 },
                                 "batcher_max_backoff": {
                                     "type": "integer",
@@ -2484,7 +2658,11 @@
                                                 "job": {
                                                     "description": "The name of the configuration execution environment associated with this session.",
                                                     "example": "cray-cfs-job-session-20190728032600",
-                                                    "readOnly": true,
+                                                    "type": "string"
+                                                },
+                                                "ims_job": {
+                                                    "description": "The name os the IMS job associated with the session when running against an image.",
+                                                    "example": "5037edd8-e9c5-437d-b54b-db4a8ad2cb15",
                                                     "type": "string"
                                                 },
                                                 "completion_time": {
@@ -2959,7 +3137,11 @@
                                                             "job": {
                                                                 "description": "The name of the configuration execution environment associated with this session.",
                                                                 "example": "cray-cfs-job-session-20190728032600",
-                                                                "readOnly": true,
+                                                                "type": "string"
+                                                            },
+                                                            "ims_job": {
+                                                                "description": "The name os the IMS job associated with the session when running against an image.",
+                                                                "example": "5037edd8-e9c5-437d-b54b-db4a8ad2cb15",
                                                                 "type": "string"
                                                             },
                                                             "completion_time": {
@@ -3218,7 +3400,11 @@
                                                             "job": {
                                                                 "description": "The name of the configuration execution environment associated with this session.",
                                                                 "example": "cray-cfs-job-session-20190728032600",
-                                                                "readOnly": true,
+                                                                "type": "string"
+                                                            },
+                                                            "ims_job": {
+                                                                "description": "The name os the IMS job associated with the session when running against an image.",
+                                                                "example": "5037edd8-e9c5-437d-b54b-db4a8ad2cb15",
                                                                 "type": "string"
                                                             },
                                                             "completion_time": {
@@ -3544,7 +3730,7 @@
                                 "desired_config": {
                                     "type": "string",
                                     "description": "A reference to a configuration",
-                                    "minLength": 1,
+                                    "minLength": 0,
                                     "maxLength": 60
                                 },
                                 "desired_state": {
@@ -3902,7 +4088,7 @@
                                             "desired_config": {
                                                 "type": "string",
                                                 "description": "A reference to a configuration",
-                                                "minLength": 1,
+                                                "minLength": 0,
                                                 "maxLength": 60
                                             },
                                             "desired_state": {
@@ -4186,6 +4372,10 @@
                                                 "example": "https://api-gw-service-nmn.local/vcs/cray/config-management.git",
                                                 "pattern": "^[^\\s;]*$"
                                             },
+                                            "source": {
+                                                "type": "string",
+                                                "description": "A CFS source with directions to the configuration content repository"
+                                            },
                                             "playbook": {
                                                 "type": "string",
                                                 "description": "The Ansible playbook to run.",
@@ -4204,7 +4394,6 @@
                                             }
                                         },
                                         "required": [
-                                            "clone_url",
                                             "playbook"
                                         ],
                                         "additionalProperties": false
@@ -4226,6 +4415,10 @@
                                             "description": "The clone URL of the configuration content repository.",
                                             "example": "https://vcs.domain/vcs/org/inventory.git",
                                             "pattern": "^[^\\s;]*$"
+                                        },
+                                        "source": {
+                                            "type": "string",
+                                            "description": "A CFS source with directions to the configuration content repository"
                                         },
                                         "commit": {
                                             "type": "string",
@@ -4418,6 +4611,10 @@
                                                             "example": "https://api-gw-service-nmn.local/vcs/cray/config-management.git",
                                                             "pattern": "^[^\\s;]*$"
                                                         },
+                                                        "source": {
+                                                            "type": "string",
+                                                            "description": "A CFS source with directions to the configuration content repository"
+                                                        },
                                                         "playbook": {
                                                             "type": "string",
                                                             "description": "The Ansible playbook to run.",
@@ -4436,7 +4633,6 @@
                                                         }
                                                     },
                                                     "required": [
-                                                        "clone_url",
                                                         "playbook"
                                                     ],
                                                     "additionalProperties": false
@@ -4459,6 +4655,10 @@
                                                         "example": "https://vcs.domain/vcs/org/inventory.git",
                                                         "pattern": "^[^\\s;]*$"
                                                     },
+                                                    "source": {
+                                                        "type": "string",
+                                                        "description": "A CFS source with directions to the configuration content repository"
+                                                    },
                                                     "commit": {
                                                         "type": "string",
                                                         "description": "The commit hash of the configuration repository when the state is set.",
@@ -4474,6 +4674,192 @@
                                                     "clone_url"
                                                 ],
                                                 "additionalProperties": false
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    }
+                                },
+                                "next": {
+                                    "description": "Information for requesting the next page of data",
+                                    "type": "object",
+                                    "properties": {
+                                        "limit": {
+                                            "type": "integer"
+                                        },
+                                        "after_id": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": true
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "V3SourceData": {
+                "description": "A single source",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "description": "Information for retrieving git content from a source.",
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "type": "string",
+                                    "description": "The name of the configuration.  This field is optional and will default to the clone_url if not specified.",
+                                    "example": "sample-config"
+                                },
+                                "description": {
+                                    "type": "string",
+                                    "description": "A user-defined description. This field is not used by CFS."
+                                },
+                                "last_updated": {
+                                    "type": "string",
+                                    "description": "The date/time when the state was last updated in RFC 3339 format.",
+                                    "example": "2019-07-28T03:26:00Z",
+                                    "format": "date-time",
+                                    "readOnly": true
+                                },
+                                "clone_url": {
+                                    "type": "string",
+                                    "description": "The url to access the git content"
+                                },
+                                "credentials": {
+                                    "description": "Information for retrieving the git credentials",
+                                    "type": "object",
+                                    "properties": {
+                                        "authentication_method": {
+                                            "type": "string",
+                                            "description": "The git authentication method used.",
+                                            "enum": [
+                                                "password"
+                                            ]
+                                        },
+                                        "secret_name": {
+                                            "type": "string",
+                                            "description": "The name of the credentials vault secret.",
+                                            "readOnly": true
+                                        },
+                                        "username": {
+                                            "type": "string",
+                                            "description": "The username for authenticating to git",
+                                            "writeOnly": true
+                                        },
+                                        "password": {
+                                            "type": "string",
+                                            "description": "The password for authenticating to git",
+                                            "writeOnly": true
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                },
+                                "ca_cert": {
+                                    "description": "CA certificate info for retrieving the git credentials",
+                                    "type": "object",
+                                    "properties": {
+                                        "configmap_name": {
+                                            "type": "string",
+                                            "description": "The name of the configmap containing a necessary CA cert.",
+                                            "minLength": 1
+                                        },
+                                        "configmap_namespace": {
+                                            "type": "string",
+                                            "description": "The namespace of the CA cert configmap in kubernetes."
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "configmap_name"
+                                    ]
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    }
+                }
+            },
+            "V3SourceDataCollection": {
+                "description": "A collection of sources",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "description": "A collection of source data.",
+                            "type": "object",
+                            "properties": {
+                                "components": {
+                                    "type": "array",
+                                    "items": {
+                                        "description": "Information for retrieving git content from a source.",
+                                        "type": "object",
+                                        "properties": {
+                                            "name": {
+                                                "type": "string",
+                                                "description": "The name of the configuration.  This field is optional and will default to the clone_url if not specified.",
+                                                "example": "sample-config"
+                                            },
+                                            "description": {
+                                                "type": "string",
+                                                "description": "A user-defined description. This field is not used by CFS."
+                                            },
+                                            "last_updated": {
+                                                "type": "string",
+                                                "description": "The date/time when the state was last updated in RFC 3339 format.",
+                                                "example": "2019-07-28T03:26:00Z",
+                                                "format": "date-time",
+                                                "readOnly": true
+                                            },
+                                            "clone_url": {
+                                                "type": "string",
+                                                "description": "The url to access the git content"
+                                            },
+                                            "credentials": {
+                                                "description": "Information for retrieving the git credentials",
+                                                "type": "object",
+                                                "properties": {
+                                                    "authentication_method": {
+                                                        "type": "string",
+                                                        "description": "The git authentication method used.",
+                                                        "enum": [
+                                                            "password"
+                                                        ]
+                                                    },
+                                                    "secret_name": {
+                                                        "type": "string",
+                                                        "description": "The name of the credentials vault secret.",
+                                                        "readOnly": true
+                                                    },
+                                                    "username": {
+                                                        "type": "string",
+                                                        "description": "The username for authenticating to git",
+                                                        "writeOnly": true
+                                                    },
+                                                    "password": {
+                                                        "type": "string",
+                                                        "description": "The password for authenticating to git",
+                                                        "writeOnly": true
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            },
+                                            "ca_cert": {
+                                                "description": "CA certificate info for retrieving the git credentials",
+                                                "type": "object",
+                                                "properties": {
+                                                    "configmap_name": {
+                                                        "type": "string",
+                                                        "description": "The name of the configmap containing a necessary CA cert.",
+                                                        "minLength": 1
+                                                    },
+                                                    "configmap_namespace": {
+                                                        "type": "string",
+                                                        "description": "The namespace of the CA cert configmap in kubernetes."
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "required": [
+                                                    "configmap_name"
+                                                ]
                                             }
                                         },
                                         "additionalProperties": false
@@ -4576,6 +4962,43 @@
             },
             "ConflictingSessionName": {
                 "description": "A session with the same name already exists.",
+                "content": {
+                    "application/problem+json": {
+                        "schema": {
+                            "description": "An error response for RFC 7807 problem details.",
+                            "type": "object",
+                            "properties": {
+                                "type": {
+                                    "description": "Relative URI reference to the type of problem which includes human readable documentation.",
+                                    "type": "string",
+                                    "format": "uri",
+                                    "default": "about:blank"
+                                },
+                                "title": {
+                                    "description": "Short, human-readable summary of the problem, should not change by occurrence.",
+                                    "type": "string"
+                                },
+                                "status": {
+                                    "description": "HTTP status code",
+                                    "type": "integer",
+                                    "example": 400
+                                },
+                                "instance": {
+                                    "description": "A relative URI reference that identifies the specific occurrence of the problem",
+                                    "format": "uri",
+                                    "type": "string"
+                                },
+                                "detail": {
+                                    "description": "A human-readable explanation specific to this occurrence of the problem. Focus on helping correct the problem, rather than giving debugging information.",
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "ConflictingSourceName": {
+                "description": "A source with the same name already exists",
                 "content": {
                     "application/problem+json": {
                         "schema": {
@@ -4784,11 +5207,18 @@
                     },
                     "additional_inventory_url": {
                         "type": "string",
-                        "description": "The git clone URL of a repo with additional inventory files.  All files in the repo will be copied into the hosts directory of CFS.\n",
+                        "description": "The git clone URL of a repo with additional inventory files.  All files in the repo will be copied into the hosts directory of CFS. This is mutually exclusive with the additional_inventory_source option and only one can be set.\n",
                         "example": "https://api-gw-service-nmn.local/vcs/cray/inventory.git",
                         "pattern": "^[^\\s;]*$",
-                        "minLength": 1,
-                        "maxLength": 120
+                        "minLength": 0,
+                        "maxLength": 240
+                    },
+                    "additional_inventory_source": {
+                        "type": "string",
+                        "description": "A CFS source with additional inventory files.  All files in the repo will be copied into the hosts directory of CFS. This is mutually exclusive with the additional_source_url option and only one can be set.\n",
+                        "example": "example-source",
+                        "minLength": 0,
+                        "maxLength": 60
                     },
                     "batcher_max_backoff": {
                         "type": "integer",
@@ -5032,7 +5462,11 @@
                     "job": {
                         "description": "The name of the configuration execution environment associated with this session.",
                         "example": "cray-cfs-job-session-20190728032600",
-                        "readOnly": true,
+                        "type": "string"
+                    },
+                    "ims_job": {
+                        "description": "The name os the IMS job associated with the session when running against an image.",
+                        "example": "5037edd8-e9c5-437d-b54b-db4a8ad2cb15",
                         "type": "string"
                     },
                     "completion_time": {
@@ -5193,7 +5627,11 @@
                             "job": {
                                 "description": "The name of the configuration execution environment associated with this session.",
                                 "example": "cray-cfs-job-session-20190728032600",
-                                "readOnly": true,
+                                "type": "string"
+                            },
+                            "ims_job": {
+                                "description": "The name os the IMS job associated with the session when running against an image.",
+                                "example": "5037edd8-e9c5-437d-b54b-db4a8ad2cb15",
                                 "type": "string"
                             },
                             "completion_time": {
@@ -5624,7 +6062,11 @@
                                     "job": {
                                         "description": "The name of the configuration execution environment associated with this session.",
                                         "example": "cray-cfs-job-session-20190728032600",
-                                        "readOnly": true,
+                                        "type": "string"
+                                    },
+                                    "ims_job": {
+                                        "description": "The name os the IMS job associated with the session when running against an image.",
+                                        "example": "5037edd8-e9c5-437d-b54b-db4a8ad2cb15",
                                         "type": "string"
                                     },
                                     "completion_time": {
@@ -5845,7 +6287,8 @@
                         "type": "string",
                         "description": "Additional filtering of hosts or groups from the inventory to run against. This is especially useful when running with dynamic inventory and when you want to run on a subset of nodes or groups. This option corresponds to ansible-playbook's --limit and can be used to specify nodes or groups.",
                         "example": "host1",
-                        "pattern": "^[^\\s;]*$"
+                        "pattern": "^[^\\s;]*$",
+                        "default": ""
                     },
                     "ansible_config": {
                         "type": "string",
@@ -5861,7 +6304,8 @@
                     },
                     "ansible_passthrough": {
                         "type": "string",
-                        "description": "Additional parameters that are added to all Ansible calls for the session. This field is currently limited to the following Ansible parameters: \"--extra-vars\", \"--forks\", \"--skip-tags\", \"--start-at-task\", and \"--tags\". WARNING: Parameters passed to Ansible in this way should be used with caution.  State will not be recorded for components when using these flags to avoid incorrect reporting of partial playbook runs."
+                        "description": "Additional parameters that are added to all Ansible calls for the session. This field is currently limited to the following Ansible parameters: \"--extra-vars\", \"--forks\", \"--skip-tags\", \"--start-at-task\", and \"--tags\". WARNING: Parameters passed to Ansible in this way should be used with caution.  State will not be recorded for components when using these flags to avoid incorrect reporting of partial playbook runs.",
+                        "default": ""
                     },
                     "target": {
                         "type": "object",
@@ -6352,7 +6796,11 @@
                                                 "job": {
                                                     "description": "The name of the configuration execution environment associated with this session.",
                                                     "example": "cray-cfs-job-session-20190728032600",
-                                                    "readOnly": true,
+                                                    "type": "string"
+                                                },
+                                                "ims_job": {
+                                                    "description": "The name os the IMS job associated with the session when running against an image.",
+                                                    "example": "5037edd8-e9c5-437d-b54b-db4a8ad2cb15",
                                                     "type": "string"
                                                 },
                                                 "completion_time": {
@@ -6604,7 +7052,11 @@
                                                 "job": {
                                                     "description": "The name of the configuration execution environment associated with this session.",
                                                     "example": "cray-cfs-job-session-20190728032600",
-                                                    "readOnly": true,
+                                                    "type": "string"
+                                                },
+                                                "ims_job": {
+                                                    "description": "The name os the IMS job associated with the session when running against an image.",
+                                                    "example": "5037edd8-e9c5-437d-b54b-db4a8ad2cb15",
                                                     "type": "string"
                                                 },
                                                 "completion_time": {
@@ -6717,6 +7169,10 @@
                         "example": "https://vcs.domain/vcs/org/inventory.git",
                         "pattern": "^[^\\s;]*$"
                     },
+                    "source": {
+                        "type": "string",
+                        "description": "A CFS source with directions to the configuration content repository"
+                    },
                     "commit": {
                         "type": "string",
                         "description": "The commit hash of the configuration repository when the state is set.",
@@ -6798,6 +7254,10 @@
                         "example": "https://api-gw-service-nmn.local/vcs/cray/config-management.git",
                         "pattern": "^[^\\s;]*$"
                     },
+                    "source": {
+                        "type": "string",
+                        "description": "A CFS source with directions to the configuration content repository"
+                    },
                     "playbook": {
                         "type": "string",
                         "description": "The Ansible playbook to run.",
@@ -6816,7 +7276,6 @@
                     }
                 },
                 "required": [
-                    "clone_url",
                     "playbook"
                 ],
                 "additionalProperties": false
@@ -6969,6 +7428,10 @@
                                     "example": "https://api-gw-service-nmn.local/vcs/cray/config-management.git",
                                     "pattern": "^[^\\s;]*$"
                                 },
+                                "source": {
+                                    "type": "string",
+                                    "description": "A CFS source with directions to the configuration content repository"
+                                },
                                 "playbook": {
                                     "type": "string",
                                     "description": "The Ansible playbook to run.",
@@ -6987,7 +7450,6 @@
                                 }
                             },
                             "required": [
-                                "clone_url",
                                 "playbook"
                             ],
                             "additionalProperties": false
@@ -7009,6 +7471,10 @@
                                 "description": "The clone URL of the configuration content repository.",
                                 "example": "https://vcs.domain/vcs/org/inventory.git",
                                 "pattern": "^[^\\s;]*$"
+                            },
+                            "source": {
+                                "type": "string",
+                                "description": "A CFS source with directions to the configuration content repository"
                             },
                             "commit": {
                                 "type": "string",
@@ -7187,6 +7653,10 @@
                                                 "example": "https://api-gw-service-nmn.local/vcs/cray/config-management.git",
                                                 "pattern": "^[^\\s;]*$"
                                             },
+                                            "source": {
+                                                "type": "string",
+                                                "description": "A CFS source with directions to the configuration content repository"
+                                            },
                                             "playbook": {
                                                 "type": "string",
                                                 "description": "The Ansible playbook to run.",
@@ -7205,7 +7675,6 @@
                                             }
                                         },
                                         "required": [
-                                            "clone_url",
                                             "playbook"
                                         ],
                                         "additionalProperties": false
@@ -7227,6 +7696,10 @@
                                             "description": "The clone URL of the configuration content repository.",
                                             "example": "https://vcs.domain/vcs/org/inventory.git",
                                             "pattern": "^[^\\s;]*$"
+                                        },
+                                        "source": {
+                                            "type": "string",
+                                            "description": "A CFS source with directions to the configuration content repository"
                                         },
                                         "commit": {
                                             "type": "string",
@@ -7648,7 +8121,7 @@
                     "desired_config": {
                         "type": "string",
                         "description": "A reference to a configuration",
-                        "minLength": 1,
+                        "minLength": 0,
                         "maxLength": 60
                     },
                     "desired_state": {
@@ -7989,7 +8462,7 @@
                         "desired_config": {
                             "type": "string",
                             "description": "A reference to a configuration",
-                            "minLength": 1,
+                            "minLength": 0,
                             "maxLength": 60
                         },
                         "desired_state": {
@@ -8180,7 +8653,7 @@
                                 "desired_config": {
                                     "type": "string",
                                     "description": "A reference to a configuration",
-                                    "minLength": 1,
+                                    "minLength": 0,
                                     "maxLength": 60
                                 },
                                 "desired_state": {
@@ -8588,7 +9061,7 @@
                             "desired_config": {
                                 "type": "string",
                                 "description": "A reference to a configuration",
-                                "minLength": 1,
+                                "minLength": 0,
                                 "maxLength": 60
                             },
                             "desired_state": {
@@ -8713,6 +9186,390 @@
                     "patch",
                     "filters"
                 ]
+            },
+            "V3SourceCredentials": {
+                "description": "Information for retrieving the git credentials",
+                "type": "object",
+                "properties": {
+                    "authentication_method": {
+                        "type": "string",
+                        "description": "The git authentication method used.",
+                        "enum": [
+                            "password"
+                        ]
+                    },
+                    "secret_name": {
+                        "type": "string",
+                        "description": "The name of the credentials vault secret.",
+                        "readOnly": true
+                    },
+                    "username": {
+                        "type": "string",
+                        "description": "The username for authenticating to git",
+                        "writeOnly": true
+                    },
+                    "password": {
+                        "type": "string",
+                        "description": "The password for authenticating to git",
+                        "writeOnly": true
+                    }
+                },
+                "additionalProperties": false
+            },
+            "V3SourceCert": {
+                "description": "CA certificate info for retrieving the git credentials",
+                "type": "object",
+                "properties": {
+                    "configmap_name": {
+                        "type": "string",
+                        "description": "The name of the configmap containing a necessary CA cert.",
+                        "minLength": 1
+                    },
+                    "configmap_namespace": {
+                        "type": "string",
+                        "description": "The namespace of the CA cert configmap in kubernetes."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "configmap_name"
+                ]
+            },
+            "V3SourceData": {
+                "description": "Information for retrieving git content from a source.",
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "The name of the configuration.  This field is optional and will default to the clone_url if not specified.",
+                        "example": "sample-config"
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "A user-defined description. This field is not used by CFS."
+                    },
+                    "last_updated": {
+                        "type": "string",
+                        "description": "The date/time when the state was last updated in RFC 3339 format.",
+                        "example": "2019-07-28T03:26:00Z",
+                        "format": "date-time",
+                        "readOnly": true
+                    },
+                    "clone_url": {
+                        "type": "string",
+                        "description": "The url to access the git content"
+                    },
+                    "credentials": {
+                        "description": "Information for retrieving the git credentials",
+                        "type": "object",
+                        "properties": {
+                            "authentication_method": {
+                                "type": "string",
+                                "description": "The git authentication method used.",
+                                "enum": [
+                                    "password"
+                                ]
+                            },
+                            "secret_name": {
+                                "type": "string",
+                                "description": "The name of the credentials vault secret.",
+                                "readOnly": true
+                            },
+                            "username": {
+                                "type": "string",
+                                "description": "The username for authenticating to git",
+                                "writeOnly": true
+                            },
+                            "password": {
+                                "type": "string",
+                                "description": "The password for authenticating to git",
+                                "writeOnly": true
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ca_cert": {
+                        "description": "CA certificate info for retrieving the git credentials",
+                        "type": "object",
+                        "properties": {
+                            "configmap_name": {
+                                "type": "string",
+                                "description": "The name of the configmap containing a necessary CA cert.",
+                                "minLength": 1
+                            },
+                            "configmap_namespace": {
+                                "type": "string",
+                                "description": "The namespace of the CA cert configmap in kubernetes."
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "configmap_name"
+                        ]
+                    }
+                },
+                "additionalProperties": false
+            },
+            "V3SourceDataCollection": {
+                "description": "A collection of source data.",
+                "type": "object",
+                "properties": {
+                    "components": {
+                        "type": "array",
+                        "items": {
+                            "description": "Information for retrieving git content from a source.",
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "type": "string",
+                                    "description": "The name of the configuration.  This field is optional and will default to the clone_url if not specified.",
+                                    "example": "sample-config"
+                                },
+                                "description": {
+                                    "type": "string",
+                                    "description": "A user-defined description. This field is not used by CFS."
+                                },
+                                "last_updated": {
+                                    "type": "string",
+                                    "description": "The date/time when the state was last updated in RFC 3339 format.",
+                                    "example": "2019-07-28T03:26:00Z",
+                                    "format": "date-time",
+                                    "readOnly": true
+                                },
+                                "clone_url": {
+                                    "type": "string",
+                                    "description": "The url to access the git content"
+                                },
+                                "credentials": {
+                                    "description": "Information for retrieving the git credentials",
+                                    "type": "object",
+                                    "properties": {
+                                        "authentication_method": {
+                                            "type": "string",
+                                            "description": "The git authentication method used.",
+                                            "enum": [
+                                                "password"
+                                            ]
+                                        },
+                                        "secret_name": {
+                                            "type": "string",
+                                            "description": "The name of the credentials vault secret.",
+                                            "readOnly": true
+                                        },
+                                        "username": {
+                                            "type": "string",
+                                            "description": "The username for authenticating to git",
+                                            "writeOnly": true
+                                        },
+                                        "password": {
+                                            "type": "string",
+                                            "description": "The password for authenticating to git",
+                                            "writeOnly": true
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                },
+                                "ca_cert": {
+                                    "description": "CA certificate info for retrieving the git credentials",
+                                    "type": "object",
+                                    "properties": {
+                                        "configmap_name": {
+                                            "type": "string",
+                                            "description": "The name of the configmap containing a necessary CA cert.",
+                                            "minLength": 1
+                                        },
+                                        "configmap_namespace": {
+                                            "type": "string",
+                                            "description": "The namespace of the CA cert configmap in kubernetes."
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "configmap_name"
+                                    ]
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    },
+                    "next": {
+                        "description": "Information for requesting the next page of data",
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "type": "integer"
+                            },
+                            "after_id": {
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": true
+                    }
+                }
+            },
+            "V3SourceCreateCredentials": {
+                "description": "Information for retrieving the git credentials",
+                "type": "object",
+                "properties": {
+                    "authentication_method": {
+                        "type": "string",
+                        "description": "The git authentication method used.",
+                        "enum": [
+                            "password"
+                        ],
+                        "default": "password"
+                    },
+                    "username": {
+                        "type": "string",
+                        "description": "The username for authenticating to git",
+                        "writeOnly": true
+                    },
+                    "password": {
+                        "type": "string",
+                        "description": "The password for authenticating to git",
+                        "writeOnly": true
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "username",
+                    "password"
+                ]
+            },
+            "V3SourceCreateData": {
+                "description": "Information for retrieving git content from a source.",
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "The name of the configuration.  This field is optional and will default to the clone_url if not specified.",
+                        "example": "sample-config"
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "A user-defined description. This field is not used by CFS."
+                    },
+                    "clone_url": {
+                        "type": "string",
+                        "description": "The url to access the git content"
+                    },
+                    "credentials": {
+                        "description": "Information for retrieving the git credentials",
+                        "type": "object",
+                        "properties": {
+                            "authentication_method": {
+                                "type": "string",
+                                "description": "The git authentication method used.",
+                                "enum": [
+                                    "password"
+                                ],
+                                "default": "password"
+                            },
+                            "username": {
+                                "type": "string",
+                                "description": "The username for authenticating to git",
+                                "writeOnly": true
+                            },
+                            "password": {
+                                "type": "string",
+                                "description": "The password for authenticating to git",
+                                "writeOnly": true
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "username",
+                            "password"
+                        ]
+                    },
+                    "ca_cert": {
+                        "description": "CA certificate info for retrieving the git credentials",
+                        "type": "object",
+                        "properties": {
+                            "configmap_name": {
+                                "type": "string",
+                                "description": "The name of the configmap containing a necessary CA cert.",
+                                "minLength": 1
+                            },
+                            "configmap_namespace": {
+                                "type": "string",
+                                "description": "The namespace of the CA cert configmap in kubernetes."
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "configmap_name"
+                        ]
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "clone_url",
+                    "credentials"
+                ]
+            },
+            "V3SourceUpdateData": {
+                "description": "Information for retrieving git content from a source.",
+                "type": "object",
+                "properties": {
+                    "description": {
+                        "type": "string",
+                        "description": "A user-defined description. This field is not used by CFS."
+                    },
+                    "clone_url": {
+                        "type": "string",
+                        "description": "The url to access the git content"
+                    },
+                    "credentials": {
+                        "description": "Information for retrieving the git credentials",
+                        "type": "object",
+                        "properties": {
+                            "authentication_method": {
+                                "type": "string",
+                                "description": "The git authentication method used.",
+                                "enum": [
+                                    "password"
+                                ]
+                            },
+                            "secret_name": {
+                                "type": "string",
+                                "description": "The name of the credentials vault secret.",
+                                "readOnly": true
+                            },
+                            "username": {
+                                "type": "string",
+                                "description": "The username for authenticating to git",
+                                "writeOnly": true
+                            },
+                            "password": {
+                                "type": "string",
+                                "description": "The password for authenticating to git",
+                                "writeOnly": true
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ca_cert": {
+                        "description": "CA certificate info for retrieving the git credentials",
+                        "type": "object",
+                        "properties": {
+                            "configmap_name": {
+                                "type": "string",
+                                "description": "The name of the configmap containing a necessary CA cert.",
+                                "minLength": 1
+                            },
+                            "configmap_namespace": {
+                                "type": "string",
+                                "description": "The namespace of the CA cert configmap in kubernetes."
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "configmap_name"
+                        ]
+                    }
+                },
+                "additionalProperties": false
             },
             "ProblemDetails": {
                 "description": "An error response for RFC 7807 problem details.",
@@ -14272,11 +15129,18 @@
                                         },
                                         "additional_inventory_url": {
                                             "type": "string",
-                                            "description": "The git clone URL of a repo with additional inventory files.  All files in the repo will be copied into the hosts directory of CFS.\n",
+                                            "description": "The git clone URL of a repo with additional inventory files.  All files in the repo will be copied into the hosts directory of CFS. This is mutually exclusive with the additional_inventory_source option and only one can be set.\n",
                                             "example": "https://api-gw-service-nmn.local/vcs/cray/inventory.git",
                                             "pattern": "^[^\\s;]*$",
-                                            "minLength": 1,
-                                            "maxLength": 120
+                                            "minLength": 0,
+                                            "maxLength": 240
+                                        },
+                                        "additional_inventory_source": {
+                                            "type": "string",
+                                            "description": "A CFS source with additional inventory files.  All files in the repo will be copied into the hosts directory of CFS. This is mutually exclusive with the additional_source_url option and only one can be set.\n",
+                                            "example": "example-source",
+                                            "minLength": 0,
+                                            "maxLength": 60
                                         },
                                         "batcher_max_backoff": {
                                             "type": "integer",
@@ -14397,11 +15261,18 @@
                                     },
                                     "additional_inventory_url": {
                                         "type": "string",
-                                        "description": "The git clone URL of a repo with additional inventory files.  All files in the repo will be copied into the hosts directory of CFS.\n",
+                                        "description": "The git clone URL of a repo with additional inventory files.  All files in the repo will be copied into the hosts directory of CFS. This is mutually exclusive with the additional_inventory_source option and only one can be set.\n",
                                         "example": "https://api-gw-service-nmn.local/vcs/cray/inventory.git",
                                         "pattern": "^[^\\s;]*$",
-                                        "minLength": 1,
-                                        "maxLength": 120
+                                        "minLength": 0,
+                                        "maxLength": 240
+                                    },
+                                    "additional_inventory_source": {
+                                        "type": "string",
+                                        "description": "A CFS source with additional inventory files.  All files in the repo will be copied into the hosts directory of CFS. This is mutually exclusive with the additional_source_url option and only one can be set.\n",
+                                        "example": "example-source",
+                                        "minLength": 0,
+                                        "maxLength": 60
                                     },
                                     "batcher_max_backoff": {
                                         "type": "integer",
@@ -14511,11 +15382,18 @@
                                         },
                                         "additional_inventory_url": {
                                             "type": "string",
-                                            "description": "The git clone URL of a repo with additional inventory files.  All files in the repo will be copied into the hosts directory of CFS.\n",
+                                            "description": "The git clone URL of a repo with additional inventory files.  All files in the repo will be copied into the hosts directory of CFS. This is mutually exclusive with the additional_inventory_source option and only one can be set.\n",
                                             "example": "https://api-gw-service-nmn.local/vcs/cray/inventory.git",
                                             "pattern": "^[^\\s;]*$",
-                                            "minLength": 1,
-                                            "maxLength": 120
+                                            "minLength": 0,
+                                            "maxLength": 240
+                                        },
+                                        "additional_inventory_source": {
+                                            "type": "string",
+                                            "description": "A CFS source with additional inventory files.  All files in the repo will be copied into the hosts directory of CFS. This is mutually exclusive with the additional_source_url option and only one can be set.\n",
+                                            "example": "example-source",
+                                            "minLength": 0,
+                                            "maxLength": 60
                                         },
                                         "batcher_max_backoff": {
                                             "type": "integer",
@@ -14871,7 +15749,11 @@
                                                                     "job": {
                                                                         "description": "The name of the configuration execution environment associated with this session.",
                                                                         "example": "cray-cfs-job-session-20190728032600",
-                                                                        "readOnly": true,
+                                                                        "type": "string"
+                                                                    },
+                                                                    "ims_job": {
+                                                                        "description": "The name os the IMS job associated with the session when running against an image.",
+                                                                        "example": "5037edd8-e9c5-437d-b54b-db4a8ad2cb15",
                                                                         "type": "string"
                                                                     },
                                                                     "completion_time": {
@@ -14997,7 +15879,8 @@
                                         "type": "string",
                                         "description": "Additional filtering of hosts or groups from the inventory to run against. This is especially useful when running with dynamic inventory and when you want to run on a subset of nodes or groups. This option corresponds to ansible-playbook's --limit and can be used to specify nodes or groups.",
                                         "example": "host1",
-                                        "pattern": "^[^\\s;]*$"
+                                        "pattern": "^[^\\s;]*$",
+                                        "default": ""
                                     },
                                     "ansible_config": {
                                         "type": "string",
@@ -15013,7 +15896,8 @@
                                     },
                                     "ansible_passthrough": {
                                         "type": "string",
-                                        "description": "Additional parameters that are added to all Ansible calls for the session. This field is currently limited to the following Ansible parameters: \"--extra-vars\", \"--forks\", \"--skip-tags\", \"--start-at-task\", and \"--tags\". WARNING: Parameters passed to Ansible in this way should be used with caution.  State will not be recorded for components when using these flags to avoid incorrect reporting of partial playbook runs."
+                                        "description": "Additional parameters that are added to all Ansible calls for the session. This field is currently limited to the following Ansible parameters: \"--extra-vars\", \"--forks\", \"--skip-tags\", \"--start-at-task\", and \"--tags\". WARNING: Parameters passed to Ansible in this way should be used with caution.  State will not be recorded for components when using these flags to avoid incorrect reporting of partial playbook runs.",
+                                        "default": ""
                                     },
                                     "target": {
                                         "type": "object",
@@ -15281,7 +16165,11 @@
                                                         "job": {
                                                             "description": "The name of the configuration execution environment associated with this session.",
                                                             "example": "cray-cfs-job-session-20190728032600",
-                                                            "readOnly": true,
+                                                            "type": "string"
+                                                        },
+                                                        "ims_job": {
+                                                            "description": "The name os the IMS job associated with the session when running against an image.",
+                                                            "example": "5037edd8-e9c5-437d-b54b-db4a8ad2cb15",
                                                             "type": "string"
                                                         },
                                                         "completion_time": {
@@ -15674,7 +16562,11 @@
                                                                     "job": {
                                                                         "description": "The name of the configuration execution environment associated with this session.",
                                                                         "example": "cray-cfs-job-session-20190728032600",
-                                                                        "readOnly": true,
+                                                                        "type": "string"
+                                                                    },
+                                                                    "ims_job": {
+                                                                        "description": "The name os the IMS job associated with the session when running against an image.",
+                                                                        "example": "5037edd8-e9c5-437d-b54b-db4a8ad2cb15",
                                                                         "type": "string"
                                                                     },
                                                                     "completion_time": {
@@ -15965,7 +16857,11 @@
                                                         "job": {
                                                             "description": "The name of the configuration execution environment associated with this session.",
                                                             "example": "cray-cfs-job-session-20190728032600",
-                                                            "readOnly": true,
+                                                            "type": "string"
+                                                        },
+                                                        "ims_job": {
+                                                            "description": "The name os the IMS job associated with the session when running against an image.",
+                                                            "example": "5037edd8-e9c5-437d-b54b-db4a8ad2cb15",
                                                             "type": "string"
                                                         },
                                                         "completion_time": {
@@ -16251,7 +17147,11 @@
                                                         "job": {
                                                             "description": "The name of the configuration execution environment associated with this session.",
                                                             "example": "cray-cfs-job-session-20190728032600",
-                                                            "readOnly": true,
+                                                            "type": "string"
+                                                        },
+                                                        "ims_job": {
+                                                            "description": "The name os the IMS job associated with the session when running against an image.",
+                                                            "example": "5037edd8-e9c5-437d-b54b-db4a8ad2cb15",
                                                             "type": "string"
                                                         },
                                                         "completion_time": {
@@ -16656,7 +17556,7 @@
                                                     "desired_config": {
                                                         "type": "string",
                                                         "description": "A reference to a configuration",
-                                                        "minLength": 1,
+                                                        "minLength": 0,
                                                         "maxLength": 60
                                                     },
                                                     "desired_state": {
@@ -16919,7 +17819,7 @@
                                                     "desired_config": {
                                                         "type": "string",
                                                         "description": "A reference to a configuration",
-                                                        "minLength": 1,
+                                                        "minLength": 0,
                                                         "maxLength": 60
                                                     },
                                                     "desired_state": {
@@ -17145,7 +18045,7 @@
                                                 "desired_config": {
                                                     "type": "string",
                                                     "description": "A reference to a configuration",
-                                                    "minLength": 1,
+                                                    "minLength": 0,
                                                     "maxLength": 60
                                                 },
                                                 "desired_state": {
@@ -17415,7 +18315,7 @@
                                                     "desired_config": {
                                                         "type": "string",
                                                         "description": "A reference to a configuration",
-                                                        "minLength": 1,
+                                                        "minLength": 0,
                                                         "maxLength": 60
                                                     },
                                                     "desired_state": {
@@ -17641,7 +18541,7 @@
                                                 "desired_config": {
                                                     "type": "string",
                                                     "description": "A reference to a configuration",
-                                                    "minLength": 1,
+                                                    "minLength": 0,
                                                     "maxLength": 60
                                                 },
                                                 "desired_state": {
@@ -17961,7 +18861,7 @@
                                         "desired_config": {
                                             "type": "string",
                                             "description": "A reference to a configuration",
-                                            "minLength": 1,
+                                            "minLength": 0,
                                             "maxLength": 60
                                         },
                                         "desired_state": {
@@ -18238,7 +19138,7 @@
                                     "desired_config": {
                                         "type": "string",
                                         "description": "A reference to a configuration",
-                                        "minLength": 1,
+                                        "minLength": 0,
                                         "maxLength": 60
                                     },
                                     "desired_state": {
@@ -18430,7 +19330,7 @@
                                         "desired_config": {
                                             "type": "string",
                                             "description": "A reference to a configuration",
-                                            "minLength": 1,
+                                            "minLength": 0,
                                             "maxLength": 60
                                         },
                                         "desired_state": {
@@ -18670,7 +19570,7 @@
                                     "desired_config": {
                                         "type": "string",
                                         "description": "A reference to a configuration",
-                                        "minLength": 1,
+                                        "minLength": 0,
                                         "maxLength": 60
                                     },
                                     "desired_state": {
@@ -18862,7 +19762,7 @@
                                         "desired_config": {
                                             "type": "string",
                                             "description": "A reference to a configuration",
-                                            "minLength": 1,
+                                            "minLength": 0,
                                             "maxLength": 60
                                         },
                                         "desired_state": {
@@ -19182,6 +20082,10 @@
                                                                     "example": "https://api-gw-service-nmn.local/vcs/cray/config-management.git",
                                                                     "pattern": "^[^\\s;]*$"
                                                                 },
+                                                                "source": {
+                                                                    "type": "string",
+                                                                    "description": "A CFS source with directions to the configuration content repository"
+                                                                },
                                                                 "playbook": {
                                                                     "type": "string",
                                                                     "description": "The Ansible playbook to run.",
@@ -19200,7 +20104,6 @@
                                                                 }
                                                             },
                                                             "required": [
-                                                                "clone_url",
                                                                 "playbook"
                                                             ],
                                                             "additionalProperties": false
@@ -19222,6 +20125,10 @@
                                                                 "description": "The clone URL of the configuration content repository.",
                                                                 "example": "https://vcs.domain/vcs/org/inventory.git",
                                                                 "pattern": "^[^\\s;]*$"
+                                                            },
+                                                            "source": {
+                                                                "type": "string",
+                                                                "description": "A CFS source with directions to the configuration content repository"
                                                             },
                                                             "commit": {
                                                                 "type": "string",
@@ -19357,6 +20264,10 @@
                                                         "example": "https://api-gw-service-nmn.local/vcs/cray/config-management.git",
                                                         "pattern": "^[^\\s;]*$"
                                                     },
+                                                    "source": {
+                                                        "type": "string",
+                                                        "description": "A CFS source with directions to the configuration content repository"
+                                                    },
                                                     "playbook": {
                                                         "type": "string",
                                                         "description": "The Ansible playbook to run.",
@@ -19375,7 +20286,6 @@
                                                     }
                                                 },
                                                 "required": [
-                                                    "clone_url",
                                                     "playbook"
                                                 ],
                                                 "additionalProperties": false
@@ -19397,6 +20307,10 @@
                                                     "description": "The clone URL of the configuration content repository.",
                                                     "example": "https://vcs.domain/vcs/org/inventory.git",
                                                     "pattern": "^[^\\s;]*$"
+                                                },
+                                                "source": {
+                                                    "type": "string",
+                                                    "description": "A CFS source with directions to the configuration content repository"
                                                 },
                                                 "commit": {
                                                     "type": "string",
@@ -19514,6 +20428,10 @@
                                                     "example": "https://api-gw-service-nmn.local/vcs/cray/config-management.git",
                                                     "pattern": "^[^\\s;]*$"
                                                 },
+                                                "source": {
+                                                    "type": "string",
+                                                    "description": "A CFS source with directions to the configuration content repository"
+                                                },
                                                 "playbook": {
                                                     "type": "string",
                                                     "description": "The Ansible playbook to run.",
@@ -19532,7 +20450,6 @@
                                                 }
                                             },
                                             "required": [
-                                                "clone_url",
                                                 "playbook"
                                             ],
                                             "additionalProperties": false
@@ -19554,6 +20471,10 @@
                                                 "description": "The clone URL of the configuration content repository.",
                                                 "example": "https://vcs.domain/vcs/org/inventory.git",
                                                 "pattern": "^[^\\s;]*$"
+                                            },
+                                            "source": {
+                                                "type": "string",
+                                                "description": "A CFS source with directions to the configuration content repository"
                                             },
                                             "commit": {
                                                 "type": "string",
@@ -19577,6 +20498,17 @@
                         }
                     }
                 },
+                "parameters": [
+                    {
+                        "name": "drop_branches",
+                        "schema": {
+                            "type": "boolean",
+                            "default": false
+                        },
+                        "in": "query",
+                        "description": "Don't store the branches after converting each branch to a commit."
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "A single configuration",
@@ -19623,6 +20555,10 @@
                                                         "example": "https://api-gw-service-nmn.local/vcs/cray/config-management.git",
                                                         "pattern": "^[^\\s;]*$"
                                                     },
+                                                    "source": {
+                                                        "type": "string",
+                                                        "description": "A CFS source with directions to the configuration content repository"
+                                                    },
                                                     "playbook": {
                                                         "type": "string",
                                                         "description": "The Ansible playbook to run.",
@@ -19641,7 +20577,6 @@
                                                     }
                                                 },
                                                 "required": [
-                                                    "clone_url",
                                                     "playbook"
                                                 ],
                                                 "additionalProperties": false
@@ -19663,6 +20598,10 @@
                                                     "description": "The clone URL of the configuration content repository.",
                                                     "example": "https://vcs.domain/vcs/org/inventory.git",
                                                     "pattern": "^[^\\s;]*$"
+                                                },
+                                                "source": {
+                                                    "type": "string",
+                                                    "description": "A CFS source with directions to the configuration content repository"
                                                 },
                                                 "commit": {
                                                     "type": "string",
@@ -19780,6 +20719,10 @@
                                                         "example": "https://api-gw-service-nmn.local/vcs/cray/config-management.git",
                                                         "pattern": "^[^\\s;]*$"
                                                     },
+                                                    "source": {
+                                                        "type": "string",
+                                                        "description": "A CFS source with directions to the configuration content repository"
+                                                    },
                                                     "playbook": {
                                                         "type": "string",
                                                         "description": "The Ansible playbook to run.",
@@ -19798,7 +20741,6 @@
                                                     }
                                                 },
                                                 "required": [
-                                                    "clone_url",
                                                     "playbook"
                                                 ],
                                                 "additionalProperties": false
@@ -19820,6 +20762,10 @@
                                                     "description": "The clone URL of the configuration content repository.",
                                                     "example": "https://vcs.domain/vcs/org/inventory.git",
                                                     "pattern": "^[^\\s;]*$"
+                                                },
+                                                "source": {
+                                                    "type": "string",
+                                                    "description": "A CFS source with directions to the configuration content repository"
                                                 },
                                                 "commit": {
                                                     "type": "string",
@@ -19981,6 +20927,872 @@
                         "type": "string",
                         "minLength": 1,
                         "maxLength": 60
+                    }
+                }
+            ]
+        },
+        "/v3/sources": {
+            "get": {
+                "summary": "Retrieve a collection of sources",
+                "tags": [
+                    "sources",
+                    "v3"
+                ],
+                "x-openapi-router-controller": "cray.cfs.api.controllers.sources",
+                "description": "Retrieve the full collection of sources in the form of a SourceArray.",
+                "operationId": "get_sources_v3",
+                "parameters": [
+                    {
+                        "name": "limit",
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1
+                        },
+                        "in": "query",
+                        "description": "When set, CFS will only return a number of sources up to this limit.  Combined with after_id, this enables paging across results"
+                    },
+                    {
+                        "name": "after_id",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "in": "query",
+                        "description": "When set, CFS will only return the configurations after the source specified.  Combined with limit, this enables paging across results."
+                    },
+                    {
+                        "name": "in_use",
+                        "schema": {
+                            "type": "boolean"
+                        },
+                        "in": "query",
+                        "description": "Query for only sources that are currently referenced by configurations."
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "A collection of sources",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "description": "A collection of source data.",
+                                    "type": "object",
+                                    "properties": {
+                                        "components": {
+                                            "type": "array",
+                                            "items": {
+                                                "description": "Information for retrieving git content from a source.",
+                                                "type": "object",
+                                                "properties": {
+                                                    "name": {
+                                                        "type": "string",
+                                                        "description": "The name of the configuration.  This field is optional and will default to the clone_url if not specified.",
+                                                        "example": "sample-config"
+                                                    },
+                                                    "description": {
+                                                        "type": "string",
+                                                        "description": "A user-defined description. This field is not used by CFS."
+                                                    },
+                                                    "last_updated": {
+                                                        "type": "string",
+                                                        "description": "The date/time when the state was last updated in RFC 3339 format.",
+                                                        "example": "2019-07-28T03:26:00Z",
+                                                        "format": "date-time",
+                                                        "readOnly": true
+                                                    },
+                                                    "clone_url": {
+                                                        "type": "string",
+                                                        "description": "The url to access the git content"
+                                                    },
+                                                    "credentials": {
+                                                        "description": "Information for retrieving the git credentials",
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "authentication_method": {
+                                                                "type": "string",
+                                                                "description": "The git authentication method used.",
+                                                                "enum": [
+                                                                    "password"
+                                                                ]
+                                                            },
+                                                            "secret_name": {
+                                                                "type": "string",
+                                                                "description": "The name of the credentials vault secret.",
+                                                                "readOnly": true
+                                                            },
+                                                            "username": {
+                                                                "type": "string",
+                                                                "description": "The username for authenticating to git",
+                                                                "writeOnly": true
+                                                            },
+                                                            "password": {
+                                                                "type": "string",
+                                                                "description": "The password for authenticating to git",
+                                                                "writeOnly": true
+                                                            }
+                                                        },
+                                                        "additionalProperties": false
+                                                    },
+                                                    "ca_cert": {
+                                                        "description": "CA certificate info for retrieving the git credentials",
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "configmap_name": {
+                                                                "type": "string",
+                                                                "description": "The name of the configmap containing a necessary CA cert.",
+                                                                "minLength": 1
+                                                            },
+                                                            "configmap_namespace": {
+                                                                "type": "string",
+                                                                "description": "The namespace of the CA cert configmap in kubernetes."
+                                                            }
+                                                        },
+                                                        "additionalProperties": false,
+                                                        "required": [
+                                                            "configmap_name"
+                                                        ]
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "next": {
+                                            "description": "Information for requesting the next page of data",
+                                            "type": "object",
+                                            "properties": {
+                                                "limit": {
+                                                    "type": "integer"
+                                                },
+                                                "after_id": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": true
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "description": "An error response for RFC 7807 problem details.",
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "description": "Relative URI reference to the type of problem which includes human readable documentation.",
+                                            "type": "string",
+                                            "format": "uri",
+                                            "default": "about:blank"
+                                        },
+                                        "title": {
+                                            "description": "Short, human-readable summary of the problem, should not change by occurrence.",
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "description": "HTTP status code",
+                                            "type": "integer",
+                                            "example": 400
+                                        },
+                                        "instance": {
+                                            "description": "A relative URI reference that identifies the specific occurrence of the problem",
+                                            "format": "uri",
+                                            "type": "string"
+                                        },
+                                        "detail": {
+                                            "description": "A human-readable explanation specific to this occurrence of the problem. Focus on helping correct the problem, rather than giving debugging information.",
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "summary": "Add a single source",
+                "tags": [
+                    "sources",
+                    "v3"
+                ],
+                "x-openapi-router-controller": "cray.cfs.api.controllers.sources",
+                "description": "Add a source to CFS",
+                "operationId": "post_source_v3",
+                "requestBody": {
+                    "description": "A source",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "description": "Information for retrieving git content from a source.",
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "description": "The name of the configuration.  This field is optional and will default to the clone_url if not specified.",
+                                        "example": "sample-config"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "description": "A user-defined description. This field is not used by CFS."
+                                    },
+                                    "clone_url": {
+                                        "type": "string",
+                                        "description": "The url to access the git content"
+                                    },
+                                    "credentials": {
+                                        "description": "Information for retrieving the git credentials",
+                                        "type": "object",
+                                        "properties": {
+                                            "authentication_method": {
+                                                "type": "string",
+                                                "description": "The git authentication method used.",
+                                                "enum": [
+                                                    "password"
+                                                ],
+                                                "default": "password"
+                                            },
+                                            "username": {
+                                                "type": "string",
+                                                "description": "The username for authenticating to git",
+                                                "writeOnly": true
+                                            },
+                                            "password": {
+                                                "type": "string",
+                                                "description": "The password for authenticating to git",
+                                                "writeOnly": true
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "username",
+                                            "password"
+                                        ]
+                                    },
+                                    "ca_cert": {
+                                        "description": "CA certificate info for retrieving the git credentials",
+                                        "type": "object",
+                                        "properties": {
+                                            "configmap_name": {
+                                                "type": "string",
+                                                "description": "The name of the configmap containing a necessary CA cert.",
+                                                "minLength": 1
+                                            },
+                                            "configmap_namespace": {
+                                                "type": "string",
+                                                "description": "The namespace of the CA cert configmap in kubernetes."
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "configmap_name"
+                                        ]
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "clone_url",
+                                    "credentials"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "A single source",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "description": "Information for retrieving git content from a source.",
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "description": "The name of the configuration.  This field is optional and will default to the clone_url if not specified.",
+                                            "example": "sample-config"
+                                        },
+                                        "description": {
+                                            "type": "string",
+                                            "description": "A user-defined description. This field is not used by CFS."
+                                        },
+                                        "last_updated": {
+                                            "type": "string",
+                                            "description": "The date/time when the state was last updated in RFC 3339 format.",
+                                            "example": "2019-07-28T03:26:00Z",
+                                            "format": "date-time",
+                                            "readOnly": true
+                                        },
+                                        "clone_url": {
+                                            "type": "string",
+                                            "description": "The url to access the git content"
+                                        },
+                                        "credentials": {
+                                            "description": "Information for retrieving the git credentials",
+                                            "type": "object",
+                                            "properties": {
+                                                "authentication_method": {
+                                                    "type": "string",
+                                                    "description": "The git authentication method used.",
+                                                    "enum": [
+                                                        "password"
+                                                    ]
+                                                },
+                                                "secret_name": {
+                                                    "type": "string",
+                                                    "description": "The name of the credentials vault secret.",
+                                                    "readOnly": true
+                                                },
+                                                "username": {
+                                                    "type": "string",
+                                                    "description": "The username for authenticating to git",
+                                                    "writeOnly": true
+                                                },
+                                                "password": {
+                                                    "type": "string",
+                                                    "description": "The password for authenticating to git",
+                                                    "writeOnly": true
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "ca_cert": {
+                                            "description": "CA certificate info for retrieving the git credentials",
+                                            "type": "object",
+                                            "properties": {
+                                                "configmap_name": {
+                                                    "type": "string",
+                                                    "description": "The name of the configmap containing a necessary CA cert.",
+                                                    "minLength": 1
+                                                },
+                                                "configmap_namespace": {
+                                                    "type": "string",
+                                                    "description": "The namespace of the CA cert configmap in kubernetes."
+                                                }
+                                            },
+                                            "additionalProperties": false,
+                                            "required": [
+                                                "configmap_name"
+                                            ]
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "description": "An error response for RFC 7807 problem details.",
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "description": "Relative URI reference to the type of problem which includes human readable documentation.",
+                                            "type": "string",
+                                            "format": "uri",
+                                            "default": "about:blank"
+                                        },
+                                        "title": {
+                                            "description": "Short, human-readable summary of the problem, should not change by occurrence.",
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "description": "HTTP status code",
+                                            "type": "integer",
+                                            "example": 400
+                                        },
+                                        "instance": {
+                                            "description": "A relative URI reference that identifies the specific occurrence of the problem",
+                                            "format": "uri",
+                                            "type": "string"
+                                        },
+                                        "detail": {
+                                            "description": "A human-readable explanation specific to this occurrence of the problem. Focus on helping correct the problem, rather than giving debugging information.",
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "A source with the same name already exists",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "description": "An error response for RFC 7807 problem details.",
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "description": "Relative URI reference to the type of problem which includes human readable documentation.",
+                                            "type": "string",
+                                            "format": "uri",
+                                            "default": "about:blank"
+                                        },
+                                        "title": {
+                                            "description": "Short, human-readable summary of the problem, should not change by occurrence.",
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "description": "HTTP status code",
+                                            "type": "integer",
+                                            "example": 400
+                                        },
+                                        "instance": {
+                                            "description": "A relative URI reference that identifies the specific occurrence of the problem",
+                                            "format": "uri",
+                                            "type": "string"
+                                        },
+                                        "detail": {
+                                            "description": "A human-readable explanation specific to this occurrence of the problem. Focus on helping correct the problem, rather than giving debugging information.",
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v3/sources/{source_id}": {
+            "get": {
+                "summary": "Retrieve a single source",
+                "tags": [
+                    "sources",
+                    "v3"
+                ],
+                "x-openapi-router-controller": "cray.cfs.api.controllers.sources",
+                "description": "Retrieve the given source",
+                "operationId": "get_source_v3",
+                "responses": {
+                    "200": {
+                        "description": "A single source",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "description": "Information for retrieving git content from a source.",
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "description": "The name of the configuration.  This field is optional and will default to the clone_url if not specified.",
+                                            "example": "sample-config"
+                                        },
+                                        "description": {
+                                            "type": "string",
+                                            "description": "A user-defined description. This field is not used by CFS."
+                                        },
+                                        "last_updated": {
+                                            "type": "string",
+                                            "description": "The date/time when the state was last updated in RFC 3339 format.",
+                                            "example": "2019-07-28T03:26:00Z",
+                                            "format": "date-time",
+                                            "readOnly": true
+                                        },
+                                        "clone_url": {
+                                            "type": "string",
+                                            "description": "The url to access the git content"
+                                        },
+                                        "credentials": {
+                                            "description": "Information for retrieving the git credentials",
+                                            "type": "object",
+                                            "properties": {
+                                                "authentication_method": {
+                                                    "type": "string",
+                                                    "description": "The git authentication method used.",
+                                                    "enum": [
+                                                        "password"
+                                                    ]
+                                                },
+                                                "secret_name": {
+                                                    "type": "string",
+                                                    "description": "The name of the credentials vault secret.",
+                                                    "readOnly": true
+                                                },
+                                                "username": {
+                                                    "type": "string",
+                                                    "description": "The username for authenticating to git",
+                                                    "writeOnly": true
+                                                },
+                                                "password": {
+                                                    "type": "string",
+                                                    "description": "The password for authenticating to git",
+                                                    "writeOnly": true
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "ca_cert": {
+                                            "description": "CA certificate info for retrieving the git credentials",
+                                            "type": "object",
+                                            "properties": {
+                                                "configmap_name": {
+                                                    "type": "string",
+                                                    "description": "The name of the configmap containing a necessary CA cert.",
+                                                    "minLength": 1
+                                                },
+                                                "configmap_namespace": {
+                                                    "type": "string",
+                                                    "description": "The namespace of the CA cert configmap in kubernetes."
+                                                }
+                                            },
+                                            "additionalProperties": false,
+                                            "required": [
+                                                "configmap_name"
+                                            ]
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "The resource was not found.",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "description": "An error response for RFC 7807 problem details.",
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "description": "Relative URI reference to the type of problem which includes human readable documentation.",
+                                            "type": "string",
+                                            "format": "uri",
+                                            "default": "about:blank"
+                                        },
+                                        "title": {
+                                            "description": "Short, human-readable summary of the problem, should not change by occurrence.",
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "description": "HTTP status code",
+                                            "type": "integer",
+                                            "example": 400
+                                        },
+                                        "instance": {
+                                            "description": "A relative URI reference that identifies the specific occurrence of the problem",
+                                            "format": "uri",
+                                            "type": "string"
+                                        },
+                                        "detail": {
+                                            "description": "A human-readable explanation specific to this occurrence of the problem. Focus on helping correct the problem, rather than giving debugging information.",
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "summary": "Update the commits for a source",
+                "tags": [
+                    "sources",
+                    "v3"
+                ],
+                "x-openapi-router-controller": "cray.cfs.api.controllers.sources",
+                "description": "Updates a CFS source",
+                "operationId": "patch_source_v3",
+                "requestBody": {
+                    "description": "A source",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "description": "Information for retrieving git content from a source.",
+                                "type": "object",
+                                "properties": {
+                                    "description": {
+                                        "type": "string",
+                                        "description": "A user-defined description. This field is not used by CFS."
+                                    },
+                                    "clone_url": {
+                                        "type": "string",
+                                        "description": "The url to access the git content"
+                                    },
+                                    "credentials": {
+                                        "description": "Information for retrieving the git credentials",
+                                        "type": "object",
+                                        "properties": {
+                                            "authentication_method": {
+                                                "type": "string",
+                                                "description": "The git authentication method used.",
+                                                "enum": [
+                                                    "password"
+                                                ]
+                                            },
+                                            "secret_name": {
+                                                "type": "string",
+                                                "description": "The name of the credentials vault secret.",
+                                                "readOnly": true
+                                            },
+                                            "username": {
+                                                "type": "string",
+                                                "description": "The username for authenticating to git",
+                                                "writeOnly": true
+                                            },
+                                            "password": {
+                                                "type": "string",
+                                                "description": "The password for authenticating to git",
+                                                "writeOnly": true
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    "ca_cert": {
+                                        "description": "CA certificate info for retrieving the git credentials",
+                                        "type": "object",
+                                        "properties": {
+                                            "configmap_name": {
+                                                "type": "string",
+                                                "description": "The name of the configmap containing a necessary CA cert.",
+                                                "minLength": 1
+                                            },
+                                            "configmap_namespace": {
+                                                "type": "string",
+                                                "description": "The namespace of the CA cert configmap in kubernetes."
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "configmap_name"
+                                        ]
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "A single source",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "description": "Information for retrieving git content from a source.",
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "description": "The name of the configuration.  This field is optional and will default to the clone_url if not specified.",
+                                            "example": "sample-config"
+                                        },
+                                        "description": {
+                                            "type": "string",
+                                            "description": "A user-defined description. This field is not used by CFS."
+                                        },
+                                        "last_updated": {
+                                            "type": "string",
+                                            "description": "The date/time when the state was last updated in RFC 3339 format.",
+                                            "example": "2019-07-28T03:26:00Z",
+                                            "format": "date-time",
+                                            "readOnly": true
+                                        },
+                                        "clone_url": {
+                                            "type": "string",
+                                            "description": "The url to access the git content"
+                                        },
+                                        "credentials": {
+                                            "description": "Information for retrieving the git credentials",
+                                            "type": "object",
+                                            "properties": {
+                                                "authentication_method": {
+                                                    "type": "string",
+                                                    "description": "The git authentication method used.",
+                                                    "enum": [
+                                                        "password"
+                                                    ]
+                                                },
+                                                "secret_name": {
+                                                    "type": "string",
+                                                    "description": "The name of the credentials vault secret.",
+                                                    "readOnly": true
+                                                },
+                                                "username": {
+                                                    "type": "string",
+                                                    "description": "The username for authenticating to git",
+                                                    "writeOnly": true
+                                                },
+                                                "password": {
+                                                    "type": "string",
+                                                    "description": "The password for authenticating to git",
+                                                    "writeOnly": true
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "ca_cert": {
+                                            "description": "CA certificate info for retrieving the git credentials",
+                                            "type": "object",
+                                            "properties": {
+                                                "configmap_name": {
+                                                    "type": "string",
+                                                    "description": "The name of the configmap containing a necessary CA cert.",
+                                                    "minLength": 1
+                                                },
+                                                "configmap_namespace": {
+                                                    "type": "string",
+                                                    "description": "The namespace of the CA cert configmap in kubernetes."
+                                                }
+                                            },
+                                            "additionalProperties": false,
+                                            "required": [
+                                                "configmap_name"
+                                            ]
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "description": "An error response for RFC 7807 problem details.",
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "description": "Relative URI reference to the type of problem which includes human readable documentation.",
+                                            "type": "string",
+                                            "format": "uri",
+                                            "default": "about:blank"
+                                        },
+                                        "title": {
+                                            "description": "Short, human-readable summary of the problem, should not change by occurrence.",
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "description": "HTTP status code",
+                                            "type": "integer",
+                                            "example": 400
+                                        },
+                                        "instance": {
+                                            "description": "A relative URI reference that identifies the specific occurrence of the problem",
+                                            "format": "uri",
+                                            "type": "string"
+                                        },
+                                        "detail": {
+                                            "description": "A human-readable explanation specific to this occurrence of the problem. Focus on helping correct the problem, rather than giving debugging information.",
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "sources",
+                    "v3"
+                ],
+                "summary": "Delete a single source",
+                "x-openapi-router-controller": "cray.cfs.api.controllers.sources",
+                "description": "Delete the given source. This will fail in any components are using the specified source.",
+                "operationId": "delete_source_v3",
+                "responses": {
+                    "204": {
+                        "description": "The resource was deleted."
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "description": "An error response for RFC 7807 problem details.",
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "description": "Relative URI reference to the type of problem which includes human readable documentation.",
+                                            "type": "string",
+                                            "format": "uri",
+                                            "default": "about:blank"
+                                        },
+                                        "title": {
+                                            "description": "Short, human-readable summary of the problem, should not change by occurrence.",
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "description": "HTTP status code",
+                                            "type": "integer",
+                                            "example": 400
+                                        },
+                                        "instance": {
+                                            "description": "A relative URI reference that identifies the specific occurrence of the problem",
+                                            "format": "uri",
+                                            "type": "string"
+                                        },
+                                        "detail": {
+                                            "description": "A human-readable explanation specific to this occurrence of the problem. Focus on helping correct the problem, rather than giving debugging information.",
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "The resource was not found.",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "description": "An error response for RFC 7807 problem details.",
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "description": "Relative URI reference to the type of problem which includes human readable documentation.",
+                                            "type": "string",
+                                            "format": "uri",
+                                            "default": "about:blank"
+                                        },
+                                        "title": {
+                                            "description": "Short, human-readable summary of the problem, should not change by occurrence.",
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "description": "HTTP status code",
+                                            "type": "integer",
+                                            "example": 400
+                                        },
+                                        "instance": {
+                                            "description": "A relative URI reference that identifies the specific occurrence of the problem",
+                                            "format": "uri",
+                                            "type": "string"
+                                        },
+                                        "detail": {
+                                            "description": "A human-readable explanation specific to this occurrence of the problem. Focus on helping correct the problem, rather than giving debugging information.",
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "parameters": [
+                {
+                    "name": "source_id",
+                    "in": "path",
+                    "description": "Name of the target source",
+                    "required": true,
+                    "schema": {
+                        "type": "string",
+                        "minLength": 1
                     }
                 }
             ]
