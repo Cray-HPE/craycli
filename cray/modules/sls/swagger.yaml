@@ -760,14 +760,21 @@ components:
 
     xname:
       type: string
-      # This string should be generated using the command "grep regexp.MustCompile pkg/base/hmstypes.go | grep -v -e 'INVALID' -e 'all_*' -e '\^p' -e '\^sms' | awk -F'"' '{print $2}' | tr '\n' '|'" from the root of the hsm-common repository whenever the hmstypes.go file is updated
-      pattern: &xname_pattern "^s0$|^d([0-9]+)$|^x([0-9]{1,4})d([0-1])$|^x([0-9]{1,4})m([0-3])$|^x([0-9]{1,4})m([0-3])p([0-7])$|^x([0-9]{1,4})m([0-3])i([0-3])$|^x([0-9]{1,4})m([0-3])p([0-7])j([1-9][0-9]*)$|^x([0-9]{1,4})e([0-1])$|^x([0-9]{1,4})$|^x([0-9]{1,4})b([0])$|^x([0-9]{1,4})c([0-7])$|^x([0-9]{1,4})c([0-7])b([0])$|^x([0-9]{1,4})c([0-7])f([0])$|^x([0-9]{1,4})c([0-7])t([0-2])$|^x([0-9]{1,4})c([0-7])s([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)f([0])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)e([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)j([1-2])$|^x([0-9]{1,4})c([0-7])r([0-9]+)e([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)h([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)a([0-7])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)d([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)p([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)$|^x([0-9]{1,4})c([0-7])r([0-9]+)f([01])$|^x([0-9]{1,4})c([0-7])r([0-9]+)t([0-9]+)f([0-1])$|^x([0-9]{1,4})c([0-7])r([0-9]+)b([0-9]+)$|^x([0-9]{1,4})c([0-7])r([0-9]+)b([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)a([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)j([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])r([0-9]+)j([1-9][0-9]*)p([012])$|^x([0-9]{1,4})c([0-7])r([0-9]+)a([0-3])l([0-9]+)$|^x([0-9]{1,4})c([0-7])w([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])w([0-9]+)j([1-9][0-9]*)$"
+      # This string should be generated using the command
+      # from the root of the hms-sls repository
+      # grep regexp.MustCompile ./vendor/github.com/Cray-HPE/hms-xname/xnametypes/hmstypes.go | grep -v -e 'INVALID' -e 'all_*' -e '\^p' -e '\^sms' | awk -F'"' '{print $2}' | tr '\n' '|'
+      #
+      # the old way is to run this from the root of the hms-common repository
+      # grep regexp.MustCompile pkg/base/hmstypes.go | grep -v -e 'INVALID' -e 'all_*' -e '\^p' -e '\^sms' | awk -F'"' '{print $2}' | tr '\n' '|'
+      pattern: &xname_pattern "^s0$|^d([0-9]+)$|^d([0-9]+)w([0-9]+)$|^x([0-9]{1,4})d([0-1])$|^x([0-9]{1,4})m([0-3])$|^x([0-9]{1,4})m([0-3])p([0-7])$|^x([0-9]{1,4})m([0-3])i([0-3])$|^x([0-9]{1,4})m([0-3])p([0-7])j([1-9][0-9]*)$|^x([0-9]{1,4})m([0-3])p([0-7])v([1-9][0-9]*)$|^x([0-9]{1,4})e([0-1])$|^x([0-9]{1,4})$|^x([0-9]{1,4})b([0])$|^x([0-9]{1,4})c([0-7])$|^x([0-9]{1,4})c([0-7])b([0])$|^x([0-9]{1,4})c([0-7])b([0])i([0-3])$|^x([0-9]{1,4})c([0-7])f([0])$|^x([0-9]{1,4})c([0-7])t([0-9])$|^x([0-9]{1,4})c([0-7])s([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)g([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)g([0-9]+)k([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)f([0])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)e([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)e([0-9]+)t([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)[jv]([1-2])$|^x([0-9]{1,4})c([0-7])r([0-9]+)e([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)v([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)h([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)a([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)r([0-7])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)d([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)p([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)$|^x([0-9]{1,4})c([0-7])r([0-9]+)f([01])$|^x([0-9]{1,4})c([0-7])r([0-9]+)t([0-9]+)$|^x([0-9]{1,4})c([0-7])r([0-9]+)t([0-9]+)f([0-1])$|^x([0-9]{1,4})c([0-7])r([0-9]+)b([0-9]+)$|^x([0-9]{1,4})c([0-7])r([0-9]+)b([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)v([1-2])$|^x([0-9]{1,4})c([0-7])r([0-9]+)a([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)j([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])r([0-9]+)j([1-9][0-9]*)p([012])$|^x([0-9]{1,4})c([0-7])r([0-9]+)a([0-3])l([0-9]+)$|^x([0-9]{1,4})c([0-7])w([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])w([1-9][0-9]*)j([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])h([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])h([1-9][0-9]*)s([1-9])$"
       description: "The xname of this piece of hardware"
       example: "x0c0s0b0"
     hwtype:
       type: string
-      # Regenerate this pattern by running "grep "HMSType = " pkg/base/hmstypes.go | awk '{print "^" $4 "$"}' | tr -d '"' | grep -v -e INVALID -e 'All*' -e Partition | tr '\n' '|'"
-      pattern: &hwtype_pattern "^CDU$|^CabinetCDU$|^Cabinet$|^CabinetBMC$|^CabinetPDUController$|^CabinetPDU$|^CabinetPDUNic$|^CabinetPDUOutlet$|^Chassis$|^ChassisBMC$|^CMMRectifier$|^CMMFpga$|^CEC$|^ComputeModule$|^RouterModule$|^NodeBMC$|^NodeBMCNic$|^NodeEnclosure$|^NodePowerConnector$|^Node$|^Processor$|^NodeNIC$|^NodeHsnNIC$|^Memory$|^NodeAccel$|^NodeFpga$|^HSNAsic$|^RouterFpga$|^RouterTORFpga$|^RouterBMC$|^RouterBMCNic$|^HSNBoard$|^HSNLink$|^HSNConnector$|^HSNConnectorPort$|^MgmtSwitch$|^MgmtSwitchConnector$|^SMSBox$|^System$"
+      # Regenerate this pattern by running  one of these
+      # grep "HMSType = " vendor/github.com/Cray-HPE/hms-xname/xnametypes/hmstypes.go | awk '{print "^" $4 "$"}' | tr -d '"' | grep -v -e INVALID -e 'All*' -e Partition | tr '\n' '|'
+      # grep "HMSType = " pkg/base/hmstypes.go | awk '{print "^" $4 "$"}' | tr -d '"' | grep -v -e INVALID -e 'All*' -e Partition | tr '\n' '|'
+      pattern: &hwtype_pattern "^CDU$|^CDUMgmtSwitch$|^CabinetCDU$|^Cabinet$|^CabinetBMC$|^CabinetPDUController$|^CabinetPDU$|^CabinetPDUNic$|^CabinetPDUOutlet$|^CabinetPDUPowerConnector$|^Chassis$|^ChassisBMC$|^ChassisBMCNic$|^CMMRectifier$|^CMMFpga$|^CEC$|^ComputeModule$|^RouterModule$|^NodeBMC$|^NodeBMCNic$|^NodeEnclosure$|^NodeEnclosurePowerSupply$|^NodePowerConnector$|^Node$|^VirtualNode$|^Processor$|^StorageGroup$|^Drive$|^NodeNic$|^NodeHsnNic$|^Memory$|^NodeAccel$|^NodeAccelRiser$|^NodeFpga$|^HSNAsic$|^RouterFpga$|^RouterTOR$|^RouterTORFpga$|^RouterBMC$|^RouterBMCNic$|^RouterPowerConnector$|^HSNBoard$|^HSNLink$|^HSNConnector$|^HSNConnectorPort$|^MgmtSwitch$|^MgmtHLSwitchEnclosure$|^MgmtHLSwitch$|^MgmtSwitchConnector$|^SMSBox$|^System$"
       description: &hwtype_description "The type of this piece of hardware.  This is an optional hint during upload; it will be ignored if it does not match the xname"
       example: &hwtype_example "comptype_ncard"
     hwclass:
@@ -973,6 +980,19 @@ components:
           type: integer
           minimum: 0
           example: "2"
+    hardware_comptype_virtual_node:
+      type: object
+      required: ["NodeType"]
+      properties:
+        NodeType:
+          type: string
+          enum: ["Management"]
+          description: "The role type assigned to this node."
+          example: "Management"
+        nid:
+          type: integer
+          minimum: 0
+          example: "2"
     hardware_comptype_nodecard:
       $ref: '#/components/schemas/hardware_ip_and_creds_optional'
     hardware_extra_properties:
@@ -988,6 +1008,7 @@ components:
         - $ref: '#/components/schemas/hardware_comptype_compmod'
         - $ref: '#/components/schemas/hardware_comptype_cab_pdu'
         - $ref: '#/components/schemas/hardware_comptype_node'
+        - $ref: '#/components/schemas/hardware_comptype_virtual_node'
         - $ref: '#/components/schemas/hardware_comptype_nodecard'
 
     slsState:

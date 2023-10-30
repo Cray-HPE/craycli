@@ -1419,7 +1419,11 @@ paths:
             - NodeEnclosure
             - NodeEnclosurePowerSupply
             - HSNBoard
+            - MgmtSwitch
+            - MgmtHLSwitch
+            - CDUMgmtSwitch
             - Node
+            - VirtualNode
             - Processor
             - Drive
             - StorageGroup
@@ -4674,7 +4678,7 @@ paths:
           schema:
             $ref: '#/definitions/Subscriptions_SCNPostSubscription'
       responses:
-        "200":
+        "204":
           description: Success. The subscription has been overwritten.
         "400":
           description: >-
@@ -7015,6 +7019,30 @@ definitions:
           $ref: '#/definitions/HWInvByLocHSNBoard'
         readOnly: true
         type: array
+      MgmtSwitches:
+        description: >-
+          All appropriate components with HMS type 'MgmtSwitch' given
+          Target component/partition and query type.
+        items:
+          $ref: '#/definitions/HWInvByLocMgmtSwitch'
+        readOnly: true
+        type: array
+      MgmtHLSwitches:
+        description: >-
+          All appropriate components with HMS type 'MgmtHLSwitch' given
+          Target component/partition and query type.
+        items:
+          $ref: '#/definitions/HWInvByLocMgmtHLSwitch'
+        readOnly: true
+        type: array
+      CDUMgmtSwitches:
+        description: >-
+          All appropriate components with HMS type 'CDUMgmtSwitch' given
+          Target component/partition and query type.
+        items:
+          $ref: '#/definitions/HWInvByLocCDUMgmtSwitch'
+        readOnly: true
+        type: array
       Nodes:
         description: >-
           All appropriate components with HMS type 'Node' given Target
@@ -7168,6 +7196,9 @@ definitions:
           - HWInvByLocRouterModule
           - HWInvByLocNodeEnclosure
           - HWInvByLocHSNBoard
+          - HWInvByLocMgmtSwitch
+          - HWInvByLocMgmtHLSwitch
+          - HWInvByLocCDUMgmtSwitch
           - HWInvByLocNode
           - HWInvByLocProcessor
           - HWInvByLocNodeAccel
@@ -7361,6 +7392,45 @@ definitions:
       - type: object
         properties:
           HSNBoardLocationInfo:
+            $ref: '#/definitions/HWInventory.1.0.0_RedfishChassisLocationInfo'
+    type: object
+  HWInvByLocMgmtSwitch:
+    description: >-
+      This is a subtype of HWInventoryByLocation for HMSType MgmtSwitch.
+      It represents a management switch.  It is selected via the
+      'discriminator: HWInventoryByLocationType' of HWInventoryByLocation
+      when HWInventoryByLocationType is 'HWInvByLocMgmtSwitch'.
+    allOf:
+      - $ref: '#/definitions/HWInventory.1.0.0_HWInventoryByLocation'
+      - type: object
+        properties:
+          MgmtSwitchLocationInfo:
+            $ref: '#/definitions/HWInventory.1.0.0_RedfishChassisLocationInfo'
+    type: object
+  HWInvByLocMgmtHLSwitch:
+    description: >-
+      This is a subtype of HWInventoryByLocation for HMSType MgmtHLSwitch.
+      It represents a high level management switch.  It is selected via the
+      'discriminator: HWInventoryByLocationType' of HWInventoryByLocation
+      when HWInventoryByLocationType is 'HWInvByLocMgmtHLSwitch'.
+    allOf:
+      - $ref: '#/definitions/HWInventory.1.0.0_HWInventoryByLocation'
+      - type: object
+        properties:
+          MgmtHLSwitchLocationInfo:
+            $ref: '#/definitions/HWInventory.1.0.0_RedfishChassisLocationInfo'
+    type: object
+  HWInvByLocCDUMgmtSwitch:
+    description: >-
+      This is a subtype of HWInventoryByLocation for HMSType CDUMgmtSwitch.
+      It represents a CDU management switch.  It is selected via the
+      'discriminator: HWInventoryByLocationType' of HWInventoryByLocation
+      when HWInventoryByLocationType is 'HWInvByLocCDUMgmtSwitch'.
+    allOf:
+      - $ref: '#/definitions/HWInventory.1.0.0_HWInventoryByLocation'
+      - type: object
+        properties:
+          CDUMgmtSwitchLocationInfo:
             $ref: '#/definitions/HWInventory.1.0.0_RedfishChassisLocationInfo'
     type: object
   HWInvByLocNode:
@@ -8403,6 +8473,9 @@ definitions:
           - HWInvByFRURouterModule
           - HWInvByFRUNodeEnclosure
           - HWInvByFRUHSNBoard
+          - HWInvByFRUMgmtSwitch
+          - HWInvByFRUMgmtHLSwitch
+          - HWInvByFRUCDUMgmtSwitch
           - HWInvByFRUNode
           - HWInvByFRUProcessor
           - HWInvByFRUNodeAccel
@@ -8516,6 +8589,45 @@ definitions:
       - type: object
         properties:
           HSNBoardFRUInfo:
+            $ref: '#/definitions/HWInventory.1.0.0_RedfishChassisFRUInfo'
+    type: object
+  HWInvByFRUMgmtSwitch:
+    description: >-
+      This is a subtype of HWInventoryByFRU for HMSType MgmtSwitch.
+      It represents a management switch.  It is selected via the
+      'discriminator: HWInventoryByFRUType' of HWInventoryByFRU when
+      HWInventoryByFRUType is 'HWInvByFRUMgmtSwitch'.
+    allOf:
+      - $ref: '#/definitions/HWInventory.1.0.0_HWInventoryByFRU'
+      - type: object
+        properties:
+          MgmtSwitchFRUInfo:
+            $ref: '#/definitions/HWInventory.1.0.0_RedfishChassisFRUInfo'
+    type: object
+  HWInvByFRUMgmtHLSwitch:
+    description: >-
+      This is a subtype of HWInventoryByFRU for HMSType MgmtHLSwitch.
+      It represents a high level management switch.  It is selected via the
+      'discriminator: HWInventoryByFRUType' of HWInventoryByFRU when
+      HWInventoryByFRUType is 'HWInvByFRUMgmtHLSwitch'.
+    allOf:
+      - $ref: '#/definitions/HWInventory.1.0.0_HWInventoryByFRU'
+      - type: object
+        properties:
+          MgmtHLSwitchFRUInfo:
+            $ref: '#/definitions/HWInventory.1.0.0_RedfishChassisFRUInfo'
+    type: object
+  HWInvByFRUCDUMgmtSwitch:
+    description: >-
+      This is a subtype of HWInventoryByFRU for HMSType CDUMgmtSwitch.
+      It represents a CDU management switch.  It is selected via the
+      'discriminator: HWInventoryByFRUType' of HWInventoryByFRU when
+      HWInventoryByFRUType is 'HWInvByFRUCDUMgmtSwitch'.
+    allOf:
+      - $ref: '#/definitions/HWInventory.1.0.0_HWInventoryByFRU'
+      - type: object
+        properties:
+          CDUMgmtSwitchFRUInfo:
             $ref: '#/definitions/HWInventory.1.0.0_RedfishChassisFRUInfo'
     type: object
   HWInvByFRUNode:
@@ -11679,7 +11791,11 @@ definitions:
       - NodeEnclosure
       - NodeEnclosurePowerSupply
       - HSNBoard
+      - MgmtSwitch
+      - MgmtHLSwitch
+      - CDUMgmtSwitch
       - Node
+      - VirtualNode
       - Processor
       - Drive
       - StorageGroup
@@ -11964,7 +12080,11 @@ parameters:
       - NodeEnclosure
       - NodeEnclosurePowerSupply
       - HSNBoard
+      - MgmtSwitch
+      - MgmtHLSwitch
+      - CDUMgmtSwitch
       - Node
+      - VirtualNode
       - Processor
       - Drive
       - StorageGroup
@@ -12080,7 +12200,7 @@ parameters:
       - X86
       - ARM
       - Other
-      - Unknown
+      - UNKNOWN
   compClassParam:
     name: class
     in: query
