@@ -66,6 +66,17 @@ info:
         artifact repository. Recipes themselves define how an image is to be created, including the
         RPMs that will be installed, the RPM repositories to use, etc.
 
+      ### /remote-build-nodes
+
+        Manage the set of nodes set up for running remote jobs. These are jobs that are
+        run on nodes outside of the set of Kubernetes worker nodes. They can be used to
+        offload work from the worker nodes, or match the archetecture of the images
+        being created or customized.
+
+        The remote node must be fully configured and booted into the 'remote-node-image'
+        by the site-admin prior to registration in IMS. It will be tested prior to job
+        launch and if it is not accessible or correctly configured it will not be used.
+
     ## Workflows
 
       There are two main workflows using the IMS - image creation and image customization.
@@ -521,6 +532,99 @@ paths:
       responses:
         '204':
           description: Public Key record deleted successfully
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /v3/remote-build-nodes:
+    get:
+      summary: List remote build nodes
+      operationId: get_all_v3_remote_build_nodes
+      tags:
+        - remote build node
+        - v3
+      description: Retrieve a list of remote build nodes that are registered with IMS.
+      responses:
+        '200':
+          description: A collection of remote build nodes
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/RemoteBuildNodeRecord'
+                type: array
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      summary: Create a new remote built node record
+      operationId: post_v3_remote_build_node
+      tags:
+        - remote build node
+        - v3
+      description: Create a new remote build node record. Updated by administrator to allow them to run jobs on a remote build node.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RemoteBuildNodeRecord'
+        description: Remote build node record to create
+        required: true
+      responses:
+        '201':
+          description: New RemoteBuildNode
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RemoteBuildNodeRecord'
+        '400':
+          $ref: '#/components/responses/NoInputProvided'
+        '422':
+          $ref: '#/components/responses/InvalidInputData'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      summary: Delete all RemoteBuildNodeRecords
+      operationId: delete_all_v3_remote_build_nodes
+      tags:
+        - remote build node
+        - v3
+      description: Delete all remote build node records.
+      responses:
+        '204':
+          description: Remote build node records deleted successfully
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  '/v3/remote-build-nodes/{remote_build_node_xname}':
+    parameters:
+      - $ref: '#/components/parameters/remote_build_node_xname'
+    get:
+      summary: Retrieve a remote build node by remote_build_node_xname
+      operationId: get_v3_remote_build_node
+      tags:
+        - remote build node
+        - v3
+      description: Retrieve a remote build node by remote_build_node_xname
+      responses:
+        '200':
+          description: A remote build node record
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RemoteBuildNodeRecord'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      summary: Delete remote build node by remote_build_node_xname
+      operationId: delete_v3_remote_build_node
+      tags:
+        - remote build node
+        - v3
+      description: Delete a RemoteBuildNodeRecord by Xname.
+      responses:
+        '204':
+          description: Remote build node record deleted successfully
         '404':
           $ref: '#/components/responses/NotFound'
         '500':
@@ -1640,6 +1744,10 @@ paths:
     $ref: "#/paths/~1v2~1public-keys"
   /public-keys/{public_key_id}:
     $ref: "#/paths/~1v2~1public-keys~1{public_key_id}"
+  /remote-build-nodes:
+    $ref: "#/paths/~1v3~1remote-build-nodes"
+  /remote-build-nodes/{remote_build_node_xname}:
+    $ref: "#/paths/~1v3~1remote-build-nodes~1{remote_build_node_xname}"
   /jobs:
     $ref: "#/paths/~1v2~1jobs"
   /jobs/{job_id}:
@@ -1742,6 +1850,14 @@ components:
         type: string
         format: uuid
       example: bc6ec895-6ff5-4481-bd98-88ed4cd233e9
+    remote_build_node_xname:
+      description: The unique xname of a remote build node
+      in: path
+      name: remote_build_node_xname
+      required: true
+      schema:
+        type: string
+      example: x3000c1s10b1n0
     job_id:
       description: The unique ID of a job
       in: path
@@ -1943,6 +2059,17 @@ components:
             ssh-rsa AAAAB3NzaC1yc2EAAAADAQABA ...
             fa6hG9i2SzfY8L6vAVvSE7A2ILAsVruw1Zeiec2IWt
 
+          type: string
+          minLength: 1
+    RemoteBuildNodeRecord:
+      description: A Remote Build Node Record
+      type: object
+      required:
+        - xname
+      properties:
+        xname:
+          description: Xname of the remote build node
+          example: x3000c1s10b1n0
           type: string
           minLength: 1
     ArtifactLinkRecord:
