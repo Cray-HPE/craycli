@@ -59,7 +59,8 @@ def test_cray_ims_base(cli_runner, rest_mock):
         "public-keys",
         "recipes",
         "images",
-        "jobs"
+        "jobs",
+        "remote-build-nodes"
     ]
 
     compare_output(outputs, result.output)
@@ -173,6 +174,92 @@ def test_cray_ims_public_keys_create_missing_required(cli_runner, rest_mock):
     )
     assert result.exit_code == 2
     assert '--public-key' in result.output
+
+def test_cray_ims_remote_build_nodes_base(cli_runner, rest_mock):
+    """ Test cray ims remote-build-nodes base command """
+    runner, cli, _ = cli_runner
+    result = runner.invoke(cli, ['ims', 'remote-build-nodes'])
+    assert result.exit_code == 0
+
+    outputs = [
+        "create",
+        "delete",
+        "deleteall",
+        "describe",
+        "list",
+    ]
+
+    compare_output(outputs, result.output)
+
+
+def test_cray_ims_remote_build_nodes_delete(cli_runner, rest_mock):
+    """ Test cray ims public_keys delete ... """
+    runner, cli, config = cli_runner
+    result = runner.invoke(cli, ['ims', 'remote-build-nodes', 'delete', 'foo'])
+    assert result.exit_code == 0
+    data = json.loads(result.output)
+    assert data['method'] == 'DELETE'
+    assert data['url'] == f'{config["default"]["hostname"]}/apis/ims/v3/remote-build-nodes/foo'
+
+
+def test_cray_ims_remote_build_nodes_delete_all(cli_runner, rest_mock):
+    """ Test cray ims public_keys delete ... """
+    runner, cli, config = cli_runner
+    result = runner.invoke(cli, ['ims', 'remote-build-nodes', 'deleteall'])
+    assert result.exit_code == 0
+    data = json.loads(result.output)
+    assert data['method'] == 'DELETE'
+    assert data['url'] == f'{config["default"]["hostname"]}/apis/ims/v3/remote-build-nodes'
+
+
+def test_cray_ims_remote_build_nodes_list(cli_runner, rest_mock):
+    """ Test cray ims public_keys list """
+    runner, cli, config = cli_runner
+    result = runner.invoke(cli, ['ims', 'remote-build-nodes', 'list'])
+    assert result.exit_code == 0
+    data = json.loads(result.output)
+    assert data['method'] == 'GET'
+    assert data['url'] == f'{config["default"]["hostname"]}/apis/ims/v3/remote-build-nodes'
+
+
+def test_cray_ims_remote_build_nodes_describe(cli_runner, rest_mock):
+    """ Test cray ims public_keys describe """
+    runner, cli, config = cli_runner
+    result = runner.invoke(cli, ['ims', 'remote-build-nodes', 'describe', 'foo'])
+    assert result.exit_code == 0
+    data = json.loads(result.output)
+    assert data['method'] == 'GET'
+    assert data['url'] == f'{config["default"]["hostname"]}/apis/ims/v3/remote-build-nodes/foo'
+
+
+def test_cray_ims_remote_build_nodes_create(cli_runner, rest_mock):
+    """ Test cray ims public_keys create ... happy path """
+    runner, cli, config = cli_runner
+    result = runner.invoke(
+        cli,
+        ['ims', 'remote-build-nodes', 'create', '--xname', 'foo']
+    )
+    assert result.exit_code == 0
+    data = json.loads(result.output)
+    assert data['method'] == 'POST'
+    assert data['url'] == f'{config["default"]["hostname"]}/apis/ims/v3/remote-build-nodes'
+    assert data['body'] == {
+        'xname': 'foo'
+    }
+
+
+def test_cray_ims_remote_build_nodes_create_missing_required(cli_runner, rest_mock):
+    """Test cray ims public_keys create ... when a required parameter is
+    missing
+
+    """
+    runner, cli, _ = cli_runner
+    result = runner.invoke(
+        cli,
+        ['ims', 'remote-build-nodes', 'create']
+    )
+    assert result.exit_code == 2
+    assert '--xname' in result.output
 
 
 def test_cray_ims_deleted_public_keys_base(cli_runner, rest_mock):
