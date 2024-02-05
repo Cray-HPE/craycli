@@ -1,7 +1,7 @@
 #
 # MIT License
 #
-# (C) Copyright 2020-2023 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2020-2024 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -270,6 +270,33 @@ def test_cray_bos_session_create(cli_runner, rest_mock):
             'templateUuid': 'foo', 'operation': 'boot',
         }, data['body']
     )
+
+
+def test_cray_bos_sessions_base(cli_runner, rest_mock):
+    """ Test cray bos session base command """
+    runner, cli, _ = cli_runner
+    result = runner.invoke(cli, ['bos', 'sessions'])
+    assert result.exit_code == 0
+
+    outputs = ['Groups:', 'status', 'Commands:', 'create', 'delete',
+               'describe', 'list']
+    for txt in outputs:
+        assert txt in result.output
+    assert 'update' not in result.output
+
+
+def test_cray_bos_v2_sessions_base(cli_runner, rest_mock):
+    """ Test cray bos v2 session base command """
+    runner, cli, _ = cli_runner
+    result = runner.invoke(cli, ['bos', 'v2', 'sessions'])
+    assert result.exit_code == 0
+
+    outputs = ['Groups:', 'status', 'Commands:', 'create', 'delete',
+               'describe', 'list']
+    for txt in outputs:
+        assert txt in result.output
+    assert 'update' not in result.output
+
 
 # pylint: disable=redefined-outer-name
 def test_cray_bos_v2_sessions_create(cli_runner, rest_mock):
