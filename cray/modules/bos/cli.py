@@ -1,7 +1,7 @@
 #
 #  MIT License
 #
-#  (C) Copyright 2020-2023 Hewlett Packard Enterprise Development LP
+#  (C) Copyright 2020-2024 Hewlett Packard Enterprise Development LP
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a
 #  copy of this software and associated documentation files (the "Software"),
@@ -37,6 +37,9 @@ SWAGGER_OPTS = {
 }
 
 cli = generate(__file__, swagger_opts=SWAGGER_OPTS)
+
+# Update v2 sessions should only be in the API -- not intended for CLI use
+del cli.commands['v2'].commands['sessions'].commands['update']
 
 # Place the v2 commands at the 'cray bos' level of the cli
 CURRENT_VERSION = 'v2'
