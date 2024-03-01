@@ -5,6 +5,7 @@
 *.swp
 .bash*
 .config
+.python-version
 dist
 build
 parts
