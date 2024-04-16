@@ -45,6 +45,8 @@ def setup(hsm_cli):
     """ Sets up all HSM overrides """
     setup_groups_partitions_create(hsm_cli, 'groups')
     setup_groups_partitions_create(hsm_cli, 'partitions')
+    setup_redfish_endpoints_update(hsm_cli)
+    setup_redfish_endpoints_create(hsm_cli)
 
 
 # Groups and Partitions #
@@ -91,6 +93,39 @@ def setup_groups_partitions_create(hsm_cli, command):
     )
 
     hsm_cli.commands[command].commands['create'] = create_command
+
+
+# redfishEndpoints update #
+def setup_redfish_endpoints_update(hsm_cli):
+    """ Added a fix for the hostname being set to the cray global hostname """
+    update_command = hsm_cli.commands["inventory"].commands["redfishEndpoints"].commands['update']
+    update_command.callback = create_re_create_and_update_shim(update_command.callback)
+
+
+# redfishEndpoints create #
+def setup_redfish_endpoints_create(hsm_cli):
+    """ Added a fix for the hostname being set to the cray global hostname """
+    create_command = hsm_cli.commands["inventory"].commands["redfishEndpoints"].commands['create']
+    create_command.callback = create_re_create_and_update_shim(create_command.callback)
+
+
+def create_re_create_and_update_shim(func):
+    """ This causes the call to ignore any hostname value that starts with http: or https:
+    The top level cray command has a --hostname option which is stored in the config file
+    and its value gets passed through here when the user doesn't specify the hsm flavor
+    of the --hostname option """
+
+    def _decorator(**kwargs):
+        hostname = kwargs.get("hostname")
+        if hostname:
+            value = hostname.get("value")
+            if value and (value.lower().startswith("https:") or value.lower().startswith("http:")):
+                hostname["value"] = None
+                kwargs["hostname"] = hostname
+
+        return func(**kwargs)
+
+    return _decorator
 
 
 # Keeping for future API versions
