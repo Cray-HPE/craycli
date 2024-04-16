@@ -5,6 +5,8 @@
 *.swp
 .bash*
 .config
+.python-version
+.idea
 dist
 build
 parts
