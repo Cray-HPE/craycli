@@ -26,6 +26,7 @@
 import datetime
 import hashlib
 import json
+import os
 import sys
 import boto3
 from boto3.s3.transfer import TransferConfig
@@ -152,6 +153,10 @@ def describe_object(ctx, bucket, obj):
 @pass_context
 def upload_object(ctx, bucket, obj, filename):
     """ Create a new object in a bucket """
+    # Check if the file exists locally before creating the object
+    if not os.path.isfile(filename):
+        print(f"Error: File {filename} does not exist")
+        sys.exit(1)
 
     s3client = get_s3_client()
     md5sum = md5(filename)
