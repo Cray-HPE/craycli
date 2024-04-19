@@ -1188,7 +1188,7 @@ components:
           description: The maximum amount of time a component's actual state is considered valid (in hours). 0h disables cleanup behavior for newly booted nodes and instructs bos-state-reporter to report once instead of periodically.
         disable_components_on_completion:
           type: boolean
-          description: Allows for BOS components to be marked as disabled after a session has been completed. If false, BOS will continue to maintain the state of the nodes declaratively, even after a session finishes. 
+          description: If true, when a Session has brought a Component to its desired state, that Component will be marked as disabled in BOS. If false, BOS will continue to maintain the state of the nodes declaratively, even after a Session finishes. 
         discovery_frequency:
           type: integer
           description: How frequently the BOS discovery agent syncs new components from HSM. (in seconds)
