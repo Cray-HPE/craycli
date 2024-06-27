@@ -2245,21 +2245,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/RecipeKeyValuePair'
-    ImageMetadataAnnotationKeyValuePair:
-      description: Key/value pair used to further define an Image
-      type: object
-      required:
-        - key
-        - value
-      properties:
-        key:
-          description: Template variable to associate with the IMS image
-          example: includes_additional_packages
-          type: string
-        value:
-          description: Value variable to associate with the IMS image
-          example: "foo,bar,baz"
-          type: string
     ImagePatchRecord:
       description: Values used to update an existing IMS Image Record
       type: object
@@ -2327,10 +2312,20 @@ components:
             - x86_64
           type: string
         metadata:
-          description: An object of key/value associated with an Image
+          description: Key/value pair used to further define an Image
           type: object
+          required:
+            - key
+            - value
           properties:
-            $ref: '#/components/schemas/ImageMetadataAnnotationKeyValuePair'
+            key:
+              description: Template variable to associate with the IMS image
+              example: includes_additional_packages
+              type: string
+            value:
+              description: Value variable to associate with the IMS image
+              example: "foo,bar,baz"
+              type: string
     DeletedImageRecord:
       description: A Deleted Image Record
       type: object
