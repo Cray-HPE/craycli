@@ -74,7 +74,7 @@ license = { file = 'LICENSE' }
 
 [project.optional-dependencies]
 ci = [
-    'nox~=2023.4.22',
+    'nox~=2024.4.15',
 ]
 docs = [
     'recommonmark~=0.7.1',
