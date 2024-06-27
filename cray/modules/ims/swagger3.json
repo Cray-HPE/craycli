@@ -1427,6 +1427,30 @@
                                                     "x86_64"
                                                 ],
                                                 "type": "string"
+                                            },
+                                            "metadata": {
+                                                "description": "An object of key/value associated with an Image",
+                                                "type": "object",
+                                                "properties": {
+                                                    "description": "Key/value pair used to further define an Image",
+                                                    "type": "object",
+                                                    "required": [
+                                                        "key",
+                                                        "value"
+                                                    ],
+                                                    "properties": {
+                                                        "key": {
+                                                            "description": "Template variable to associate with the IMS image",
+                                                            "example": "includes_additional_packages",
+                                                            "type": "string"
+                                                        },
+                                                        "value": {
+                                                            "description": "Value variable to associate with the IMS image",
+                                                            "example": "foo,bar,baz",
+                                                            "type": "string"
+                                                        }
+                                                    }
+                                                }
                                             }
                                         }
                                     },
@@ -1549,6 +1573,30 @@
                                             "x86_64"
                                         ],
                                         "type": "string"
+                                    },
+                                    "metadata": {
+                                        "description": "An object of key/value associated with an Image",
+                                        "type": "object",
+                                        "properties": {
+                                            "description": "Key/value pair used to further define an Image",
+                                            "type": "object",
+                                            "required": [
+                                                "key",
+                                                "value"
+                                            ],
+                                            "properties": {
+                                                "key": {
+                                                    "description": "Template variable to associate with the IMS image",
+                                                    "example": "includes_additional_packages",
+                                                    "type": "string"
+                                                },
+                                                "value": {
+                                                    "description": "Value variable to associate with the IMS image",
+                                                    "example": "foo,bar,baz",
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -1622,6 +1670,30 @@
                                                 "x86_64"
                                             ],
                                             "type": "string"
+                                        },
+                                        "metadata": {
+                                            "description": "An object of key/value associated with an Image",
+                                            "type": "object",
+                                            "properties": {
+                                                "description": "Key/value pair used to further define an Image",
+                                                "type": "object",
+                                                "required": [
+                                                    "key",
+                                                    "value"
+                                                ],
+                                                "properties": {
+                                                    "key": {
+                                                        "description": "Template variable to associate with the IMS image",
+                                                        "example": "includes_additional_packages",
+                                                        "type": "string"
+                                                    },
+                                                    "value": {
+                                                        "description": "Value variable to associate with the IMS image",
+                                                        "example": "foo,bar,baz",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -1896,6 +1968,30 @@
                                                 "x86_64"
                                             ],
                                             "type": "string"
+                                        },
+                                        "metadata": {
+                                            "description": "An object of key/value associated with an Image",
+                                            "type": "object",
+                                            "properties": {
+                                                "description": "Key/value pair used to further define an Image",
+                                                "type": "object",
+                                                "required": [
+                                                    "key",
+                                                    "value"
+                                                ],
+                                                "properties": {
+                                                    "key": {
+                                                        "description": "Template variable to associate with the IMS image",
+                                                        "example": "includes_additional_packages",
+                                                        "type": "string"
+                                                    },
+                                                    "value": {
+                                                        "description": "Value variable to associate with the IMS image",
+                                                        "example": "foo,bar,baz",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -1998,7 +2094,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "description": "Values to update an ImageRecord with",
+                                "description": "Values used to update an existing IMS Image Record",
                                 "type": "object",
                                 "properties": {
                                     "link": {
@@ -2034,6 +2130,34 @@
                                             "x86_64"
                                         ],
                                         "type": "string"
+                                    },
+                                    "metadata": {
+                                        "description": "An object which indicates a number of annotation patch operations relating to image tags.",
+                                        "type": "object",
+                                        "required": [
+                                            "operation",
+                                            "key"
+                                        ],
+                                        "properties": {
+                                            "operation": {
+                                                "description": "How to update a given key within the context of a patch operation",
+                                                "type": "string",
+                                                "enum": [
+                                                    "set",
+                                                    "remove"
+                                                ]
+                                            },
+                                            "key": {
+                                                "description": "The key to update for a given image",
+                                                "type": "string",
+                                                "example": "includes_additional_packages"
+                                            },
+                                            "value": {
+                                                "description": "The value to associate with a key during a patch operation",
+                                                "type": "string",
+                                                "example": "vim,emacs,man"
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -2107,6 +2231,30 @@
                                                 "x86_64"
                                             ],
                                             "type": "string"
+                                        },
+                                        "metadata": {
+                                            "description": "An object of key/value associated with an Image",
+                                            "type": "object",
+                                            "properties": {
+                                                "description": "Key/value pair used to further define an Image",
+                                                "type": "object",
+                                                "required": [
+                                                    "key",
+                                                    "value"
+                                                ],
+                                                "properties": {
+                                                    "key": {
+                                                        "description": "Template variable to associate with the IMS image",
+                                                        "example": "includes_additional_packages",
+                                                        "type": "string"
+                                                    },
+                                                    "value": {
+                                                        "description": "Value variable to associate with the IMS image",
+                                                        "example": "foo,bar,baz",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -6328,6 +6476,30 @@
                                                     "x86_64"
                                                 ],
                                                 "type": "string"
+                                            },
+                                            "metadata": {
+                                                "description": "List of key/value pairs to associate with an Image",
+                                                "type": "object",
+                                                "properties": {
+                                                    "description": "Key/value pair used to further define an Image",
+                                                    "type": "object",
+                                                    "required": [
+                                                        "key",
+                                                        "value"
+                                                    ],
+                                                    "properties": {
+                                                        "key": {
+                                                            "description": "Template variable to associate with the IMS image",
+                                                            "example": "includes_additional_packages",
+                                                            "type": "string"
+                                                        },
+                                                        "value": {
+                                                            "description": "Value variable to associate with the IMS image",
+                                                            "example": "foo,bar,baz",
+                                                            "type": "string"
+                                                        }
+                                                    }
+                                                }
                                             }
                                         }
                                     },
@@ -6770,6 +6942,30 @@
                                                 "x86_64"
                                             ],
                                             "type": "string"
+                                        },
+                                        "metadata": {
+                                            "description": "List of key/value pairs to associate with an Image",
+                                            "type": "object",
+                                            "properties": {
+                                                "description": "Key/value pair used to further define an Image",
+                                                "type": "object",
+                                                "required": [
+                                                    "key",
+                                                    "value"
+                                                ],
+                                                "properties": {
+                                                    "key": {
+                                                        "description": "Template variable to associate with the IMS image",
+                                                        "example": "includes_additional_packages",
+                                                        "type": "string"
+                                                    },
+                                                    "value": {
+                                                        "description": "Value variable to associate with the IMS image",
+                                                        "example": "foo,bar,baz",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -9492,6 +9688,30 @@
                                                     "x86_64"
                                                 ],
                                                 "type": "string"
+                                            },
+                                            "metadata": {
+                                                "description": "An object of key/value associated with an Image",
+                                                "type": "object",
+                                                "properties": {
+                                                    "description": "Key/value pair used to further define an Image",
+                                                    "type": "object",
+                                                    "required": [
+                                                        "key",
+                                                        "value"
+                                                    ],
+                                                    "properties": {
+                                                        "key": {
+                                                            "description": "Template variable to associate with the IMS image",
+                                                            "example": "includes_additional_packages",
+                                                            "type": "string"
+                                                        },
+                                                        "value": {
+                                                            "description": "Value variable to associate with the IMS image",
+                                                            "example": "foo,bar,baz",
+                                                            "type": "string"
+                                                        }
+                                                    }
+                                                }
                                             }
                                         }
                                     },
@@ -9614,6 +9834,30 @@
                                             "x86_64"
                                         ],
                                         "type": "string"
+                                    },
+                                    "metadata": {
+                                        "description": "An object of key/value associated with an Image",
+                                        "type": "object",
+                                        "properties": {
+                                            "description": "Key/value pair used to further define an Image",
+                                            "type": "object",
+                                            "required": [
+                                                "key",
+                                                "value"
+                                            ],
+                                            "properties": {
+                                                "key": {
+                                                    "description": "Template variable to associate with the IMS image",
+                                                    "example": "includes_additional_packages",
+                                                    "type": "string"
+                                                },
+                                                "value": {
+                                                    "description": "Value variable to associate with the IMS image",
+                                                    "example": "foo,bar,baz",
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -9694,6 +9938,30 @@
                                                 "x86_64"
                                             ],
                                             "type": "string"
+                                        },
+                                        "metadata": {
+                                            "description": "List of key/value pairs to associate with an Image",
+                                            "type": "object",
+                                            "properties": {
+                                                "description": "Key/value pair used to further define an Image",
+                                                "type": "object",
+                                                "required": [
+                                                    "key",
+                                                    "value"
+                                                ],
+                                                "properties": {
+                                                    "key": {
+                                                        "description": "Template variable to associate with the IMS image",
+                                                        "example": "includes_additional_packages",
+                                                        "type": "string"
+                                                    },
+                                                    "value": {
+                                                        "description": "Value variable to associate with the IMS image",
+                                                        "example": "foo,bar,baz",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -9980,6 +10248,30 @@
                                                 "x86_64"
                                             ],
                                             "type": "string"
+                                        },
+                                        "metadata": {
+                                            "description": "An object of key/value associated with an Image",
+                                            "type": "object",
+                                            "properties": {
+                                                "description": "Key/value pair used to further define an Image",
+                                                "type": "object",
+                                                "required": [
+                                                    "key",
+                                                    "value"
+                                                ],
+                                                "properties": {
+                                                    "key": {
+                                                        "description": "Template variable to associate with the IMS image",
+                                                        "example": "includes_additional_packages",
+                                                        "type": "string"
+                                                    },
+                                                    "value": {
+                                                        "description": "Value variable to associate with the IMS image",
+                                                        "example": "foo,bar,baz",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -10082,7 +10374,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "description": "Values to update an ImageRecord with",
+                                "description": "Values used to update an existing IMS Image Record",
                                 "type": "object",
                                 "properties": {
                                     "link": {
@@ -10118,6 +10410,34 @@
                                             "x86_64"
                                         ],
                                         "type": "string"
+                                    },
+                                    "metadata": {
+                                        "description": "An object which indicates a number of annotation patch operations relating to image tags.",
+                                        "type": "object",
+                                        "required": [
+                                            "operation",
+                                            "key"
+                                        ],
+                                        "properties": {
+                                            "operation": {
+                                                "description": "How to update a given key within the context of a patch operation",
+                                                "type": "string",
+                                                "enum": [
+                                                    "set",
+                                                    "remove"
+                                                ]
+                                            },
+                                            "key": {
+                                                "description": "The key to update for a given image",
+                                                "type": "string",
+                                                "example": "includes_additional_packages"
+                                            },
+                                            "value": {
+                                                "description": "The value to associate with a key during a patch operation",
+                                                "type": "string",
+                                                "example": "vim,emacs,man"
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -10191,6 +10511,30 @@
                                                 "x86_64"
                                             ],
                                             "type": "string"
+                                        },
+                                        "metadata": {
+                                            "description": "An object of key/value associated with an Image",
+                                            "type": "object",
+                                            "properties": {
+                                                "description": "Key/value pair used to further define an Image",
+                                                "type": "object",
+                                                "required": [
+                                                    "key",
+                                                    "value"
+                                                ],
+                                                "properties": {
+                                                    "key": {
+                                                        "description": "Template variable to associate with the IMS image",
+                                                        "example": "includes_additional_packages",
+                                                        "type": "string"
+                                                    },
+                                                    "value": {
+                                                        "description": "Value variable to associate with the IMS image",
+                                                        "example": "foo,bar,baz",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -14240,6 +14584,30 @@
                                                     "x86_64"
                                                 ],
                                                 "type": "string"
+                                            },
+                                            "metadata": {
+                                                "description": "An object of key/value associated with an Image",
+                                                "type": "object",
+                                                "properties": {
+                                                    "description": "Key/value pair used to further define an Image",
+                                                    "type": "object",
+                                                    "required": [
+                                                        "key",
+                                                        "value"
+                                                    ],
+                                                    "properties": {
+                                                        "key": {
+                                                            "description": "Template variable to associate with the IMS image",
+                                                            "example": "includes_additional_packages",
+                                                            "type": "string"
+                                                        },
+                                                        "value": {
+                                                            "description": "Value variable to associate with the IMS image",
+                                                            "example": "foo,bar,baz",
+                                                            "type": "string"
+                                                        }
+                                                    }
+                                                }
                                             }
                                         }
                                     },
@@ -14362,6 +14730,30 @@
                                             "x86_64"
                                         ],
                                         "type": "string"
+                                    },
+                                    "metadata": {
+                                        "description": "An object of key/value associated with an Image",
+                                        "type": "object",
+                                        "properties": {
+                                            "description": "Key/value pair used to further define an Image",
+                                            "type": "object",
+                                            "required": [
+                                                "key",
+                                                "value"
+                                            ],
+                                            "properties": {
+                                                "key": {
+                                                    "description": "Template variable to associate with the IMS image",
+                                                    "example": "includes_additional_packages",
+                                                    "type": "string"
+                                                },
+                                                "value": {
+                                                    "description": "Value variable to associate with the IMS image",
+                                                    "example": "foo,bar,baz",
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -14442,6 +14834,30 @@
                                                 "x86_64"
                                             ],
                                             "type": "string"
+                                        },
+                                        "metadata": {
+                                            "description": "List of key/value pairs to associate with an Image",
+                                            "type": "object",
+                                            "properties": {
+                                                "description": "Key/value pair used to further define an Image",
+                                                "type": "object",
+                                                "required": [
+                                                    "key",
+                                                    "value"
+                                                ],
+                                                "properties": {
+                                                    "key": {
+                                                        "description": "Template variable to associate with the IMS image",
+                                                        "example": "includes_additional_packages",
+                                                        "type": "string"
+                                                    },
+                                                    "value": {
+                                                        "description": "Value variable to associate with the IMS image",
+                                                        "example": "foo,bar,baz",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -14728,6 +15144,30 @@
                                                 "x86_64"
                                             ],
                                             "type": "string"
+                                        },
+                                        "metadata": {
+                                            "description": "An object of key/value associated with an Image",
+                                            "type": "object",
+                                            "properties": {
+                                                "description": "Key/value pair used to further define an Image",
+                                                "type": "object",
+                                                "required": [
+                                                    "key",
+                                                    "value"
+                                                ],
+                                                "properties": {
+                                                    "key": {
+                                                        "description": "Template variable to associate with the IMS image",
+                                                        "example": "includes_additional_packages",
+                                                        "type": "string"
+                                                    },
+                                                    "value": {
+                                                        "description": "Value variable to associate with the IMS image",
+                                                        "example": "foo,bar,baz",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -14830,7 +15270,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "description": "Values to update an ImageRecord with",
+                                "description": "Values used to update an existing IMS Image Record",
                                 "type": "object",
                                 "properties": {
                                     "link": {
@@ -14866,6 +15306,34 @@
                                             "x86_64"
                                         ],
                                         "type": "string"
+                                    },
+                                    "metadata": {
+                                        "description": "An object which indicates a number of annotation patch operations relating to image tags.",
+                                        "type": "object",
+                                        "required": [
+                                            "operation",
+                                            "key"
+                                        ],
+                                        "properties": {
+                                            "operation": {
+                                                "description": "How to update a given key within the context of a patch operation",
+                                                "type": "string",
+                                                "enum": [
+                                                    "set",
+                                                    "remove"
+                                                ]
+                                            },
+                                            "key": {
+                                                "description": "The key to update for a given image",
+                                                "type": "string",
+                                                "example": "includes_additional_packages"
+                                            },
+                                            "value": {
+                                                "description": "The value to associate with a key during a patch operation",
+                                                "type": "string",
+                                                "example": "vim,emacs,man"
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -14939,6 +15407,30 @@
                                                 "x86_64"
                                             ],
                                             "type": "string"
+                                        },
+                                        "metadata": {
+                                            "description": "An object of key/value associated with an Image",
+                                            "type": "object",
+                                            "properties": {
+                                                "description": "Key/value pair used to further define an Image",
+                                                "type": "object",
+                                                "required": [
+                                                    "key",
+                                                    "value"
+                                                ],
+                                                "properties": {
+                                                    "key": {
+                                                        "description": "Template variable to associate with the IMS image",
+                                                        "example": "includes_additional_packages",
+                                                        "type": "string"
+                                                    },
+                                                    "value": {
+                                                        "description": "Value variable to associate with the IMS image",
+                                                        "example": "foo,bar,baz",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -19071,6 +19563,94 @@
                     }
                 }
             },
+            "ImageMetadataAnnotationKeyValuePair": {
+                "description": "Key/value pair used to further define an Image",
+                "type": "object",
+                "required": [
+                    "key",
+                    "value"
+                ],
+                "properties": {
+                    "key": {
+                        "description": "Template variable to associate with the IMS image",
+                        "example": "includes_additional_packages",
+                        "type": "string"
+                    },
+                    "value": {
+                        "description": "Value variable to associate with the IMS image",
+                        "example": "foo,bar,baz",
+                        "type": "string"
+                    }
+                }
+            },
+            "ImagePatchRecord": {
+                "description": "Values used to update an existing IMS Image Record",
+                "type": "object",
+                "properties": {
+                    "link": {
+                        "description": "An Artifact Link Record",
+                        "type": "object",
+                        "required": [
+                            "path",
+                            "type"
+                        ],
+                        "properties": {
+                            "path": {
+                                "description": "Path or location to the artifact in the artifact repository",
+                                "example": "s3://boot-images/1fb58f4e-ad23-489b-89b7-95868fca7ee6/manifest.json",
+                                "type": "string"
+                            },
+                            "etag": {
+                                "description": "Opaque identifier used to uniquely identify the artifact in the artifact repository",
+                                "example": "f04af5f34635ae7c507322985e60c00c-131",
+                                "type": "string"
+                            },
+                            "type": {
+                                "description": "Identifier specifying the artifact repository where the artifact is located",
+                                "example": "s3",
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "arch": {
+                        "description": "Target architecture for the recipe.",
+                        "example": "aarch64",
+                        "enum": [
+                            "aarch64",
+                            "x86_64"
+                        ],
+                        "type": "string"
+                    },
+                    "metadata": {
+                        "description": "An object which indicates a number of annotation patch operations relating to image tags.",
+                        "type": "object",
+                        "required": [
+                            "operation",
+                            "key"
+                        ],
+                        "properties": {
+                            "operation": {
+                                "description": "How to update a given key within the context of a patch operation",
+                                "type": "string",
+                                "enum": [
+                                    "set",
+                                    "remove"
+                                ]
+                            },
+                            "key": {
+                                "description": "The key to update for a given image",
+                                "type": "string",
+                                "example": "includes_additional_packages"
+                            },
+                            "value": {
+                                "description": "The value to associate with a key during a patch operation",
+                                "type": "string",
+                                "example": "vim,emacs,man"
+                            }
+                        }
+                    }
+                }
+            },
             "ImageRecord": {
                 "description": "An Image Record",
                 "type": "object",
@@ -19131,6 +19711,30 @@
                             "x86_64"
                         ],
                         "type": "string"
+                    },
+                    "metadata": {
+                        "description": "An object of key/value associated with an Image",
+                        "type": "object",
+                        "properties": {
+                            "description": "Key/value pair used to further define an Image",
+                            "type": "object",
+                            "required": [
+                                "key",
+                                "value"
+                            ],
+                            "properties": {
+                                "key": {
+                                    "description": "Template variable to associate with the IMS image",
+                                    "example": "includes_additional_packages",
+                                    "type": "string"
+                                },
+                                "value": {
+                                    "description": "Value variable to associate with the IMS image",
+                                    "example": "foo,bar,baz",
+                                    "type": "string"
+                                }
+                            }
+                        }
                     }
                 }
             },
@@ -19201,46 +19805,30 @@
                             "x86_64"
                         ],
                         "type": "string"
-                    }
-                }
-            },
-            "ImagePatchRecord": {
-                "description": "Values to update an ImageRecord with",
-                "type": "object",
-                "properties": {
-                    "link": {
-                        "description": "An Artifact Link Record",
+                    },
+                    "metadata": {
+                        "description": "List of key/value pairs to associate with an Image",
                         "type": "object",
-                        "required": [
-                            "path",
-                            "type"
-                        ],
                         "properties": {
-                            "path": {
-                                "description": "Path or location to the artifact in the artifact repository",
-                                "example": "s3://boot-images/1fb58f4e-ad23-489b-89b7-95868fca7ee6/manifest.json",
-                                "type": "string"
-                            },
-                            "etag": {
-                                "description": "Opaque identifier used to uniquely identify the artifact in the artifact repository",
-                                "example": "f04af5f34635ae7c507322985e60c00c-131",
-                                "type": "string"
-                            },
-                            "type": {
-                                "description": "Identifier specifying the artifact repository where the artifact is located",
-                                "example": "s3",
-                                "type": "string"
+                            "description": "Key/value pair used to further define an Image",
+                            "type": "object",
+                            "required": [
+                                "key",
+                                "value"
+                            ],
+                            "properties": {
+                                "key": {
+                                    "description": "Template variable to associate with the IMS image",
+                                    "example": "includes_additional_packages",
+                                    "type": "string"
+                                },
+                                "value": {
+                                    "description": "Value variable to associate with the IMS image",
+                                    "example": "foo,bar,baz",
+                                    "type": "string"
+                                }
                             }
                         }
-                    },
-                    "arch": {
-                        "description": "Target architecture for the recipe.",
-                        "example": "aarch64",
-                        "enum": [
-                            "aarch64",
-                            "x86_64"
-                        ],
-                        "type": "string"
                     }
                 }
             },

@@ -2245,6 +2245,55 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/RecipeKeyValuePair'
+    ImageMetadataAnnotationKeyValuePair:
+      description: Key/value pair used to further define an Image
+      type: object
+      required:
+        - key
+        - value
+      properties:
+        key:
+          description: Template variable to associate with the IMS image
+          example: includes_additional_packages
+          type: string
+        value:
+          description: Value variable to associate with the IMS image
+          example: "foo,bar,baz"
+          type: string
+    ImagePatchRecord:
+      description: Values used to update an existing IMS Image Record
+      type: object
+      properties:
+        link:
+          $ref: '#/components/schemas/ArtifactLinkRecord'
+        arch:
+          description: Target architecture for the recipe.
+          example: aarch64
+          enum:
+            - aarch64
+            - x86_64
+          type: string
+        metadata:
+          description: An object which indicates a number of annotation patch operations relating to image tags.
+          type: object
+          required:
+            - operation
+            - key
+          properties:
+            operation:
+              description: How to update a given key within the context of a patch operation
+              type: string
+              enum:
+                - set
+                - remove
+            key:
+              description: The key to update for a given image
+              type: string
+              example: includes_additional_packages
+            value:
+              description: The value to associate with a key during a patch operation
+              type: string
+              example: "vim,emacs,man"
     ImageRecord:
       description: An Image Record
       type: object
@@ -2277,6 +2326,11 @@ components:
             - aarch64
             - x86_64
           type: string
+        metadata:
+          description: An object of key/value associated with an Image
+          type: object
+          properties:
+            $ref: '#/components/schemas/ImageMetadataAnnotationKeyValuePair'
     DeletedImageRecord:
       description: A Deleted Image Record
       type: object
@@ -2316,19 +2370,11 @@ components:
             - aarch64
             - x86_64
           type: string
-    ImagePatchRecord:
-      description: Values to update an ImageRecord with
-      type: object
-      properties:
-        link:
-          $ref: '#/components/schemas/ArtifactLinkRecord'
-        arch:
-          description: Target architecture for the recipe.
-          example: aarch64
-          enum:
-            - aarch64
-            - x86_64
-          type: string
+        metadata:
+          description: List of key/value pairs to associate with an Image
+          type: object
+          properties:
+            $ref: '#/components/schemas/ImageMetadataAnnotationKeyValuePair'
     JobRecord:
       description: A Job Record
       type: object
