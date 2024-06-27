@@ -2312,11 +2312,8 @@ components:
             - x86_64
           type: string
         metadata:
-          description: Key/value pair used to further define an Image
+          description: User supplied annotations about an image
           type: object
-          required:
-            - key
-            - value
           properties:
             key:
               description: Template variable to associate with the IMS image
