@@ -2626,6 +2626,13 @@
                         "type": "integer",
                         "description": "The default maximum number attempts per node for failed actions.",
                         "example": 1
+                    },
+                    "max_component_batch_size": {
+                        "type": "integer",
+                        "description": "The maximum number of components that a BOS operator will process at once. 0 means no limit.",
+                        "example": 1000,
+                        "minimum": 0,
+                        "maximum": 131071
                     }
                 },
                 "additionalProperties": true
@@ -3633,6 +3640,13 @@
                                     "type": "integer",
                                     "description": "The default maximum number attempts per node for failed actions.",
                                     "example": 1
+                                },
+                                "max_component_batch_size": {
+                                    "type": "integer",
+                                    "description": "The maximum number of components that a BOS operator will process at once. 0 means no limit.",
+                                    "example": 1000,
+                                    "minimum": 0,
+                                    "maximum": 131071
                                 }
                             },
                             "additionalProperties": true
@@ -5161,6 +5175,13 @@
                                     "type": "integer",
                                     "description": "The default maximum number attempts per node for failed actions.",
                                     "example": 1
+                                },
+                                "max_component_batch_size": {
+                                    "type": "integer",
+                                    "description": "The maximum number of components that a BOS operator will process at once. 0 means no limit.",
+                                    "example": 1000,
+                                    "minimum": 0,
+                                    "maximum": 131071
                                 }
                             },
                             "additionalProperties": true
@@ -14630,6 +14651,13 @@
                                             "type": "integer",
                                             "description": "The default maximum number attempts per node for failed actions.",
                                             "example": 1
+                                        },
+                                        "max_component_batch_size": {
+                                            "type": "integer",
+                                            "description": "The maximum number of components that a BOS operator will process at once. 0 means no limit.",
+                                            "example": 1000,
+                                            "minimum": 0,
+                                            "maximum": 131071
                                         }
                                     },
                                     "additionalProperties": true
@@ -14701,6 +14729,13 @@
                                         "type": "integer",
                                         "description": "The default maximum number attempts per node for failed actions.",
                                         "example": 1
+                                    },
+                                    "max_component_batch_size": {
+                                        "type": "integer",
+                                        "description": "The maximum number of components that a BOS operator will process at once. 0 means no limit.",
+                                        "example": 1000,
+                                        "minimum": 0,
+                                        "maximum": 131071
                                     }
                                 },
                                 "additionalProperties": true
@@ -14761,6 +14796,13 @@
                                             "type": "integer",
                                             "description": "The default maximum number attempts per node for failed actions.",
                                             "example": 1
+                                        },
+                                        "max_component_batch_size": {
+                                            "type": "integer",
+                                            "description": "The maximum number of components that a BOS operator will process at once. 0 means no limit.",
+                                            "example": 1000,
+                                            "minimum": 0,
+                                            "maximum": 131071
                                         }
                                     },
                                     "additionalProperties": true
