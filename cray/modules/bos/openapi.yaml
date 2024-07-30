@@ -686,7 +686,8 @@ components:
       type: string
     V2SessionCreate:
       description: |
-        A Session Creation object
+        A Session Creation object. A UUID name is generated if a name is not provided. The limit parameter is
+        required if the session_limit_required option is true.
       type: object
       properties:
         name:
@@ -721,6 +722,10 @@ components:
             A comma-separated of nodes, groups, or roles to which the session
             will be limited. Components are treated as OR operations unless
             preceded by "&" for AND or "!" for NOT.
+
+            Alternatively, the limit can be set to "*", which means no limit.
+
+            The limit parameter is required if the session_limit_required option is true.
         stage:
           type: boolean
           description: >
@@ -1217,6 +1222,9 @@ components:
           example: 1000
           minimum: 0
           maximum: 131071
+        session_limit_required:
+          type: boolean
+          description: If true, Sessions cannot be created without specifying the limit parameter.
       additionalProperties: true
   requestBodies:
     V2sessionCreateRequest:
