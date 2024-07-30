@@ -1258,7 +1258,7 @@
                 "type": "string"
             },
             "V2SessionCreate": {
-                "description": "A Session Creation object\n",
+                "description": "A Session Creation object. A UUID name is generated if a name is not provided. The limit parameter is required if the session_limit_required option is true.\n",
                 "type": "object",
                 "properties": {
                     "name": {
@@ -1286,7 +1286,7 @@
                     },
                     "limit": {
                         "type": "string",
-                        "description": "A comma-separated of nodes, groups, or roles to which the session will be limited. Components are treated as OR operations unless preceded by \"&\" for AND or \"!\" for NOT.\n"
+                        "description": "A comma-separated of nodes, groups, or roles to which the session will be limited. Components are treated as OR operations unless preceded by \"&\" for AND or \"!\" for NOT.\nAlternatively, the limit can be set to \"*\", which means no limit.\nThe limit parameter is required if the session_limit_required option is true.\n"
                     },
                     "stage": {
                         "type": "boolean",
@@ -2633,6 +2633,10 @@
                         "example": 1000,
                         "minimum": 0,
                         "maximum": 131071
+                    },
+                    "session_limit_required": {
+                      "type": "boolean",
+                      "description": "If true, BOS v2 Sessions cannot be created without specifying the limit parameter."
                     }
                 },
                 "additionalProperties": true
@@ -2673,7 +2677,7 @@
                                 },
                                 "limit": {
                                     "type": "string",
-                                    "description": "A comma-separated of nodes, groups, or roles to which the session will be limited. Components are treated as OR operations unless preceded by \"&\" for AND or \"!\" for NOT.\n"
+                                    "description": "A comma-separated of nodes, groups, or roles to which the session will be limited. Components are treated as OR operations unless preceded by \"&\" for AND or \"!\" for NOT.\nAlternatively, the limit can be set to \"*\", which means no limit.\nThe limit parameter is required if the session_limit_required option is true.\n"
                                 },
                                 "stage": {
                                     "type": "boolean",
@@ -3647,6 +3651,10 @@
                                     "example": 1000,
                                     "minimum": 0,
                                     "maximum": 131071
+                                },
+                                "session_limit_required": {
+                                    "type": "boolean",
+                                    "description": "If true, BOS v2 Sessions cannot be created without specifying the limit parameter."
                                 }
                             },
                             "additionalProperties": true
@@ -5182,6 +5190,10 @@
                                     "example": 1000,
                                     "minimum": 0,
                                     "maximum": 131071
+                                },
+                                "session_limit_required": {
+                                    "type": "boolean",
+                                    "description": "If true, BOS v2 Sessions cannot be created without specifying the limit parameter."
                                 }
                             },
                             "additionalProperties": true
@@ -10474,7 +10486,7 @@
                                     },
                                     "limit": {
                                         "type": "string",
-                                        "description": "A comma-separated of nodes, groups, or roles to which the session will be limited. Components are treated as OR operations unless preceded by \"&\" for AND or \"!\" for NOT.\n"
+                                        "description": "A comma-separated of nodes, groups, or roles to which the session will be limited. Components are treated as OR operations unless preceded by \"&\" for AND or \"!\" for NOT.\nAlternatively, the limit can be set to \"*\", which means no limit.\nThe limit parameter is required if the session_limit_required option is true.\n"
                                     },
                                     "stage": {
                                         "type": "boolean",
@@ -14658,6 +14670,10 @@
                                             "example": 1000,
                                             "minimum": 0,
                                             "maximum": 131071
+                                        },
+                                        "session_limit_required": {
+                                            "type": "boolean",
+                                            "description": "If true, BOS v2 Sessions cannot be created without specifying the limit parameter."
                                         }
                                     },
                                     "additionalProperties": true
@@ -14736,6 +14752,10 @@
                                         "example": 1000,
                                         "minimum": 0,
                                         "maximum": 131071
+                                    },
+                                    "session_limit_required": {
+                                        "type": "boolean",
+                                        "description": "If true, BOS v2 Sessions cannot be created without specifying the limit parameter."
                                     }
                                 },
                                 "additionalProperties": true
@@ -14803,6 +14823,10 @@
                                             "example": 1000,
                                             "minimum": 0,
                                             "maximum": 131071
+                                        },
+                                        "session_limit_required": {
+                                            "type": "boolean",
+                                            "description": "If true, BOS v2 Sessions cannot be created without specifying the limit parameter."
                                         }
                                     },
                                     "additionalProperties": true
