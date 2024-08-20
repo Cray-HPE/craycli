@@ -629,6 +629,46 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
+  /v3/remote-build-nodes/status/{remote_build_node_xname}:
+    parameters:
+      - $ref: '#/components/parameters/remote_build_node_xname'
+    get:
+      summary: List remote build node status objects
+      operationId: get_all_v3_remote_build_status
+      tags:
+        - remote build node status
+        - v3
+      description: Retrieve the status of all remote build nodes that are registered with IMS.
+      responses:
+        '200':
+          description: A collection of the status of each remote build node
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/RemoteBuildNodeStatus'
+                type: array
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /v3/remote-build-nodes/status:
+    get:
+      summary: List remote build node status objects
+      operationId: get_all_v3_remote_build_status
+      tags:
+        - remote build node status
+        - v3
+      description: Retrieve the status of all remote build nodes that are registered with IMS.
+      responses:
+        '200':
+          description: A collection of the status of each remote build node
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/RemoteBuildNodeStatus'
+                type: array
+        '500':
+          $ref: '#/components/responses/InternalServerError'
   /v3/jobs:
     get:
       summary: Retrieve a list of JobRecords that are registered with IMS
@@ -2072,6 +2112,42 @@ components:
           example: x3000c1s10b1n0
           type: string
           minLength: 1
+    RemoteBuildNodeStatus:
+      description: A Remote Build Node Status
+      type: object
+      required:
+        - xname
+      properties:
+        xname:
+          description: Xname of the remote build node
+          example: x3000c1s10b1n0
+          type: string
+          minLength: 1
+        nodeArch:
+          description: Architecture of the remote build node
+          example: x86_64
+          type: string
+          minLength: 1
+        numCurrentJobs:
+          description: Number of current jobs running on the remote build node
+          example: 15
+          type: integer
+          minLength: 1
+        podmanStatus:
+          description: Status of the podman executable on the remote build node
+          example: Podman present at /usr/bin/podman
+          type: string
+          minLength: 1
+        sshStatus:
+          description: Status of the ssh connection to the remote build node
+          example: SSH connection established
+          type: string
+          minLength: 1
+        ableToRunJobs:
+          description: If the node is able to run new jobs
+          example: True
+          type: boolean
+          minLength: 1
     ArtifactLinkRecord:
       description: An Artifact Link Record
       type: object
@@ -2363,10 +2439,17 @@ components:
             - x86_64
           type: string
         metadata:
-          description: List of key/value pairs to associate with an Image
+          description: User supplied annotations about an image
           type: object
           properties:
-            $ref: '#/components/schemas/ImageMetadataAnnotationKeyValuePair'
+            key:
+              description: Template variable to associate with the IMS image
+              example: includes_additional_packages
+              type: string
+            value:
+              description: Value variable to associate with the IMS image
+              example: "foo,bar,baz"
+              type: string
     JobRecord:
       description: A Job Record
       type: object

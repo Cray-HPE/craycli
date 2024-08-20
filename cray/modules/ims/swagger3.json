@@ -3686,6 +3686,236 @@
                 }
             }
         },
+        "/v3/remote-build-nodes/status/{remote_build_node_xname}": {
+            "parameters": [
+                {
+                    "description": "The unique xname of a remote build node",
+                    "in": "path",
+                    "name": "remote_build_node_xname",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    },
+                    "example": "x3000c1s10b1n0"
+                }
+            ],
+            "get": {
+                "summary": "List remote build node status objects",
+                "operationId": "get_all_v3_remote_build_status",
+                "tags": [
+                    "remote build node status",
+                    "v3"
+                ],
+                "description": "Retrieve the status of all remote build nodes that are registered with IMS.",
+                "responses": {
+                    "200": {
+                        "description": "A collection of the status of each remote build node",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "items": {
+                                        "description": "A Remote Build Node Status",
+                                        "type": "object",
+                                        "required": [
+                                            "xname"
+                                        ],
+                                        "properties": {
+                                            "xname": {
+                                                "description": "Xname of the remote build node",
+                                                "example": "x3000c1s10b1n0",
+                                                "type": "string",
+                                                "minLength": 1
+                                            },
+                                            "nodeArch": {
+                                                "description": "Architecture of the remote build node",
+                                                "example": "x86_64",
+                                                "type": "string",
+                                                "minLength": 1
+                                            },
+                                            "numCurrentJobs": {
+                                                "description": "Number of current jobs running on the remote build node",
+                                                "example": 15,
+                                                "type": "integer",
+                                                "minLength": 1
+                                            },
+                                            "podmanStatus": {
+                                                "description": "Status of the podman executable on the remote build node",
+                                                "example": "Podman present at /usr/bin/podman",
+                                                "type": "string",
+                                                "minLength": 1
+                                            },
+                                            "sshStatus": {
+                                                "description": "Status of the ssh connection to the remote build node",
+                                                "example": "SSH connection established",
+                                                "type": "string",
+                                                "minLength": 1
+                                            },
+                                            "ableToRunJobs": {
+                                                "description": "If the node is able to run new jobs",
+                                                "example": true,
+                                                "type": "boolean",
+                                                "minLength": 1
+                                            }
+                                        }
+                                    },
+                                    "type": "array"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "An internal error occurred. Re-running the request may or may not succeed.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "description": "An error response for RFC 7807 problem details.",
+                                    "type": "object",
+                                    "properties": {
+                                        "detail": {
+                                            "description": "A human-readable explanation specific to this occurrence of the problem. Focus on helping correct the problem, rather than giving debugging information.",
+                                            "type": "string"
+                                        },
+                                        "errors": {
+                                            "description": "An object denoting field-specific errors. Only present on error responses when field input is specified for the request.",
+                                            "type": "object"
+                                        },
+                                        "instance": {
+                                            "description": "A relative URI reference that identifies the specific occurrence of the problem",
+                                            "format": "uri",
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "description": "HTTP status code",
+                                            "example": 400,
+                                            "type": "integer"
+                                        },
+                                        "title": {
+                                            "description": "Short, human-readable summary of the problem, should not change by occurrence.",
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "default": "about:blank",
+                                            "description": "Relative URI reference to the type of problem which includes human-readable documentation.",
+                                            "format": "uri",
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v3/remote-build-nodes/status": {
+            "get": {
+                "summary": "List remote build node status objects",
+                "operationId": "get_all_v3_remote_build_status",
+                "tags": [
+                    "remote build node status",
+                    "v3"
+                ],
+                "description": "Retrieve the status of all remote build nodes that are registered with IMS.",
+                "responses": {
+                    "200": {
+                        "description": "A collection of the status of each remote build node",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "items": {
+                                        "description": "A Remote Build Node Status",
+                                        "type": "object",
+                                        "required": [
+                                            "xname"
+                                        ],
+                                        "properties": {
+                                            "xname": {
+                                                "description": "Xname of the remote build node",
+                                                "example": "x3000c1s10b1n0",
+                                                "type": "string",
+                                                "minLength": 1
+                                            },
+                                            "nodeArch": {
+                                                "description": "Architecture of the remote build node",
+                                                "example": "x86_64",
+                                                "type": "string",
+                                                "minLength": 1
+                                            },
+                                            "numCurrentJobs": {
+                                                "description": "Number of current jobs running on the remote build node",
+                                                "example": 15,
+                                                "type": "integer",
+                                                "minLength": 1
+                                            },
+                                            "podmanStatus": {
+                                                "description": "Status of the podman executable on the remote build node",
+                                                "example": "Podman present at /usr/bin/podman",
+                                                "type": "string",
+                                                "minLength": 1
+                                            },
+                                            "sshStatus": {
+                                                "description": "Status of the ssh connection to the remote build node",
+                                                "example": "SSH connection established",
+                                                "type": "string",
+                                                "minLength": 1
+                                            },
+                                            "ableToRunJobs": {
+                                                "description": "If the node is able to run new jobs",
+                                                "example": true,
+                                                "type": "boolean",
+                                                "minLength": 1
+                                            }
+                                        }
+                                    },
+                                    "type": "array"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "An internal error occurred. Re-running the request may or may not succeed.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "description": "An error response for RFC 7807 problem details.",
+                                    "type": "object",
+                                    "properties": {
+                                        "detail": {
+                                            "description": "A human-readable explanation specific to this occurrence of the problem. Focus on helping correct the problem, rather than giving debugging information.",
+                                            "type": "string"
+                                        },
+                                        "errors": {
+                                            "description": "An object denoting field-specific errors. Only present on error responses when field input is specified for the request.",
+                                            "type": "object"
+                                        },
+                                        "instance": {
+                                            "description": "A relative URI reference that identifies the specific occurrence of the problem",
+                                            "format": "uri",
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "description": "HTTP status code",
+                                            "example": 400,
+                                            "type": "integer"
+                                        },
+                                        "title": {
+                                            "description": "Short, human-readable summary of the problem, should not change by occurrence.",
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "default": "about:blank",
+                                            "description": "Relative URI reference to the type of problem which includes human-readable documentation.",
+                                            "format": "uri",
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/v3/jobs": {
             "get": {
                 "summary": "Retrieve a list of JobRecords that are registered with IMS",
@@ -6438,9 +6668,20 @@
                                                 "type": "string"
                                             },
                                             "metadata": {
-                                                "description": "List of key/value pairs to associate with an Image",
+                                                "description": "User supplied annotations about an image",
                                                 "type": "object",
-                                                "properties": false
+                                                "properties": {
+                                                    "key": {
+                                                        "description": "Template variable to associate with the IMS image",
+                                                        "example": "includes_additional_packages",
+                                                        "type": "string"
+                                                    },
+                                                    "value": {
+                                                        "description": "Value variable to associate with the IMS image",
+                                                        "example": "foo,bar,baz",
+                                                        "type": "string"
+                                                    }
+                                                }
                                             }
                                         }
                                     },
@@ -6885,9 +7126,20 @@
                                             "type": "string"
                                         },
                                         "metadata": {
-                                            "description": "List of key/value pairs to associate with an Image",
+                                            "description": "User supplied annotations about an image",
                                             "type": "object",
-                                            "properties": false
+                                            "properties": {
+                                                "key": {
+                                                    "description": "Template variable to associate with the IMS image",
+                                                    "example": "includes_additional_packages",
+                                                    "type": "string"
+                                                },
+                                                "value": {
+                                                    "description": "Value variable to associate with the IMS image",
+                                                    "example": "foo,bar,baz",
+                                                    "type": "string"
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -9846,9 +10098,20 @@
                                             "type": "string"
                                         },
                                         "metadata": {
-                                            "description": "List of key/value pairs to associate with an Image",
+                                            "description": "User supplied annotations about an image",
                                             "type": "object",
-                                            "properties": false
+                                            "properties": {
+                                                "key": {
+                                                    "description": "Template variable to associate with the IMS image",
+                                                    "example": "includes_additional_packages",
+                                                    "type": "string"
+                                                },
+                                                "value": {
+                                                    "description": "Value variable to associate with the IMS image",
+                                                    "example": "foo,bar,baz",
+                                                    "type": "string"
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -14691,9 +14954,20 @@
                                             "type": "string"
                                         },
                                         "metadata": {
-                                            "description": "List of key/value pairs to associate with an Image",
+                                            "description": "User supplied annotations about an image",
                                             "type": "object",
-                                            "properties": false
+                                            "properties": {
+                                                "key": {
+                                                    "description": "Template variable to associate with the IMS image",
+                                                    "example": "includes_additional_packages",
+                                                    "type": "string"
+                                                },
+                                                "value": {
+                                                    "description": "Value variable to associate with the IMS image",
+                                                    "example": "foo,bar,baz",
+                                                    "type": "string"
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -19062,6 +19336,51 @@
                     }
                 }
             },
+            "RemoteBuildNodeStatus": {
+                "description": "A Remote Build Node Status",
+                "type": "object",
+                "required": [
+                    "xname"
+                ],
+                "properties": {
+                    "xname": {
+                        "description": "Xname of the remote build node",
+                        "example": "x3000c1s10b1n0",
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "nodeArch": {
+                        "description": "Architecture of the remote build node",
+                        "example": "x86_64",
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "numCurrentJobs": {
+                        "description": "Number of current jobs running on the remote build node",
+                        "example": 15,
+                        "type": "integer",
+                        "minLength": 1
+                    },
+                    "podmanStatus": {
+                        "description": "Status of the podman executable on the remote build node",
+                        "example": "Podman present at /usr/bin/podman",
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "sshStatus": {
+                        "description": "Status of the ssh connection to the remote build node",
+                        "example": "SSH connection established",
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "ableToRunJobs": {
+                        "description": "If the node is able to run new jobs",
+                        "example": true,
+                        "type": "boolean",
+                        "minLength": 1
+                    }
+                }
+            },
             "ArtifactLinkRecord": {
                 "description": "An Artifact Link Record",
                 "type": "object",
@@ -19599,9 +19918,20 @@
                         "type": "string"
                     },
                     "metadata": {
-                        "description": "List of key/value pairs to associate with an Image",
+                        "description": "User supplied annotations about an image",
                         "type": "object",
-                        "properties": false
+                        "properties": {
+                            "key": {
+                                "description": "Template variable to associate with the IMS image",
+                                "example": "includes_additional_packages",
+                                "type": "string"
+                            },
+                            "value": {
+                                "description": "Value variable to associate with the IMS image",
+                                "example": "foo,bar,baz",
+                                "type": "string"
+                            }
+                        }
                     }
                 }
             },
