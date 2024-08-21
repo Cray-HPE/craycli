@@ -293,8 +293,8 @@ def test_cray_ims_remote_build_nodes_status_describe(cli_runner, rest_mock):
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data['method'] == 'GET'
-    assert data['url'] == f'{config["default"]["hostname"]}/apis/ims/v3/\
-        remote-build-nodes/status/foo'
+    testurl = f'{config["default"]["hostname"]}/apis/ims/v3/remote-build-nodes/status/foo'
+    assert data['url'] == testurl
 
 
 def test_cray_ims_deleted_public_keys_base(cli_runner, rest_mock):
