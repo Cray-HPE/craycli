@@ -1258,16 +1258,16 @@
         "type": "string"
       },
       "V2SessionCreate": {
-        "description": "A Session Creation object. A UUID name is generated if a name is not provided. The limit parameter is required if the session_limit_required option is true.\n",
+        "description": "A Session Creation object. A UUID name is generated if a name is not provided. The limit parameter is required if the session_limit_required option is true.  If the reject_nids option is enabled, then Session creation will fail if a Session limit appears to contain a NID value.\n",
         "type": "object",
         "properties": {
           "name": {
             "type": "string",
-            "description": "Name of the session. A UUID name is generated if a name is not provided.",
+            "description": "Name of the session. The name must:\n* Use only letters, digits, periods (.), dashes (-), and underscores (_).\n* Begin and end with a letter or digit.",
             "example": "session-20190728032600",
             "minLength": 1,
-            "maxLength": 45,
-            "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$"
+            "maxLength": 127,
+            "pattern": "^[a-zA-Z0-9](?:[-._a-zA-Z0-9]{0,125}[a-zA-Z0-9])?$"
           },
           "operation": {
             "type": "string",
@@ -1286,7 +1286,7 @@
           },
           "limit": {
             "type": "string",
-            "description": "A comma-separated of nodes, groups, or roles to which the session will be limited. Components are treated as OR operations unless preceded by \"&\" for AND or \"!\" for NOT.\nAlternatively, the limit can be set to \"*\", which means no limit.\nThe limit parameter is required if the session_limit_required option is true.\n"
+            "description": "A comma-separated of nodes, groups, or roles to which the session will be limited. Components are treated as OR operations unless preceded by \"&\" for AND or \"!\" for NOT.\nAlternatively, the limit can be set to \"*\", which means no limit.\nThe limit parameter is required if the session_limit_required option is true.  If the reject_nids option is enabled, then Session creation will fail if a Session limit appears to contain a NID value.\n"
           },
           "stage": {
             "type": "boolean",
@@ -2637,6 +2637,10 @@
           "session_limit_required": {
             "type": "boolean",
             "description": "If true, Sessions cannot be created without specifying the limit parameter."
+          },
+          "reject_nids": {
+            "type": "boolean",
+            "description": "If true, then BOS will attempt to prevent Sessions and Session Templates that reference NIDs (which BOS does not support).\nSpecifically, if this option is true, then:\n- When creating a Session, if the Session limit or a Session Template node list appear to contain NID values, then Session creation will fail.\n- When creating a Session Template, if a node list appears to contain a NID value, then the Session Template creation will fail.\n- When validating an existing Session Template, if a node list appears to contain a NID value, then the validation will report an error.\n\nThis option does NOT have an effect on Sessions that were created prior to it being enabled (even if they have not yet started)."
           }
         },
         "additionalProperties": true
@@ -2654,11 +2658,11 @@
               "properties": {
                 "name": {
                   "type": "string",
-                  "description": "Name of the session. A UUID name is generated if a name is not provided.",
+                  "description": "Name of the session. The name must:\n* Use only letters, digits, periods (.), dashes (-), and underscores (_).\n* Begin and end with a letter or digit.",
                   "example": "session-20190728032600",
                   "minLength": 1,
-                  "maxLength": 45,
-                  "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$"
+                  "maxLength": 127,
+                  "pattern": "^[a-zA-Z0-9](?:[-._a-zA-Z0-9]{0,125}[a-zA-Z0-9])?$"
                 },
                 "operation": {
                   "type": "string",
@@ -2677,7 +2681,7 @@
                 },
                 "limit": {
                   "type": "string",
-                  "description": "A comma-separated of nodes, groups, or roles to which the session will be limited. Components are treated as OR operations unless preceded by \"&\" for AND or \"!\" for NOT.\nAlternatively, the limit can be set to \"*\", which means no limit.\nThe limit parameter is required if the session_limit_required option is true.\n"
+                  "description": "A comma-separated of nodes, groups, or roles to which the session will be limited. Components are treated as OR operations unless preceded by \"&\" for AND or \"!\" for NOT.\nAlternatively, the limit can be set to \"*\", which means no limit.\nThe limit parameter is required if the session_limit_required option is true.  If the reject_nids option is enabled, then Session creation will fail if a Session limit appears to contain a NID value.\n"
                 },
                 "stage": {
                   "type": "boolean",
@@ -3652,6 +3656,10 @@
                     "minimum": 0,
                     "maximum": 131071
                 },
+                "reject_nids": {
+                  "type": "boolean",
+                  "description": "If true, then BOS will attempt to prevent Sessions and Session Templates that reference NIDs (which BOS does not support).\nSpecifically, if this option is true, then:\n- When creating a Session, if the Session limit or a Session Template node list appear to contain NID values, then Session creation will fail.\n- When creating a Session Template, if a node list appears to contain a NID value, then the Session Template creation will fail.\n- When validating an existing Session Template, if a node list appears to contain a NID value, then the validation will report an error.\n\nThis option does NOT have an effect on Sessions that were created prior to it being enabled (even if they have not yet started)."
+                },
                 "session_limit_required": {
                   "type": "boolean",
                   "description": "If true, Sessions cannot be created without specifying the limit parameter."
@@ -4210,7 +4218,7 @@
                           "type": "string"
                         },
                         "minItems": 1,
-                        "description": "The node list. This is an explicit mapping against hardware xnames.\n"
+                        "description": "The node list of hardware xnames. If the reject_nids option is enabled, then Session Template creation or validation will fail if it contains a boot set with a node list that appears to contain a NID.\n"
                       },
                       "node_roles_groups": {
                         "type": "array",
@@ -4350,7 +4358,7 @@
                             "type": "string"
                           },
                           "minItems": 1,
-                          "description": "The node list. This is an explicit mapping against hardware xnames.\n"
+                          "description": "The node list of hardware xnames. If the reject_nids option is enabled, then Session Template creation or validation will fail if it contains a boot set with a node list that appears to contain a NID.\n"
                         },
                         "node_roles_groups": {
                           "type": "array",
@@ -5190,6 +5198,10 @@
                     "example": 1000,
                     "minimum": 0,
                     "maximum": 131071
+                },
+                "reject_nids": {
+                  "type": "boolean",
+                  "description": "If true, then BOS will attempt to prevent Sessions and Session Templates that reference NIDs (which BOS does not support).\nSpecifically, if this option is true, then:\n- When creating a Session, if the Session limit or a Session Template node list appear to contain NID values, then Session creation will fail.\n- When creating a Session Template, if a node list appears to contain a NID value, then the Session Template creation will fail.\n- When validating an existing Session Template, if a node list appears to contain a NID value, then the validation will report an error.\n\nThis option does NOT have an effect on Sessions that were created prior to it being enabled (even if they have not yet started)."
                 },
                 "session_limit_required": {
                   "type": "boolean",
@@ -9254,7 +9266,7 @@
                                 "type": "string"
                               },
                               "minItems": 1,
-                              "description": "The node list. This is an explicit mapping against hardware xnames.\n"
+                              "description": "The node list of hardware xnames. If the reject_nids option is enabled, then Session Template creation or validation will fail if it contains a boot set with a node list that appears to contain a NID.\n"
                             },
                             "node_roles_groups": {
                               "type": "array",
@@ -9491,7 +9503,7 @@
                               "type": "string"
                             },
                             "minItems": 1,
-                            "description": "The node list. This is an explicit mapping against hardware xnames.\n"
+                            "description": "The node list of hardware xnames. If the reject_nids option is enabled, then Session Template creation or validation will fail if it contains a boot set with a node list that appears to contain a NID.\n"
                           },
                           "node_roles_groups": {
                             "type": "array",
@@ -9678,7 +9690,7 @@
                             "type": "string"
                           },
                           "minItems": 1,
-                          "description": "The node list. This is an explicit mapping against hardware xnames.\n"
+                          "description": "The node list of hardware xnames. If the reject_nids option is enabled, then Session Template creation or validation will fail if it contains a boot set with a node list that appears to contain a NID.\n"
                         },
                         "node_roles_groups": {
                           "type": "array",
@@ -9816,7 +9828,7 @@
                               "type": "string"
                             },
                             "minItems": 1,
-                            "description": "The node list. This is an explicit mapping against hardware xnames.\n"
+                            "description": "The node list of hardware xnames. If the reject_nids option is enabled, then Session Template creation or validation will fail if it contains a boot set with a node list that appears to contain a NID.\n"
                           },
                           "node_roles_groups": {
                             "type": "array",
@@ -10002,7 +10014,7 @@
                             "type": "string"
                           },
                           "minItems": 1,
-                          "description": "The node list. This is an explicit mapping against hardware xnames.\n"
+                          "description": "The node list of hardware xnames. If the reject_nids option is enabled, then Session Template creation or validation will fail if it contains a boot set with a node list that appears to contain a NID.\n"
                         },
                         "node_roles_groups": {
                           "type": "array",
@@ -10140,7 +10152,7 @@
                               "type": "string"
                             },
                             "minItems": 1,
-                            "description": "The node list. This is an explicit mapping against hardware xnames.\n"
+                            "description": "The node list of hardware xnames. If the reject_nids option is enabled, then Session Template creation or validation will fail if it contains a boot set with a node list that appears to contain a NID.\n"
                           },
                           "node_roles_groups": {
                             "type": "array",
@@ -10382,7 +10394,7 @@
                               "type": "string"
                             },
                             "minItems": 1,
-                            "description": "The node list. This is an explicit mapping against hardware xnames.\n"
+                            "description": "The node list of hardware xnames. If the reject_nids option is enabled, then Session Template creation or validation will fail if it contains a boot set with a node list that appears to contain a NID.\n"
                           },
                           "node_roles_groups": {
                             "type": "array",
@@ -10463,11 +10475,11 @@
                 "properties": {
                   "name": {
                     "type": "string",
-                    "description": "Name of the session. A UUID name is generated if a name is not provided.",
+                    "description": "Name of the session. The name must:\n* Use only letters, digits, periods (.), dashes (-), and underscores (_).\n* Begin and end with a letter or digit.",
                     "example": "session-20190728032600",
                     "minLength": 1,
-                    "maxLength": 45,
-                    "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$"
+                    "maxLength": 127,
+                    "pattern": "^[a-zA-Z0-9](?:[-._a-zA-Z0-9]{0,125}[a-zA-Z0-9])?$"
                   },
                   "operation": {
                     "type": "string",
@@ -14671,6 +14683,10 @@
                         "minimum": 0,
                         "maximum": 131071
                     },
+                    "reject_nids": {
+                      "type": "boolean",
+                      "description": "If true, then BOS will attempt to prevent Sessions and Session Templates that reference NIDs (which BOS does not support).\nSpecifically, if this option is true, then:\n- When creating a Session, if the Session limit or a Session Template node list appear to contain NID values, then Session creation will fail.\n- When creating a Session Template, if a node list appears to contain a NID value, then the Session Template creation will fail.\n- When validating an existing Session Template, if a node list appears to contain a NID value, then the validation will report an error.\n\nThis option does NOT have an effect on Sessions that were created prior to it being enabled (even if they have not yet started)."
+                    },
                     "session_limit_required": {
                       "type": "boolean",
                       "description": "If true, Sessions cannot be created without specifying the limit parameter."
@@ -14753,6 +14769,10 @@
                     "minimum": 0,
                     "maximum": 131071
                   },
+                  "reject_nids": {
+                    "type": "boolean",
+                    "description": "If true, then BOS will attempt to prevent Sessions and Session Templates that reference NIDs (which BOS does not support).\nSpecifically, if this option is true, then:\n- When creating a Session, if the Session limit or a Session Template node list appear to contain NID values, then Session creation will fail.\n- When creating a Session Template, if a node list appears to contain a NID value, then the Session Template creation will fail.\n- When validating an existing Session Template, if a node list appears to contain a NID value, then the validation will report an error.\n\nThis option does NOT have an effect on Sessions that were created prior to it being enabled (even if they have not yet started)."
+                  },
                   "session_limit_required": {
                     "type": "boolean",
                     "description": "If true, Sessions cannot be created without specifying the limit parameter."
@@ -14823,6 +14843,10 @@
                       "example": 1000,
                       "minimum": 0,
                       "maximum": 131071
+                    },
+                    "reject_nids": {
+                      "type": "boolean",
+                      "description": "If true, then BOS will attempt to prevent Sessions and Session Templates that reference NIDs (which BOS does not support).\nSpecifically, if this option is true, then:\n- When creating a Session, if the Session limit or a Session Template node list appear to contain NID values, then Session creation will fail.\n- When creating a Session Template, if a node list appears to contain a NID value, then the Session Template creation will fail.\n- When validating an existing Session Template, if a node list appears to contain a NID value, then the validation will report an error.\n\nThis option does NOT have an effect on Sessions that were created prior to it being enabled (even if they have not yet started)."
                     },
                     "session_limit_required": {
                       "type": "boolean",
