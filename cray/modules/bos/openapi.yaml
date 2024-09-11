@@ -687,17 +687,22 @@ components:
     V2SessionCreate:
       description: |
         A Session Creation object. A UUID name is generated if a name is not provided. The limit parameter is
-        required if the session_limit_required option is true.
+        required if the session_limit_required option is true. If the reject_nids option is enabled, then Session
+        creation will fail if a Session limit appears to contain a NID value.
       type: object
       properties:
         name:
           type: string
-          description: Name of the session. A UUID name is generated if a name is not provided.
+          description: |
+            Name of the session.
+
+            The name must:
+            * Use only letters, digits, periods (.), dashes (-), and underscores (_).
+            * Begin and end with a letter or digit.
           example: "session-20190728032600"
-          # These validation parameters are restricted by Kubernetes naming conventions.
           minLength: 1
-          maxLength: 45
-          pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$'
+          maxLength: 127
+          pattern: '^[a-zA-Z0-9](?:[-._a-zA-Z0-9]{0,125}[a-zA-Z0-9])?$'
         operation:
           type: string
           enum: ['boot', 'reboot', 'shutdown']
@@ -799,7 +804,8 @@ components:
             type: string
           minItems: 1
           description: |
-            The node list. This is an explicit mapping against hardware xnames.
+            The node list of hardware xnames. If the reject_nids option is enabled, then Session Template creation or validation will fail if
+            it contains a boot set with a node list that appears to contain a NID.
         node_roles_groups:
           type: array
           items:
@@ -1225,6 +1231,16 @@ components:
         session_limit_required:
           type: boolean
           description: If true, Sessions cannot be created without specifying the limit parameter.
+        reject_nids:
+          type: boolean
+          description: |
+            If true, then BOS will attempt to prevent Sessions and Session Templates that reference NIDs (which BOS does not support).
+            Specifically, if this option is true, then:
+            - When creating a Session, if the Session limit or a Session Template node list appear to contain NID values, then Session creation will fail.
+            - When creating a Session Template, if a node list appears to contain a NID value, then the Session Template creation will fail.
+            - When validating an existing Session Template, if a node list appears to contain a NID value, then the validation will report an error.
+
+            This option does NOT have an effect on Sessions that were created prior to it being enabled (even if they have not yet started).
       additionalProperties: true
   requestBodies:
     V2sessionCreateRequest:
