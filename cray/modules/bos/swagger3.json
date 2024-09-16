@@ -5887,20 +5887,6 @@
             }
         },
         "/v2/sessiontemplates": {
-            "parameters": [
-                {
-                    "name": "Cray-Tenant-Name",
-                    "in": "header",
-                    "description": "Tenant name.\n\nRequests with a non-empty tenant name will restict the context of the operation to Session Templates owned by that tenant.\n\nRequests with an empty tenant name, or that omit this parameter, will have no such context restrictions.\n",
-                    "required": false,
-                    "schema": {
-                        "type": "string",
-                        "description": "Name of a tenant. Used for multi-tenancy. An empty string means no tenant.",
-                        "example": "vcluster-my-tenant1",
-                        "maxLength": 127
-                    }
-                }
-            ],
             "get": {
                 "summary": "List Session Templates",
                 "description": "List all Session Templates.",
@@ -6143,18 +6129,6 @@
                         "pattern": "^[a-zA-Z0-9](?:[-._a-zA-Z0-9]{0,125}[a-zA-Z0-9])?$",
                         "example": "cle-1.0.0"
                     }
-                },
-                {
-                    "name": "Cray-Tenant-Name",
-                    "in": "header",
-                    "description": "Tenant name.\n\nRequests with a non-empty tenant name will restict the context of the operation to Session Templates owned by that tenant.\n\nRequests with an empty tenant name, or that omit this parameter, will have no such context restrictions.\n",
-                    "required": false,
-                    "schema": {
-                        "type": "string",
-                        "description": "Name of a tenant. Used for multi-tenancy. An empty string means no tenant.",
-                        "example": "vcluster-my-tenant1",
-                        "maxLength": 127
-                    }
                 }
             ],
             "get": {
@@ -6233,18 +6207,6 @@
                         "maxLength": 127,
                         "pattern": "^[a-zA-Z0-9](?:[-._a-zA-Z0-9]{0,125}[a-zA-Z0-9])?$",
                         "example": "cle-1.0.0"
-                    }
-                },
-                {
-                    "name": "Cray-Tenant-Name",
-                    "in": "header",
-                    "description": "Tenant name.\n\nRequests with a non-empty tenant name will restict the context of the operation to Session Templates owned by that tenant.\n\nRequests with an empty tenant name, or that omit this parameter, will have no such context restrictions.\n",
-                    "required": false,
-                    "schema": {
-                        "type": "string",
-                        "description": "Name of a tenant. Used for multi-tenancy. An empty string means no tenant.",
-                        "example": "vcluster-my-tenant1",
-                        "maxLength": 127
                     }
                 }
             ],
@@ -7767,20 +7729,6 @@
             }
         },
         "/v2/sessions": {
-            "parameters": [
-                {
-                    "name": "Cray-Tenant-Name",
-                    "in": "header",
-                    "description": "Tenant name.\n\nRequests with a non-empty tenant name will restict the context of the operation to Session Templates owned by that tenant.\n\nRequests with an empty tenant name, or that omit this parameter, will have no such context restrictions.\n",
-                    "required": false,
-                    "schema": {
-                        "type": "string",
-                        "description": "Name of a tenant. Used for multi-tenancy. An empty string means no tenant.",
-                        "example": "vcluster-my-tenant1",
-                        "maxLength": 127
-                    }
-                }
-            ],
             "post": {
                 "summary": "Create a Session",
                 "description": "The creation of a Session performs the operation\nspecified in the SessionCreateRequest\non the Boot Sets defined in the Session Template.\n",
@@ -8269,18 +8217,6 @@
                         "pattern": "^[a-zA-Z0-9](?:[-._a-zA-Z0-9]{0,125}[a-zA-Z0-9])?$",
                         "example": "session-20190728032600"
                     }
-                },
-                {
-                    "name": "Cray-Tenant-Name",
-                    "in": "header",
-                    "description": "Tenant name.\n\nRequests with a non-empty tenant name will restict the context of the operation to Session Templates owned by that tenant.\n\nRequests with an empty tenant name, or that omit this parameter, will have no such context restrictions.\n",
-                    "required": false,
-                    "schema": {
-                        "type": "string",
-                        "description": "Name of a tenant. Used for multi-tenancy. An empty string means no tenant.",
-                        "example": "vcluster-my-tenant1",
-                        "maxLength": 127
-                    }
                 }
             ],
             "get": {
@@ -8752,18 +8688,6 @@
                         "pattern": "^[a-zA-Z0-9](?:[-._a-zA-Z0-9]{0,125}[a-zA-Z0-9])?$",
                         "example": "session-20190728032600"
                     }
-                },
-                {
-                    "name": "Cray-Tenant-Name",
-                    "in": "header",
-                    "description": "Tenant name.\n\nRequests with a non-empty tenant name will restict the context of the operation to Session Templates owned by that tenant.\n\nRequests with an empty tenant name, or that omit this parameter, will have no such context restrictions.\n",
-                    "required": false,
-                    "schema": {
-                        "type": "string",
-                        "description": "Name of a tenant. Used for multi-tenancy. An empty string means no tenant.",
-                        "example": "vcluster-my-tenant1",
-                        "maxLength": 127
-                    }
                 }
             ],
             "get": {
@@ -9061,20 +8985,6 @@
             }
         },
         "/v2/components": {
-            "parameters": [
-                {
-                    "name": "Cray-Tenant-Name",
-                    "in": "header",
-                    "description": "Tenant name.\n\nRequests with a non-empty tenant name will restict the context of the operation to Session Templates owned by that tenant.\n\nRequests with an empty tenant name, or that omit this parameter, will have no such context restrictions.\n",
-                    "required": false,
-                    "schema": {
-                        "type": "string",
-                        "description": "Name of a tenant. Used for multi-tenancy. An empty string means no tenant.",
-                        "example": "vcluster-my-tenant1",
-                        "maxLength": 127
-                    }
-                }
-            ],
             "get": {
                 "summary": "Retrieve the state of a collection of Components",
                 "parameters": [
@@ -10432,18 +10342,6 @@
                         "minLength": 1,
                         "maxLength": 127
                     }
-                },
-                {
-                    "name": "Cray-Tenant-Name",
-                    "in": "header",
-                    "description": "Tenant name.\n\nRequests with a non-empty tenant name will restict the context of the operation to Session Templates owned by that tenant.\n\nRequests with an empty tenant name, or that omit this parameter, will have no such context restrictions.\n",
-                    "required": false,
-                    "schema": {
-                        "type": "string",
-                        "description": "Name of a tenant. Used for multi-tenancy. An empty string means no tenant.",
-                        "example": "vcluster-my-tenant1",
-                        "maxLength": 127
-                    }
                 }
             ],
             "get": {
@@ -11576,20 +11474,6 @@
             }
         },
         "/v2/applystaged": {
-            "parameters": [
-                {
-                    "name": "Cray-Tenant-Name",
-                    "in": "header",
-                    "description": "Tenant name.\n\nRequests with a non-empty tenant name will restict the context of the operation to Session Templates owned by that tenant.\n\nRequests with an empty tenant name, or that omit this parameter, will have no such context restrictions.\n",
-                    "required": false,
-                    "schema": {
-                        "type": "string",
-                        "description": "Name of a tenant. Used for multi-tenancy. An empty string means no tenant.",
-                        "example": "vcluster-my-tenant1",
-                        "maxLength": 127
-                    }
-                }
-            ],
             "post": {
                 "summary": "Start a staged Session for the specified Components",
                 "description": "Given a list of xnames, this will trigger the start of any Sessions\nstaged for those Components.  Components without a staged Session\nwill be ignored, and a list all Components that are acted on will\nbe returned in the response.\n",

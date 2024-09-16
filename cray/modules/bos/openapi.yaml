@@ -1368,8 +1368,6 @@ paths:
         503:
           $ref: '#/components/responses/ServiceUnavailable'
   /v2/sessiontemplates:
-    parameters:
-      - $ref: '#/components/parameters/V2TenantHeaderParam'
     get:
       summary: List Session Templates
       description: List all Session Templates.
@@ -1384,7 +1382,6 @@ paths:
   /v2/sessiontemplatesvalid/{session_template_id}:
     parameters:
       - $ref: '#/components/parameters/TemplateIdPathParam'
-      - $ref: '#/components/parameters/V2TenantHeaderParam'
     get:
       summary: Validate the Session Template by ID
       description: |
@@ -1404,7 +1401,6 @@ paths:
   /v2/sessiontemplates/{session_template_id}:
     parameters:
       - $ref: '#/components/parameters/TemplateIdPathParam'
-      - $ref: '#/components/parameters/V2TenantHeaderParam'
     get:
       summary: Get Session Template by ID
       description: |
@@ -1492,8 +1488,6 @@ paths:
         200:
           $ref: '#/components/responses/V2SessionTemplateDetails'
   /v2/sessions:
-    parameters:
-      - $ref: '#/components/parameters/V2TenantHeaderParam'
     post:
       summary: Create a Session
       description: |
@@ -1550,7 +1544,6 @@ paths:
   /v2/sessions/{session_id}:
     parameters:
       - $ref: '#/components/parameters/V2SessionIdPathParam'
-      - $ref: '#/components/parameters/V2TenantHeaderParam'
     get:
       summary: Get Session details by ID
       description: Get Session details by Session ID.
@@ -1600,7 +1593,6 @@ paths:
   /v2/sessions/{session_id}/status:
     parameters:
       - $ref: '#/components/parameters/V2SessionIdPathParam'
-      - $ref: '#/components/parameters/V2TenantHeaderParam'
     get:
       summary: Get Session extended status information by ID
       description: Get Session extended status information by ID
@@ -1629,8 +1621,6 @@ paths:
         404:
           $ref: '#/components/responses/ResourceNotFound'
   /v2/components:
-    parameters:
-      - $ref: '#/components/parameters/V2TenantHeaderParam'
     get:
       summary: Retrieve the state of a collection of Components
       parameters:
@@ -1726,7 +1716,6 @@ paths:
   /v2/components/{component_id}:
     parameters:
       - $ref: '#/components/parameters/V2ComponentIdPathParam'
-      - $ref: '#/components/parameters/V2TenantHeaderParam'
     get:
       summary: Retrieve the state of a single Component
       description: Retrieve the current and desired state of a single Component
@@ -1791,8 +1780,6 @@ paths:
         404:
           $ref: '#/components/responses/ResourceNotFound'
   /v2/applystaged:
-    parameters:
-      - $ref: '#/components/parameters/V2TenantHeaderParam'
     post:
       summary: Start a staged Session for the specified Components
       description: |
