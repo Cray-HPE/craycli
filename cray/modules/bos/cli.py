@@ -34,12 +34,6 @@ SWAGGER_OPTS = {}
 
 cli = generate(__file__, swagger_opts=SWAGGER_OPTS)
 
-# Update v2 sessions should only be in the API -- not intended for CLI use
-del cli.commands['v2'].commands['sessions'].commands['update']
-
-# Remove all v1 endpoints
-del cli.commands['v1']
-
 # Place the v2 commands at the 'cray bos' level of the cli
 CURRENT_VERSION = 'v2'
 PRESERVE_VERSIONS = True
