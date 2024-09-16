@@ -58,6 +58,8 @@ def test_cray_bos_base(cli_runner, rest_mock):
     outputs = ['Boot Orchestration Service', 'Groups:'] + BOS_V2_GROUPS + ['Commands:', 'list']
     for txt in outputs:
         assert txt in result.output
+    # v1 should no longer be listed
+    assert 'v1' not in result.output
 
 
 def test_cray_bos_list(cli_runner, rest_mock):
