@@ -44,14 +44,19 @@ else:
     cli.commands = cli.commands[CURRENT_VERSION].commands
 
 
-def strip_tenant_header_params(commands=cli.commands):
+def strip_tenant_header_params(group=cli):
     """
     Remove tenant header parameters from CLI commands, because those are
     handled differently by the CLI
     """
-    commands.params = [ p for p in commands.params if p.payload_name != 'Cray-Tenant-Name' ]
-    for c in commands.values():
-        strip_tenant_header_params(c)
+    if hasattr(group, 'params'):
+        group.params = [ p for p in group.params if p.payload_name != 'Cray-Tenant-Name' ]
+    if hasattr(group, 'commands'):
+        for c in group.commands:
+            strip_tenant_header_params(c)
+    if isinstance(group, dict):
+        for subgroup in group.values():
+            strip_tenant_header_params(subgroup)
 
 
 # Add --file parameter for specifying session template data
