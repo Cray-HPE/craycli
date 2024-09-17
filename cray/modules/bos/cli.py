@@ -44,9 +44,11 @@ else:
     cli.commands = cli.commands[CURRENT_VERSION].commands
 
 
-# Remove template header parameters from CLI commands, because those are
-# handled differently by the CLI
 def strip_tenant_header_params(commands=cli.commands):
+    """
+    Remove tenant header parameters from CLI commands, because those are
+    handled differently by the CLI
+    """
     commands.params = [ p for p in commands.params if p.payload_name != 'Cray-Tenant-Name' ]
     for c in commands.values():
         strip_tenant_header_params(c)
