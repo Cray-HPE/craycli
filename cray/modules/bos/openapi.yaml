@@ -3,7 +3,7 @@ openapi: "3.0.3"
 
 info:
   title: "Boot Orchestration Service"
-  version: "2.8.0"
+  version: "0.0.0-api"
   description: |
     The Boot Orchestration Service (BOS) provides coordinated provisioning actions
     over defined hardware sets to enable boot, reboot, shutdown, configuration and
@@ -436,6 +436,9 @@ components:
       maxLength: 127
       pattern: '^[a-zA-Z0-9](?:[-._a-zA-Z0-9]{0,125}[a-zA-Z0-9])?$'
       example: "session-20190728032600"
+    V2SessionNameOrEmpty:
+      type: string
+      description: Name of the Session or an empty string.
     V2SessionOperation:
       type: string
       enum: ['boot', 'reboot', 'shutdown']
@@ -762,7 +765,7 @@ components:
         configuration:
           $ref: '#/components/schemas/CfsConfiguration'
         session:
-          type: string
+          $ref: '#/components/schemas/V2SessionNameOrEmpty'
         last_updated:
           $ref: '#/components/schemas/V2ComponentLastUpdated'
       additionalProperties: false
@@ -849,25 +852,7 @@ components:
           description: A description of the most recent error to impact the Component.
           maxLength: 65536
         session:
-          type: string
-        retry_policy:
-          type: integer
-          description: |
-            The maximum number attempts per action when actions fail.
-            Defaults to the global default_retry_policy if not set
-          example: 1
-          minimum: 0
-          maximum: 1048576
-      additionalProperties: false
-      minProperties: 1
-    V2ComponentCliUpdate:
-      description: |
-        Component attributes that can be updated using the CLI
-      type: object
-      properties:
-        enabled:
-          type: boolean
-          description: A flag indicating if actions should be taken for this Component.
+          $ref: '#/components/schemas/V2SessionNameOrEmpty'
         retry_policy:
           type: integer
           description: |
@@ -906,7 +891,7 @@ components:
           description: A description of the most recent error to impact the Component.
           maxLength: 65536
         session:
-          type: string
+          $ref: '#/components/schemas/V2SessionNameOrEmpty'
         retry_policy:
           type: integer
           description: |
@@ -927,10 +912,9 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/V2ComponentWithId'
-    V2ComponentsFilter:
+    V2ComponentsFilterByIds:
       description: |
-        Information for patching multiple Components by listing their IDs or
-        session. Only one of the two may be specified.
+        Information for patching multiple Components by listing their IDs.
       type: object
       properties:
         ids:
@@ -939,18 +923,31 @@ components:
           minLength: 1
           maxLength: 65535
         session:
+          $ref: '#/components/schemas/EmptyStringNullable'
+      required: [ids]
+      additionalProperties: false
+    V2ComponentsFilterBySession:
+      description: |
+        Information for patching multiple Components by Session name.
+        All Components part of this Session will be patched.
+      type: object
+      properties:
+        ids:
+          $ref: '#/components/schemas/EmptyStringNullable'
+        session:
           $ref: '#/components/schemas/V2SessionName'
-      minProperties: 1
-      maxProperties: 1
+      required: [session]
       additionalProperties: false
     V2ComponentsUpdate:
       description: Information for patching multiple Components.
       type: object
       properties:
         patch:
-          $ref: '#/components/schemas/V2ComponentCliUpdate'
+          $ref: '#/components/schemas/V2Component'
         filters:
-          $ref: '#/components/schemas/V2ComponentsFilter'
+          oneOf:
+            - $ref: '#/components/schemas/V2ComponentsFilterByIds'
+            - $ref: '#/components/schemas/V2ComponentsFilterBySession'
       required: [patch, filters]
       additionalProperties: false
     V2ApplyStagedComponents:
@@ -1083,7 +1080,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/V2ComponentCliUpdate'
+            $ref: '#/components/schemas/V2Component'
     V2componentsPutRequest:
       description: The state for an array of Components
       required: true
@@ -1091,20 +1088,15 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/V2ComponentArrayWithIds'
-    V2componentsUpdateRequestArray:
-      description: An array of Component states
+    V2componentsUpdateRequest:
+      description: The state for an array of Components
       required: true
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/V2ComponentArrayWithIds'
-    V2componentsUpdateRequestFilter:
-      description: A Component state and filter
-      required: true
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/V2ComponentsUpdate'
+            oneOf:
+              - $ref: '#/components/schemas/V2ComponentsUpdate'
+              - $ref: '#/components/schemas/V2ComponentArrayWithIds'
     V2optionsUpdateRequest:
       description: Service-wide options
       required: true
@@ -1368,6 +1360,8 @@ paths:
         503:
           $ref: '#/components/responses/ServiceUnavailable'
   /v2/sessiontemplates:
+    parameters:
+      - $ref: '#/components/parameters/V2TenantHeaderParam'
     get:
       summary: List Session Templates
       description: List all Session Templates.
@@ -1382,6 +1376,7 @@ paths:
   /v2/sessiontemplatesvalid/{session_template_id}:
     parameters:
       - $ref: '#/components/parameters/TemplateIdPathParam'
+      - $ref: '#/components/parameters/V2TenantHeaderParam'
     get:
       summary: Validate the Session Template by ID
       description: |
@@ -1401,6 +1396,7 @@ paths:
   /v2/sessiontemplates/{session_template_id}:
     parameters:
       - $ref: '#/components/parameters/TemplateIdPathParam'
+      - $ref: '#/components/parameters/V2TenantHeaderParam'
     get:
       summary: Get Session Template by ID
       description: |
@@ -1488,6 +1484,8 @@ paths:
         200:
           $ref: '#/components/responses/V2SessionTemplateDetails'
   /v2/sessions:
+    parameters:
+      - $ref: '#/components/parameters/V2TenantHeaderParam'
     post:
       summary: Create a Session
       description: |
@@ -1544,6 +1542,7 @@ paths:
   /v2/sessions/{session_id}:
     parameters:
       - $ref: '#/components/parameters/V2SessionIdPathParam'
+      - $ref: '#/components/parameters/V2TenantHeaderParam'
     get:
       summary: Get Session details by ID
       description: Get Session details by Session ID.
@@ -1593,6 +1592,7 @@ paths:
   /v2/sessions/{session_id}/status:
     parameters:
       - $ref: '#/components/parameters/V2SessionIdPathParam'
+      - $ref: '#/components/parameters/V2TenantHeaderParam'
     get:
       summary: Get Session extended status information by ID
       description: Get Session extended status information by ID
@@ -1621,6 +1621,8 @@ paths:
         404:
           $ref: '#/components/responses/ResourceNotFound'
   /v2/components:
+    parameters:
+      - $ref: '#/components/parameters/V2TenantHeaderParam'
     get:
       summary: Retrieve the state of a collection of Components
       parameters:
@@ -1702,10 +1704,11 @@ paths:
       tags:
         - v2
         - components
+        - cli_ignore
       x-openapi-router-controller: bos.server.controllers.v2.components
       operationId: patch_v2_components
       requestBody:
-        $ref: '#/components/requestBodies/V2componentsUpdateRequestFilter'
+        $ref: '#/components/requestBodies/V2componentsUpdateRequest'
       responses:
         200:
           $ref: '#/components/responses/V2componentDetailsArray'
@@ -1716,6 +1719,7 @@ paths:
   /v2/components/{component_id}:
     parameters:
       - $ref: '#/components/parameters/V2ComponentIdPathParam'
+      - $ref: '#/components/parameters/V2TenantHeaderParam'
     get:
       summary: Retrieve the state of a single Component
       description: Retrieve the current and desired state of a single Component
@@ -1780,6 +1784,8 @@ paths:
         404:
           $ref: '#/components/responses/ResourceNotFound'
   /v2/applystaged:
+    parameters:
+      - $ref: '#/components/parameters/V2TenantHeaderParam'
     post:
       summary: Start a staged Session for the specified Components
       description: |

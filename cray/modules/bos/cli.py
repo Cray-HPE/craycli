@@ -44,6 +44,14 @@ else:
     cli.commands = cli.commands[CURRENT_VERSION].commands
 
 
+# Remove template header parameters from CLI commands, because those are
+# handled differently by the CLI
+def strip_tenant_header_params(commands=cli.commands):
+    commands.params = [ p for p in commands.params if p.payload_name != 'Cray-Tenant-Name' ]
+    for c in commands.values():
+        strip_tenant_header_params(c)
+
+
 # Add --file parameter for specifying session template data
 def create_templates_shim(func):
     """ Callback function to custom create our own payload """
@@ -87,7 +95,7 @@ def updatemany_data_handler(args):
 def create_patch_shim(func):
     """ Callback function to custom create our own payload """
 
-    def _decorator(filter_ids, filter_session, patch, enabled, **kwargs):
+    def _decorator(filter_ids, filter_session, patch, enabled, retry_policy, **kwargs):
         filter_ids = filter_ids["value"]
         filter_session = filter_session["value"]
         if not (filter_ids or filter_session):
@@ -109,6 +117,8 @@ def create_patch_shim(func):
             payload["patch"] = {}
         if enabled["value"] is not None:
             payload["patch"]["enabled"] = enabled["value"]
+        if retry_policy["value"] is not None:
+            payload["patch"]["retry_policy"] = retry_policy["value"]
         # Hack to tell the CLI we are passing our own payload; don't generate
         kwargs[FROM_FILE_TAG] = {"value": payload, "name": FROM_FILE_TAG}
         return func(data_handler=updatemany_data_handler, **kwargs)
@@ -160,6 +170,14 @@ def setup_components_patch():
         metavar='BOOLEAN',
         help="Shortcut for --patch '{\"enabled\":True/False}'"
     )(new_command)
+    option(
+        '--retry-policy',
+        callback=_opt_callback,
+        type=int,
+        default=None,
+        metavar='INT',
+        help="Shortcut for --patch '{\"retry_policy\":<int>}'"
+    )(new_command)
     new_command.params += default_params
     new_command.callback = create_patch_shim(new_command.callback)
 
@@ -175,6 +193,7 @@ def setup_v2_template_create():
     cli.commands['v2'].commands['sessiontemplates'].commands['create'] = \
         temp_cli.commands['v2'].commands['sessiontemplates'].commands['create']
 
+strip_tenant_header_params()
 
 setup_v2_template_create()
 
