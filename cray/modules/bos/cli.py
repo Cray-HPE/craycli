@@ -24,6 +24,7 @@
 """ bos """
 # pylint: disable=invalid-name
 import json
+import sys
 
 from cray.constants import FROM_FILE_TAG
 from cray.core import option
@@ -50,6 +51,7 @@ def strip_tenant_header_params(group=cli):
     handled differently by the CLI
     """
     if hasattr(group, 'params'):
+        sys.stderr.write(f"{group.params}\n")
         group.params = [ p for p in group.params if p.payload_name != 'Cray-Tenant-Name' ]
     if hasattr(group, 'commands'):
         for c in group.commands:
