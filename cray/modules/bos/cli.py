@@ -34,12 +34,6 @@ SWAGGER_OPTS = {}
 
 cli = generate(__file__, swagger_opts=SWAGGER_OPTS)
 
-# Update v2 sessions should only be in the API -- not intended for CLI use
-del cli.commands['v2'].commands['sessions'].commands['update']
-
-# Remove all v1 endpoints
-del cli.commands['v1']
-
 # Place the v2 commands at the 'cray bos' level of the cli
 CURRENT_VERSION = 'v2'
 PRESERVE_VERSIONS = True
@@ -48,6 +42,18 @@ if PRESERVE_VERSIONS:
     cli.commands.update(cli.commands[CURRENT_VERSION].commands)
 else:
     cli.commands = cli.commands[CURRENT_VERSION].commands
+
+
+def strip_tenant_header_params(cmd=cli):
+    """
+    Remove tenant header parameters from CLI commands, because those are
+    handled differently by the CLI
+    """
+    if hasattr(cmd, 'params'):
+        cmd.params = [ p for p in cmd.params if p.payload_name != 'Cray-Tenant-Name' ]
+    if hasattr(cmd, 'commands'):
+        for c in cmd.commands.values():
+            strip_tenant_header_params(c)
 
 
 # Add --file parameter for specifying session template data
@@ -93,7 +99,7 @@ def updatemany_data_handler(args):
 def create_patch_shim(func):
     """ Callback function to custom create our own payload """
 
-    def _decorator(filter_ids, filter_session, patch, enabled, **kwargs):
+    def _decorator(filter_ids, filter_session, patch, enabled, retry_policy, **kwargs):
         filter_ids = filter_ids["value"]
         filter_session = filter_session["value"]
         if not (filter_ids or filter_session):
@@ -115,6 +121,8 @@ def create_patch_shim(func):
             payload["patch"] = {}
         if enabled["value"] is not None:
             payload["patch"]["enabled"] = enabled["value"]
+        if retry_policy["value"] is not None:
+            payload["patch"]["retry_policy"] = retry_policy["value"]
         # Hack to tell the CLI we are passing our own payload; don't generate
         kwargs[FROM_FILE_TAG] = {"value": payload, "name": FROM_FILE_TAG}
         return func(data_handler=updatemany_data_handler, **kwargs)
@@ -166,6 +174,14 @@ def setup_components_patch():
         metavar='BOOLEAN',
         help="Shortcut for --patch '{\"enabled\":True/False}'"
     )(new_command)
+    option(
+        '--retry-policy',
+        callback=_opt_callback,
+        type=int,
+        default=None,
+        metavar='INT',
+        help="Shortcut for --patch '{\"retry_policy\":<int>}'"
+    )(new_command)
     new_command.params += default_params
     new_command.callback = create_patch_shim(new_command.callback)
 
@@ -181,6 +197,7 @@ def setup_v2_template_create():
     cli.commands['v2'].commands['sessiontemplates'].commands['create'] = \
         temp_cli.commands['v2'].commands['sessiontemplates'].commands['create']
 
+strip_tenant_header_params()
 
 setup_v2_template_create()
 
