@@ -96,10 +96,11 @@ def updatemany_data_handler(args):
     return "PATCH", path, data
 
 
-def create_patch_shim(func):
+def create_patch_shim_updatemany_components(func):
     """ Callback function to custom create our own payload """
 
-    def _decorator(filter_ids, filter_session, patch, enabled, retry_policy, **kwargs):
+    def _decorator(filter_ids, filter_session, patch, enabled, retry_policy, clear_desired_state,
+                   clear_staged_state, clear_pending_state, **kwargs):
         filter_ids = filter_ids["value"]
         filter_session = filter_session["value"]
         if not (filter_ids or filter_session):
@@ -123,6 +124,23 @@ def create_patch_shim(func):
             payload["patch"]["enabled"] = enabled["value"]
         if retry_policy["value"] is not None:
             payload["patch"]["retry_policy"] = retry_policy["value"]
+        empty_boot_artifacts = {
+            "initrd": "",
+            "kernel_parameters": "",
+            "kernel": "" }
+        if clear_pending_state["value"]:
+            clear_staged_state["value"] = True
+            clear_desired_state["value"] = True
+        if clear_staged_state["value"]:
+            payload["patch"]["staged_state"] = {
+                "session": "",
+                "configuration": "",
+                "boot_artifacts": empty_boot_artifacts }
+        if clear_desired_state["value"]:
+            payload["patch"]["desired_state"] = {
+                "bss_token": "",
+                "configuration": "",
+                "boot_artifacts": empty_boot_artifacts }
         # Hack to tell the CLI we are passing our own payload; don't generate
         kwargs[FROM_FILE_TAG] = {"value": payload, "name": FROM_FILE_TAG}
         return func(data_handler=updatemany_data_handler, **kwargs)
@@ -132,13 +150,12 @@ def create_patch_shim(func):
 
 def setup_components_patch():
     """ Sets up an updatemany command for components """
-    source_command = cli.commands['v2'].commands['components'].commands['list']
+    source_command = cli.commands['v2'].commands['components'].commands.pop('create')
     command_type = type(source_command)
     new_command = command_type("updatemany")
     for key, value in source_command.__dict__.items():
         setattr(new_command, key, value)
-    cli.commands['v2'].commands['components'].commands[
-        'updatemany'] = new_command
+    cli.commands['v2'].commands['components'].commands['updatemany'] = new_command
     new_command.params = []
     default_params = [param for param in source_command.params if
                       not param.expose_value]
@@ -172,7 +189,7 @@ def setup_components_patch():
         type=bool,
         default=None,
         metavar='BOOLEAN',
-        help="Shortcut for --patch '{\"enabled\":True/False}'"
+        help="Enable or disable the components"
     )(new_command)
     option(
         '--retry-policy',
@@ -180,10 +197,72 @@ def setup_components_patch():
         type=int,
         default=None,
         metavar='INT',
-        help="Shortcut for --patch '{\"retry_policy\":<int>}'"
+        help="Set the retry policy for the components"
+    )(new_command)
+    option(
+        '--clear-desired-state',
+        is_flag=True,
+        callback=_opt_callback,
+        help='Clear all desired state fields for the components'
+    )(new_command)
+    option(
+        '--clear-staged-state',
+        is_flag=True,
+        callback=_opt_callback,
+        help='Clear all the staged state fields for the components'
+    )(new_command)
+    option(
+        '--clear-pending-state',
+        is_flag=True,
+        callback=_opt_callback,
+        help='Shortcut for --clear-desired-state --clear-staged-state'
     )(new_command)
     new_command.params += default_params
-    new_command.callback = create_patch_shim(new_command.callback)
+    new_command.callback = create_patch_shim_updatemany_components(new_command.callback)
+
+def create_patch_shim_update_components(func):
+    """ Callback function to custom create our own payload """
+
+    def _decorator(clear_desired_state, clear_staged_state, clear_pending_state, **kwargs):
+        if clear_pending_state["value"]:
+            clear_staged_state["value"] = True
+            clear_desired_state["value"] = True
+        if clear_staged_state["value"]:
+            for arg in kwargs.values():
+                if arg["name"].find('staged_state') == 0:
+                    arg["value"] = ""
+        if clear_desired_state["value"]:
+            for arg in kwargs.values():
+                if arg["name"].find('desired_state') == 0:
+                    arg["value"] = ""
+        return func(**kwargs)
+
+    return _decorator
+
+
+def modify_component_patch():
+    """ Modifies update command for components """
+    source_command = cli.commands['v2'].commands['components'].commands['update']
+    option(
+        '--clear-desired-state',
+        is_flag=True,
+        callback=_opt_callback,
+        help='Clear all desired state fields for the component'
+    )(source_command)
+    option(
+        '--clear-staged-state',
+        is_flag=True,
+        callback=_opt_callback,
+        help='Clear all staged state fields for the component'
+    )(source_command)
+    option(
+        '--clear-pending-state',
+        is_flag=True,
+        callback=_opt_callback,
+        help='Shortcut for --clear-desired-state --clear-staged-state'
+    )(source_command)
+    source_command.params = source_command.params[-3:] + source_command.params[:-3]
+    source_command.callback = create_patch_shim_update_components(source_command.callback)
 
 
 def setup_v2_template_create():
@@ -209,3 +288,5 @@ setup_template_from_file(
 )
 
 setup_components_patch()
+
+modify_component_patch()
