@@ -1094,9 +1094,7 @@ components:
       content:
         application/json:
           schema:
-            oneOf:
-              - $ref: '#/components/schemas/V2ComponentsUpdate'
-              - $ref: '#/components/schemas/V2ComponentArrayWithIds'
+            type: object
     V2optionsUpdateRequest:
       description: Service-wide options
       required: true
@@ -1698,13 +1696,12 @@ paths:
           $ref: '#/components/responses/V2componentDetailsArray'
         400:
           $ref: '#/components/responses/BadRequest'
-    patch:
+    post:
       summary: Update a collection of Components
       description: Update the state for a collection of Components in the BOS database
       tags:
         - v2
         - components
-        - cli_ignore
       x-openapi-router-controller: bos.server.controllers.v2.components
       operationId: patch_v2_components
       requestBody:
