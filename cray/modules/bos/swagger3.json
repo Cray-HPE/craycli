@@ -2,7 +2,7 @@
     "openapi": "3.0.3",
     "info": {
         "title": "Boot Orchestration Service",
-        "version": "0.0.0-api",
+        "version": "2.30.0",
         "description": "The Boot Orchestration Service (BOS) provides coordinated provisioning actions\nover defined hardware sets to enable boot, reboot, shutdown, configuration and\nstaging for specified hardware subsets. These provisioning actions apply state\nthrough numerous system management APIs at the request of system administrators\nfor managed product environments.\n\nThe default content type for the BOS API is \"application/json\". Unsuccessful\nAPI calls return a content type of \"application/problem+json\" as per RFC 7807.\n\n## Resources\n\n\n### Session Template\n\nA Session Template sets the operational context of which nodes to operate on for\nany given set of nodes. It is largely comprised of one or more boot\nsets and their associated software configuration.\n\nA Boot Set defines a list of nodes, the image you want to boot/reboot the nodes with,\nkernel parameters to use to boot the nodes, and additional configuration management\nframework actions to apply during node bring up.\n\n### Session\n\nA BOS Session applies a provided action to the nodes defined in a Session Template.\n\n\n## Workflow: Create a New Session\n\n1. Choose the Session Template to use.\n\n  Session Templates which do not belong to a tenant are uniquely identified by their\n  names. All Session Templates that belong to a given tenant are uniquely identified\n  by their names, but may share names with Session Templates that belong to other\n  tenants or that do not belong to a tenant.\n\n  a. List available Session Templates.\n\n    GET /v2/sessiontemplates\n\n  b. Create a new Session Template if desired.\n\n    PUT /v2/sessiontemplate/{template_name}\n\n    If no Session Template exists that satisfies requirements,\n    then create a new Session Template.\n    This Session Template can be used to create a new Session later.\n\n2. Create the Session.\n\n  POST /v2/sessions\n\n  Specify template_name and an operation to create a new Session.\n  The template_name corresponds to the Session Template *name*.\n  A new Session is launched as a result of this call (in the case of\n  /v2/sessions, the option to stage but not begin the Session also exists).\n\n  A limit can also be specified to narrow the scope of the Session. The limit\n  can consist of nodes, groups, or roles in a comma-separated list.\n  Multiple groups are treated as separated by OR, unless \"&\" is added to\n  the start of the component, in which case this becomes an AND.  Components\n  can also be preceded by \"!\" to exclude them.\n\n  Note, the response from a successful Session launch contains *links*.\n  Within *links*, *href* is a string that uniquely identifies the Session.\n  *href* is constructed using the Session Template name and a generated UUID.\n  Use the entire *href* string as the path parameter *session_id*\n  to uniquely identify a Session.\n\n3. Get details on the Session.\n\n  GET /v2/sessions/{session_id}\n\n\n## Interactions with Other APIs\n\n### Configuration Framework Service (CFS)\n\nIf *enable_cfs* is true in a Session Template, then BOS will invoke CFS to\nconfigure the target nodes during *boot* or *reboot* operations.\n\n### Hardware State Manager (HSM)\n\nIn some situations BOS checks HSM to determine if a node has been disabled.\n\n### Image Management Service (IMS)\n\nBOS works in concert with IMS to access boot images.\nAll boot images specified via the Session Template must be available via IMS.\n"
     },
     "servers": [
@@ -3100,6 +3100,13 @@
                         "minLength": 1,
                         "maxLength": 8
                     },
+                    "default_retry_policy": {
+                        "type": "integer",
+                        "description": "The default maximum number attempts per node for failed actions.",
+                        "example": 1,
+                        "minimum": 0,
+                        "maximum": 1048576
+                    },
                     "disable_components_on_completion": {
                         "type": "boolean",
                         "description": "If true, when a Session has brought a Component to its desired state, that Component will be marked as disabled in BOS.\nIf false, BOS will continue to maintain the state of the nodes declaratively, even after a Session finishes.\n"
@@ -3109,6 +3116,14 @@
                         "description": "How frequently the BOS discovery agent syncs new Components from HSM (in seconds)",
                         "minimum": 0,
                         "maximum": 33554432
+                    },
+                    "ims_errors_fatal": {
+                        "type": "boolean",
+                        "description": "This option modifies how BOS behaves when validating the architecture of a boot image in a boot set.\nSpecifically, this option comes into play when BOS needs data from IMS in order to do this validation, but\nIMS is unreachable.\nIn the above situation, if this option is true, then the validation will fail.\nOtherwise, if the option is false, then a warning will be logged, but the validation will not\nbe failed because of this.\n"
+                    },
+                    "ims_images_must_exist": {
+                        "type": "boolean",
+                        "description": "This option modifies how BOS behaves when validating a boot set whose boot image appears to be from IMS.\nSpecifically, this option comes into play when the image does not actually exist in IMS.\nIn the above situation, if this option is true, then the validation will fail.\nOtherwise, if the option is false, then a warning will be logged, but the validation will not\nbe failed because of this. Note that if ims_images_must_exist is true but ims_errors_fatal is false, then\na failure to determine whether or not an image is in IMS will NOT result in a fatal error.\n"
                     },
                     "logging_level": {
                         "type": "string",
@@ -3121,15 +3136,22 @@
                         "minimum": 0,
                         "maximum": 1048576
                     },
-                    "max_power_on_wait_time": {
+                    "max_component_batch_size": {
                         "type": "integer",
-                        "description": "How long BOS will wait for a node to power on before calling power on again (in seconds)",
+                        "description": "The maximum number of Components that a BOS operator will process at once. 0 means no limit.",
+                        "example": 1000,
                         "minimum": 0,
-                        "maximum": 1048576
+                        "maximum": 131071
                     },
                     "max_power_off_wait_time": {
                         "type": "integer",
                         "description": "How long BOS will wait for a node to power off before forcefully powering off (in seconds)",
+                        "minimum": 0,
+                        "maximum": 1048576
+                    },
+                    "max_power_on_wait_time": {
+                        "type": "integer",
+                        "description": "How long BOS will wait for a node to power on before calling power on again (in seconds)",
                         "minimum": 0,
                         "maximum": 1048576
                     },
@@ -3138,20 +3160,6 @@
                         "description": "How frequently the BOS operators check Component state for needed actions (in seconds)",
                         "minimum": 0,
                         "maximum": 1048576
-                    },
-                    "default_retry_policy": {
-                        "type": "integer",
-                        "description": "The default maximum number attempts per node for failed actions.",
-                        "example": 1,
-                        "minimum": 0,
-                        "maximum": 1048576
-                    },
-                    "max_component_batch_size": {
-                        "type": "integer",
-                        "description": "The maximum number of Components that a BOS operator will process at once. 0 means no limit.",
-                        "example": 1000,
-                        "minimum": 0,
-                        "maximum": 131071
                     },
                     "reject_nids": {
                         "type": "boolean",
@@ -3785,6 +3793,13 @@
                                     "minLength": 1,
                                     "maxLength": 8
                                 },
+                                "default_retry_policy": {
+                                    "type": "integer",
+                                    "description": "The default maximum number attempts per node for failed actions.",
+                                    "example": 1,
+                                    "minimum": 0,
+                                    "maximum": 1048576
+                                },
                                 "disable_components_on_completion": {
                                     "type": "boolean",
                                     "description": "If true, when a Session has brought a Component to its desired state, that Component will be marked as disabled in BOS.\nIf false, BOS will continue to maintain the state of the nodes declaratively, even after a Session finishes.\n"
@@ -3794,6 +3809,14 @@
                                     "description": "How frequently the BOS discovery agent syncs new Components from HSM (in seconds)",
                                     "minimum": 0,
                                     "maximum": 33554432
+                                },
+                                "ims_errors_fatal": {
+                                    "type": "boolean",
+                                    "description": "This option modifies how BOS behaves when validating the architecture of a boot image in a boot set.\nSpecifically, this option comes into play when BOS needs data from IMS in order to do this validation, but\nIMS is unreachable.\nIn the above situation, if this option is true, then the validation will fail.\nOtherwise, if the option is false, then a warning will be logged, but the validation will not\nbe failed because of this.\n"
+                                },
+                                "ims_images_must_exist": {
+                                    "type": "boolean",
+                                    "description": "This option modifies how BOS behaves when validating a boot set whose boot image appears to be from IMS.\nSpecifically, this option comes into play when the image does not actually exist in IMS.\nIn the above situation, if this option is true, then the validation will fail.\nOtherwise, if the option is false, then a warning will be logged, but the validation will not\nbe failed because of this. Note that if ims_images_must_exist is true but ims_errors_fatal is false, then\na failure to determine whether or not an image is in IMS will NOT result in a fatal error.\n"
                                 },
                                 "logging_level": {
                                     "type": "string",
@@ -3806,15 +3829,22 @@
                                     "minimum": 0,
                                     "maximum": 1048576
                                 },
-                                "max_power_on_wait_time": {
+                                "max_component_batch_size": {
                                     "type": "integer",
-                                    "description": "How long BOS will wait for a node to power on before calling power on again (in seconds)",
+                                    "description": "The maximum number of Components that a BOS operator will process at once. 0 means no limit.",
+                                    "example": 1000,
                                     "minimum": 0,
-                                    "maximum": 1048576
+                                    "maximum": 131071
                                 },
                                 "max_power_off_wait_time": {
                                     "type": "integer",
                                     "description": "How long BOS will wait for a node to power off before forcefully powering off (in seconds)",
+                                    "minimum": 0,
+                                    "maximum": 1048576
+                                },
+                                "max_power_on_wait_time": {
+                                    "type": "integer",
+                                    "description": "How long BOS will wait for a node to power on before calling power on again (in seconds)",
                                     "minimum": 0,
                                     "maximum": 1048576
                                 },
@@ -3823,20 +3853,6 @@
                                     "description": "How frequently the BOS operators check Component state for needed actions (in seconds)",
                                     "minimum": 0,
                                     "maximum": 1048576
-                                },
-                                "default_retry_policy": {
-                                    "type": "integer",
-                                    "description": "The default maximum number attempts per node for failed actions.",
-                                    "example": 1,
-                                    "minimum": 0,
-                                    "maximum": 1048576
-                                },
-                                "max_component_batch_size": {
-                                    "type": "integer",
-                                    "description": "The maximum number of Components that a BOS operator will process at once. 0 means no limit.",
-                                    "example": 1000,
-                                    "minimum": 0,
-                                    "maximum": 131071
                                 },
                                 "reject_nids": {
                                     "type": "boolean",
@@ -5323,6 +5339,13 @@
                                     "minLength": 1,
                                     "maxLength": 8
                                 },
+                                "default_retry_policy": {
+                                    "type": "integer",
+                                    "description": "The default maximum number attempts per node for failed actions.",
+                                    "example": 1,
+                                    "minimum": 0,
+                                    "maximum": 1048576
+                                },
                                 "disable_components_on_completion": {
                                     "type": "boolean",
                                     "description": "If true, when a Session has brought a Component to its desired state, that Component will be marked as disabled in BOS.\nIf false, BOS will continue to maintain the state of the nodes declaratively, even after a Session finishes.\n"
@@ -5332,6 +5355,14 @@
                                     "description": "How frequently the BOS discovery agent syncs new Components from HSM (in seconds)",
                                     "minimum": 0,
                                     "maximum": 33554432
+                                },
+                                "ims_errors_fatal": {
+                                    "type": "boolean",
+                                    "description": "This option modifies how BOS behaves when validating the architecture of a boot image in a boot set.\nSpecifically, this option comes into play when BOS needs data from IMS in order to do this validation, but\nIMS is unreachable.\nIn the above situation, if this option is true, then the validation will fail.\nOtherwise, if the option is false, then a warning will be logged, but the validation will not\nbe failed because of this.\n"
+                                },
+                                "ims_images_must_exist": {
+                                    "type": "boolean",
+                                    "description": "This option modifies how BOS behaves when validating a boot set whose boot image appears to be from IMS.\nSpecifically, this option comes into play when the image does not actually exist in IMS.\nIn the above situation, if this option is true, then the validation will fail.\nOtherwise, if the option is false, then a warning will be logged, but the validation will not\nbe failed because of this. Note that if ims_images_must_exist is true but ims_errors_fatal is false, then\na failure to determine whether or not an image is in IMS will NOT result in a fatal error.\n"
                                 },
                                 "logging_level": {
                                     "type": "string",
@@ -5344,15 +5375,22 @@
                                     "minimum": 0,
                                     "maximum": 1048576
                                 },
-                                "max_power_on_wait_time": {
+                                "max_component_batch_size": {
                                     "type": "integer",
-                                    "description": "How long BOS will wait for a node to power on before calling power on again (in seconds)",
+                                    "description": "The maximum number of Components that a BOS operator will process at once. 0 means no limit.",
+                                    "example": 1000,
                                     "minimum": 0,
-                                    "maximum": 1048576
+                                    "maximum": 131071
                                 },
                                 "max_power_off_wait_time": {
                                     "type": "integer",
                                     "description": "How long BOS will wait for a node to power off before forcefully powering off (in seconds)",
+                                    "minimum": 0,
+                                    "maximum": 1048576
+                                },
+                                "max_power_on_wait_time": {
+                                    "type": "integer",
+                                    "description": "How long BOS will wait for a node to power on before calling power on again (in seconds)",
                                     "minimum": 0,
                                     "maximum": 1048576
                                 },
@@ -5361,20 +5399,6 @@
                                     "description": "How frequently the BOS operators check Component state for needed actions (in seconds)",
                                     "minimum": 0,
                                     "maximum": 1048576
-                                },
-                                "default_retry_policy": {
-                                    "type": "integer",
-                                    "description": "The default maximum number attempts per node for failed actions.",
-                                    "example": 1,
-                                    "minimum": 0,
-                                    "maximum": 1048576
-                                },
-                                "max_component_batch_size": {
-                                    "type": "integer",
-                                    "description": "The maximum number of Components that a BOS operator will process at once. 0 means no limit.",
-                                    "example": 1000,
-                                    "minimum": 0,
-                                    "maximum": 131071
                                 },
                                 "reject_nids": {
                                     "type": "boolean",
@@ -12381,6 +12405,13 @@
                                             "minLength": 1,
                                             "maxLength": 8
                                         },
+                                        "default_retry_policy": {
+                                            "type": "integer",
+                                            "description": "The default maximum number attempts per node for failed actions.",
+                                            "example": 1,
+                                            "minimum": 0,
+                                            "maximum": 1048576
+                                        },
                                         "disable_components_on_completion": {
                                             "type": "boolean",
                                             "description": "If true, when a Session has brought a Component to its desired state, that Component will be marked as disabled in BOS.\nIf false, BOS will continue to maintain the state of the nodes declaratively, even after a Session finishes.\n"
@@ -12390,6 +12421,14 @@
                                             "description": "How frequently the BOS discovery agent syncs new Components from HSM (in seconds)",
                                             "minimum": 0,
                                             "maximum": 33554432
+                                        },
+                                        "ims_errors_fatal": {
+                                            "type": "boolean",
+                                            "description": "This option modifies how BOS behaves when validating the architecture of a boot image in a boot set.\nSpecifically, this option comes into play when BOS needs data from IMS in order to do this validation, but\nIMS is unreachable.\nIn the above situation, if this option is true, then the validation will fail.\nOtherwise, if the option is false, then a warning will be logged, but the validation will not\nbe failed because of this.\n"
+                                        },
+                                        "ims_images_must_exist": {
+                                            "type": "boolean",
+                                            "description": "This option modifies how BOS behaves when validating a boot set whose boot image appears to be from IMS.\nSpecifically, this option comes into play when the image does not actually exist in IMS.\nIn the above situation, if this option is true, then the validation will fail.\nOtherwise, if the option is false, then a warning will be logged, but the validation will not\nbe failed because of this. Note that if ims_images_must_exist is true but ims_errors_fatal is false, then\na failure to determine whether or not an image is in IMS will NOT result in a fatal error.\n"
                                         },
                                         "logging_level": {
                                             "type": "string",
@@ -12402,15 +12441,22 @@
                                             "minimum": 0,
                                             "maximum": 1048576
                                         },
-                                        "max_power_on_wait_time": {
+                                        "max_component_batch_size": {
                                             "type": "integer",
-                                            "description": "How long BOS will wait for a node to power on before calling power on again (in seconds)",
+                                            "description": "The maximum number of Components that a BOS operator will process at once. 0 means no limit.",
+                                            "example": 1000,
                                             "minimum": 0,
-                                            "maximum": 1048576
+                                            "maximum": 131071
                                         },
                                         "max_power_off_wait_time": {
                                             "type": "integer",
                                             "description": "How long BOS will wait for a node to power off before forcefully powering off (in seconds)",
+                                            "minimum": 0,
+                                            "maximum": 1048576
+                                        },
+                                        "max_power_on_wait_time": {
+                                            "type": "integer",
+                                            "description": "How long BOS will wait for a node to power on before calling power on again (in seconds)",
                                             "minimum": 0,
                                             "maximum": 1048576
                                         },
@@ -12419,20 +12465,6 @@
                                             "description": "How frequently the BOS operators check Component state for needed actions (in seconds)",
                                             "minimum": 0,
                                             "maximum": 1048576
-                                        },
-                                        "default_retry_policy": {
-                                            "type": "integer",
-                                            "description": "The default maximum number attempts per node for failed actions.",
-                                            "example": 1,
-                                            "minimum": 0,
-                                            "maximum": 1048576
-                                        },
-                                        "max_component_batch_size": {
-                                            "type": "integer",
-                                            "description": "The maximum number of Components that a BOS operator will process at once. 0 means no limit.",
-                                            "example": 1000,
-                                            "minimum": 0,
-                                            "maximum": 131071
                                         },
                                         "reject_nids": {
                                             "type": "boolean",
@@ -12490,6 +12522,13 @@
                                         "minLength": 1,
                                         "maxLength": 8
                                     },
+                                    "default_retry_policy": {
+                                        "type": "integer",
+                                        "description": "The default maximum number attempts per node for failed actions.",
+                                        "example": 1,
+                                        "minimum": 0,
+                                        "maximum": 1048576
+                                    },
                                     "disable_components_on_completion": {
                                         "type": "boolean",
                                         "description": "If true, when a Session has brought a Component to its desired state, that Component will be marked as disabled in BOS.\nIf false, BOS will continue to maintain the state of the nodes declaratively, even after a Session finishes.\n"
@@ -12499,6 +12538,14 @@
                                         "description": "How frequently the BOS discovery agent syncs new Components from HSM (in seconds)",
                                         "minimum": 0,
                                         "maximum": 33554432
+                                    },
+                                    "ims_errors_fatal": {
+                                        "type": "boolean",
+                                        "description": "This option modifies how BOS behaves when validating the architecture of a boot image in a boot set.\nSpecifically, this option comes into play when BOS needs data from IMS in order to do this validation, but\nIMS is unreachable.\nIn the above situation, if this option is true, then the validation will fail.\nOtherwise, if the option is false, then a warning will be logged, but the validation will not\nbe failed because of this.\n"
+                                    },
+                                    "ims_images_must_exist": {
+                                        "type": "boolean",
+                                        "description": "This option modifies how BOS behaves when validating a boot set whose boot image appears to be from IMS.\nSpecifically, this option comes into play when the image does not actually exist in IMS.\nIn the above situation, if this option is true, then the validation will fail.\nOtherwise, if the option is false, then a warning will be logged, but the validation will not\nbe failed because of this. Note that if ims_images_must_exist is true but ims_errors_fatal is false, then\na failure to determine whether or not an image is in IMS will NOT result in a fatal error.\n"
                                     },
                                     "logging_level": {
                                         "type": "string",
@@ -12511,15 +12558,22 @@
                                         "minimum": 0,
                                         "maximum": 1048576
                                     },
-                                    "max_power_on_wait_time": {
+                                    "max_component_batch_size": {
                                         "type": "integer",
-                                        "description": "How long BOS will wait for a node to power on before calling power on again (in seconds)",
+                                        "description": "The maximum number of Components that a BOS operator will process at once. 0 means no limit.",
+                                        "example": 1000,
                                         "minimum": 0,
-                                        "maximum": 1048576
+                                        "maximum": 131071
                                     },
                                     "max_power_off_wait_time": {
                                         "type": "integer",
                                         "description": "How long BOS will wait for a node to power off before forcefully powering off (in seconds)",
+                                        "minimum": 0,
+                                        "maximum": 1048576
+                                    },
+                                    "max_power_on_wait_time": {
+                                        "type": "integer",
+                                        "description": "How long BOS will wait for a node to power on before calling power on again (in seconds)",
                                         "minimum": 0,
                                         "maximum": 1048576
                                     },
@@ -12528,20 +12582,6 @@
                                         "description": "How frequently the BOS operators check Component state for needed actions (in seconds)",
                                         "minimum": 0,
                                         "maximum": 1048576
-                                    },
-                                    "default_retry_policy": {
-                                        "type": "integer",
-                                        "description": "The default maximum number attempts per node for failed actions.",
-                                        "example": 1,
-                                        "minimum": 0,
-                                        "maximum": 1048576
-                                    },
-                                    "max_component_batch_size": {
-                                        "type": "integer",
-                                        "description": "The maximum number of Components that a BOS operator will process at once. 0 means no limit.",
-                                        "example": 1000,
-                                        "minimum": 0,
-                                        "maximum": 131071
                                     },
                                     "reject_nids": {
                                         "type": "boolean",
@@ -12588,6 +12628,13 @@
                                             "minLength": 1,
                                             "maxLength": 8
                                         },
+                                        "default_retry_policy": {
+                                            "type": "integer",
+                                            "description": "The default maximum number attempts per node for failed actions.",
+                                            "example": 1,
+                                            "minimum": 0,
+                                            "maximum": 1048576
+                                        },
                                         "disable_components_on_completion": {
                                             "type": "boolean",
                                             "description": "If true, when a Session has brought a Component to its desired state, that Component will be marked as disabled in BOS.\nIf false, BOS will continue to maintain the state of the nodes declaratively, even after a Session finishes.\n"
@@ -12597,6 +12644,14 @@
                                             "description": "How frequently the BOS discovery agent syncs new Components from HSM (in seconds)",
                                             "minimum": 0,
                                             "maximum": 33554432
+                                        },
+                                        "ims_errors_fatal": {
+                                            "type": "boolean",
+                                            "description": "This option modifies how BOS behaves when validating the architecture of a boot image in a boot set.\nSpecifically, this option comes into play when BOS needs data from IMS in order to do this validation, but\nIMS is unreachable.\nIn the above situation, if this option is true, then the validation will fail.\nOtherwise, if the option is false, then a warning will be logged, but the validation will not\nbe failed because of this.\n"
+                                        },
+                                        "ims_images_must_exist": {
+                                            "type": "boolean",
+                                            "description": "This option modifies how BOS behaves when validating a boot set whose boot image appears to be from IMS.\nSpecifically, this option comes into play when the image does not actually exist in IMS.\nIn the above situation, if this option is true, then the validation will fail.\nOtherwise, if the option is false, then a warning will be logged, but the validation will not\nbe failed because of this. Note that if ims_images_must_exist is true but ims_errors_fatal is false, then\na failure to determine whether or not an image is in IMS will NOT result in a fatal error.\n"
                                         },
                                         "logging_level": {
                                             "type": "string",
@@ -12609,15 +12664,22 @@
                                             "minimum": 0,
                                             "maximum": 1048576
                                         },
-                                        "max_power_on_wait_time": {
+                                        "max_component_batch_size": {
                                             "type": "integer",
-                                            "description": "How long BOS will wait for a node to power on before calling power on again (in seconds)",
+                                            "description": "The maximum number of Components that a BOS operator will process at once. 0 means no limit.",
+                                            "example": 1000,
                                             "minimum": 0,
-                                            "maximum": 1048576
+                                            "maximum": 131071
                                         },
                                         "max_power_off_wait_time": {
                                             "type": "integer",
                                             "description": "How long BOS will wait for a node to power off before forcefully powering off (in seconds)",
+                                            "minimum": 0,
+                                            "maximum": 1048576
+                                        },
+                                        "max_power_on_wait_time": {
+                                            "type": "integer",
+                                            "description": "How long BOS will wait for a node to power on before calling power on again (in seconds)",
                                             "minimum": 0,
                                             "maximum": 1048576
                                         },
@@ -12626,20 +12688,6 @@
                                             "description": "How frequently the BOS operators check Component state for needed actions (in seconds)",
                                             "minimum": 0,
                                             "maximum": 1048576
-                                        },
-                                        "default_retry_policy": {
-                                            "type": "integer",
-                                            "description": "The default maximum number attempts per node for failed actions.",
-                                            "example": 1,
-                                            "minimum": 0,
-                                            "maximum": 1048576
-                                        },
-                                        "max_component_batch_size": {
-                                            "type": "integer",
-                                            "description": "The maximum number of Components that a BOS operator will process at once. 0 means no limit.",
-                                            "example": 1000,
-                                            "minimum": 0,
-                                            "maximum": 131071
                                         },
                                         "reject_nids": {
                                             "type": "boolean",
