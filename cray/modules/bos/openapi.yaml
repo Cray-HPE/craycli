@@ -975,6 +975,13 @@ components:
         Options for the Boot Orchestration Service.
       type: object
       properties:
+        cfs_read_timeout:
+          type: integer
+          description: |
+            The amount of time (in seconds) to wait for a response before timing out a request to CFS
+          example: 20
+          minimum: 10
+          maximum: 86400
         cleanup_completed_session_ttl:
           type: string
           description: |

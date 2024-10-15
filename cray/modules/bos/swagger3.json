@@ -3080,6 +3080,13 @@
                 "description": "Options for the Boot Orchestration Service.\n",
                 "type": "object",
                 "properties": {
+                    "cfs_read_timeout": {
+                        "type": "integer",
+                        "description": "The amount of time (in seconds) to wait for a response before timing out a request to CFS\n",
+                        "example": 20,
+                        "minimum": 10,
+                        "maximum": 86400
+                    },
                     "cleanup_completed_session_ttl": {
                         "type": "string",
                         "description": "Delete complete Sessions that are older than cleanup_completed_session_ttl (in minutes, hours, days, or weeks).\n0 disables cleanup behavior.\n",
@@ -3773,6 +3780,13 @@
                             "description": "Options for the Boot Orchestration Service.\n",
                             "type": "object",
                             "properties": {
+                                "cfs_read_timeout": {
+                                    "type": "integer",
+                                    "description": "The amount of time (in seconds) to wait for a response before timing out a request to CFS\n",
+                                    "example": 20,
+                                    "minimum": 10,
+                                    "maximum": 86400
+                                },
                                 "cleanup_completed_session_ttl": {
                                     "type": "string",
                                     "description": "Delete complete Sessions that are older than cleanup_completed_session_ttl (in minutes, hours, days, or weeks).\n0 disables cleanup behavior.\n",
@@ -5319,6 +5333,13 @@
                             "description": "Options for the Boot Orchestration Service.\n",
                             "type": "object",
                             "properties": {
+                                "cfs_read_timeout": {
+                                    "type": "integer",
+                                    "description": "The amount of time (in seconds) to wait for a response before timing out a request to CFS\n",
+                                    "example": 20,
+                                    "minimum": 10,
+                                    "maximum": 86400
+                                },
                                 "cleanup_completed_session_ttl": {
                                     "type": "string",
                                     "description": "Delete complete Sessions that are older than cleanup_completed_session_ttl (in minutes, hours, days, or weeks).\n0 disables cleanup behavior.\n",
@@ -12385,6 +12406,13 @@
                                     "description": "Options for the Boot Orchestration Service.\n",
                                     "type": "object",
                                     "properties": {
+                                        "cfs_read_timeout": {
+                                            "type": "integer",
+                                            "description": "The amount of time (in seconds) to wait for a response before timing out a request to CFS\n",
+                                            "example": 20,
+                                            "minimum": 10,
+                                            "maximum": 86400
+                                        },
                                         "cleanup_completed_session_ttl": {
                                             "type": "string",
                                             "description": "Delete complete Sessions that are older than cleanup_completed_session_ttl (in minutes, hours, days, or weeks).\n0 disables cleanup behavior.\n",
@@ -12502,6 +12530,13 @@
                                 "description": "Options for the Boot Orchestration Service.\n",
                                 "type": "object",
                                 "properties": {
+                                    "cfs_read_timeout": {
+                                        "type": "integer",
+                                        "description": "The amount of time (in seconds) to wait for a response before timing out a request to CFS\n",
+                                        "example": 20,
+                                        "minimum": 10,
+                                        "maximum": 86400
+                                    },
                                     "cleanup_completed_session_ttl": {
                                         "type": "string",
                                         "description": "Delete complete Sessions that are older than cleanup_completed_session_ttl (in minutes, hours, days, or weeks).\n0 disables cleanup behavior.\n",
@@ -12608,6 +12643,13 @@
                                     "description": "Options for the Boot Orchestration Service.\n",
                                     "type": "object",
                                     "properties": {
+                                        "cfs_read_timeout": {
+                                            "type": "integer",
+                                            "description": "The amount of time (in seconds) to wait for a response before timing out a request to CFS\n",
+                                            "example": 20,
+                                            "minimum": 10,
+                                            "maximum": 86400
+                                        },
                                         "cleanup_completed_session_ttl": {
                                             "type": "string",
                                             "description": "Delete complete Sessions that are older than cleanup_completed_session_ttl (in minutes, hours, days, or weeks).\n0 disables cleanup behavior.\n",
