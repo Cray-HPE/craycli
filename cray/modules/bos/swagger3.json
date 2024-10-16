@@ -2634,6 +2634,13 @@
                         "minimum": 0,
                         "maximum": 131071
                     },
+                    "cfs_read_timeout": {
+                        "type": "integer",
+                        "description": "The amount of time (in seconds) to wait for a response before timing out a request to CFS",
+                        "example": 20,
+                        "minimum": 10,
+                        "maximum": 86400
+                    },
                     "session_limit_required": {
                       "type": "boolean",
                       "description": "If true, BOS v2 Sessions cannot be created without specifying the limit parameter."
@@ -3651,6 +3658,13 @@
                                     "example": 1000,
                                     "minimum": 0,
                                     "maximum": 131071
+                                },
+                                "cfs_read_timeout": {
+                                    "type": "integer",
+                                    "description": "The amount of time (in seconds) to wait for a response before timing out a request to CFS",
+                                    "example": 20,
+                                    "minimum": 10,
+                                    "maximum": 86400
                                 },
                                 "session_limit_required": {
                                     "type": "boolean",
@@ -5190,6 +5204,13 @@
                                     "example": 1000,
                                     "minimum": 0,
                                     "maximum": 131071
+                                },
+                                "cfs_read_timeout": {
+                                    "type": "integer",
+                                    "description": "The amount of time (in seconds) to wait for a response before timing out a request to CFS",
+                                    "example": 20,
+                                    "minimum": 10,
+                                    "maximum": 86400
                                 },
                                 "session_limit_required": {
                                     "type": "boolean",
@@ -14671,6 +14692,13 @@
                                             "minimum": 0,
                                             "maximum": 131071
                                         },
+                                        "cfs_read_timeout": {
+                                            "type": "integer",
+                                            "description": "The amount of time (in seconds) to wait for a response before timing out a request to CFS",
+                                            "example": 20,
+                                            "minimum": 10,
+                                            "maximum": 86400
+                                        },
                                         "session_limit_required": {
                                             "type": "boolean",
                                             "description": "If true, BOS v2 Sessions cannot be created without specifying the limit parameter."
@@ -14753,6 +14781,13 @@
                                         "minimum": 0,
                                         "maximum": 131071
                                     },
+                                    "cfs_read_timeout": {
+                                        "type": "integer",
+                                        "description": "The amount of time (in seconds) to wait for a response before timing out a request to CFS",
+                                        "example": 20,
+                                        "minimum": 10,
+                                        "maximum": 86400
+                                    },
                                     "session_limit_required": {
                                         "type": "boolean",
                                         "description": "If true, BOS v2 Sessions cannot be created without specifying the limit parameter."
@@ -14823,6 +14858,13 @@
                                             "example": 1000,
                                             "minimum": 0,
                                             "maximum": 131071
+                                        },
+                                        "cfs_read_timeout": {
+                                            "type": "integer",
+                                            "description": "The amount of time (in seconds) to wait for a response before timing out a request to CFS",
+                                            "example": 20,
+                                            "minimum": 10,
+                                            "maximum": 86400
                                         },
                                         "session_limit_required": {
                                             "type": "boolean",
