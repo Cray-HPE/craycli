@@ -2582,6 +2582,13 @@
         "description": "Options for the boot orchestration service.\n",
         "type": "object",
         "properties": {
+          "cfs_read_timeout": {
+            "type": "integer",
+            "description": "The amount of time (in seconds) to wait for a response before timing out a request to CFS.\n",
+            "example": 20,
+            "minimum": 10,
+            "maximum": 86400
+          },
           "cleanup_completed_session_ttl": {
             "type": "string",
             "description": "Delete complete sessions that are older than cleanup_completed_session_ttl (in hours). 0h disables cleanup behavior."
@@ -3600,6 +3607,13 @@
               "description": "Options for the boot orchestration service.\n",
               "type": "object",
               "properties": {
+                "cfs_read_timeout": {
+                  "type": "integer",
+                  "description": "The amount of time (in seconds) to wait for a response before timing out a request to CFS.\n",
+                  "example": 20,
+                  "minimum": 10,
+                  "maximum": 86400
+                },
                 "cleanup_completed_session_ttl": {
                   "type": "string",
                   "description": "Delete complete sessions that are older than cleanup_completed_session_ttl (in hours). 0h disables cleanup behavior."
@@ -5139,6 +5153,13 @@
               "description": "Options for the boot orchestration service.\n",
               "type": "object",
               "properties": {
+                "cfs_read_timeout": {
+                  "type": "integer",
+                  "description": "The amount of time (in seconds) to wait for a response before timing out a request to CFS.\n",
+                  "example": 20,
+                  "minimum": 10,
+                  "maximum": 86400
+                },
                 "cleanup_completed_session_ttl": {
                   "type": "string",
                   "description": "Delete complete sessions that are older than cleanup_completed_session_ttl (in hours). 0h disables cleanup behavior."
@@ -14619,6 +14640,13 @@
                   "description": "Options for the boot orchestration service.\n",
                   "type": "object",
                   "properties": {
+                    "cfs_read_timeout": {
+                      "type": "integer",
+                      "description": "The amount of time (in seconds) to wait for a response before timing out a request to CFS.\n",
+                      "example": 20,
+                      "minimum": 10,
+                      "maximum": 86400
+                    },
                     "cleanup_completed_session_ttl": {
                       "type": "string",
                       "description": "Delete complete sessions that are older than cleanup_completed_session_ttl (in hours). 0h disables cleanup behavior."
@@ -14701,6 +14729,13 @@
                 "description": "Options for the boot orchestration service.\n",
                 "type": "object",
                 "properties": {
+                  "cfs_read_timeout": {
+                    "type": "integer",
+                    "description": "The amount of time (in seconds) to wait for a response before timing out a request to CFS.\n",
+                    "example": 20,
+                    "minimum": 10,
+                    "maximum": 86400
+                  },
                   "cleanup_completed_session_ttl": {
                     "type": "string",
                     "description": "Delete complete sessions that are older than cleanup_completed_session_ttl (in hours). 0h disables cleanup behavior."
@@ -14772,6 +14807,13 @@
                   "description": "Options for the boot orchestration service.\n",
                   "type": "object",
                   "properties": {
+                    "cfs_read_timeout": {
+                      "type": "integer",
+                      "description": "The amount of time (in seconds) to wait for a response before timing out a request to CFS.\n",
+                      "example": 20,
+                      "minimum": 10,
+                      "maximum": 86400
+                    },
                     "cleanup_completed_session_ttl": {
                       "type": "string",
                       "description": "Delete complete sessions that are older than cleanup_completed_session_ttl (in hours). 0h disables cleanup behavior."
