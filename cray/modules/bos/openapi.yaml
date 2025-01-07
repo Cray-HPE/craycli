@@ -975,10 +975,15 @@ components:
         Options for the Boot Orchestration Service.
       type: object
       properties:
+        bss_read_timeout:
+          type: integer
+          description: The amount of time (in seconds) to wait for a response before timing out a request to BSS
+          example: 20
+          minimum: 10
+          maximum: 86400
         cfs_read_timeout:
           type: integer
-          description: |
-            The amount of time (in seconds) to wait for a response before timing out a request to CFS
+          description: The amount of time (in seconds) to wait for a response before timing out a request to CFS
           example: 20
           minimum: 10
           maximum: 86400
@@ -1022,6 +1027,12 @@ components:
           minimum: 0
           # A little over a year
           maximum: 33554432
+        hsm_read_timeout:
+          type: integer
+          description: The amount of time (in seconds) to wait for a response before timing out a request to HSM
+          example: 20
+          minimum: 10
+          maximum: 86400
         ims_errors_fatal:
           type: boolean
           description: |
@@ -1040,6 +1051,12 @@ components:
             Otherwise, if the option is false, then a warning will be logged, but the validation will not
             be failed because of this. Note that if ims_images_must_exist is true but ims_errors_fatal is false, then
             a failure to determine whether or not an image is in IMS will NOT result in a fatal error.
+        ims_read_timeout:
+          type: integer
+          description: The amount of time (in seconds) to wait for a response before timing out a request to IMS
+          example: 20
+          minimum: 10
+          maximum: 86400
         logging_level:
           type: string
           description: The logging level for all BOS services
@@ -1068,6 +1085,12 @@ components:
           minimum: 0
           # Over 12 days
           maximum: 1048576
+        pcs_read_timeout:
+          type: integer
+          description: The amount of time (in seconds) to wait for a response before timing out a request to PCS
+          example: 20
+          minimum: 10
+          maximum: 86400
         polling_frequency:
           type: integer
           description: How frequently the BOS operators check Component state for needed actions (in seconds)

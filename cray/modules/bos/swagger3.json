@@ -3080,9 +3080,16 @@
                 "description": "Options for the Boot Orchestration Service.\n",
                 "type": "object",
                 "properties": {
+                    "bss_read_timeout": {
+                        "type": "integer",
+                        "description": "The amount of time (in seconds) to wait for a response before timing out a request to BSS",
+                        "example": 20,
+                        "minimum": 10,
+                        "maximum": 86400
+                    },
                     "cfs_read_timeout": {
                         "type": "integer",
-                        "description": "The amount of time (in seconds) to wait for a response before timing out a request to CFS\n",
+                        "description": "The amount of time (in seconds) to wait for a response before timing out a request to CFS",
                         "example": 20,
                         "minimum": 10,
                         "maximum": 86400
@@ -3124,6 +3131,13 @@
                         "minimum": 0,
                         "maximum": 33554432
                     },
+                    "hsm_read_timeout": {
+                        "type": "integer",
+                        "description": "The amount of time (in seconds) to wait for a response before timing out a request to HSM",
+                        "example": 20,
+                        "minimum": 10,
+                        "maximum": 86400
+                    },
                     "ims_errors_fatal": {
                         "type": "boolean",
                         "description": "This option modifies how BOS behaves when validating the architecture of a boot image in a boot set.\nSpecifically, this option comes into play when BOS needs data from IMS in order to do this validation, but\nIMS is unreachable.\nIn the above situation, if this option is true, then the validation will fail.\nOtherwise, if the option is false, then a warning will be logged, but the validation will not\nbe failed because of this.\n"
@@ -3131,6 +3145,13 @@
                     "ims_images_must_exist": {
                         "type": "boolean",
                         "description": "This option modifies how BOS behaves when validating a boot set whose boot image appears to be from IMS.\nSpecifically, this option comes into play when the image does not actually exist in IMS.\nIn the above situation, if this option is true, then the validation will fail.\nOtherwise, if the option is false, then a warning will be logged, but the validation will not\nbe failed because of this. Note that if ims_images_must_exist is true but ims_errors_fatal is false, then\na failure to determine whether or not an image is in IMS will NOT result in a fatal error.\n"
+                    },
+                    "ims_read_timeout": {
+                        "type": "integer",
+                        "description": "The amount of time (in seconds) to wait for a response before timing out a request to IMS",
+                        "example": 20,
+                        "minimum": 10,
+                        "maximum": 86400
                     },
                     "logging_level": {
                         "type": "string",
@@ -3161,6 +3182,13 @@
                         "description": "How long BOS will wait for a node to power on before calling power on again (in seconds)",
                         "minimum": 0,
                         "maximum": 1048576
+                    },
+                    "pcs_read_timeout": {
+                        "type": "integer",
+                        "description": "The amount of time (in seconds) to wait for a response before timing out a request to PCS",
+                        "example": 20,
+                        "minimum": 10,
+                        "maximum": 86400
                     },
                     "polling_frequency": {
                         "type": "integer",
@@ -3780,9 +3808,16 @@
                             "description": "Options for the Boot Orchestration Service.\n",
                             "type": "object",
                             "properties": {
+                                "bss_read_timeout": {
+                                    "type": "integer",
+                                    "description": "The amount of time (in seconds) to wait for a response before timing out a request to BSS",
+                                    "example": 20,
+                                    "minimum": 10,
+                                    "maximum": 86400
+                                },
                                 "cfs_read_timeout": {
                                     "type": "integer",
-                                    "description": "The amount of time (in seconds) to wait for a response before timing out a request to CFS\n",
+                                    "description": "The amount of time (in seconds) to wait for a response before timing out a request to CFS",
                                     "example": 20,
                                     "minimum": 10,
                                     "maximum": 86400
@@ -3824,6 +3859,13 @@
                                     "minimum": 0,
                                     "maximum": 33554432
                                 },
+                                "hsm_read_timeout": {
+                                    "type": "integer",
+                                    "description": "The amount of time (in seconds) to wait for a response before timing out a request to HSM",
+                                    "example": 20,
+                                    "minimum": 10,
+                                    "maximum": 86400
+                                },
                                 "ims_errors_fatal": {
                                     "type": "boolean",
                                     "description": "This option modifies how BOS behaves when validating the architecture of a boot image in a boot set.\nSpecifically, this option comes into play when BOS needs data from IMS in order to do this validation, but\nIMS is unreachable.\nIn the above situation, if this option is true, then the validation will fail.\nOtherwise, if the option is false, then a warning will be logged, but the validation will not\nbe failed because of this.\n"
@@ -3831,6 +3873,13 @@
                                 "ims_images_must_exist": {
                                     "type": "boolean",
                                     "description": "This option modifies how BOS behaves when validating a boot set whose boot image appears to be from IMS.\nSpecifically, this option comes into play when the image does not actually exist in IMS.\nIn the above situation, if this option is true, then the validation will fail.\nOtherwise, if the option is false, then a warning will be logged, but the validation will not\nbe failed because of this. Note that if ims_images_must_exist is true but ims_errors_fatal is false, then\na failure to determine whether or not an image is in IMS will NOT result in a fatal error.\n"
+                                },
+                                "ims_read_timeout": {
+                                    "type": "integer",
+                                    "description": "The amount of time (in seconds) to wait for a response before timing out a request to IMS",
+                                    "example": 20,
+                                    "minimum": 10,
+                                    "maximum": 86400
                                 },
                                 "logging_level": {
                                     "type": "string",
@@ -3861,6 +3910,13 @@
                                     "description": "How long BOS will wait for a node to power on before calling power on again (in seconds)",
                                     "minimum": 0,
                                     "maximum": 1048576
+                                },
+                                "pcs_read_timeout": {
+                                    "type": "integer",
+                                    "description": "The amount of time (in seconds) to wait for a response before timing out a request to PCS",
+                                    "example": 20,
+                                    "minimum": 10,
+                                    "maximum": 86400
                                 },
                                 "polling_frequency": {
                                     "type": "integer",
@@ -5333,9 +5389,16 @@
                             "description": "Options for the Boot Orchestration Service.\n",
                             "type": "object",
                             "properties": {
+                                "bss_read_timeout": {
+                                    "type": "integer",
+                                    "description": "The amount of time (in seconds) to wait for a response before timing out a request to BSS",
+                                    "example": 20,
+                                    "minimum": 10,
+                                    "maximum": 86400
+                                },
                                 "cfs_read_timeout": {
                                     "type": "integer",
-                                    "description": "The amount of time (in seconds) to wait for a response before timing out a request to CFS\n",
+                                    "description": "The amount of time (in seconds) to wait for a response before timing out a request to CFS",
                                     "example": 20,
                                     "minimum": 10,
                                     "maximum": 86400
@@ -5377,6 +5440,13 @@
                                     "minimum": 0,
                                     "maximum": 33554432
                                 },
+                                "hsm_read_timeout": {
+                                    "type": "integer",
+                                    "description": "The amount of time (in seconds) to wait for a response before timing out a request to HSM",
+                                    "example": 20,
+                                    "minimum": 10,
+                                    "maximum": 86400
+                                },
                                 "ims_errors_fatal": {
                                     "type": "boolean",
                                     "description": "This option modifies how BOS behaves when validating the architecture of a boot image in a boot set.\nSpecifically, this option comes into play when BOS needs data from IMS in order to do this validation, but\nIMS is unreachable.\nIn the above situation, if this option is true, then the validation will fail.\nOtherwise, if the option is false, then a warning will be logged, but the validation will not\nbe failed because of this.\n"
@@ -5384,6 +5454,13 @@
                                 "ims_images_must_exist": {
                                     "type": "boolean",
                                     "description": "This option modifies how BOS behaves when validating a boot set whose boot image appears to be from IMS.\nSpecifically, this option comes into play when the image does not actually exist in IMS.\nIn the above situation, if this option is true, then the validation will fail.\nOtherwise, if the option is false, then a warning will be logged, but the validation will not\nbe failed because of this. Note that if ims_images_must_exist is true but ims_errors_fatal is false, then\na failure to determine whether or not an image is in IMS will NOT result in a fatal error.\n"
+                                },
+                                "ims_read_timeout": {
+                                    "type": "integer",
+                                    "description": "The amount of time (in seconds) to wait for a response before timing out a request to IMS",
+                                    "example": 20,
+                                    "minimum": 10,
+                                    "maximum": 86400
                                 },
                                 "logging_level": {
                                     "type": "string",
@@ -5414,6 +5491,13 @@
                                     "description": "How long BOS will wait for a node to power on before calling power on again (in seconds)",
                                     "minimum": 0,
                                     "maximum": 1048576
+                                },
+                                "pcs_read_timeout": {
+                                    "type": "integer",
+                                    "description": "The amount of time (in seconds) to wait for a response before timing out a request to PCS",
+                                    "example": 20,
+                                    "minimum": 10,
+                                    "maximum": 86400
                                 },
                                 "polling_frequency": {
                                     "type": "integer",
@@ -12406,9 +12490,16 @@
                                     "description": "Options for the Boot Orchestration Service.\n",
                                     "type": "object",
                                     "properties": {
+                                        "bss_read_timeout": {
+                                            "type": "integer",
+                                            "description": "The amount of time (in seconds) to wait for a response before timing out a request to BSS",
+                                            "example": 20,
+                                            "minimum": 10,
+                                            "maximum": 86400
+                                        },
                                         "cfs_read_timeout": {
                                             "type": "integer",
-                                            "description": "The amount of time (in seconds) to wait for a response before timing out a request to CFS\n",
+                                            "description": "The amount of time (in seconds) to wait for a response before timing out a request to CFS",
                                             "example": 20,
                                             "minimum": 10,
                                             "maximum": 86400
@@ -12450,6 +12541,13 @@
                                             "minimum": 0,
                                             "maximum": 33554432
                                         },
+                                        "hsm_read_timeout": {
+                                            "type": "integer",
+                                            "description": "The amount of time (in seconds) to wait for a response before timing out a request to HSM",
+                                            "example": 20,
+                                            "minimum": 10,
+                                            "maximum": 86400
+                                        },
                                         "ims_errors_fatal": {
                                             "type": "boolean",
                                             "description": "This option modifies how BOS behaves when validating the architecture of a boot image in a boot set.\nSpecifically, this option comes into play when BOS needs data from IMS in order to do this validation, but\nIMS is unreachable.\nIn the above situation, if this option is true, then the validation will fail.\nOtherwise, if the option is false, then a warning will be logged, but the validation will not\nbe failed because of this.\n"
@@ -12457,6 +12555,13 @@
                                         "ims_images_must_exist": {
                                             "type": "boolean",
                                             "description": "This option modifies how BOS behaves when validating a boot set whose boot image appears to be from IMS.\nSpecifically, this option comes into play when the image does not actually exist in IMS.\nIn the above situation, if this option is true, then the validation will fail.\nOtherwise, if the option is false, then a warning will be logged, but the validation will not\nbe failed because of this. Note that if ims_images_must_exist is true but ims_errors_fatal is false, then\na failure to determine whether or not an image is in IMS will NOT result in a fatal error.\n"
+                                        },
+                                        "ims_read_timeout": {
+                                            "type": "integer",
+                                            "description": "The amount of time (in seconds) to wait for a response before timing out a request to IMS",
+                                            "example": 20,
+                                            "minimum": 10,
+                                            "maximum": 86400
                                         },
                                         "logging_level": {
                                             "type": "string",
@@ -12487,6 +12592,13 @@
                                             "description": "How long BOS will wait for a node to power on before calling power on again (in seconds)",
                                             "minimum": 0,
                                             "maximum": 1048576
+                                        },
+                                        "pcs_read_timeout": {
+                                            "type": "integer",
+                                            "description": "The amount of time (in seconds) to wait for a response before timing out a request to PCS",
+                                            "example": 20,
+                                            "minimum": 10,
+                                            "maximum": 86400
                                         },
                                         "polling_frequency": {
                                             "type": "integer",
@@ -12530,9 +12642,16 @@
                                 "description": "Options for the Boot Orchestration Service.\n",
                                 "type": "object",
                                 "properties": {
+                                    "bss_read_timeout": {
+                                        "type": "integer",
+                                        "description": "The amount of time (in seconds) to wait for a response before timing out a request to BSS",
+                                        "example": 20,
+                                        "minimum": 10,
+                                        "maximum": 86400
+                                    },
                                     "cfs_read_timeout": {
                                         "type": "integer",
-                                        "description": "The amount of time (in seconds) to wait for a response before timing out a request to CFS\n",
+                                        "description": "The amount of time (in seconds) to wait for a response before timing out a request to CFS",
                                         "example": 20,
                                         "minimum": 10,
                                         "maximum": 86400
@@ -12574,6 +12693,13 @@
                                         "minimum": 0,
                                         "maximum": 33554432
                                     },
+                                    "hsm_read_timeout": {
+                                        "type": "integer",
+                                        "description": "The amount of time (in seconds) to wait for a response before timing out a request to HSM",
+                                        "example": 20,
+                                        "minimum": 10,
+                                        "maximum": 86400
+                                    },
                                     "ims_errors_fatal": {
                                         "type": "boolean",
                                         "description": "This option modifies how BOS behaves when validating the architecture of a boot image in a boot set.\nSpecifically, this option comes into play when BOS needs data from IMS in order to do this validation, but\nIMS is unreachable.\nIn the above situation, if this option is true, then the validation will fail.\nOtherwise, if the option is false, then a warning will be logged, but the validation will not\nbe failed because of this.\n"
@@ -12581,6 +12707,13 @@
                                     "ims_images_must_exist": {
                                         "type": "boolean",
                                         "description": "This option modifies how BOS behaves when validating a boot set whose boot image appears to be from IMS.\nSpecifically, this option comes into play when the image does not actually exist in IMS.\nIn the above situation, if this option is true, then the validation will fail.\nOtherwise, if the option is false, then a warning will be logged, but the validation will not\nbe failed because of this. Note that if ims_images_must_exist is true but ims_errors_fatal is false, then\na failure to determine whether or not an image is in IMS will NOT result in a fatal error.\n"
+                                    },
+                                    "ims_read_timeout": {
+                                        "type": "integer",
+                                        "description": "The amount of time (in seconds) to wait for a response before timing out a request to IMS",
+                                        "example": 20,
+                                        "minimum": 10,
+                                        "maximum": 86400
                                     },
                                     "logging_level": {
                                         "type": "string",
@@ -12611,6 +12744,13 @@
                                         "description": "How long BOS will wait for a node to power on before calling power on again (in seconds)",
                                         "minimum": 0,
                                         "maximum": 1048576
+                                    },
+                                    "pcs_read_timeout": {
+                                        "type": "integer",
+                                        "description": "The amount of time (in seconds) to wait for a response before timing out a request to PCS",
+                                        "example": 20,
+                                        "minimum": 10,
+                                        "maximum": 86400
                                     },
                                     "polling_frequency": {
                                         "type": "integer",
@@ -12643,9 +12783,16 @@
                                     "description": "Options for the Boot Orchestration Service.\n",
                                     "type": "object",
                                     "properties": {
+                                        "bss_read_timeout": {
+                                            "type": "integer",
+                                            "description": "The amount of time (in seconds) to wait for a response before timing out a request to BSS",
+                                            "example": 20,
+                                            "minimum": 10,
+                                            "maximum": 86400
+                                        },
                                         "cfs_read_timeout": {
                                             "type": "integer",
-                                            "description": "The amount of time (in seconds) to wait for a response before timing out a request to CFS\n",
+                                            "description": "The amount of time (in seconds) to wait for a response before timing out a request to CFS",
                                             "example": 20,
                                             "minimum": 10,
                                             "maximum": 86400
@@ -12687,6 +12834,13 @@
                                             "minimum": 0,
                                             "maximum": 33554432
                                         },
+                                        "hsm_read_timeout": {
+                                            "type": "integer",
+                                            "description": "The amount of time (in seconds) to wait for a response before timing out a request to HSM",
+                                            "example": 20,
+                                            "minimum": 10,
+                                            "maximum": 86400
+                                        },
                                         "ims_errors_fatal": {
                                             "type": "boolean",
                                             "description": "This option modifies how BOS behaves when validating the architecture of a boot image in a boot set.\nSpecifically, this option comes into play when BOS needs data from IMS in order to do this validation, but\nIMS is unreachable.\nIn the above situation, if this option is true, then the validation will fail.\nOtherwise, if the option is false, then a warning will be logged, but the validation will not\nbe failed because of this.\n"
@@ -12694,6 +12848,13 @@
                                         "ims_images_must_exist": {
                                             "type": "boolean",
                                             "description": "This option modifies how BOS behaves when validating a boot set whose boot image appears to be from IMS.\nSpecifically, this option comes into play when the image does not actually exist in IMS.\nIn the above situation, if this option is true, then the validation will fail.\nOtherwise, if the option is false, then a warning will be logged, but the validation will not\nbe failed because of this. Note that if ims_images_must_exist is true but ims_errors_fatal is false, then\na failure to determine whether or not an image is in IMS will NOT result in a fatal error.\n"
+                                        },
+                                        "ims_read_timeout": {
+                                            "type": "integer",
+                                            "description": "The amount of time (in seconds) to wait for a response before timing out a request to IMS",
+                                            "example": 20,
+                                            "minimum": 10,
+                                            "maximum": 86400
                                         },
                                         "logging_level": {
                                             "type": "string",
@@ -12724,6 +12885,13 @@
                                             "description": "How long BOS will wait for a node to power on before calling power on again (in seconds)",
                                             "minimum": 0,
                                             "maximum": 1048576
+                                        },
+                                        "pcs_read_timeout": {
+                                            "type": "integer",
+                                            "description": "The amount of time (in seconds) to wait for a response before timing out a request to PCS",
+                                            "example": 20,
+                                            "minimum": 10,
+                                            "maximum": 86400
                                         },
                                         "polling_frequency": {
                                             "type": "integer",
