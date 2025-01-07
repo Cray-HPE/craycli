@@ -2634,9 +2634,30 @@
                         "minimum": 0,
                         "maximum": 131071
                     },
+                    "bss_read_timeout": {
+                        "type": "integer",
+                        "description": "The amount of time (in seconds) to wait for a response before timing out a request to BSS",
+                        "example": 20,
+                        "minimum": 10,
+                        "maximum": 86400
+                    },
+                    "capmc_read_timeout": {
+                        "type": "integer",
+                        "description": "The amount of time (in seconds) to wait for a response before timing out a request to CAPMC",
+                        "example": 20,
+                        "minimum": 10,
+                        "maximum": 86400
+                    },
                     "cfs_read_timeout": {
                         "type": "integer",
                         "description": "The amount of time (in seconds) to wait for a response before timing out a request to CFS",
+                        "example": 20,
+                        "minimum": 10,
+                        "maximum": 86400
+                    },
+                    "hsm_read_timeout": {
+                        "type": "integer",
+                        "description": "The amount of time (in seconds) to wait for a response before timing out a request to HSM",
                         "example": 20,
                         "minimum": 10,
                         "maximum": 86400
@@ -3659,9 +3680,30 @@
                                     "minimum": 0,
                                     "maximum": 131071
                                 },
+                                "bss_read_timeout": {
+                                    "type": "integer",
+                                    "description": "The amount of time (in seconds) to wait for a response before timing out a request to BSS",
+                                    "example": 20,
+                                    "minimum": 10,
+                                    "maximum": 86400
+                                },
+                                "capmc_read_timeout": {
+                                    "type": "integer",
+                                    "description": "The amount of time (in seconds) to wait for a response before timing out a request to CAPMC",
+                                    "example": 20,
+                                    "minimum": 10,
+                                    "maximum": 86400
+                                },
                                 "cfs_read_timeout": {
                                     "type": "integer",
                                     "description": "The amount of time (in seconds) to wait for a response before timing out a request to CFS",
+                                    "example": 20,
+                                    "minimum": 10,
+                                    "maximum": 86400
+                                },
+                                "hsm_read_timeout": {
+                                    "type": "integer",
+                                    "description": "The amount of time (in seconds) to wait for a response before timing out a request to HSM",
                                     "example": 20,
                                     "minimum": 10,
                                     "maximum": 86400
@@ -5205,9 +5247,30 @@
                                     "minimum": 0,
                                     "maximum": 131071
                                 },
+                                "bss_read_timeout": {
+                                    "type": "integer",
+                                    "description": "The amount of time (in seconds) to wait for a response before timing out a request to BSS",
+                                    "example": 20,
+                                    "minimum": 10,
+                                    "maximum": 86400
+                                },
+                                "capmc_read_timeout": {
+                                    "type": "integer",
+                                    "description": "The amount of time (in seconds) to wait for a response before timing out a request to CAPMC",
+                                    "example": 20,
+                                    "minimum": 10,
+                                    "maximum": 86400
+                                },
                                 "cfs_read_timeout": {
                                     "type": "integer",
                                     "description": "The amount of time (in seconds) to wait for a response before timing out a request to CFS",
+                                    "example": 20,
+                                    "minimum": 10,
+                                    "maximum": 86400
+                                },
+                                "hsm_read_timeout": {
+                                    "type": "integer",
+                                    "description": "The amount of time (in seconds) to wait for a response before timing out a request to HSM",
                                     "example": 20,
                                     "minimum": 10,
                                     "maximum": 86400
@@ -14692,9 +14755,30 @@
                                             "minimum": 0,
                                             "maximum": 131071
                                         },
+                                        "bss_read_timeout": {
+                                            "type": "integer",
+                                            "description": "The amount of time (in seconds) to wait for a response before timing out a request to BSS",
+                                            "example": 20,
+                                            "minimum": 10,
+                                            "maximum": 86400
+                                        },
+                                        "capmc_read_timeout": {
+                                            "type": "integer",
+                                            "description": "The amount of time (in seconds) to wait for a response before timing out a request to CAPMC",
+                                            "example": 20,
+                                            "minimum": 10,
+                                            "maximum": 86400
+                                        },
                                         "cfs_read_timeout": {
                                             "type": "integer",
                                             "description": "The amount of time (in seconds) to wait for a response before timing out a request to CFS",
+                                            "example": 20,
+                                            "minimum": 10,
+                                            "maximum": 86400
+                                        },
+                                        "hsm_read_timeout": {
+                                            "type": "integer",
+                                            "description": "The amount of time (in seconds) to wait for a response before timing out a request to HSM",
                                             "example": 20,
                                             "minimum": 10,
                                             "maximum": 86400
@@ -14781,9 +14865,30 @@
                                         "minimum": 0,
                                         "maximum": 131071
                                     },
+                                    "bss_read_timeout": {
+                                        "type": "integer",
+                                        "description": "The amount of time (in seconds) to wait for a response before timing out a request to BSS",
+                                        "example": 20,
+                                        "minimum": 10,
+                                        "maximum": 86400
+                                    },
+                                    "capmc_read_timeout": {
+                                        "type": "integer",
+                                        "description": "The amount of time (in seconds) to wait for a response before timing out a request to CAPMC",
+                                        "example": 20,
+                                        "minimum": 10,
+                                        "maximum": 86400
+                                    },
                                     "cfs_read_timeout": {
                                         "type": "integer",
                                         "description": "The amount of time (in seconds) to wait for a response before timing out a request to CFS",
+                                        "example": 20,
+                                        "minimum": 10,
+                                        "maximum": 86400
+                                    },
+                                    "hsm_read_timeout": {
+                                        "type": "integer",
+                                        "description": "The amount of time (in seconds) to wait for a response before timing out a request to HSM",
                                         "example": 20,
                                         "minimum": 10,
                                         "maximum": 86400
@@ -14859,9 +14964,30 @@
                                             "minimum": 0,
                                             "maximum": 131071
                                         },
+                                        "bss_read_timeout": {
+                                            "type": "integer",
+                                            "description": "The amount of time (in seconds) to wait for a response before timing out a request to BSS",
+                                            "example": 20,
+                                            "minimum": 10,
+                                            "maximum": 86400
+                                        },
+                                        "capmc_read_timeout": {
+                                            "type": "integer",
+                                            "description": "The amount of time (in seconds) to wait for a response before timing out a request to CAPMC",
+                                            "example": 20,
+                                            "minimum": 10,
+                                            "maximum": 86400
+                                        },
                                         "cfs_read_timeout": {
                                             "type": "integer",
                                             "description": "The amount of time (in seconds) to wait for a response before timing out a request to CFS",
+                                            "example": 20,
+                                            "minimum": 10,
+                                            "maximum": 86400
+                                        },
+                                        "hsm_read_timeout": {
+                                            "type": "integer",
+                                            "description": "The amount of time (in seconds) to wait for a response before timing out a request to HSM",
                                             "example": 20,
                                             "minimum": 10,
                                             "maximum": 86400
