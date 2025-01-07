@@ -2582,9 +2582,16 @@
         "description": "Options for the boot orchestration service.\n",
         "type": "object",
         "properties": {
+          "bss_read_timeout": {
+            "type": "integer",
+            "description": "The amount of time (in seconds) to wait for a response before timing out a request to BSS.",
+            "example": 20,
+            "minimum": 10,
+            "maximum": 86400
+          },
           "cfs_read_timeout": {
             "type": "integer",
-            "description": "The amount of time (in seconds) to wait for a response before timing out a request to CFS.\n",
+            "description": "The amount of time (in seconds) to wait for a response before timing out a request to CFS.",
             "example": 20,
             "minimum": 10,
             "maximum": 86400
@@ -2609,6 +2616,13 @@
             "type": "integer",
             "description": "How frequently the BOS discovery agent syncs new components from HSM. (in seconds)"
           },
+          "hsm_read_timeout": {
+            "type": "integer",
+            "description": "The amount of time (in seconds) to wait for a response before timing out a request to HSM.",
+            "example": 20,
+            "minimum": 10,
+            "maximum": 86400
+          },
           "logging_level": {
             "type": "string",
             "description": "The logging level for all BOS services"
@@ -2624,6 +2638,13 @@
           "max_power_off_wait_time": {
             "type": "integer",
             "description": "How long BOS will wait for a node to power off before forcefully powering off (in seconds)"
+          },
+          "pcs_read_timeout": {
+            "type": "integer",
+            "description": "The amount of time (in seconds) to wait for a response before timing out a request to PCS.",
+            "example": 20,
+            "minimum": 10,
+            "maximum": 86400
           },
           "polling_frequency": {
             "type": "integer",
@@ -3607,9 +3628,16 @@
               "description": "Options for the boot orchestration service.\n",
               "type": "object",
               "properties": {
+                "bss_read_timeout": {
+                  "type": "integer",
+                  "description": "The amount of time (in seconds) to wait for a response before timing out a request to BSS.",
+                  "example": 20,
+                  "minimum": 10,
+                  "maximum": 86400
+                },
                 "cfs_read_timeout": {
                   "type": "integer",
-                  "description": "The amount of time (in seconds) to wait for a response before timing out a request to CFS.\n",
+                  "description": "The amount of time (in seconds) to wait for a response before timing out a request to CFS.",
                   "example": 20,
                   "minimum": 10,
                   "maximum": 86400
@@ -3634,6 +3662,13 @@
                   "type": "integer",
                   "description": "How frequently the BOS discovery agent syncs new components from HSM. (in seconds)"
                 },
+                "hsm_read_timeout": {
+                  "type": "integer",
+                  "description": "The amount of time (in seconds) to wait for a response before timing out a request to HSM.",
+                  "example": 20,
+                  "minimum": 10,
+                  "maximum": 86400
+                },
                 "logging_level": {
                   "type": "string",
                   "description": "The logging level for all BOS services"
@@ -3649,6 +3684,13 @@
                 "max_power_off_wait_time": {
                   "type": "integer",
                   "description": "How long BOS will wait for a node to power off before forcefully powering off (in seconds)"
+                },
+                "pcs_read_timeout": {
+                  "type": "integer",
+                  "description": "The amount of time (in seconds) to wait for a response before timing out a request to PCS.",
+                  "example": 20,
+                  "minimum": 10,
+                  "maximum": 86400
                 },
                 "polling_frequency": {
                   "type": "integer",
@@ -5153,9 +5195,16 @@
               "description": "Options for the boot orchestration service.\n",
               "type": "object",
               "properties": {
+                "bss_read_timeout": {
+                  "type": "integer",
+                  "description": "The amount of time (in seconds) to wait for a response before timing out a request to BSS.",
+                  "example": 20,
+                  "minimum": 10,
+                  "maximum": 86400
+                },
                 "cfs_read_timeout": {
                   "type": "integer",
-                  "description": "The amount of time (in seconds) to wait for a response before timing out a request to CFS.\n",
+                  "description": "The amount of time (in seconds) to wait for a response before timing out a request to CFS.",
                   "example": 20,
                   "minimum": 10,
                   "maximum": 86400
@@ -5180,6 +5229,13 @@
                   "type": "integer",
                   "description": "How frequently the BOS discovery agent syncs new components from HSM. (in seconds)"
                 },
+                "hsm_read_timeout": {
+                  "type": "integer",
+                  "description": "The amount of time (in seconds) to wait for a response before timing out a request to HSM.",
+                  "example": 20,
+                  "minimum": 10,
+                  "maximum": 86400
+                },
                 "logging_level": {
                   "type": "string",
                   "description": "The logging level for all BOS services"
@@ -5195,6 +5251,13 @@
                 "max_power_off_wait_time": {
                   "type": "integer",
                   "description": "How long BOS will wait for a node to power off before forcefully powering off (in seconds)"
+                },
+                "pcs_read_timeout": {
+                  "type": "integer",
+                  "description": "The amount of time (in seconds) to wait for a response before timing out a request to PCS.",
+                  "example": 20,
+                  "minimum": 10,
+                  "maximum": 86400
                 },
                 "polling_frequency": {
                   "type": "integer",
@@ -14640,9 +14703,16 @@
                   "description": "Options for the boot orchestration service.\n",
                   "type": "object",
                   "properties": {
+                    "bss_read_timeout": {
+                      "type": "integer",
+                      "description": "The amount of time (in seconds) to wait for a response before timing out a request to BSS.",
+                      "example": 20,
+                      "minimum": 10,
+                      "maximum": 86400
+                    },
                     "cfs_read_timeout": {
                       "type": "integer",
-                      "description": "The amount of time (in seconds) to wait for a response before timing out a request to CFS.\n",
+                      "description": "The amount of time (in seconds) to wait for a response before timing out a request to CFS.",
                       "example": 20,
                       "minimum": 10,
                       "maximum": 86400
@@ -14667,6 +14737,13 @@
                       "type": "integer",
                       "description": "How frequently the BOS discovery agent syncs new components from HSM. (in seconds)"
                     },
+                    "hsm_read_timeout": {
+                      "type": "integer",
+                      "description": "The amount of time (in seconds) to wait for a response before timing out a request to HSM.",
+                      "example": 20,
+                      "minimum": 10,
+                      "maximum": 86400
+                    },
                     "logging_level": {
                       "type": "string",
                       "description": "The logging level for all BOS services"
@@ -14682,6 +14759,13 @@
                     "max_power_off_wait_time": {
                       "type": "integer",
                       "description": "How long BOS will wait for a node to power off before forcefully powering off (in seconds)"
+                    },
+                    "pcs_read_timeout": {
+                      "type": "integer",
+                      "description": "The amount of time (in seconds) to wait for a response before timing out a request to PCS.",
+                      "example": 20,
+                      "minimum": 10,
+                      "maximum": 86400
                     },
                     "polling_frequency": {
                       "type": "integer",
@@ -14729,9 +14813,16 @@
                 "description": "Options for the boot orchestration service.\n",
                 "type": "object",
                 "properties": {
+                  "bss_read_timeout": {
+                    "type": "integer",
+                    "description": "The amount of time (in seconds) to wait for a response before timing out a request to BSS.",
+                    "example": 20,
+                    "minimum": 10,
+                    "maximum": 86400
+                  },
                   "cfs_read_timeout": {
                     "type": "integer",
-                    "description": "The amount of time (in seconds) to wait for a response before timing out a request to CFS.\n",
+                    "description": "The amount of time (in seconds) to wait for a response before timing out a request to CFS.",
                     "example": 20,
                     "minimum": 10,
                     "maximum": 86400
@@ -14756,6 +14847,13 @@
                     "type": "integer",
                     "description": "How frequently the BOS discovery agent syncs new components from HSM. (in seconds)"
                   },
+                  "hsm_read_timeout": {
+                    "type": "integer",
+                    "description": "The amount of time (in seconds) to wait for a response before timing out a request to HSM.",
+                    "example": 20,
+                    "minimum": 10,
+                    "maximum": 86400
+                  },
                   "logging_level": {
                     "type": "string",
                     "description": "The logging level for all BOS services"
@@ -14771,6 +14869,13 @@
                   "max_power_off_wait_time": {
                     "type": "integer",
                     "description": "How long BOS will wait for a node to power off before forcefully powering off (in seconds)"
+                  },
+                  "pcs_read_timeout": {
+                    "type": "integer",
+                    "description": "The amount of time (in seconds) to wait for a response before timing out a request to PCS.",
+                    "example": 20,
+                    "minimum": 10,
+                    "maximum": 86400
                   },
                   "polling_frequency": {
                     "type": "integer",
@@ -14807,9 +14912,16 @@
                   "description": "Options for the boot orchestration service.\n",
                   "type": "object",
                   "properties": {
+                    "bss_read_timeout": {
+                      "type": "integer",
+                      "description": "The amount of time (in seconds) to wait for a response before timing out a request to BSS.",
+                      "example": 20,
+                      "minimum": 10,
+                      "maximum": 86400
+                    },
                     "cfs_read_timeout": {
                       "type": "integer",
-                      "description": "The amount of time (in seconds) to wait for a response before timing out a request to CFS.\n",
+                      "description": "The amount of time (in seconds) to wait for a response before timing out a request to CFS.",
                       "example": 20,
                       "minimum": 10,
                       "maximum": 86400
@@ -14834,6 +14946,13 @@
                       "type": "integer",
                       "description": "How frequently the BOS discovery agent syncs new components from HSM. (in seconds)"
                     },
+                    "hsm_read_timeout": {
+                      "type": "integer",
+                      "description": "The amount of time (in seconds) to wait for a response before timing out a request to HSM.",
+                      "example": 20,
+                      "minimum": 10,
+                      "maximum": 86400
+                    },
                     "logging_level": {
                       "type": "string",
                       "description": "The logging level for all BOS services"
@@ -14849,6 +14968,13 @@
                     "max_power_off_wait_time": {
                       "type": "integer",
                       "description": "How long BOS will wait for a node to power off before forcefully powering off (in seconds)"
+                    },
+                    "pcs_read_timeout": {
+                      "type": "integer",
+                      "description": "The amount of time (in seconds) to wait for a response before timing out a request to PCS.",
+                      "example": 20,
+                      "minimum": 10,
+                      "maximum": 86400
                     },
                     "polling_frequency": {
                       "type": "integer",
