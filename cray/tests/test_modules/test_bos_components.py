@@ -25,28 +25,12 @@
 # pylint: disable=unused-argument
 # pylint: disable=invalid-name
 
-from itertools import chain, combinations
 import json
 
-from cray.tests.utils import compare_dicts
+from cray.tests.utils import compare_dicts, powerset, verify_commands_equal
 
 from cray.tests.test_modules.test_bos import bos_url
 
-# helpers
-
-def verify_commands_equal(runner, cli, expected_result_data, command_list):
-    """ Verifies that all of the specified commands pass and give the same result """
-    for command in command_list:
-        result = runner.invoke(cli, command)
-        assert result.exit_code == 0
-        data = json.loads(result.output)
-        compare_dicts(expected_result_data, data)
-
-# From Python 3 docs: https://docs.python.org/3/library/itertools.html
-def powerset(iterable):
-    """powerset([1,2,3]) → () (1,) (2,) (3,) (1,2) (1,3) (2,3) (1,2,3)"""
-    s = list(iterable)
-    return chain.from_iterable(combinations(s, r) for r in range(len(s)+1))
 
 # tests
 
