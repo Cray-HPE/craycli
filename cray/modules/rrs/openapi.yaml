@@ -1,0 +1,94 @@
+openapi: 3.0.0
+info:
+  title: Kubernetes Zone API
+  version: 1.0.0
+  description: API for fetching Kubernetes node zone information
+servers:
+  - url: http://{node_ip}:8080
+    variables:
+      node_ip:
+        default: "localhost"
+        description: IP address of the node running the service
+
+paths:
+  /zones:
+    get:
+      tags:
+        - Zones
+      summary: Get zone data
+      description: Returns zone data from the Kubernetes API
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Node'
+              example:
+                rack-1:
+                  - name: "ncn-m001"
+                    status: "Ready"
+                    roles: "control-plane"
+                    age: "2024-10-25T12:40:04Z"
+                    version: "v1.24.17"
+                    cpu: "32"
+                    memory: "131032624Ki"
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    Node:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "ncn-m001"
+        status:
+          type: string
+          enum: [Ready, NotReady, Unknown]
+          example: "Ready"
+        roles:
+          type: string
+          example: "control-plane"
+        age:
+          type: string
+          format: date-time
+          example: "2024-10-25T12:40:04Z"
+        version:
+          type: string
+          example: "v1.24.17"
+        cpu:
+          type: string
+          example: "32"
+        memory:
+          type: string
+          example: "131032624Ki"
+      required:
+        - name
+        - status
+        - age
+        - version
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Not Found"
+      required:
+        - error
