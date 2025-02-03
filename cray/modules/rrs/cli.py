@@ -1,81 +1,28 @@
-import click
-import requests
-import subprocess
-import json
-from collections import defaultdict
+#
+#  MIT License
+#
+#  (C) Copyright 2020-2023 Hewlett Packard Enterprise Development LP
+#
+#  Permission is hereby granted, free of charge, to any person obtaining a
+#  copy of this software and associated documentation files (the "Software"),
+#  to deal in the Software without restriction, including without limitation
+#  the rights to use, copy, modify, merge, publish, distribute, sublicense,
+#  and/or sell copies of the Software, and to permit persons to whom the
+#  Software is furnished to do so, subject to the following conditions:
+#
+#  The above copyright notice and this permission notice shall be included
+#  in all copies or substantial portions of the Software.
+#
+#  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+#  THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+#  OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+#  ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+#  OTHER DEALINGS IN THE SOFTWARE.
+#
+""" rrs """
+# pylint: disable=invalid-name
+from cray.generator import generate
 
-@click.group(name="rrs", help="Rack Resiliency commands")
-def cli():
-    pass
-
-@cli.command(name="list", help="List nodes grouped by zones from backend API")
-@click.option('--node-ip', '-e', required=True, 
-             help="node IP of the backend service")
-def list_command(node_ip):
-    """Display nodes organized by zone with resource information"""
-    try:
-        # Fetch data from backend API
-        response = requests.get(f"http://{node_ip}:8080/zones")  # Update endpoint if needed
-        print(response)
-        response.raise_for_status()
-        zones_data = response.json()
-        
-        # Formatting constants
-        header = "{:<10} {:<8} {:<18} {:<10} {:<12} {:<6} {:<15}".format(
-            "NAME", "STATUS", "ROLES", "AGE", "VERSION", "CPU", "MEMORY"
-        )
-        separator = "-" * 85
-        
-        for zone, nodes in zones_data.items():
-            click.echo(f"\nZone: {zone}")
-            click.echo(separator)
-            click.echo(header)
-            
-            for node in nodes:
-                # Clean up role display
-                roles = node['roles'].split('/')[-1] if node['roles'] else 'worker'
-                
-                # Format age without timestamp
-                age = node['age'].split('T')[0] if 'T' in node['age'] else node['age']
-                
-                click.echo(
-                    "{name:<10} {status:<8} {roles:<18} {age:<10} "
-                    "{version:<12} {cpu:<6} {memory:<15}".format(
-                        name=node['name'],
-                        status=node['status'],
-                        roles=roles,
-                        age=age,
-                        version=node['version'],
-                        cpu=node['cpu'],
-                        memory=node['memory']
-                    )
-                )
-            click.echo()
-            
-    except requests.exceptions.RequestException as e:
-        click.echo(f"Error connecting to backend: {str(e)}", err=True)
-    except KeyError as e:
-        click.echo(f"Invalid data format from backend: missing {str(e)}", err=True)
-
-@cli.command(name="hello", help="Fetch greeting from HelloWorld API")
-@click.option('--node-ip', '-e', required=True, help="Node IP of HelloWorld service (port 8080)")
-def hello_command(name, node_ip):
-    """Fetch greeting from /hello endpoint"""
-    base_url = f"http://{node_ip}:8080"
-    endpoint = f"{base_url}/hello"
-    try:
-        response = requests.get(
-            endpoint,
-            timeout=5  # Add timeout
-        )
-        response.raise_for_status()
-        # Add JSON parsing validation
-        try:
-            data = response.json()
-            click.echo(f"Response: {data['message']}")
-        except ValueError:
-            click.echo(f"Invalid JSON response. Raw response: {response.text}", err=True) 
-    except requests.exceptions.HTTPError as e:
-        click.echo(f"HTTP Error {e.response.status_code}: {e.response.text}", err=True)
-    except requests.exceptions.RequestException as e:
-        click.echo(f"Connection Error: {str(e)}", err=True)
+cli = generate(__file__)
