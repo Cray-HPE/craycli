@@ -1,19 +1,24 @@
 {
     "openapi": "3.0.0",
     "info": {
-        "title": "Kubernetes Zone API",
-        "version": "1.0.0",
-        "description": "API for fetching Kubernetes node zone information"
+        "title": "Kubernetes Zone and Critical Pods API",
+        "description": "API to fetch zone data and critical pods data from Kubernetes.",
+        "version": "1.0.0"
     },
     "servers": [
         {
-            "url": "http://{node_ip}:8080",
-            "variables": {
-                "node_ip": {
-                    "default": "localhost",
-                    "description": "IP address of the node running the service"
-                }
-            }
+            "url": "http://localhost:8080",
+            "description": "Local development server"
+        }
+    ],
+    "tags": [
+        {
+            "name": "Zones",
+            "description": "Endpoints related to Kubernetes zone data."
+        },
+        {
+            "name": "Critical Pods",
+            "description": "Endpoints related to critical pods (services) data."
         }
     ],
     "paths": {
@@ -23,75 +28,45 @@
                     "Zones"
                 ],
                 "summary": "Get zone data",
-                "description": "Returns zone data from the Kubernetes API",
+                "description": "Returns zone data from the Kubernetes API.",
                 "responses": {
                     "200": {
-                        "description": "Successful response",
+                        "description": "A JSON object containing zone data.",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "type": "object",
-                                    "additionalProperties": {
-                                        "type": "array",
-                                        "items": {
-                                            "type": "object",
-                                            "properties": {
-                                                "name": {
-                                                    "type": "string",
-                                                    "example": "ncn-m001"
-                                                },
-                                                "status": {
-                                                    "type": "string",
-                                                    "enum": [
-                                                        "Ready",
-                                                        "NotReady",
-                                                        "Unknown"
-                                                    ],
-                                                    "example": "Ready"
-                                                },
-                                                "roles": {
-                                                    "type": "string",
-                                                    "example": "control-plane"
-                                                },
-                                                "age": {
-                                                    "type": "string",
-                                                    "format": "date-time",
-                                                    "example": "2024-10-25T12:40:04Z"
-                                                },
-                                                "version": {
-                                                    "type": "string",
-                                                    "example": "v1.24.17"
-                                                },
-                                                "cpu": {
-                                                    "type": "string",
-                                                    "example": "32"
-                                                },
-                                                "memory": {
-                                                    "type": "string",
-                                                    "example": "131032624Ki"
+                                    "properties": {
+                                        "zone_name": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "name": {
+                                                        "type": "string"
+                                                    },
+                                                    "status": {
+                                                        "type": "string"
+                                                    },
+                                                    "roles": {
+                                                        "type": "string"
+                                                    },
+                                                    "age": {
+                                                        "type": "string"
+                                                    },
+                                                    "version": {
+                                                        "type": "string"
+                                                    },
+                                                    "cpu": {
+                                                        "type": "string"
+                                                    },
+                                                    "memory": {
+                                                        "type": "string"
+                                                    }
                                                 }
-                                            },
-                                            "required": [
-                                                "name",
-                                                "status",
-                                                "age",
-                                                "version"
-                                            ]
+                                            }
                                         }
                                     }
-                                },
-                                "example": {
-                                    "rack-1": [
-                                        {
-                                            "name": "ncn-m001",
-                                            "status": "Ready",
-                                            "roles": "control-plane",
-                                            "age": "2024-10-25T12:40:04Z",
-                                            "version": "v1.24.17",
-                                            "cpu": "32",
-                                            "memory": "131032624Ki"
-                                        }
-                                    ]
                                 }
                             }
                         }
@@ -104,98 +79,389 @@
                                     "type": "object",
                                     "properties": {
                                         "error": {
-                                            "type": "string",
-                                            "example": "Not Found"
+                                            "type": "string"
                                         }
-                                    },
-                                    "required": [
-                                        "error"
-                                    ]
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Server Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "error": {
-                                            "type": "string",
-                                            "example": "Not Found"
-                                        }
-                                    },
-                                    "required": [
-                                        "error"
-                                    ]
+                                    }
                                 }
                             }
                         }
                     }
                 }
             }
-        }
-    },
-    "components": {
-        "schemas": {
-            "Node": {
-                "type": "object",
-                "properties": {
-                    "name": {
-                        "type": "string",
-                        "example": "ncn-m001"
+        },
+        "/critical-pods": {
+            "get": {
+                "tags": [
+                    "Critical Pods"
+                ],
+                "summary": "Get critical pods data",
+                "description": "Returns critical pods data from the Kubernetes API.",
+                "responses": {
+                    "200": {
+                        "description": "A JSON object containing critical pods data.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "K8s Control Plane Services": {
+                                            "type": "object",
+                                            "properties": {
+                                                "kube-apiserver": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "name": {
+                                                                "type": "string"
+                                                            },
+                                                            "namespace": {
+                                                                "type": "string"
+                                                            },
+                                                            "status": {
+                                                                "type": "string"
+                                                            },
+                                                            "node_name": {
+                                                                "type": "string"
+                                                            },
+                                                            "creation_timestamp": {
+                                                                "type": "string"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                "kube-scheduler": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "name": {
+                                                                "type": "string"
+                                                            },
+                                                            "namespace": {
+                                                                "type": "string"
+                                                            },
+                                                            "status": {
+                                                                "type": "string"
+                                                            },
+                                                            "node_name": {
+                                                                "type": "string"
+                                                            },
+                                                            "creation_timestamp": {
+                                                                "type": "string"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                "kube-controller-manager": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "name": {
+                                                                "type": "string"
+                                                            },
+                                                            "namespace": {
+                                                                "type": "string"
+                                                            },
+                                                            "status": {
+                                                                "type": "string"
+                                                            },
+                                                            "node_name": {
+                                                                "type": "string"
+                                                            },
+                                                            "creation_timestamp": {
+                                                                "type": "string"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                "kube-proxy": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "name": {
+                                                                "type": "string"
+                                                            },
+                                                            "namespace": {
+                                                                "type": "string"
+                                                            },
+                                                            "status": {
+                                                                "type": "string"
+                                                            },
+                                                            "node_name": {
+                                                                "type": "string"
+                                                            },
+                                                            "creation_timestamp": {
+                                                                "type": "string"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                "coredns": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "name": {
+                                                                "type": "string"
+                                                            },
+                                                            "namespace": {
+                                                                "type": "string"
+                                                            },
+                                                            "status": {
+                                                                "type": "string"
+                                                            },
+                                                            "node_name": {
+                                                                "type": "string"
+                                                            },
+                                                            "creation_timestamp": {
+                                                                "type": "string"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        "Networking": {
+                                            "type": "object",
+                                            "properties": {
+                                                "slingshot-fabric-manager": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "name": {
+                                                                "type": "string"
+                                                            },
+                                                            "namespace": {
+                                                                "type": "string"
+                                                            },
+                                                            "status": {
+                                                                "type": "string"
+                                                            },
+                                                            "node_name": {
+                                                                "type": "string"
+                                                            },
+                                                            "creation_timestamp": {
+                                                                "type": "string"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        "Work Load Manager": {
+                                            "type": "object",
+                                            "properties": {
+                                                "pbs": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "name": {
+                                                                "type": "string"
+                                                            },
+                                                            "namespace": {
+                                                                "type": "string"
+                                                            },
+                                                            "status": {
+                                                                "type": "string"
+                                                            },
+                                                            "node_name": {
+                                                                "type": "string"
+                                                            },
+                                                            "creation_timestamp": {
+                                                                "type": "string"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                "slurm": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "name": {
+                                                                "type": "string"
+                                                            },
+                                                            "namespace": {
+                                                                "type": "string"
+                                                            },
+                                                            "status": {
+                                                                "type": "string"
+                                                            },
+                                                            "node_name": {
+                                                                "type": "string"
+                                                            },
+                                                            "creation_timestamp": {
+                                                                "type": "string"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        "iscsi": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "name": {
+                                                        "type": "string"
+                                                    },
+                                                    "namespace": {
+                                                        "type": "string"
+                                                    },
+                                                    "status": {
+                                                        "type": "string"
+                                                    },
+                                                    "node_name": {
+                                                        "type": "string"
+                                                    },
+                                                    "creation_timestamp": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        "ceph": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "name": {
+                                                        "type": "string"
+                                                    },
+                                                    "namespace": {
+                                                        "type": "string"
+                                                    },
+                                                    "status": {
+                                                        "type": "string"
+                                                    },
+                                                    "node_name": {
+                                                        "type": "string"
+                                                    },
+                                                    "creation_timestamp": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        "etcd": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "name": {
+                                                        "type": "string"
+                                                    },
+                                                    "namespace": {
+                                                        "type": "string"
+                                                    },
+                                                    "status": {
+                                                        "type": "string"
+                                                    },
+                                                    "node_name": {
+                                                        "type": "string"
+                                                    },
+                                                    "creation_timestamp": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        "postgres": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "name": {
+                                                        "type": "string"
+                                                    },
+                                                    "namespace": {
+                                                        "type": "string"
+                                                    },
+                                                    "status": {
+                                                        "type": "string"
+                                                    },
+                                                    "node_name": {
+                                                        "type": "string"
+                                                    },
+                                                    "creation_timestamp": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        "nexus": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "name": {
+                                                        "type": "string"
+                                                    },
+                                                    "namespace": {
+                                                        "type": "string"
+                                                    },
+                                                    "status": {
+                                                        "type": "string"
+                                                    },
+                                                    "node_name": {
+                                                        "type": "string"
+                                                    },
+                                                    "creation_timestamp": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        "cray-hbtd": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "name": {
+                                                        "type": "string"
+                                                    },
+                                                    "namespace": {
+                                                        "type": "string"
+                                                    },
+                                                    "status": {
+                                                        "type": "string"
+                                                    },
+                                                    "node_name": {
+                                                        "type": "string"
+                                                    },
+                                                    "creation_timestamp": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     },
-                    "status": {
-                        "type": "string",
-                        "enum": [
-                            "Ready",
-                            "NotReady",
-                            "Unknown"
-                        ],
-                        "example": "Ready"
-                    },
-                    "roles": {
-                        "type": "string",
-                        "example": "control-plane"
-                    },
-                    "age": {
-                        "type": "string",
-                        "format": "date-time",
-                        "example": "2024-10-25T12:40:04Z"
-                    },
-                    "version": {
-                        "type": "string",
-                        "example": "v1.24.17"
-                    },
-                    "cpu": {
-                        "type": "string",
-                        "example": "32"
-                    },
-                    "memory": {
-                        "type": "string",
-                        "example": "131032624Ki"
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
-                },
-                "required": [
-                    "name",
-                    "status",
-                    "age",
-                    "version"
-                ]
-            },
-            "Error": {
-                "type": "object",
-                "properties": {
-                    "error": {
-                        "type": "string",
-                        "example": "Not Found"
-                    }
-                },
-                "required": [
-                    "error"
-                ]
+                }
             }
         }
     }

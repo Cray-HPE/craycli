@@ -1,0 +1,300 @@
+openapi: 3.0.0
+info:
+  title: Kubernetes Zone and Critical Pods API
+  description: API to fetch zone data and critical pods data from Kubernetes.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+
+tags:
+  - name: Zones
+    description: Endpoints related to Kubernetes zone data.
+  - name: Critical Pods
+    description: Endpoints related to critical pods (services) data.
+
+paths:
+  /zones:
+    get:
+      tags:
+        - Zones
+      summary: Get zone data
+      description: Returns zone data from the Kubernetes API.
+      responses:
+        '200':
+          description: A JSON object containing zone data.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  zone_name:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        status:
+                          type: string
+                        roles:
+                          type: string
+                        age:
+                          type: string
+                        version:
+                          type: string
+                        cpu:
+                          type: string
+                        memory:
+                          type: string
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /critical-pods:
+    get:
+      tags:
+        - Critical Pods
+      summary: Get critical pods data
+      description: Returns critical pods data from the Kubernetes API.
+      responses:
+        '200':
+          description: A JSON object containing critical pods data.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  K8s Control Plane Services:
+                    type: object
+                    properties:
+                      kube-apiserver:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                            namespace:
+                              type: string
+                            status:
+                              type: string
+                            node_name:
+                              type: string
+                            creation_timestamp:
+                              type: string
+                      kube-scheduler:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                            namespace:
+                              type: string
+                            status:
+                              type: string
+                            node_name:
+                              type: string
+                            creation_timestamp:
+                              type: string
+                      kube-controller-manager:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                            namespace:
+                              type: string
+                            status:
+                              type: string
+                            node_name:
+                              type: string
+                            creation_timestamp:
+                              type: string
+                      kube-proxy:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                            namespace:
+                              type: string
+                            status:
+                              type: string
+                            node_name:
+                              type: string
+                            creation_timestamp:
+                              type: string
+                      coredns:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                            namespace:
+                              type: string
+                            status:
+                              type: string
+                            node_name:
+                              type: string
+                            creation_timestamp:
+                              type: string
+                  Networking:
+                    type: object
+                    properties:
+                      slingshot-fabric-manager:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                            namespace:
+                              type: string
+                            status:
+                              type: string
+                            node_name:
+                              type: string
+                            creation_timestamp:
+                              type: string
+                  Work Load Manager:
+                    type: object
+                    properties:
+                      pbs:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                            namespace:
+                              type: string
+                            status:
+                              type: string
+                            node_name:
+                              type: string
+                            creation_timestamp:
+                              type: string
+                      slurm:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                            namespace:
+                              type: string
+                            status:
+                              type: string
+                            node_name:
+                              type: string
+                            creation_timestamp:
+                              type: string
+                  iscsi:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        namespace:
+                          type: string
+                        status:
+                          type: string
+                        node_name:
+                          type: string
+                        creation_timestamp:
+                          type: string
+                  ceph:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        namespace:
+                          type: string
+                        status:
+                          type: string
+                        node_name:
+                          type: string
+                        creation_timestamp:
+                          type: string
+                  etcd:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        namespace:
+                          type: string
+                        status:
+                          type: string
+                        node_name:
+                          type: string
+                        creation_timestamp:
+                          type: string
+                  postgres:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        namespace:
+                          type: string
+                        status:
+                          type: string
+                        node_name:
+                          type: string
+                        creation_timestamp:
+                          type: string
+                  nexus:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        namespace:
+                          type: string
+                        status:
+                          type: string
+                        node_name:
+                          type: string
+                        creation_timestamp:
+                          type: string
+                  cray-hbtd:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        namespace:
+                          type: string
+                        status:
+                          type: string
+                        node_name:
+                          type: string
+                        creation_timestamp:
+                          type: string
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
