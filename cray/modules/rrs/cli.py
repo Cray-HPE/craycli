@@ -26,29 +26,29 @@
 from cray.generator import generate
 import click 
 
-# def print_response(resp):
-#     # Intercept the response by printing it.
-#     print(resp)
-#     print("I am printing")
-#     click.echo(resp)
-#     click.echo("I am using click to echo")
-#     # Return the response unchanged (or modify if needed).
-#     return resp
+def print_response(resp):
+    # Intercept the response by printing it.
+    # print(resp)
+    print("I am printing")
+    # click.echo(resp)
+    click.echo("I am using click to echo")
+    # Return the response unchanged (or modify if needed).
+    return resp
 
-def _rrs_format_response(cb):
+# def _rrs_format_response(cb):
 
-    def _cb(ctx, param, value):
-        data = value.read()
-        print(data)
-        print("I am printing")
-        click.echo(data)
-        click.echo("I am using click to echo")
-        if cb:
-            return cb(ctx, param, data)
-        return data
+#     def _cb(ctx, param, value):
+#         data = value.read()
+#         print(data)
+#         print("I am printing")
+#         # click.echo(data)
+#         # click.echo("I am using click to echo")
+#         if cb:
+#             return cb(ctx, param, data)
+#         return data
 
-    return _cb
+#     return _cb
 
 
 # Pass the callback to generate
-cli = generate(__file__, callback=_rrs_format_response)
+cli = generate(__file__, callback=print_response)
