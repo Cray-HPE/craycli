@@ -3,7 +3,31 @@
 from cray.generator import generate
 from cray import formatting
 import json
-from tabulate import tabulate 
+# from tabulate import tabulate 
+def make_table(headers, rows):
+    """
+    Given a list of headers and a list of rows (each a list of stringable items),
+    returns a string representing the table.
+    """
+    # Compute the maximum width of each column
+    widths = [len(str(header)) for header in headers]
+    for row in rows:
+        for i, cell in enumerate(row):
+            widths[i] = max(widths[i], len(str(cell)))
+    
+    # Create the header line
+    header_line = " | ".join(str(header).ljust(widths[i]) for i, header in enumerate(headers))
+    # Create a separator line
+    separator_line = "-+-".join("-" * widths[i] for i in range(len(headers)))
+    
+    # Build the table lines
+    lines = [header_line, separator_line]
+    for row in rows:
+        line = " | ".join(str(cell).ljust(widths[i]) for i, cell in enumerate(row))
+        lines.append(line)
+    
+    return "\n".join(lines)
+
 
 def format_rrs_response(result, **kwargs):
     """
@@ -44,7 +68,8 @@ def format_rrs_response(result, **kwargs):
             ]
             table.append(row)
         # Format the table (using tabulate for pretty printing)
-        output_lines.append(tabulate(table, headers=headers, tablefmt="grid"))
+        # output_lines.append(tabulate(table, headers=headers, tablefmt="grid"))
+        output_lines.append(make_table(headers, table))
         output_lines.append("")  # blank line between racks
     # Join all lines and return
     return "\n".join(output_lines)
