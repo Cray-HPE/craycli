@@ -1,94 +1,131 @@
-openapi: 3.0.0
+openapi: 3.0.2
 info:
-  title: Kubernetes Zone API
+  title: RRS Backend Service API
   version: 1.0.0
-  description: API for fetching Kubernetes node zone information
+  description: >
+    The RRS backend service queries the Kubernetes API to provide zone information.
+    The /zones endpoint returns an object mapping each zone to aggregated counts of
+    master, worker, and storage nodes plus rack xnames. The /zones/{zone_name} endpoint
+    returns detailed node information for a specific zone.
 servers:
-  - url: http://{node_ip}:8080
-    variables:
-      node_ip:
-        default: "localhost"
-        description: IP address of the node running the service
-
+  - url: http://10.20.222.249:8080
+    description: Local backend server
 paths:
   /zones:
     get:
-      tags:
-        - Zones
-      summary: Get zone data
-      description: Returns zone data from the Kubernetes API
+      summary: Get Aggregated Zones Information
+      description: >
+        Returns an object where each key is a zone name and the corresponding value contains:
+        - no_of_masters: Number of master nodes in the zone.
+        - no_of_workers: Number of worker nodes in the zone.
+        - no_of_storage: Number of storage nodes in the zone.
+        - rack-xname: Array of rack xnames associated with the zone.
+      operationId: getZones
       responses:
         '200':
-          description: Successful response
+          description: Zones aggregated information.
           content:
             application/json:
               schema:
                 type: object
                 additionalProperties:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/Node'
-              example:
-                rack-1:
-                  - name: "ncn-m001"
-                    status: "Ready"
-                    roles: "control-plane"
-                    age: "2024-10-25T12:40:04Z"
-                    version: "v1.24.17"
-                    cpu: "32"
-                    memory: "131032624Ki"
+                  $ref: '#/components/schemas/ZoneSummary'
+              examples:
+                aggregated:
+                  value:
+                    unassigned:
+                      no_of_masters: 3
+                      no_of_workers: 4
+                      no_of_storage: 0
+                      rack-xname:
+                        - "unknown"
         '404':
-          description: Not Found
+          description: Zones not found.
+  /zones/{zone_name}:
+    get:
+      summary: Get Detailed Zone Information
+      description: >
+        Returns detailed information for a specific zone including:
+        - zone_name: The name of the zone.
+        - no_of_active_nodes: Number of nodes in Ready state.
+        - no_of_not_ready_nodes: Number of nodes not in Ready state.
+        - no_of_nodes: Total number of nodes in the zone.
+        - nodes: An object mapping node roles ("masters", "workers", "storage") to lists of node details.
+      operationId: getZoneDetails
+      parameters:
+        - name: zone_name
+          in: path
+          required: true
+          description: The name of the zone.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Detailed information for the specified zone.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-        '500':
-          description: Server Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-
+                $ref: '#/components/schemas/ZoneDetail'
+              examples:
+                zoneDetail:
+                  value:
+                    zone_name: "zone1"
+                    no_of_active_nodes: 0
+                    no_of_not_ready_nodes: 0
+                    no_of_nodes: 0
+                    nodes:
+                      masters: []
+                      workers: []
+                      storage: []
+        '404':
+          description: Zone not found.
 components:
   schemas:
+    ZoneSummary:
+      type: object
+      properties:
+        no_of_masters:
+          type: integer
+          description: Number of master nodes.
+        no_of_workers:
+          type: integer
+          description: Number of worker nodes.
+        no_of_storage:
+          type: integer
+          description: Number of storage nodes.
+        rack-xname:
+          type: array
+          items:
+            type: string
+          description: Array of rack xnames.
+    ZoneDetail:
+      type: object
+      properties:
+        zone_name:
+          type: string
+          description: The name of the zone.
+        no_of_active_nodes:
+          type: integer
+          description: Number of active (Ready) nodes.
+        no_of_not_ready_nodes:
+          type: integer
+          description: Number of nodes not in Ready state.
+        no_of_nodes:
+          type: integer
+          description: Total number of nodes in the zone.
+        nodes:
+          type: object
+          description: Mapping of node roles to lists of node details.
+          additionalProperties:
+            type: array
+            items:
+              $ref: '#/components/schemas/Node'
     Node:
       type: object
       properties:
         name:
           type: string
-          example: "ncn-m001"
+          description: The node's name.
         status:
           type: string
-          enum: [Ready, NotReady, Unknown]
-          example: "Ready"
-        roles:
-          type: string
-          example: "control-plane"
-        age:
-          type: string
-          format: date-time
-          example: "2024-10-25T12:40:04Z"
-        version:
-          type: string
-          example: "v1.24.17"
-        cpu:
-          type: string
-          example: "32"
-        memory:
-          type: string
-          example: "131032624Ki"
-      required:
-        - name
-        - status
-        - age
-        - version
-
-    Error:
-      type: object
-      properties:
-        error:
-          type: string
-          example: "Not Found"
-      required:
-        - error
+          description: The node's status (e.g., Ready, NotReady).
