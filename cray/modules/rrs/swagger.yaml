@@ -1,9 +1,9 @@
 openapi: 3.0.2
 info:
-  title: RRS Backend Service API
+  title: Rack Resiliency Service API
   version: 1.0.0
   description: >
-    The RRS backend service queries the Kubernetes API to provide zone information.
+    The Rack Resiliency service queries the Kubernetes cluster to provide zone information.
     The /zones endpoint returns an object mapping each zone to aggregated counts of
     master, worker, and storage nodes plus rack xnames. The /zones/{zone_name} endpoint
     returns detailed node information for a specific zone.
