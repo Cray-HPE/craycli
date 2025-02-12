@@ -7,8 +7,8 @@
     },
     "servers": [
         {
-            "url": "http://10.20.222.249:8080",
-            "description": "Local backend server"
+            "url": "https://api-gw-service-nmn.local/apis/rrs",
+            "description": "The production RRS API server. Accessed from outside the mesh."
         }
     ],
     "paths": {
