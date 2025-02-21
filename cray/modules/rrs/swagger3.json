@@ -3,7 +3,7 @@
     "info": {
         "title": "Rack Resiliency Service API",
         "version": "1.0.0",
-        "description": "The Rack Resiliency service queries the Kubernetes Cluster to provide zone information. The /zones endpoint returns an object mapping each zone to aggregated counts of master, worker, and storage nodes plus rack xnames. The /zones/{zone_name} endpoint returns detailed node information for a specific zone.\n"
+        "description": "The Rack Resiliency service queries the Kubernetes cluster to provide zone information. The /zones endpoint returns an object mapping each zone to aggregated counts of master, worker, and storage nodes. The /zones/{zone_name} endpoint returns detailed node information for a specific zone.\n"
     },
     "servers": [
         {
@@ -15,7 +15,7 @@
         "/zones": {
             "get": {
                 "summary": "Get Aggregated Zones Information",
-                "description": "Returns an object where each key is a zone name and the corresponding value contains: - no_of_masters: Number of master nodes in the zone. - no_of_workers: Number of worker nodes in the zone. - no_of_storage: Number of storage nodes in the zone. - rack-xname: Array of rack xnames associated with the zone.\n",
+                "description": "Returns an object where each key is a zone name and the corresponding value contains: - no_of_masters: Number of master nodes in the zone. - no_of_workers: Number of worker nodes in the zone. - no_of_storage: Number of storage nodes in the zone.\n",
                 "operationId": "getZones",
                 "responses": {
                     "200": {
@@ -38,13 +38,6 @@
                                             "no_of_storage": {
                                                 "type": "integer",
                                                 "description": "Number of storage nodes."
-                                            },
-                                            "rack-xname": {
-                                                "type": "array",
-                                                "items": {
-                                                    "type": "string"
-                                                },
-                                                "description": "Array of rack xnames."
                                             }
                                         }
                                     }
@@ -52,13 +45,10 @@
                                 "examples": {
                                     "aggregated": {
                                         "value": {
-                                            "unassigned": {
+                                            "zone1": {
                                                 "no_of_masters": 3,
                                                 "no_of_workers": 4,
-                                                "no_of_storage": 0,
-                                                "rack-xname": [
-                                                    "unknown"
-                                                ]
+                                                "no_of_storage": 0
                                             }
                                         }
                                     }
@@ -175,13 +165,6 @@
                     "no_of_storage": {
                         "type": "integer",
                         "description": "Number of storage nodes."
-                    },
-                    "rack-xname": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        },
-                        "description": "Array of rack xnames."
                     }
                 }
             },
