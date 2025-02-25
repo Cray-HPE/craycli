@@ -3,51 +3,80 @@ info:
   title: Rack Resiliency Service API
   version: 1.0.0
   description: >
-    The Rack Resiliency service queries the Kubernetes cluster to provide zone information.
-    The /zones endpoint returns an object mapping each zone to aggregated counts of
-    master, worker, and storage nodes. The /zones/{zone_name} endpoint
-    returns detailed node information for a specific zone.
+    The Rack Resiliency service queries the Kubernetes cluster to provide zone information and
+    details on critical services.
+    The API exposes the following endpoints:
+    - **/zones**: Returns an object mapping each zone to its configured nodes. When zones are not
+      properly labelled, an informational message is returned.
+    - **/zones/{zone_name}**: Returns detailed information for a specific zone, including counts and
+      node details (with OSD information for storage nodes).
+    - **/criticalservices**: Returns a list of critical services with basic details.
+    - **/criticalservices/{critical_service_name}**: Returns detailed information for a specific
+      critical service including associated pods and services.
 servers:
   - url: 'https://api-gw-service-nmn.local/apis/rrs'
     description: The production RRS API server. Accessed from outside the mesh.
 paths:
   /zones:
     get:
-      summary: Get Aggregated Zones Information
+      summary: Get Zones Configuration
       description: >
         Returns an object where each key is a zone name and the corresponding value contains:
-        - no_of_masters: Number of master nodes in the zone.
-        - no_of_workers: Number of worker nodes in the zone.
-        - no_of_storage: Number of storage nodes in the zone.
+        - **Management Master Nodes**: List of master node names.
+        - **Management Storage Nodes**: List of storage node names.
+        - **Management Worker Nodes**: List of worker node names.
+        
+        Alternatively, if zones are not configured, one of the following informational messages is returned:
+        - "No Zones configured"
+        - "No Ceph zones configured"
+        - "No K8s topology zones configured"
       operationId: getZones
       responses:
         '200':
-          description: Zones aggregated information.
+          description: Zones configuration or an informational message.
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties:
-                  $ref: '#/components/schemas/ZoneSummary'
+                oneOf:
+                  - $ref: '#/components/schemas/ZoneConfiguration'
+                  - $ref: '#/components/schemas/InformationResponse'
               examples:
                 aggregated:
                   value:
-                    zone1:
-                      no_of_masters: 3
-                      no_of_workers: 4
-                      no_of_storage: 0
+                    rack1:
+                      "Management Master Nodes": ["ncn-m001", "ncn-m002"]
+                      "Management Storage Nodes": ["ncn-s003"]
+                      "Management Worker Nodes": []
+                    rack2:
+                      "Management Master Nodes": ["ncn-m003"]
+                      "Management Storage Nodes": ["ncn-s002", "ncn-s001"]
+                      "Management Worker Nodes": ["ncn-w001", "ncn-w003"]
+                    rack3:
+                      "Management Master Nodes": []
+                      "Management Storage Nodes": []
+                      "Management Worker Nodes": ["ncn-w002", "ncn-w004"]
+                noZones:
+                  value:
+                    Information: "No Zones configured"
+                noCeph:
+                  value:
+                    Information: "No Ceph zones configured"
+                noK8s:
+                  value:
+                    Information: "No K8s topology zones configured"
         '404':
           description: Zones not found.
+          
   /zones/{zone_name}:
     get:
       summary: Get Detailed Zone Information
       description: >
         Returns detailed information for a specific zone including:
-        - zone_name: The name of the zone.
-        - no_of_active_nodes: Number of nodes in Ready state.
-        - no_of_not_ready_nodes: Number of nodes not in Ready state.
-        - no_of_nodes: Total number of nodes in the zone.
-        - nodes: An object mapping node roles ("masters", "workers", "storage") to lists of node details.
+        - **zone_name**: The name of the zone.
+        - **no_of_masters**: Number of master nodes.
+        - **no_of_storage**: Number of storage nodes.
+        - **no_of_workers**: Number of worker nodes.
+        - **nodes**: An object mapping node roles ("masters", "storage", "workers") to lists of node details.
       operationId: getZoneDetails
       parameters:
         - name: zone_name
@@ -66,52 +95,157 @@ paths:
               examples:
                 zoneDetail:
                   value:
-                    zone_name: "zone1"
-                    no_of_active_nodes: 0
-                    no_of_not_ready_nodes: 0
-                    no_of_nodes: 0
+                    zone_name: "rack1"
+                    no_of_masters: 2
+                    no_of_storage: 1
+                    no_of_workers: 1
                     nodes:
-                      masters: []
-                      workers: []
-                      storage: []
+                      masters:
+                        - name: "ncn-m001"
+                          status: "Ready"
+                        - name: "ncn-m002"
+                          status: "Ready"
+                      storage:
+                        - name: "ncn-s003"
+                          status: "Ready"
+                          osds:
+                            - name: "osd.1"
+                              status: "up"
+                            - name: "osd.4"
+                              status: "up"
+                            - name: "osd.7"
+                              status: "up"
+                            - name: "osd.10"
+                              status: "up"
+                      workers:
+                        - name: "ncn-w001"
+                          status: "Ready"
         '404':
           description: Zone not found.
+          
+  /criticalservices:
+    get:
+      summary: Get Critical Services
+      description: >
+        Returns an object containing a list of critical services with details such as name, namespace, and type.
+      operationId: getCriticalServices
+      responses:
+        '200':
+          description: List of critical services.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CriticalServicesList'
+              examples:
+                criticalServices:
+                  value:
+                    critical-services:
+                      - name: "nexus"
+                        namespace: "nexus"
+                        type: "Deployment"
+                      - name: "cray-keycloak"
+                        namespace: "services"
+                        type: "StatefulSet"
+                      - name: "kube-proxy"
+                        namespace: "kube-system"
+                        type: "DaemonSet"
+        '404':
+          description: Critical services not found.
+          
+  /criticalservices/{critical_service_name}:
+    get:
+      summary: Get Critical Service Details
+      description: >
+        Returns detailed information for a specific critical service including:
+        - **name**: The name of the critical service.
+        - **namespace**: The namespace of the service.
+        - **type**: The type of the service (e.g., Deployment, StatefulSet, DaemonSet).
+        - **pods**: A list of pods associated with the service.
+        - **services**: A list of services associated with the critical service.
+      operationId: getCriticalServiceDetails
+      parameters:
+        - name: critical_service_name
+          in: path
+          required: true
+          description: The name of the critical service.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Detailed information for the specified critical service.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CriticalServiceDetailResponse'
+              examples:
+                criticalServiceDetail:
+                  value:
+                    Critical Service:
+                      name: "nexus"
+                      namespace: "nexus"
+                      type: "Deployment"
+                      pods: ["Running pods", ""]
+                      services: ["Running services", ""]
+        '404':
+          description: Critical service not found.
+          
 components:
   schemas:
-    ZoneSummary:
+    ZoneNodes:
       type: object
       properties:
-        no_of_masters:
-          type: integer
-          description: Number of master nodes.
-        no_of_workers:
-          type: integer
-          description: Number of worker nodes.
-        no_of_storage:
-          type: integer
-          description: Number of storage nodes.
+        "Management Master Nodes":
+          type: array
+          items:
+            type: string
+        "Management Storage Nodes":
+          type: array
+          items:
+            type: string
+        "Management Worker Nodes":
+          type: array
+          items:
+            type: string
+    ZoneConfiguration:
+      type: object
+      additionalProperties:
+        $ref: '#/components/schemas/ZoneNodes'
+    InformationResponse:
+      type: object
+      properties:
+        Information:
+          type: string
     ZoneDetail:
       type: object
       properties:
         zone_name:
           type: string
           description: The name of the zone.
-        no_of_active_nodes:
+        no_of_masters:
           type: integer
-          description: Number of active (Ready) nodes.
-        no_of_not_ready_nodes:
+          description: Number of master nodes.
+        no_of_storage:
           type: integer
-          description: Number of nodes not in Ready state.
-        no_of_nodes:
+          description: Number of storage nodes.
+        no_of_workers:
           type: integer
-          description: Total number of nodes in the zone.
+          description: Number of worker nodes.
         nodes:
           type: object
           description: Mapping of node roles to lists of node details.
-          additionalProperties:
-            type: array
-            items:
-              $ref: '#/components/schemas/Node'
+          properties:
+            masters:
+              type: array
+              items:
+                $ref: '#/components/schemas/Node'
+            storage:
+              type: array
+              items:
+                $ref: '#/components/schemas/Node'
+            workers:
+              type: array
+              items:
+                $ref: '#/components/schemas/Node'
     Node:
       type: object
       properties:
@@ -121,3 +255,55 @@ components:
         status:
           type: string
           description: The node's status (e.g., Ready, NotReady).
+        osds:
+          type: array
+          description: List of OSD details (only applicable for storage nodes).
+          items:
+            $ref: '#/components/schemas/OSD'
+    OSD:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The OSD's name.
+        status:
+          type: string
+          description: The OSD's status (e.g., up, down).
+    CriticalServicesList:
+      type: object
+      properties:
+        critical-services:
+          type: array
+          items:
+            $ref: '#/components/schemas/CriticalService'
+    CriticalService:
+      type: object
+      properties:
+        name:
+          type: string
+        namespace:
+          type: string
+        type:
+          type: string
+    CriticalServiceDetailResponse:
+      type: object
+      properties:
+        Critical Service:
+          $ref: '#/components/schemas/CriticalServiceDetail'
+    CriticalServiceDetail:
+      type: object
+      properties:
+        name:
+          type: string
+        namespace:
+          type: string
+        type:
+          type: string
+        pods:
+          type: array
+          items:
+            type: string
+        services:
+          type: array
+          items:
+            type: string
