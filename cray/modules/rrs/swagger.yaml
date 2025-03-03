@@ -1,27 +1,3 @@
-#
-# MIT License
-#
-# (C) Copyright 2025 Hewlett Packard Enterprise Development LP
-#
-# Permission is hereby granted, free of charge, to any person obtaining a
-# copy of this software and associated documentation files (the "Software"),
-# to deal in the Software without restriction, including without limitation
-# the rights to use, copy, modify, merge, publish, distribute, sublicense,
-# and/or sell copies of the Software, and to permit persons to whom the
-# Software is furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included
-# in all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-# THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
-# OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-# ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-# OTHER DEALINGS IN THE SOFTWARE.
-#
-# Rack Resiliency Service API Specification
 openapi: 3.0.2
 info:
   title: Rack Resiliency Service
@@ -34,9 +10,9 @@ info:
     information and detailed critical service status. It gathers node details across various zones
     and presents both high-level summaries and in-depth information for zones and critical services.
 
-    ## Resources
+    Resources
 
-      ### /zones
+      /zones
         Retrieve aggregated zone information including:
           - Management Master Nodes: List of master node names.
           - Management Storage Nodes: List of storage node names.
@@ -47,7 +23,7 @@ info:
           - "No Ceph zones configured"
           - "No K8s topology zones configured"
 
-      ### /zones/{zone_name}
+      /zones/{zone_name}
         Retrieve detailed information for a specific zone including:
           - zone_name: The name of the zone.
           - no_of_masters: Number of master nodes.
@@ -55,46 +31,46 @@ info:
           - no_of_workers: Number of worker nodes.
           - nodes: Detailed node data, including status and, for storage nodes, associated OSD details.
 
-      ### /criticalservices
+      /criticalservices
         Retrieve a list of critical services with basic details:
           - name: The service name.
           - namespace: The Kubernetes namespace.
           - type: The service type (e.g., Deployment, StatefulSet, DaemonSet).
 
-      ### /criticalservices/{critical_service_name}
+      /criticalservices/{critical_service_name}
         Retrieve detailed information for a specific critical service including:
           - name: The name of the critical service.
           - namespace: The namespace where the service is deployed.
           - type: The type of the service.
-          - pods: A list of pods associated with the service.
-          - services: A list of related service components.
+          - pods: An array of pod objects with name and status.
+          - services: An array of service names associated with the critical service.
 
-    ## Workflows
+    Workflows
 
-      All endpoints in the Rack Resiliency Service API are GET requests, providing read-only access to
-      zone and critical service information.
+      All endpoints in the Rack Resiliency Service API are GET requests, except for the update operation on /criticalservices.
 
-      ### Zone Information Retrieval
+      Zone Information Retrieval
 
         - GET /zones  
-        
           Retrieve aggregated zone configuration. The response includes detailed lists of node names for
           each zone or an informational message if zones are not configured.
           
         - GET /zones/{zone_name}  
-        
           Retrieve detailed information for a specific zone, including node counts and statuses.
 
-      ### Critical Service Information Retrieval
+      Critical Service Information Retrieval
 
         - GET /criticalservices  
-        
           Retrieve a list of critical services with basic details (name, namespace, type).
 
         - GET /criticalservices/{critical_service_name}  
-        
           Retrieve detailed information for a specific critical service, including associated pods and service components.
-          
+
+      Critical Service Update
+
+        - PATCH /criticalservices  
+          Update the critical services configuration. The request body should contain a JSON string in the
+          new-services property representing the updated critical services configuration.
 servers:
   - url: 'https://api-gw-service-nmn.local/apis/rrs'
     description: The production RRS API server. Accessed from outside the mesh.
@@ -102,16 +78,18 @@ paths:
   /zones:
     get:
       summary: Get Zones Configuration
+      tags:
+        - zones
       description: >
         Returns an object where each key is a zone name and the corresponding value contains:
-        - Management Master Nodes: List of master node names.
-        - Management Storage Nodes: List of storage node names.
-        - Management Worker Nodes: List of worker node names.
+          - Management Master Nodes: List of master node names.
+          - Management Storage Nodes: List of storage node names.
+          - Management Worker Nodes: List of worker node names.
         
         Alternatively, if zones are not configured, one of the following informational messages is returned:
-        - "No Zones configured"
-        - "No Ceph zones configured"
-        - "No K8s topology zones configured"
+          - "No Zones configured"
+          - "No Ceph zones configured"
+          - "No K8s topology zones configured"
       operationId: getZones
       responses:
         '200':
@@ -152,13 +130,15 @@ paths:
   /zones/{zone_name}:
     get:
       summary: Get Detailed Zone Information
+      tags:
+        - zones
       description: >
         Returns detailed information for a specific zone including:
-        - zone_name: The name of the zone.
-        - no_of_masters: Number of master nodes.
-        - no_of_storage: Number of storage nodes.
-        - no_of_workers: Number of worker nodes.
-        - nodes: An object mapping node roles ("masters", "storage", "workers") to lists of node details.
+          - zone_name: The name of the zone.
+          - no_of_masters: Number of master nodes.
+          - no_of_storage: Number of storage nodes.
+          - no_of_workers: Number of worker nodes.
+          - nodes: An object mapping node roles ("masters", "storage", "workers") to lists of node details.
       operationId: getZoneDetails
       parameters:
         - name: zone_name
@@ -208,6 +188,8 @@ paths:
   /criticalservices:
     get:
       summary: Get Critical Services
+      tags:
+        - criticalservices
       description: >
         Returns an object containing a list of critical services with details such as name, namespace, and type.
       operationId: getCriticalServices
@@ -231,19 +213,60 @@ paths:
                       - name: "kube-proxy"
                         namespace: "kube-system"
                         type: "DaemonSet"
+                      - name: "coredns"
+                        namespace: "kube-system"
+                        type: "Deployment"
+                      - name: "kube-multus-ds"
+                        namespace: "kube-system"
+                        type: "DaemonSet"
         '404':
           description: Critical services not found.
+    patch:
+      summary: Update Critical Services ConfigMap
+      tags:
+        - criticalservices
+      operationId: patchCriticalServices
+      description: >
+        Updates the critical services configuration. The request body should contain a JSON string in the
+        new-services property representing the updated critical services configuration.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CriticalServicesPatch'
+      responses:
+        '200':
+          description: ConfigMap updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CriticalServicesPatchResponse'
+        '404':
+          description: Critical services configuration not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/NotFound'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/InternalServerError'
           
   /criticalservices/{critical_service_name}:
     get:
       summary: Get Critical Service Details
+      tags:
+        - criticalservices
       description: >
         Returns detailed information for a specific critical service including:
-        - name: The name of the critical service.
-        - namespace: The namespace of the service.
-        - type: The type of the service (e.g., Deployment, StatefulSet, DaemonSet).
-        - pods: A list of pods associated with the service.
-        - services: A list of services associated with the critical service.
+          - name: The name of the critical service.
+          - namespace: The namespace of the service.
+          - type: The type of the service (e.g., Deployment, StatefulSet, DaemonSet).
+          - pods: An array of pod objects with name and status.
+          - services: An array of service names associated with the critical service.
       operationId: getCriticalServiceDetails
       parameters:
         - name: critical_service_name
@@ -263,11 +286,20 @@ paths:
                 criticalServiceDetail:
                   value:
                     Critical Service:
-                      name: "nexus"
-                      namespace: "nexus"
-                      type: "Deployment"
-                      pods: ["Running pods", ""]
-                      services: ["Running services", ""]
+                      name: "cray-keycloak"
+                      namespace: "services"
+                      pods:
+                        - name: "cray-keycloak-0"
+                          status: "Running"
+                        - name: "cray-keycloak-1"
+                          status: "Running"
+                        - name: "cray-keycloak-2"
+                          status: "Running"
+                      services:
+                        - "cray-keycloak-headless"
+                        - "cray-keycloak-http"
+                        - "keycloak"
+                      type: "StatefulSet"
         '404':
           description: Critical service not found.
           
@@ -276,15 +308,15 @@ components:
     ZoneNodes:
       type: object
       properties:
-        "Management Master Nodes":
+        Management Master Nodes:
           type: array
           items:
             type: string
-        "Management Storage Nodes":
+        Management Storage Nodes:
           type: array
           items:
             type: string
-        "Management Worker Nodes":
+        Management Worker Nodes:
           type: array
           items:
             type: string
@@ -379,13 +411,67 @@ components:
           type: string
         namespace:
           type: string
-        type:
-          type: string
         pods:
           type: array
           items:
-            type: string
+            $ref: '#/components/schemas/Pod'
         services:
           type: array
           items:
             type: string
+        type:
+          type: string
+    Pod:
+      type: object
+      properties:
+        name:
+          type: string
+        status:
+          type: string
+    CriticalServicesPatch:
+      type: object
+      properties:
+        new-services:
+          type: string
+          description: A JSON string containing the updated critical services configuration.
+      required:
+        - new-services
+    CriticalServiceUpdate:
+      type: object
+      properties:
+        namespace:
+          type: string
+        type:
+          type: string
+      required:
+        - namespace
+        - type
+    CriticalServicesPatchResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "ConfigMap updated successfully"
+        updated_data:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/CriticalServiceUpdate'
+  responses:
+    NotFound:
+      description: Not found.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+    InternalServerError:
+      description: Internal server error.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string

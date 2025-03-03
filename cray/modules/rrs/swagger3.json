@@ -7,7 +7,7 @@
             "url": "http://www.hpe.com/"
         },
         "version": "1.0.0",
-        "description": "The Rack Resiliency Service (RRS) queries the Kubernetes cluster to provide aggregated zone information and detailed critical service status. It gathers node details across various zones and presents both high-level summaries and in-depth information for zones and critical services.\n## Resources\n\n  ### /zones\n    Retrieve aggregated zone information including:\n      - Management Master Nodes: List of master node names.\n      - Management Storage Nodes: List of storage node names.\n      - Management Worker Nodes: List of worker node names.\n      \n    Alternatively, if zones are not configured, one of the following informational messages is returned:\n      - \"No Zones configured\"\n      - \"No Ceph zones configured\"\n      - \"No K8s topology zones configured\"\n\n  ### /zones/{zone_name}\n    Retrieve detailed information for a specific zone including:\n      - zone_name: The name of the zone.\n      - no_of_masters: Number of master nodes.\n      - no_of_storage: Number of storage nodes.\n      - no_of_workers: Number of worker nodes.\n      - nodes: Detailed node data, including status and, for storage nodes, associated OSD details.\n\n  ### /criticalservices\n    Retrieve a list of critical services with basic details:\n      - name: The service name.\n      - namespace: The Kubernetes namespace.\n      - type: The service type (e.g., Deployment, StatefulSet, DaemonSet).\n\n  ### /criticalservices/{critical_service_name}\n    Retrieve detailed information for a specific critical service including:\n      - name: The name of the critical service.\n      - namespace: The namespace where the service is deployed.\n      - type: The type of the service.\n      - pods: A list of pods associated with the service.\n      - services: A list of related service components.\n\n## Workflows\n\n  All endpoints in the Rack Resiliency Service API are GET requests, providing read-only access to\n  zone and critical service information.\n\n  ### Zone Information Retrieval\n\n    - GET /zones  \n    \n      Retrieve aggregated zone configuration. The response includes detailed lists of node names for\n      each zone or an informational message if zones are not configured.\n      \n    - GET /zones/{zone_name}  \n    \n      Retrieve detailed information for a specific zone, including node counts and statuses.\n\n  ### Critical Service Information Retrieval\n\n    - GET /criticalservices  \n    \n      Retrieve a list of critical services with basic details (name, namespace, type).\n\n    - GET /criticalservices/{critical_service_name}  \n    \n      Retrieve detailed information for a specific critical service, including associated pods and service components.\n"
+        "description": "The Rack Resiliency Service (RRS) queries the Kubernetes cluster to provide aggregated zone information and detailed critical service status. It gathers node details across various zones and presents both high-level summaries and in-depth information for zones and critical services.\nResources\n\n  /zones\n    Retrieve aggregated zone information including:\n      - Management Master Nodes: List of master node names.\n      - Management Storage Nodes: List of storage node names.\n      - Management Worker Nodes: List of worker node names.\n      \n    Alternatively, if zones are not configured, one of the following informational messages is returned:\n      - \"No Zones configured\"\n      - \"No Ceph zones configured\"\n      - \"No K8s topology zones configured\"\n\n  /zones/{zone_name}\n    Retrieve detailed information for a specific zone including:\n      - zone_name: The name of the zone.\n      - no_of_masters: Number of master nodes.\n      - no_of_storage: Number of storage nodes.\n      - no_of_workers: Number of worker nodes.\n      - nodes: Detailed node data, including status and, for storage nodes, associated OSD details.\n\n  /criticalservices\n    Retrieve a list of critical services with basic details:\n      - name: The service name.\n      - namespace: The Kubernetes namespace.\n      - type: The service type (e.g., Deployment, StatefulSet, DaemonSet).\n\n  /criticalservices/{critical_service_name}\n    Retrieve detailed information for a specific critical service including:\n      - name: The name of the critical service.\n      - namespace: The namespace where the service is deployed.\n      - type: The type of the service.\n      - pods: An array of pod objects with name and status.\n      - services: An array of service names associated with the critical service.\n\nWorkflows\n\n  All endpoints in the Rack Resiliency Service API are GET requests, except for the update operation on /criticalservices.\n\n  Zone Information Retrieval\n\n    - GET /zones  \n      Retrieve aggregated zone configuration. The response includes detailed lists of node names for\n      each zone or an informational message if zones are not configured.\n      \n    - GET /zones/{zone_name}  \n      Retrieve detailed information for a specific zone, including node counts and statuses.\n\n  Critical Service Information Retrieval\n\n    - GET /criticalservices  \n      Retrieve a list of critical services with basic details (name, namespace, type).\n\n    - GET /criticalservices/{critical_service_name}  \n      Retrieve detailed information for a specific critical service, including associated pods and service components.\n\n  Critical Service Update\n\n    - PATCH /criticalservices  \n      Update the critical services configuration. The request body should contain a JSON string in the\n      new-services property representing the updated critical services configuration.\n"
     },
     "servers": [
         {
@@ -19,7 +19,10 @@
         "/zones": {
             "get": {
                 "summary": "Get Zones Configuration",
-                "description": "Returns an object where each key is a zone name and the corresponding value contains: - Management Master Nodes: List of master node names. - Management Storage Nodes: List of storage node names. - Management Worker Nodes: List of worker node names.\nAlternatively, if zones are not configured, one of the following informational messages is returned: - \"No Zones configured\" - \"No Ceph zones configured\" - \"No K8s topology zones configured\"\n",
+                "tags": [
+                    "zones"
+                ],
+                "description": "Returns an object where each key is a zone name and the corresponding value contains:\n  - Management Master Nodes: List of master node names.\n  - Management Storage Nodes: List of storage node names.\n  - Management Worker Nodes: List of worker node names.\n\nAlternatively, if zones are not configured, one of the following informational messages is returned:\n  - \"No Zones configured\"\n  - \"No Ceph zones configured\"\n  - \"No K8s topology zones configured\"\n",
                 "operationId": "getZones",
                 "responses": {
                     "200": {
@@ -128,7 +131,10 @@
         "/zones/{zone_name}": {
             "get": {
                 "summary": "Get Detailed Zone Information",
-                "description": "Returns detailed information for a specific zone including: - zone_name: The name of the zone. - no_of_masters: Number of master nodes. - no_of_storage: Number of storage nodes. - no_of_workers: Number of worker nodes. - nodes: An object mapping node roles (\"masters\", \"storage\", \"workers\") to lists of node details.\n",
+                "tags": [
+                    "zones"
+                ],
+                "description": "Returns detailed information for a specific zone including:\n  - zone_name: The name of the zone.\n  - no_of_masters: Number of master nodes.\n  - no_of_storage: Number of storage nodes.\n  - no_of_workers: Number of worker nodes.\n  - nodes: An object mapping node roles (\"masters\", \"storage\", \"workers\") to lists of node details.\n",
                 "operationId": "getZoneDetails",
                 "parameters": [
                     {
@@ -336,6 +342,9 @@
         "/criticalservices": {
             "get": {
                 "summary": "Get Critical Services",
+                "tags": [
+                    "criticalservices"
+                ],
                 "description": "Returns an object containing a list of critical services with details such as name, namespace, and type.\n",
                 "operationId": "getCriticalServices",
                 "responses": {
@@ -383,6 +392,16 @@
                                                     "name": "kube-proxy",
                                                     "namespace": "kube-system",
                                                     "type": "DaemonSet"
+                                                },
+                                                {
+                                                    "name": "coredns",
+                                                    "namespace": "kube-system",
+                                                    "type": "Deployment"
+                                                },
+                                                {
+                                                    "name": "kube-multus-ds",
+                                                    "namespace": "kube-system",
+                                                    "type": "DaemonSet"
                                                 }
                                             ]
                                         }
@@ -395,12 +414,122 @@
                         "description": "Critical services not found."
                     }
                 }
+            },
+            "patch": {
+                "summary": "Update Critical Services ConfigMap",
+                "tags": [
+                    "criticalservices"
+                ],
+                "operationId": "patchCriticalServices",
+                "description": "Updates the critical services configuration. The request body should contain a JSON string in the new-services property representing the updated critical services configuration.\n",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "new-services": {
+                                        "type": "string",
+                                        "description": "A JSON string containing the updated critical services configuration."
+                                    }
+                                },
+                                "required": [
+                                    "new-services"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "ConfigMap updated successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "ConfigMap updated successfully"
+                                        },
+                                        "updated_data": {
+                                            "type": "object",
+                                            "additionalProperties": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "namespace": {
+                                                        "type": "string"
+                                                    },
+                                                    "type": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": [
+                                                    "namespace",
+                                                    "type"
+                                                ]
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Critical services configuration not found.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "description": "Not found.",
+                                    "content": {
+                                        "application/json": {
+                                            "schema": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "error": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "description": "Internal server error.",
+                                    "content": {
+                                        "application/json": {
+                                            "schema": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "error": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         },
         "/criticalservices/{critical_service_name}": {
             "get": {
                 "summary": "Get Critical Service Details",
-                "description": "Returns detailed information for a specific critical service including: - name: The name of the critical service. - namespace: The namespace of the service. - type: The type of the service (e.g., Deployment, StatefulSet, DaemonSet). - pods: A list of pods associated with the service. - services: A list of services associated with the critical service.\n",
+                "tags": [
+                    "criticalservices"
+                ],
+                "description": "Returns detailed information for a specific critical service including:\n  - name: The name of the critical service.\n  - namespace: The namespace of the service.\n  - type: The type of the service (e.g., Deployment, StatefulSet, DaemonSet).\n  - pods: An array of pod objects with name and status.\n  - services: An array of service names associated with the critical service.\n",
                 "operationId": "getCriticalServiceDetails",
                 "parameters": [
                     {
@@ -430,13 +559,18 @@
                                                 "namespace": {
                                                     "type": "string"
                                                 },
-                                                "type": {
-                                                    "type": "string"
-                                                },
                                                 "pods": {
                                                     "type": "array",
                                                     "items": {
-                                                        "type": "string"
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "name": {
+                                                                "type": "string"
+                                                            },
+                                                            "status": {
+                                                                "type": "string"
+                                                            }
+                                                        }
                                                     }
                                                 },
                                                 "services": {
@@ -444,6 +578,9 @@
                                                     "items": {
                                                         "type": "string"
                                                     }
+                                                },
+                                                "type": {
+                                                    "type": "string"
                                                 }
                                             }
                                         }
@@ -453,17 +590,28 @@
                                     "criticalServiceDetail": {
                                         "value": {
                                             "Critical Service": {
-                                                "name": "nexus",
-                                                "namespace": "nexus",
-                                                "type": "Deployment",
+                                                "name": "cray-keycloak",
+                                                "namespace": "services",
                                                 "pods": [
-                                                    "Running pods",
-                                                    ""
+                                                    {
+                                                        "name": "cray-keycloak-0",
+                                                        "status": "Running"
+                                                    },
+                                                    {
+                                                        "name": "cray-keycloak-1",
+                                                        "status": "Running"
+                                                    },
+                                                    {
+                                                        "name": "cray-keycloak-2",
+                                                        "status": "Running"
+                                                    }
                                                 ],
                                                 "services": [
-                                                    "Running services",
-                                                    ""
-                                                ]
+                                                    "cray-keycloak-headless",
+                                                    "cray-keycloak-http",
+                                                    "keycloak"
+                                                ],
+                                                "type": "StatefulSet"
                                             }
                                         }
                                     }
@@ -754,13 +902,18 @@
                             "namespace": {
                                 "type": "string"
                             },
-                            "type": {
-                                "type": "string"
-                            },
                             "pods": {
                                 "type": "array",
                                 "items": {
-                                    "type": "string"
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "type": "string"
+                                        }
+                                    }
                                 }
                             },
                             "services": {
@@ -768,6 +921,9 @@
                                 "items": {
                                     "type": "string"
                                 }
+                            },
+                            "type": {
+                                "type": "string"
                             }
                         }
                     }
@@ -782,19 +938,124 @@
                     "namespace": {
                         "type": "string"
                     },
-                    "type": {
-                        "type": "string"
-                    },
                     "pods": {
                         "type": "array",
                         "items": {
-                            "type": "string"
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "type": "string"
+                                },
+                                "status": {
+                                    "type": "string"
+                                }
+                            }
                         }
                     },
                     "services": {
                         "type": "array",
                         "items": {
                             "type": "string"
+                        }
+                    },
+                    "type": {
+                        "type": "string"
+                    }
+                }
+            },
+            "Pod": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "string"
+                    }
+                }
+            },
+            "CriticalServicesPatch": {
+                "type": "object",
+                "properties": {
+                    "new-services": {
+                        "type": "string",
+                        "description": "A JSON string containing the updated critical services configuration."
+                    }
+                },
+                "required": [
+                    "new-services"
+                ]
+            },
+            "CriticalServiceUpdate": {
+                "type": "object",
+                "properties": {
+                    "namespace": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "namespace",
+                    "type"
+                ]
+            },
+            "CriticalServicesPatchResponse": {
+                "type": "object",
+                "properties": {
+                    "message": {
+                        "type": "string",
+                        "example": "ConfigMap updated successfully"
+                    },
+                    "updated_data": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "object",
+                            "properties": {
+                                "namespace": {
+                                    "type": "string"
+                                },
+                                "type": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "namespace",
+                                "type"
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "responses": {
+            "NotFound": {
+                "description": "Not found.",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "InternalServerError": {
+                "description": "Internal server error.",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
                         }
                     }
                 }
