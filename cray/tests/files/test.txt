@@ -1,0 +1,12 @@
+{
+  "critical-services": {
+     "coredns-x32": {
+       "namespace": "kube-system",
+       "type": "Deployment"
+     },
+     "kube-multus-ds": {
+       "namespace": "kube-system",
+       "type": "DaemonSet"
+     }
+  }
+}

@@ -1,7 +1,7 @@
 #
 #  MIT License
 #
-#  (C) Copyright 2025 Hewlett Packard Enterprise Development LP
+#  (C) Copyright [2025] Hewlett Packard Enterprise Development LP
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a
 #  copy of this software and associated documentation files (the "Software"),
@@ -28,7 +28,6 @@ from cray.generator import generate
 
 cli = generate(__file__)
 
-
 def _file_cb(cb):
 
     def _cb(ctx, param, value):
@@ -38,7 +37,6 @@ def _file_cb(cb):
         return data
 
     return _cb
-
 
 for p in cli.commands['criticalservices'].commands['update'].params:
     if p.payload_name == 'new-services':

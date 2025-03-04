@@ -10,9 +10,9 @@ info:
     information and detailed critical service status. It gathers node details across various zones
     and presents both high-level summaries and in-depth information for zones and critical services.
 
-    Resources
+    ## Resources
 
-      /zones
+      ### /zones
         Retrieve aggregated zone information including:
           - Management Master Nodes: List of master node names.
           - Management Storage Nodes: List of storage node names.
@@ -23,7 +23,7 @@ info:
           - "No Ceph zones configured"
           - "No K8s topology zones configured"
 
-      /zones/{zone_name}
+      ### /zones/{zone_name}
         Retrieve detailed information for a specific zone including:
           - zone_name: The name of the zone.
           - no_of_masters: Number of master nodes.
@@ -31,13 +31,13 @@ info:
           - no_of_workers: Number of worker nodes.
           - nodes: Detailed node data, including status and, for storage nodes, associated OSD details.
 
-      /criticalservices
+      ### /criticalservices
         Retrieve a list of critical services with basic details:
           - name: The service name.
           - namespace: The Kubernetes namespace.
           - type: The service type (e.g., Deployment, StatefulSet, DaemonSet).
 
-      /criticalservices/{critical_service_name}
+      ### /criticalservices/{critical_service_name}
         Retrieve detailed information for a specific critical service including:
           - name: The name of the critical service.
           - namespace: The namespace where the service is deployed.
@@ -45,11 +45,11 @@ info:
           - pods: An array of pod objects with name and status.
           - services: An array of service names associated with the critical service.
 
-    Workflows
+    ## Workflows
 
       All endpoints in the Rack Resiliency Service API are GET requests, except for the update operation on /criticalservices.
 
-      Zone Information Retrieval
+      ### Zone Information Retrieval
 
         - GET /zones  
           Retrieve aggregated zone configuration. The response includes detailed lists of node names for
@@ -58,7 +58,7 @@ info:
         - GET /zones/{zone_name}  
           Retrieve detailed information for a specific zone, including node counts and statuses.
 
-      Critical Service Information Retrieval
+      ### Critical Service Information Retrieval
 
         - GET /criticalservices  
           Retrieve a list of critical services with basic details (name, namespace, type).
@@ -66,11 +66,11 @@ info:
         - GET /criticalservices/{critical_service_name}  
           Retrieve detailed information for a specific critical service, including associated pods and service components.
 
-      Critical Service Update
+      ### Critical Service Update
 
         - PATCH /criticalservices  
           Update the critical services configuration. The request body should contain a JSON string in the
-          new-services property representing the updated critical services configuration.
+          new_services property representing the updated critical services configuration.
 servers:
   - url: 'https://api-gw-service-nmn.local/apis/rrs'
     description: The production RRS API server. Accessed from outside the mesh.
@@ -228,7 +228,7 @@ paths:
       operationId: patchCriticalServices
       description: >
         Updates the critical services configuration. The request body should contain a JSON string in the
-        new-services property representing the updated critical services configuration.
+        new_services property representing the updated critical services configuration.
       requestBody:
         required: true
         content:
@@ -431,11 +431,11 @@ components:
     CriticalServicesPatch:
       type: object
       properties:
-        new-services:
+        new_services:
           type: string
           description: A JSON string containing the updated critical services configuration.
       required:
-        - new-services
+        - new_services
     CriticalServiceUpdate:
       type: object
       properties:
@@ -449,13 +449,19 @@ components:
     CriticalServicesPatchResponse:
       type: object
       properties:
+        added_services:
+          type: array
+          items:
+            type: string
+          example: []
         message:
           type: string
-          example: "ConfigMap updated successfully"
-        updated_data:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/CriticalServiceUpdate'
+          example: "Update successful"
+        skipped_services:
+          type: array
+          items:
+            type: string
+          example: ["coredns-xxx", "kube-multus-ds"]
   responses:
     NotFound:
       description: Not found.
