@@ -29,8 +29,6 @@ and options. """
 import json
 import os
 
-from cray.tests.utils import new_random_string
-
 
 def compare_output(expected, cli_output):
     """
