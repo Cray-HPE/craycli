@@ -35,14 +35,14 @@ def compare_output(expected, cli_output):
     Function helper to test if the expected values can
     be found in the output text.
     """
-    found = False
+    matched = False
     actual = [elem.strip() for elem in cli_output.splitlines()]
     for i, e in reversed(list(enumerate(actual))):
         if ':' in e:
-            found = True
+            matched = True
             del actual[0:i + 1]
             break
-    assert found
+    assert matched
     assert set(expected) == set(actual)
 
 
