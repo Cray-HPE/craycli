@@ -1,3 +1,27 @@
+#
+# MIT License
+#
+# (C) Copyright [2025] Hewlett Packard Enterprise Development LP
+#
+# Permission is hereby granted, free of charge, to any person obtaining a
+# copy of this software and associated documentation files (the "Software"),
+# to deal in the Software without restriction, including without limitation
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,
+# and/or sell copies of the Software, and to permit persons to whom the
+# Software is furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included
+# in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+# THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+# OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+# ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+# OTHER DEALINGS IN THE SOFTWARE.
+#
+# Rack Resiliency Service API Specification
 openapi: 3.0.2
 info:
   title: Rack Resiliency Service
@@ -191,7 +215,7 @@ paths:
       tags:
         - criticalservices
       description: >
-        Returns an object containing a list of critical services with details such as name, namespace, and type.
+        Returns an object containing a list of critical services grouped by namespace.
       operationId: getCriticalServices
       responses:
         '200':
@@ -204,21 +228,26 @@ paths:
                 criticalServices:
                   value:
                     critical-services:
-                      - name: "nexus"
-                        namespace: "nexus"
-                        type: "Deployment"
-                      - name: "cray-keycloak"
-                        namespace: "services"
-                        type: "StatefulSet"
-                      - name: "kube-proxy"
-                        namespace: "kube-system"
-                        type: "DaemonSet"
-                      - name: "coredns"
-                        namespace: "kube-system"
-                        type: "Deployment"
-                      - name: "kube-multus-ds"
-                        namespace: "kube-system"
-                        type: "DaemonSet"
+                      namespaces:
+                        kube-system:
+                          - name: "coredns-x32"
+                            type: "Deployment"
+                          - name: "coredns-x321111"
+                            type: "Deployment"
+                          - name: "coredns-x32kv"
+                            type: "Deployment"
+                          - name: "coredns-xxx"
+                            type: "Deployment"
+                          - name: "kube-multus-ds"
+                            type: "DaemonSet"
+                          - name: "kube-proxy"
+                            type: "DaemonSet"
+                        nexus:
+                          - name: "nexus"
+                            type: "Deployment"
+                        services:
+                          - name: "cray-keycloak"
+                            type: "StatefulSet"
         '404':
           description: Critical services not found.
     patch:
@@ -262,11 +291,14 @@ paths:
         - criticalservices
       description: >
         Returns detailed information for a specific critical service including:
+          - configured_instances: Number of configured instances.
+          - currently_running_instances: Number of currently running instances.
           - name: The name of the critical service.
           - namespace: The namespace of the service.
-          - type: The type of the service (e.g., Deployment, StatefulSet, DaemonSet).
           - pods: An array of pod objects with name and status.
           - services: An array of service names associated with the critical service.
+          - total_pods: Total number of pods.
+          - type: The type of the service (e.g., Deployment, StatefulSet, DaemonSet).
       operationId: getCriticalServiceDetails
       parameters:
         - name: critical_service_name
@@ -286,6 +318,8 @@ paths:
                 criticalServiceDetail:
                   value:
                     Critical Service:
+                      configured_instances: 3
+                      currently_running_instances: 3
                       name: "cray-keycloak"
                       namespace: "services"
                       pods:
@@ -299,6 +333,7 @@ paths:
                         - "cray-keycloak-headless"
                         - "cray-keycloak-http"
                         - "keycloak"
+                      total_pods: 3
                       type: "StatefulSet"
         '404':
           description: Critical service not found.
@@ -387,9 +422,19 @@ components:
       type: object
       properties:
         critical-services:
-          type: array
-          items:
-            $ref: '#/components/schemas/CriticalService'
+          type: object
+          properties:
+            namespaces:
+              type: object
+              additionalProperties:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    type:
+                      type: string
     CriticalService:
       type: object
       properties:
@@ -407,6 +452,12 @@ components:
     CriticalServiceDetail:
       type: object
       properties:
+        configured_instances:
+          type: integer
+          example: 3
+        currently_running_instances:
+          type: integer
+          example: 3
         name:
           type: string
         namespace:
@@ -419,6 +470,9 @@ components:
           type: array
           items:
             type: string
+        total_pods:
+          type: integer
+          example: 3
         type:
           type: string
     Pod:
@@ -436,6 +490,30 @@ components:
           description: A JSON string containing the updated critical services configuration.
       required:
         - new_services
+    CriticalServicesPatchResponse:
+      type: object
+      properties:
+        "Message for wrongly entered services":
+          type: string
+          example: "The services entered does not have any pod attached to it in that namespace, please check the name or namespace or type provided of the service you want to add"
+        "Wrongly Entered Services":
+          type: array
+          items:
+            type: string
+          example: []
+        added_services:
+          type: array
+          items:
+            type: string
+          example: []
+        already_existing_services:
+          type: array
+          items:
+            type: string
+          example: ["coredns-xxx", "kube-multus-ds"]
+        message:
+          type: string
+          example: "Update successful"
     CriticalServiceUpdate:
       type: object
       properties:
@@ -446,22 +524,6 @@ components:
       required:
         - namespace
         - type
-    CriticalServicesPatchResponse:
-      type: object
-      properties:
-        added_services:
-          type: array
-          items:
-            type: string
-          example: []
-        message:
-          type: string
-          example: "Update successful"
-        skipped_services:
-          type: array
-          items:
-            type: string
-          example: ["coredns-xxx", "kube-multus-ds"]
   responses:
     NotFound:
       description: Not found.

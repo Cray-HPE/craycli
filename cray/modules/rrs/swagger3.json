@@ -345,7 +345,7 @@
                 "tags": [
                     "criticalservices"
                 ],
-                "description": "Returns an object containing a list of critical services with details such as name, namespace, and type.\n",
+                "description": "Returns an object containing a list of critical services grouped by namespace.\n",
                 "operationId": "getCriticalServices",
                 "responses": {
                     "200": {
@@ -356,18 +356,23 @@
                                     "type": "object",
                                     "properties": {
                                         "critical-services": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "object",
-                                                "properties": {
-                                                    "name": {
-                                                        "type": "string"
-                                                    },
-                                                    "namespace": {
-                                                        "type": "string"
-                                                    },
-                                                    "type": {
-                                                        "type": "string"
+                                            "type": "object",
+                                            "properties": {
+                                                "namespaces": {
+                                                    "type": "object",
+                                                    "additionalProperties": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "name": {
+                                                                    "type": "string"
+                                                                },
+                                                                "type": {
+                                                                    "type": "string"
+                                                                }
+                                                            }
+                                                        }
                                                     }
                                                 }
                                             }
@@ -377,33 +382,48 @@
                                 "examples": {
                                     "criticalServices": {
                                         "value": {
-                                            "critical-services": [
-                                                {
-                                                    "name": "nexus",
-                                                    "namespace": "nexus",
-                                                    "type": "Deployment"
-                                                },
-                                                {
-                                                    "name": "cray-keycloak",
-                                                    "namespace": "services",
-                                                    "type": "StatefulSet"
-                                                },
-                                                {
-                                                    "name": "kube-proxy",
-                                                    "namespace": "kube-system",
-                                                    "type": "DaemonSet"
-                                                },
-                                                {
-                                                    "name": "coredns",
-                                                    "namespace": "kube-system",
-                                                    "type": "Deployment"
-                                                },
-                                                {
-                                                    "name": "kube-multus-ds",
-                                                    "namespace": "kube-system",
-                                                    "type": "DaemonSet"
+                                            "critical-services": {
+                                                "namespaces": {
+                                                    "kube-system": [
+                                                        {
+                                                            "name": "coredns-x32",
+                                                            "type": "Deployment"
+                                                        },
+                                                        {
+                                                            "name": "coredns-x321111",
+                                                            "type": "Deployment"
+                                                        },
+                                                        {
+                                                            "name": "coredns-x32kv",
+                                                            "type": "Deployment"
+                                                        },
+                                                        {
+                                                            "name": "coredns-xxx",
+                                                            "type": "Deployment"
+                                                        },
+                                                        {
+                                                            "name": "kube-multus-ds",
+                                                            "type": "DaemonSet"
+                                                        },
+                                                        {
+                                                            "name": "kube-proxy",
+                                                            "type": "DaemonSet"
+                                                        }
+                                                    ],
+                                                    "nexus": [
+                                                        {
+                                                            "name": "nexus",
+                                                            "type": "Deployment"
+                                                        }
+                                                    ],
+                                                    "services": [
+                                                        {
+                                                            "name": "cray-keycloak",
+                                                            "type": "StatefulSet"
+                                                        }
+                                                    ]
                                                 }
-                                            ]
+                                            }
                                         }
                                     }
                                 }
@@ -449,6 +469,17 @@
                                 "schema": {
                                     "type": "object",
                                     "properties": {
+                                        "Message for wrongly entered services": {
+                                            "type": "string",
+                                            "example": "The services entered does not have any pod attached to it in that namespace, please check the name or namespace or type provided of the service you want to add"
+                                        },
+                                        "Wrongly Entered Services": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            },
+                                            "example": []
+                                        },
                                         "added_services": {
                                             "type": "array",
                                             "items": {
@@ -456,11 +487,7 @@
                                             },
                                             "example": []
                                         },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Update successful"
-                                        },
-                                        "skipped_services": {
+                                        "already_existing_services": {
                                             "type": "array",
                                             "items": {
                                                 "type": "string"
@@ -469,6 +496,10 @@
                                                 "coredns-xxx",
                                                 "kube-multus-ds"
                                             ]
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Update successful"
                                         }
                                     }
                                 }
@@ -528,7 +559,7 @@
                 "tags": [
                     "criticalservices"
                 ],
-                "description": "Returns detailed information for a specific critical service including:\n  - name: The name of the critical service.\n  - namespace: The namespace of the service.\n  - type: The type of the service (e.g., Deployment, StatefulSet, DaemonSet).\n  - pods: An array of pod objects with name and status.\n  - services: An array of service names associated with the critical service.\n",
+                "description": "Returns detailed information for a specific critical service including:\n  - configured_instances: Number of configured instances.\n  - currently_running_instances: Number of currently running instances.\n  - name: The name of the critical service.\n  - namespace: The namespace of the service.\n  - pods: An array of pod objects with name and status.\n  - services: An array of service names associated with the critical service.\n  - total_pods: Total number of pods.\n  - type: The type of the service (e.g., Deployment, StatefulSet, DaemonSet).\n",
                 "operationId": "getCriticalServiceDetails",
                 "parameters": [
                     {
@@ -552,6 +583,14 @@
                                         "Critical Service": {
                                             "type": "object",
                                             "properties": {
+                                                "configured_instances": {
+                                                    "type": "integer",
+                                                    "example": 3
+                                                },
+                                                "currently_running_instances": {
+                                                    "type": "integer",
+                                                    "example": 3
+                                                },
                                                 "name": {
                                                     "type": "string"
                                                 },
@@ -578,6 +617,10 @@
                                                         "type": "string"
                                                     }
                                                 },
+                                                "total_pods": {
+                                                    "type": "integer",
+                                                    "example": 3
+                                                },
                                                 "type": {
                                                     "type": "string"
                                                 }
@@ -589,6 +632,8 @@
                                     "criticalServiceDetail": {
                                         "value": {
                                             "Critical Service": {
+                                                "configured_instances": 3,
+                                                "currently_running_instances": 3,
                                                 "name": "cray-keycloak",
                                                 "namespace": "services",
                                                 "pods": [
@@ -610,6 +655,7 @@
                                                     "cray-keycloak-http",
                                                     "keycloak"
                                                 ],
+                                                "total_pods": 3,
                                                 "type": "StatefulSet"
                                             }
                                         }
@@ -857,18 +903,23 @@
                 "type": "object",
                 "properties": {
                     "critical-services": {
-                        "type": "array",
-                        "items": {
-                            "type": "object",
-                            "properties": {
-                                "name": {
-                                    "type": "string"
-                                },
-                                "namespace": {
-                                    "type": "string"
-                                },
-                                "type": {
-                                    "type": "string"
+                        "type": "object",
+                        "properties": {
+                            "namespaces": {
+                                "type": "object",
+                                "additionalProperties": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "name": {
+                                                "type": "string"
+                                            },
+                                            "type": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -895,6 +946,14 @@
                     "Critical Service": {
                         "type": "object",
                         "properties": {
+                            "configured_instances": {
+                                "type": "integer",
+                                "example": 3
+                            },
+                            "currently_running_instances": {
+                                "type": "integer",
+                                "example": 3
+                            },
                             "name": {
                                 "type": "string"
                             },
@@ -921,6 +980,10 @@
                                     "type": "string"
                                 }
                             },
+                            "total_pods": {
+                                "type": "integer",
+                                "example": 3
+                            },
                             "type": {
                                 "type": "string"
                             }
@@ -931,6 +994,14 @@
             "CriticalServiceDetail": {
                 "type": "object",
                 "properties": {
+                    "configured_instances": {
+                        "type": "integer",
+                        "example": 3
+                    },
+                    "currently_running_instances": {
+                        "type": "integer",
+                        "example": 3
+                    },
                     "name": {
                         "type": "string"
                     },
@@ -956,6 +1027,10 @@
                         "items": {
                             "type": "string"
                         }
+                    },
+                    "total_pods": {
+                        "type": "integer",
+                        "example": 3
                     },
                     "type": {
                         "type": "string"
@@ -985,6 +1060,43 @@
                     "new_services"
                 ]
             },
+            "CriticalServicesPatchResponse": {
+                "type": "object",
+                "properties": {
+                    "Message for wrongly entered services": {
+                        "type": "string",
+                        "example": "The services entered does not have any pod attached to it in that namespace, please check the name or namespace or type provided of the service you want to add"
+                    },
+                    "Wrongly Entered Services": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "example": []
+                    },
+                    "added_services": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "example": []
+                    },
+                    "already_existing_services": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "example": [
+                            "coredns-xxx",
+                            "kube-multus-ds"
+                        ]
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "Update successful"
+                    }
+                }
+            },
             "CriticalServiceUpdate": {
                 "type": "object",
                 "properties": {
@@ -999,32 +1111,6 @@
                     "namespace",
                     "type"
                 ]
-            },
-            "CriticalServicesPatchResponse": {
-                "type": "object",
-                "properties": {
-                    "added_services": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        },
-                        "example": []
-                    },
-                    "message": {
-                        "type": "string",
-                        "example": "Update successful"
-                    },
-                    "skipped_services": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        },
-                        "example": [
-                            "coredns-xxx",
-                            "kube-multus-ds"
-                        ]
-                    }
-                }
             }
         },
         "responses": {
