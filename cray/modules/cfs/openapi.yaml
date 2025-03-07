@@ -1,7 +1,7 @@
 #
 # MIT License
 #
-# (C) Copyright 2020-2024 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2020-2025 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -164,14 +164,18 @@ components:
       content:
         application/json:
           schema:
-            type: object
+            oneOf:
+              - $ref: '#/components/schemas/V2ComponentsUpdate'
+              - $ref: '#/components/schemas/V2ComponentStateArray'
     V3ComponentsUpdateRequest:
       description: The configuration/state for an array of components
       required: true
       content:
         application/json:
           schema:
-            type: object
+            oneOf:
+              - $ref: '#/components/schemas/V3ComponentsUpdate'
+              - $ref: '#/components/schemas/V3ComponentDataArray'
     V2ComponentUpdateRequest:
       description: The configuration/state for a single component
       required: true
@@ -1212,6 +1216,10 @@ components:
         description:
           type: string
           description: A user-defined description. This field is not used by CFS.
+        tenant_name:
+          type: string
+          description: The name of a tenant that owns this set of configuration.
+          example: blue-tenant
         last_updated:
           type: string
           description: The date/time when the state was last updated in RFC 3339 format.
@@ -2138,6 +2146,7 @@ paths:
       tags:
         - components
         - v2
+        - cli_ignore
       x-openapi-router-controller: cray.cfs.api.controllers.components
       description: Update the state for a collection of components in the cfs database
       operationId: patch_components_v2
@@ -2691,6 +2700,7 @@ paths:
       tags:
         - components
         - v3
+        - cli_ignore
       x-openapi-router-controller: cray.cfs.api.controllers.components
       description: Update the state for a collection of components in the cfs database
       operationId: patch_components_v3

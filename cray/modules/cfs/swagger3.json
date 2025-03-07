@@ -873,7 +873,344 @@
                 "content": {
                     "application/json": {
                         "schema": {
-                            "type": "object"
+                            "oneOf": [
+                                {
+                                    "description": "Information for patching multiple components.",
+                                    "type": "object",
+                                    "properties": {
+                                        "patch": {
+                                            "description": "The configuration state and desired state for a component.\n",
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string",
+                                                    "description": "The component's id. e.g. xname for hardware components",
+                                                    "minLength": 1
+                                                },
+                                                "state": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "description": "The current configuration state for a component.\n",
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "cloneUrl": {
+                                                                "type": "string",
+                                                                "description": "The clone URL of the configuration content repository.",
+                                                                "example": "https://api-gw-service-nmn.local/vcs/cray/config-management.git"
+                                                            },
+                                                            "playbook": {
+                                                                "type": "string",
+                                                                "description": "The Ansible playbook to run.",
+                                                                "example": "site.yml"
+                                                            },
+                                                            "commit": {
+                                                                "type": "string",
+                                                                "description": "The commit hash of the configuration repository when the state is set."
+                                                            },
+                                                            "lastUpdated": {
+                                                                "type": "string",
+                                                                "description": "The date/time when the state was last updated in RFC 3339 format.",
+                                                                "example": "2019-07-28T03:26:00Z",
+                                                                "format": "date-time",
+                                                                "readOnly": true
+                                                            },
+                                                            "sessionName": {
+                                                                "type": "string",
+                                                                "description": "The name of the CFS session that last configured the component."
+                                                            }
+                                                        },
+                                                        "additionalProperties": false
+                                                    },
+                                                    "description": "Information about the desired config and status of the layers"
+                                                },
+                                                "stateAppend": {
+                                                    "type": "object",
+                                                    "description": "A single state that will be appended to the list of current states.",
+                                                    "properties": {
+                                                        "cloneUrl": {
+                                                            "type": "string",
+                                                            "description": "The clone URL of the configuration content repository.",
+                                                            "example": "https://api-gw-service-nmn.local/vcs/cray/config-management.git"
+                                                        },
+                                                        "playbook": {
+                                                            "type": "string",
+                                                            "description": "The Ansible playbook to run.",
+                                                            "example": "site.yml"
+                                                        },
+                                                        "commit": {
+                                                            "type": "string",
+                                                            "description": "The commit hash of the configuration repository when the state is set."
+                                                        },
+                                                        "sessionName": {
+                                                            "type": "string",
+                                                            "description": "The name of the CFS session that last configured the component."
+                                                        }
+                                                    },
+                                                    "additionalProperties": false,
+                                                    "writeOnly": true
+                                                },
+                                                "desiredConfig": {
+                                                    "type": "string",
+                                                    "description": "A reference to a configuration"
+                                                },
+                                                "desiredState": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "description": "The current configuration state for a component.\n",
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "cloneUrl": {
+                                                                "type": "string",
+                                                                "description": "The clone URL of the configuration content repository.",
+                                                                "example": "https://api-gw-service-nmn.local/vcs/cray/config-management.git"
+                                                            },
+                                                            "playbook": {
+                                                                "type": "string",
+                                                                "description": "The Ansible playbook to run.",
+                                                                "example": "site.yml"
+                                                            },
+                                                            "commit": {
+                                                                "type": "string",
+                                                                "description": "The commit hash of the configuration repository when the state is set."
+                                                            },
+                                                            "lastUpdated": {
+                                                                "type": "string",
+                                                                "description": "The date/time when the state was last updated in RFC 3339 format.",
+                                                                "example": "2019-07-28T03:26:00Z",
+                                                                "format": "date-time",
+                                                                "readOnly": true
+                                                            },
+                                                            "sessionName": {
+                                                                "type": "string",
+                                                                "description": "The name of the CFS session that last configured the component."
+                                                            }
+                                                        },
+                                                        "additionalProperties": false
+                                                    },
+                                                    "description": "Information about the desired config and status of the layers",
+                                                    "readOnly": true
+                                                },
+                                                "errorCount": {
+                                                    "type": "integer",
+                                                    "description": "The count of failed configuration attempts."
+                                                },
+                                                "retryPolicy": {
+                                                    "type": "integer",
+                                                    "description": "The maximum number retries per component when configuration fails."
+                                                },
+                                                "enabled": {
+                                                    "type": "boolean",
+                                                    "description": "A flag indicating if the component should be scheduled for configuration."
+                                                },
+                                                "configurationStatus": {
+                                                    "type": "string",
+                                                    "description": "A summary of the component's configuration state.",
+                                                    "enum": [
+                                                        "unconfigured",
+                                                        "pending",
+                                                        "failed",
+                                                        "configured"
+                                                    ],
+                                                    "readOnly": true
+                                                },
+                                                "tags": {
+                                                    "type": "object",
+                                                    "description": "A collection of key-value pairs containing descriptive information for the component, such as information about the component owner.",
+                                                    "additionalProperties": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "filters": {
+                                            "description": "Information for patching multiple components.",
+                                            "type": "object",
+                                            "properties": {
+                                                "ids": {
+                                                    "type": "string",
+                                                    "description": "A comma-separated list of component IDs"
+                                                },
+                                                "status": {
+                                                    "type": "string",
+                                                    "description": "All components with this status will be patched.",
+                                                    "enum": [
+                                                        "unconfigured",
+                                                        "pending",
+                                                        "failed",
+                                                        "configured"
+                                                    ]
+                                                },
+                                                "enabled": {
+                                                    "type": "boolean",
+                                                    "description": "Patches all components with the given \"enabled\" state."
+                                                },
+                                                "configName": {
+                                                    "type": "string",
+                                                    "description": "A configuration name.  All components with this configuration set will be patched."
+                                                },
+                                                "tags": {
+                                                    "type": "string",
+                                                    "description": "Patches all components with the given tags.  Key-value pairs should be separated using =, and tags can be a comma-separated list.  Only components that match all tags will be patched."
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "patch",
+                                        "filters"
+                                    ]
+                                },
+                                {
+                                    "description": "An array of component configurations.",
+                                    "type": "array",
+                                    "items": {
+                                        "description": "The configuration state and desired state for a component.\n",
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "string",
+                                                "description": "The component's id. e.g. xname for hardware components",
+                                                "minLength": 1
+                                            },
+                                            "state": {
+                                                "type": "array",
+                                                "items": {
+                                                    "description": "The current configuration state for a component.\n",
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "cloneUrl": {
+                                                            "type": "string",
+                                                            "description": "The clone URL of the configuration content repository.",
+                                                            "example": "https://api-gw-service-nmn.local/vcs/cray/config-management.git"
+                                                        },
+                                                        "playbook": {
+                                                            "type": "string",
+                                                            "description": "The Ansible playbook to run.",
+                                                            "example": "site.yml"
+                                                        },
+                                                        "commit": {
+                                                            "type": "string",
+                                                            "description": "The commit hash of the configuration repository when the state is set."
+                                                        },
+                                                        "lastUpdated": {
+                                                            "type": "string",
+                                                            "description": "The date/time when the state was last updated in RFC 3339 format.",
+                                                            "example": "2019-07-28T03:26:00Z",
+                                                            "format": "date-time",
+                                                            "readOnly": true
+                                                        },
+                                                        "sessionName": {
+                                                            "type": "string",
+                                                            "description": "The name of the CFS session that last configured the component."
+                                                        }
+                                                    },
+                                                    "additionalProperties": false
+                                                },
+                                                "description": "Information about the desired config and status of the layers"
+                                            },
+                                            "stateAppend": {
+                                                "type": "object",
+                                                "description": "A single state that will be appended to the list of current states.",
+                                                "properties": {
+                                                    "cloneUrl": {
+                                                        "type": "string",
+                                                        "description": "The clone URL of the configuration content repository.",
+                                                        "example": "https://api-gw-service-nmn.local/vcs/cray/config-management.git"
+                                                    },
+                                                    "playbook": {
+                                                        "type": "string",
+                                                        "description": "The Ansible playbook to run.",
+                                                        "example": "site.yml"
+                                                    },
+                                                    "commit": {
+                                                        "type": "string",
+                                                        "description": "The commit hash of the configuration repository when the state is set."
+                                                    },
+                                                    "sessionName": {
+                                                        "type": "string",
+                                                        "description": "The name of the CFS session that last configured the component."
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "writeOnly": true
+                                            },
+                                            "desiredConfig": {
+                                                "type": "string",
+                                                "description": "A reference to a configuration"
+                                            },
+                                            "desiredState": {
+                                                "type": "array",
+                                                "items": {
+                                                    "description": "The current configuration state for a component.\n",
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "cloneUrl": {
+                                                            "type": "string",
+                                                            "description": "The clone URL of the configuration content repository.",
+                                                            "example": "https://api-gw-service-nmn.local/vcs/cray/config-management.git"
+                                                        },
+                                                        "playbook": {
+                                                            "type": "string",
+                                                            "description": "The Ansible playbook to run.",
+                                                            "example": "site.yml"
+                                                        },
+                                                        "commit": {
+                                                            "type": "string",
+                                                            "description": "The commit hash of the configuration repository when the state is set."
+                                                        },
+                                                        "lastUpdated": {
+                                                            "type": "string",
+                                                            "description": "The date/time when the state was last updated in RFC 3339 format.",
+                                                            "example": "2019-07-28T03:26:00Z",
+                                                            "format": "date-time",
+                                                            "readOnly": true
+                                                        },
+                                                        "sessionName": {
+                                                            "type": "string",
+                                                            "description": "The name of the CFS session that last configured the component."
+                                                        }
+                                                    },
+                                                    "additionalProperties": false
+                                                },
+                                                "description": "Information about the desired config and status of the layers",
+                                                "readOnly": true
+                                            },
+                                            "errorCount": {
+                                                "type": "integer",
+                                                "description": "The count of failed configuration attempts."
+                                            },
+                                            "retryPolicy": {
+                                                "type": "integer",
+                                                "description": "The maximum number retries per component when configuration fails."
+                                            },
+                                            "enabled": {
+                                                "type": "boolean",
+                                                "description": "A flag indicating if the component should be scheduled for configuration."
+                                            },
+                                            "configurationStatus": {
+                                                "type": "string",
+                                                "description": "A summary of the component's configuration state.",
+                                                "enum": [
+                                                    "unconfigured",
+                                                    "pending",
+                                                    "failed",
+                                                    "configured"
+                                                ],
+                                                "readOnly": true
+                                            },
+                                            "tags": {
+                                                "type": "object",
+                                                "description": "A collection of key-value pairs containing descriptive information for the component, such as information about the component owner.",
+                                                "additionalProperties": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -884,7 +1221,413 @@
                 "content": {
                     "application/json": {
                         "schema": {
-                            "type": "object"
+                            "oneOf": [
+                                {
+                                    "description": "Information for patching multiple components.",
+                                    "type": "object",
+                                    "properties": {
+                                        "patch": {
+                                            "description": "The configuration state and desired state for a component.\n",
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string",
+                                                    "description": "The component's id. e.g. xname for hardware components",
+                                                    "minLength": 1
+                                                },
+                                                "state": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "description": "The current configuration state for a component.\n",
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "clone_url": {
+                                                                "type": "string",
+                                                                "description": "The clone URL of the configuration content repository.",
+                                                                "example": "https://api-gw-service-nmn.local/vcs/cray/config-management.git"
+                                                            },
+                                                            "playbook": {
+                                                                "type": "string",
+                                                                "description": "The Ansible playbook to run.",
+                                                                "example": "site.yml"
+                                                            },
+                                                            "commit": {
+                                                                "type": "string",
+                                                                "description": "The commit hash of the configuration repository when the state is set."
+                                                            },
+                                                            "status": {
+                                                                "type": "string",
+                                                                "description": "The status of the configuration layer.",
+                                                                "enum": [
+                                                                    "applied",
+                                                                    "failed",
+                                                                    "skipped"
+                                                                ]
+                                                            },
+                                                            "last_updated": {
+                                                                "type": "string",
+                                                                "description": "The date/time when the state was last updated in RFC 3339 format.",
+                                                                "example": "2019-07-28T03:26:00Z",
+                                                                "format": "date-time",
+                                                                "readOnly": true
+                                                            },
+                                                            "session_name": {
+                                                                "type": "string",
+                                                                "description": "The name of the CFS session that last configured the component."
+                                                            }
+                                                        },
+                                                        "additionalProperties": false
+                                                    },
+                                                    "description": "Information about the desired config and status of the layers"
+                                                },
+                                                "state_append": {
+                                                    "type": "object",
+                                                    "description": "A single state that will be appended to the list of current states.",
+                                                    "properties": {
+                                                        "clone_url": {
+                                                            "type": "string",
+                                                            "description": "The clone URL of the configuration content repository.",
+                                                            "example": "https://api-gw-service-nmn.local/vcs/cray/config-management.git"
+                                                        },
+                                                        "playbook": {
+                                                            "type": "string",
+                                                            "description": "The Ansible playbook to run.",
+                                                            "example": "site.yml"
+                                                        },
+                                                        "commit": {
+                                                            "type": "string",
+                                                            "description": "The commit hash of the configuration repository when the state is set."
+                                                        },
+                                                        "status": {
+                                                            "type": "string",
+                                                            "description": "The status of the configuration layer.",
+                                                            "enum": [
+                                                                "applied",
+                                                                "failed",
+                                                                "skipped"
+                                                            ]
+                                                        },
+                                                        "session_name": {
+                                                            "type": "string",
+                                                            "description": "The name of the CFS session that last configured the component."
+                                                        }
+                                                    },
+                                                    "additionalProperties": false,
+                                                    "writeOnly": true
+                                                },
+                                                "desired_state": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "description": "The current configuration state for a component.\n",
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "clone_url": {
+                                                                "type": "string",
+                                                                "description": "The clone URL of the configuration content repository.",
+                                                                "example": "https://api-gw-service-nmn.local/vcs/cray/config-management.git"
+                                                            },
+                                                            "playbook": {
+                                                                "type": "string",
+                                                                "description": "The Ansible playbook to run.",
+                                                                "example": "site.yml"
+                                                            },
+                                                            "commit": {
+                                                                "type": "string",
+                                                                "description": "The commit hash of the configuration repository when the state is set."
+                                                            },
+                                                            "status": {
+                                                                "type": "string",
+                                                                "description": "The status of the configuration layer.",
+                                                                "enum": [
+                                                                    "applied",
+                                                                    "failed",
+                                                                    "skipped"
+                                                                ]
+                                                            },
+                                                            "last_updated": {
+                                                                "type": "string",
+                                                                "description": "The date/time when the state was last updated in RFC 3339 format.",
+                                                                "example": "2019-07-28T03:26:00Z",
+                                                                "format": "date-time",
+                                                                "readOnly": true
+                                                            },
+                                                            "session_name": {
+                                                                "type": "string",
+                                                                "description": "The name of the CFS session that last configured the component."
+                                                            }
+                                                        },
+                                                        "additionalProperties": false
+                                                    },
+                                                    "description": "Information about the desired config and status of the layers",
+                                                    "readOnly": true
+                                                },
+                                                "desired_config": {
+                                                    "type": "string",
+                                                    "description": "A reference to a configuration",
+                                                    "minLength": 0,
+                                                    "maxLength": 60
+                                                },
+                                                "error_count": {
+                                                    "type": "integer",
+                                                    "description": "The count of failed configuration attempts."
+                                                },
+                                                "retry_policy": {
+                                                    "type": "integer",
+                                                    "description": "The maximum number retries per component when configuration fails."
+                                                },
+                                                "enabled": {
+                                                    "type": "boolean",
+                                                    "description": "A flag indicating if the component should be scheduled for configuration."
+                                                },
+                                                "configuration_status": {
+                                                    "type": "string",
+                                                    "description": "A summary of the component's configuration state.",
+                                                    "enum": [
+                                                        "unconfigured",
+                                                        "pending",
+                                                        "failed",
+                                                        "configured"
+                                                    ],
+                                                    "readOnly": true
+                                                },
+                                                "tags": {
+                                                    "type": "object",
+                                                    "description": "A collection of key-value pairs containing descriptive information for the component, such as information about the component owner.",
+                                                    "additionalProperties": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "logs": {
+                                                    "type": "string",
+                                                    "description": "The link to the ARA UI with logs for this component",
+                                                    "readOnly": true
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "filters": {
+                                            "description": "Information for patching multiple components.",
+                                            "type": "object",
+                                            "properties": {
+                                                "ids": {
+                                                    "type": "string",
+                                                    "description": "A comma-separated list of component IDs"
+                                                },
+                                                "status": {
+                                                    "type": "string",
+                                                    "description": "All components with this status will be patched.",
+                                                    "enum": [
+                                                        "unconfigured",
+                                                        "pending",
+                                                        "failed",
+                                                        "configured",
+                                                        ""
+                                                    ]
+                                                },
+                                                "enabled": {
+                                                    "type": "boolean",
+                                                    "description": "Patches all components with the given \"enabled\" state."
+                                                },
+                                                "config_name": {
+                                                    "type": "string",
+                                                    "description": "A configuration name.  All components with this configuration set will be patched."
+                                                },
+                                                "tags": {
+                                                    "type": "string",
+                                                    "description": "Patches all components with the given tags.  Key-value pairs should be separated using =, and tags can be a comma-separated list.  Only components that match all tags will be patched."
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "patch",
+                                        "filters"
+                                    ]
+                                },
+                                {
+                                    "description": "An array of component configurations.",
+                                    "type": "array",
+                                    "items": {
+                                        "description": "The configuration state and desired state for a component.\n",
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "string",
+                                                "description": "The component's id. e.g. xname for hardware components",
+                                                "minLength": 1
+                                            },
+                                            "state": {
+                                                "type": "array",
+                                                "items": {
+                                                    "description": "The current configuration state for a component.\n",
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "clone_url": {
+                                                            "type": "string",
+                                                            "description": "The clone URL of the configuration content repository.",
+                                                            "example": "https://api-gw-service-nmn.local/vcs/cray/config-management.git"
+                                                        },
+                                                        "playbook": {
+                                                            "type": "string",
+                                                            "description": "The Ansible playbook to run.",
+                                                            "example": "site.yml"
+                                                        },
+                                                        "commit": {
+                                                            "type": "string",
+                                                            "description": "The commit hash of the configuration repository when the state is set."
+                                                        },
+                                                        "status": {
+                                                            "type": "string",
+                                                            "description": "The status of the configuration layer.",
+                                                            "enum": [
+                                                                "applied",
+                                                                "failed",
+                                                                "skipped"
+                                                            ]
+                                                        },
+                                                        "last_updated": {
+                                                            "type": "string",
+                                                            "description": "The date/time when the state was last updated in RFC 3339 format.",
+                                                            "example": "2019-07-28T03:26:00Z",
+                                                            "format": "date-time",
+                                                            "readOnly": true
+                                                        },
+                                                        "session_name": {
+                                                            "type": "string",
+                                                            "description": "The name of the CFS session that last configured the component."
+                                                        }
+                                                    },
+                                                    "additionalProperties": false
+                                                },
+                                                "description": "Information about the desired config and status of the layers"
+                                            },
+                                            "state_append": {
+                                                "type": "object",
+                                                "description": "A single state that will be appended to the list of current states.",
+                                                "properties": {
+                                                    "clone_url": {
+                                                        "type": "string",
+                                                        "description": "The clone URL of the configuration content repository.",
+                                                        "example": "https://api-gw-service-nmn.local/vcs/cray/config-management.git"
+                                                    },
+                                                    "playbook": {
+                                                        "type": "string",
+                                                        "description": "The Ansible playbook to run.",
+                                                        "example": "site.yml"
+                                                    },
+                                                    "commit": {
+                                                        "type": "string",
+                                                        "description": "The commit hash of the configuration repository when the state is set."
+                                                    },
+                                                    "status": {
+                                                        "type": "string",
+                                                        "description": "The status of the configuration layer.",
+                                                        "enum": [
+                                                            "applied",
+                                                            "failed",
+                                                            "skipped"
+                                                        ]
+                                                    },
+                                                    "session_name": {
+                                                        "type": "string",
+                                                        "description": "The name of the CFS session that last configured the component."
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "writeOnly": true
+                                            },
+                                            "desired_state": {
+                                                "type": "array",
+                                                "items": {
+                                                    "description": "The current configuration state for a component.\n",
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "clone_url": {
+                                                            "type": "string",
+                                                            "description": "The clone URL of the configuration content repository.",
+                                                            "example": "https://api-gw-service-nmn.local/vcs/cray/config-management.git"
+                                                        },
+                                                        "playbook": {
+                                                            "type": "string",
+                                                            "description": "The Ansible playbook to run.",
+                                                            "example": "site.yml"
+                                                        },
+                                                        "commit": {
+                                                            "type": "string",
+                                                            "description": "The commit hash of the configuration repository when the state is set."
+                                                        },
+                                                        "status": {
+                                                            "type": "string",
+                                                            "description": "The status of the configuration layer.",
+                                                            "enum": [
+                                                                "applied",
+                                                                "failed",
+                                                                "skipped"
+                                                            ]
+                                                        },
+                                                        "last_updated": {
+                                                            "type": "string",
+                                                            "description": "The date/time when the state was last updated in RFC 3339 format.",
+                                                            "example": "2019-07-28T03:26:00Z",
+                                                            "format": "date-time",
+                                                            "readOnly": true
+                                                        },
+                                                        "session_name": {
+                                                            "type": "string",
+                                                            "description": "The name of the CFS session that last configured the component."
+                                                        }
+                                                    },
+                                                    "additionalProperties": false
+                                                },
+                                                "description": "Information about the desired config and status of the layers",
+                                                "readOnly": true
+                                            },
+                                            "desired_config": {
+                                                "type": "string",
+                                                "description": "A reference to a configuration",
+                                                "minLength": 0,
+                                                "maxLength": 60
+                                            },
+                                            "error_count": {
+                                                "type": "integer",
+                                                "description": "The count of failed configuration attempts."
+                                            },
+                                            "retry_policy": {
+                                                "type": "integer",
+                                                "description": "The maximum number retries per component when configuration fails."
+                                            },
+                                            "enabled": {
+                                                "type": "boolean",
+                                                "description": "A flag indicating if the component should be scheduled for configuration."
+                                            },
+                                            "configuration_status": {
+                                                "type": "string",
+                                                "description": "A summary of the component's configuration state.",
+                                                "enum": [
+                                                    "unconfigured",
+                                                    "pending",
+                                                    "failed",
+                                                    "configured"
+                                                ],
+                                                "readOnly": true
+                                            },
+                                            "tags": {
+                                                "type": "object",
+                                                "description": "A collection of key-value pairs containing descriptive information for the component, such as information about the component owner.",
+                                                "additionalProperties": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "logs": {
+                                                "type": "string",
+                                                "description": "The link to the ARA UI with logs for this component",
+                                                "readOnly": true
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -1362,6 +2105,11 @@
                                 "description": {
                                     "type": "string",
                                     "description": "A user-defined description. This field is not used by CFS."
+                                },
+                                "tenant_name": {
+                                    "type": "string",
+                                    "description": "The name of a tenant that owns this set of configuration.",
+                                    "example": "blue-tenant"
                                 },
                                 "last_updated": {
                                     "type": "string",
@@ -3807,6 +4555,11 @@
                                     "type": "string",
                                     "description": "A user-defined description. This field is not used by CFS."
                                 },
+                                "tenant_name": {
+                                    "type": "string",
+                                    "description": "The name of a tenant that owns this set of configuration.",
+                                    "example": "blue-tenant"
+                                },
                                 "last_updated": {
                                     "type": "string",
                                     "description": "The date/time when the state was last updated in RFC 3339 format.",
@@ -4053,6 +4806,11 @@
                                             "description": {
                                                 "type": "string",
                                                 "description": "A user-defined description. This field is not used by CFS."
+                                            },
+                                            "tenant_name": {
+                                                "type": "string",
+                                                "description": "The name of a tenant that owns this set of configuration.",
+                                                "example": "blue-tenant"
                                             },
                                             "last_updated": {
                                                 "type": "string",
@@ -6689,6 +7447,11 @@
                         "type": "string",
                         "description": "A user-defined description. This field is not used by CFS."
                     },
+                    "tenant_name": {
+                        "type": "string",
+                        "description": "The name of a tenant that owns this set of configuration.",
+                        "example": "blue-tenant"
+                    },
                     "last_updated": {
                         "type": "string",
                         "description": "The date/time when the state was last updated in RFC 3339 format.",
@@ -6921,6 +7684,11 @@
                                 "description": {
                                     "type": "string",
                                     "description": "A user-defined description. This field is not used by CFS."
+                                },
+                                "tenant_name": {
+                                    "type": "string",
+                                    "description": "The name of a tenant that owns this set of configuration.",
+                                    "example": "blue-tenant"
                                 },
                                 "last_updated": {
                                     "type": "string",
@@ -11753,7 +12521,8 @@
                 "summary": "Update a collection of components",
                 "tags": [
                     "components",
-                    "v2"
+                    "v2",
+                    "cli_ignore"
                 ],
                 "x-openapi-router-controller": "cray.cfs.api.controllers.components",
                 "description": "Update the state for a collection of components in the cfs database",
@@ -11764,7 +12533,344 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "type": "object"
+                                "oneOf": [
+                                    {
+                                        "description": "Information for patching multiple components.",
+                                        "type": "object",
+                                        "properties": {
+                                            "patch": {
+                                                "description": "The configuration state and desired state for a component.\n",
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string",
+                                                        "description": "The component's id. e.g. xname for hardware components",
+                                                        "minLength": 1
+                                                    },
+                                                    "state": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "description": "The current configuration state for a component.\n",
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "cloneUrl": {
+                                                                    "type": "string",
+                                                                    "description": "The clone URL of the configuration content repository.",
+                                                                    "example": "https://api-gw-service-nmn.local/vcs/cray/config-management.git"
+                                                                },
+                                                                "playbook": {
+                                                                    "type": "string",
+                                                                    "description": "The Ansible playbook to run.",
+                                                                    "example": "site.yml"
+                                                                },
+                                                                "commit": {
+                                                                    "type": "string",
+                                                                    "description": "The commit hash of the configuration repository when the state is set."
+                                                                },
+                                                                "lastUpdated": {
+                                                                    "type": "string",
+                                                                    "description": "The date/time when the state was last updated in RFC 3339 format.",
+                                                                    "example": "2019-07-28T03:26:00Z",
+                                                                    "format": "date-time",
+                                                                    "readOnly": true
+                                                                },
+                                                                "sessionName": {
+                                                                    "type": "string",
+                                                                    "description": "The name of the CFS session that last configured the component."
+                                                                }
+                                                            },
+                                                            "additionalProperties": false
+                                                        },
+                                                        "description": "Information about the desired config and status of the layers"
+                                                    },
+                                                    "stateAppend": {
+                                                        "type": "object",
+                                                        "description": "A single state that will be appended to the list of current states.",
+                                                        "properties": {
+                                                            "cloneUrl": {
+                                                                "type": "string",
+                                                                "description": "The clone URL of the configuration content repository.",
+                                                                "example": "https://api-gw-service-nmn.local/vcs/cray/config-management.git"
+                                                            },
+                                                            "playbook": {
+                                                                "type": "string",
+                                                                "description": "The Ansible playbook to run.",
+                                                                "example": "site.yml"
+                                                            },
+                                                            "commit": {
+                                                                "type": "string",
+                                                                "description": "The commit hash of the configuration repository when the state is set."
+                                                            },
+                                                            "sessionName": {
+                                                                "type": "string",
+                                                                "description": "The name of the CFS session that last configured the component."
+                                                            }
+                                                        },
+                                                        "additionalProperties": false,
+                                                        "writeOnly": true
+                                                    },
+                                                    "desiredConfig": {
+                                                        "type": "string",
+                                                        "description": "A reference to a configuration"
+                                                    },
+                                                    "desiredState": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "description": "The current configuration state for a component.\n",
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "cloneUrl": {
+                                                                    "type": "string",
+                                                                    "description": "The clone URL of the configuration content repository.",
+                                                                    "example": "https://api-gw-service-nmn.local/vcs/cray/config-management.git"
+                                                                },
+                                                                "playbook": {
+                                                                    "type": "string",
+                                                                    "description": "The Ansible playbook to run.",
+                                                                    "example": "site.yml"
+                                                                },
+                                                                "commit": {
+                                                                    "type": "string",
+                                                                    "description": "The commit hash of the configuration repository when the state is set."
+                                                                },
+                                                                "lastUpdated": {
+                                                                    "type": "string",
+                                                                    "description": "The date/time when the state was last updated in RFC 3339 format.",
+                                                                    "example": "2019-07-28T03:26:00Z",
+                                                                    "format": "date-time",
+                                                                    "readOnly": true
+                                                                },
+                                                                "sessionName": {
+                                                                    "type": "string",
+                                                                    "description": "The name of the CFS session that last configured the component."
+                                                                }
+                                                            },
+                                                            "additionalProperties": false
+                                                        },
+                                                        "description": "Information about the desired config and status of the layers",
+                                                        "readOnly": true
+                                                    },
+                                                    "errorCount": {
+                                                        "type": "integer",
+                                                        "description": "The count of failed configuration attempts."
+                                                    },
+                                                    "retryPolicy": {
+                                                        "type": "integer",
+                                                        "description": "The maximum number retries per component when configuration fails."
+                                                    },
+                                                    "enabled": {
+                                                        "type": "boolean",
+                                                        "description": "A flag indicating if the component should be scheduled for configuration."
+                                                    },
+                                                    "configurationStatus": {
+                                                        "type": "string",
+                                                        "description": "A summary of the component's configuration state.",
+                                                        "enum": [
+                                                            "unconfigured",
+                                                            "pending",
+                                                            "failed",
+                                                            "configured"
+                                                        ],
+                                                        "readOnly": true
+                                                    },
+                                                    "tags": {
+                                                        "type": "object",
+                                                        "description": "A collection of key-value pairs containing descriptive information for the component, such as information about the component owner.",
+                                                        "additionalProperties": {
+                                                            "type": "string"
+                                                        }
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            },
+                                            "filters": {
+                                                "description": "Information for patching multiple components.",
+                                                "type": "object",
+                                                "properties": {
+                                                    "ids": {
+                                                        "type": "string",
+                                                        "description": "A comma-separated list of component IDs"
+                                                    },
+                                                    "status": {
+                                                        "type": "string",
+                                                        "description": "All components with this status will be patched.",
+                                                        "enum": [
+                                                            "unconfigured",
+                                                            "pending",
+                                                            "failed",
+                                                            "configured"
+                                                        ]
+                                                    },
+                                                    "enabled": {
+                                                        "type": "boolean",
+                                                        "description": "Patches all components with the given \"enabled\" state."
+                                                    },
+                                                    "configName": {
+                                                        "type": "string",
+                                                        "description": "A configuration name.  All components with this configuration set will be patched."
+                                                    },
+                                                    "tags": {
+                                                        "type": "string",
+                                                        "description": "Patches all components with the given tags.  Key-value pairs should be separated using =, and tags can be a comma-separated list.  Only components that match all tags will be patched."
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        "required": [
+                                            "patch",
+                                            "filters"
+                                        ]
+                                    },
+                                    {
+                                        "description": "An array of component configurations.",
+                                        "type": "array",
+                                        "items": {
+                                            "description": "The configuration state and desired state for a component.\n",
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string",
+                                                    "description": "The component's id. e.g. xname for hardware components",
+                                                    "minLength": 1
+                                                },
+                                                "state": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "description": "The current configuration state for a component.\n",
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "cloneUrl": {
+                                                                "type": "string",
+                                                                "description": "The clone URL of the configuration content repository.",
+                                                                "example": "https://api-gw-service-nmn.local/vcs/cray/config-management.git"
+                                                            },
+                                                            "playbook": {
+                                                                "type": "string",
+                                                                "description": "The Ansible playbook to run.",
+                                                                "example": "site.yml"
+                                                            },
+                                                            "commit": {
+                                                                "type": "string",
+                                                                "description": "The commit hash of the configuration repository when the state is set."
+                                                            },
+                                                            "lastUpdated": {
+                                                                "type": "string",
+                                                                "description": "The date/time when the state was last updated in RFC 3339 format.",
+                                                                "example": "2019-07-28T03:26:00Z",
+                                                                "format": "date-time",
+                                                                "readOnly": true
+                                                            },
+                                                            "sessionName": {
+                                                                "type": "string",
+                                                                "description": "The name of the CFS session that last configured the component."
+                                                            }
+                                                        },
+                                                        "additionalProperties": false
+                                                    },
+                                                    "description": "Information about the desired config and status of the layers"
+                                                },
+                                                "stateAppend": {
+                                                    "type": "object",
+                                                    "description": "A single state that will be appended to the list of current states.",
+                                                    "properties": {
+                                                        "cloneUrl": {
+                                                            "type": "string",
+                                                            "description": "The clone URL of the configuration content repository.",
+                                                            "example": "https://api-gw-service-nmn.local/vcs/cray/config-management.git"
+                                                        },
+                                                        "playbook": {
+                                                            "type": "string",
+                                                            "description": "The Ansible playbook to run.",
+                                                            "example": "site.yml"
+                                                        },
+                                                        "commit": {
+                                                            "type": "string",
+                                                            "description": "The commit hash of the configuration repository when the state is set."
+                                                        },
+                                                        "sessionName": {
+                                                            "type": "string",
+                                                            "description": "The name of the CFS session that last configured the component."
+                                                        }
+                                                    },
+                                                    "additionalProperties": false,
+                                                    "writeOnly": true
+                                                },
+                                                "desiredConfig": {
+                                                    "type": "string",
+                                                    "description": "A reference to a configuration"
+                                                },
+                                                "desiredState": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "description": "The current configuration state for a component.\n",
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "cloneUrl": {
+                                                                "type": "string",
+                                                                "description": "The clone URL of the configuration content repository.",
+                                                                "example": "https://api-gw-service-nmn.local/vcs/cray/config-management.git"
+                                                            },
+                                                            "playbook": {
+                                                                "type": "string",
+                                                                "description": "The Ansible playbook to run.",
+                                                                "example": "site.yml"
+                                                            },
+                                                            "commit": {
+                                                                "type": "string",
+                                                                "description": "The commit hash of the configuration repository when the state is set."
+                                                            },
+                                                            "lastUpdated": {
+                                                                "type": "string",
+                                                                "description": "The date/time when the state was last updated in RFC 3339 format.",
+                                                                "example": "2019-07-28T03:26:00Z",
+                                                                "format": "date-time",
+                                                                "readOnly": true
+                                                            },
+                                                            "sessionName": {
+                                                                "type": "string",
+                                                                "description": "The name of the CFS session that last configured the component."
+                                                            }
+                                                        },
+                                                        "additionalProperties": false
+                                                    },
+                                                    "description": "Information about the desired config and status of the layers",
+                                                    "readOnly": true
+                                                },
+                                                "errorCount": {
+                                                    "type": "integer",
+                                                    "description": "The count of failed configuration attempts."
+                                                },
+                                                "retryPolicy": {
+                                                    "type": "integer",
+                                                    "description": "The maximum number retries per component when configuration fails."
+                                                },
+                                                "enabled": {
+                                                    "type": "boolean",
+                                                    "description": "A flag indicating if the component should be scheduled for configuration."
+                                                },
+                                                "configurationStatus": {
+                                                    "type": "string",
+                                                    "description": "A summary of the component's configuration state.",
+                                                    "enum": [
+                                                        "unconfigured",
+                                                        "pending",
+                                                        "failed",
+                                                        "configured"
+                                                    ],
+                                                    "readOnly": true
+                                                },
+                                                "tags": {
+                                                    "type": "object",
+                                                    "description": "A collection of key-value pairs containing descriptive information for the component, such as information about the component owner.",
+                                                    "additionalProperties": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    }
+                                ]
                             }
                         }
                     }
@@ -16759,7 +17865,8 @@
                 "summary": "Update a collection of components",
                 "tags": [
                     "components",
-                    "v3"
+                    "v3",
+                    "cli_ignore"
                 ],
                 "x-openapi-router-controller": "cray.cfs.api.controllers.components",
                 "description": "Update the state for a collection of components in the cfs database",
@@ -16770,7 +17877,413 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "type": "object"
+                                "oneOf": [
+                                    {
+                                        "description": "Information for patching multiple components.",
+                                        "type": "object",
+                                        "properties": {
+                                            "patch": {
+                                                "description": "The configuration state and desired state for a component.\n",
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string",
+                                                        "description": "The component's id. e.g. xname for hardware components",
+                                                        "minLength": 1
+                                                    },
+                                                    "state": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "description": "The current configuration state for a component.\n",
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "clone_url": {
+                                                                    "type": "string",
+                                                                    "description": "The clone URL of the configuration content repository.",
+                                                                    "example": "https://api-gw-service-nmn.local/vcs/cray/config-management.git"
+                                                                },
+                                                                "playbook": {
+                                                                    "type": "string",
+                                                                    "description": "The Ansible playbook to run.",
+                                                                    "example": "site.yml"
+                                                                },
+                                                                "commit": {
+                                                                    "type": "string",
+                                                                    "description": "The commit hash of the configuration repository when the state is set."
+                                                                },
+                                                                "status": {
+                                                                    "type": "string",
+                                                                    "description": "The status of the configuration layer.",
+                                                                    "enum": [
+                                                                        "applied",
+                                                                        "failed",
+                                                                        "skipped"
+                                                                    ]
+                                                                },
+                                                                "last_updated": {
+                                                                    "type": "string",
+                                                                    "description": "The date/time when the state was last updated in RFC 3339 format.",
+                                                                    "example": "2019-07-28T03:26:00Z",
+                                                                    "format": "date-time",
+                                                                    "readOnly": true
+                                                                },
+                                                                "session_name": {
+                                                                    "type": "string",
+                                                                    "description": "The name of the CFS session that last configured the component."
+                                                                }
+                                                            },
+                                                            "additionalProperties": false
+                                                        },
+                                                        "description": "Information about the desired config and status of the layers"
+                                                    },
+                                                    "state_append": {
+                                                        "type": "object",
+                                                        "description": "A single state that will be appended to the list of current states.",
+                                                        "properties": {
+                                                            "clone_url": {
+                                                                "type": "string",
+                                                                "description": "The clone URL of the configuration content repository.",
+                                                                "example": "https://api-gw-service-nmn.local/vcs/cray/config-management.git"
+                                                            },
+                                                            "playbook": {
+                                                                "type": "string",
+                                                                "description": "The Ansible playbook to run.",
+                                                                "example": "site.yml"
+                                                            },
+                                                            "commit": {
+                                                                "type": "string",
+                                                                "description": "The commit hash of the configuration repository when the state is set."
+                                                            },
+                                                            "status": {
+                                                                "type": "string",
+                                                                "description": "The status of the configuration layer.",
+                                                                "enum": [
+                                                                    "applied",
+                                                                    "failed",
+                                                                    "skipped"
+                                                                ]
+                                                            },
+                                                            "session_name": {
+                                                                "type": "string",
+                                                                "description": "The name of the CFS session that last configured the component."
+                                                            }
+                                                        },
+                                                        "additionalProperties": false,
+                                                        "writeOnly": true
+                                                    },
+                                                    "desired_state": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "description": "The current configuration state for a component.\n",
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "clone_url": {
+                                                                    "type": "string",
+                                                                    "description": "The clone URL of the configuration content repository.",
+                                                                    "example": "https://api-gw-service-nmn.local/vcs/cray/config-management.git"
+                                                                },
+                                                                "playbook": {
+                                                                    "type": "string",
+                                                                    "description": "The Ansible playbook to run.",
+                                                                    "example": "site.yml"
+                                                                },
+                                                                "commit": {
+                                                                    "type": "string",
+                                                                    "description": "The commit hash of the configuration repository when the state is set."
+                                                                },
+                                                                "status": {
+                                                                    "type": "string",
+                                                                    "description": "The status of the configuration layer.",
+                                                                    "enum": [
+                                                                        "applied",
+                                                                        "failed",
+                                                                        "skipped"
+                                                                    ]
+                                                                },
+                                                                "last_updated": {
+                                                                    "type": "string",
+                                                                    "description": "The date/time when the state was last updated in RFC 3339 format.",
+                                                                    "example": "2019-07-28T03:26:00Z",
+                                                                    "format": "date-time",
+                                                                    "readOnly": true
+                                                                },
+                                                                "session_name": {
+                                                                    "type": "string",
+                                                                    "description": "The name of the CFS session that last configured the component."
+                                                                }
+                                                            },
+                                                            "additionalProperties": false
+                                                        },
+                                                        "description": "Information about the desired config and status of the layers",
+                                                        "readOnly": true
+                                                    },
+                                                    "desired_config": {
+                                                        "type": "string",
+                                                        "description": "A reference to a configuration",
+                                                        "minLength": 0,
+                                                        "maxLength": 60
+                                                    },
+                                                    "error_count": {
+                                                        "type": "integer",
+                                                        "description": "The count of failed configuration attempts."
+                                                    },
+                                                    "retry_policy": {
+                                                        "type": "integer",
+                                                        "description": "The maximum number retries per component when configuration fails."
+                                                    },
+                                                    "enabled": {
+                                                        "type": "boolean",
+                                                        "description": "A flag indicating if the component should be scheduled for configuration."
+                                                    },
+                                                    "configuration_status": {
+                                                        "type": "string",
+                                                        "description": "A summary of the component's configuration state.",
+                                                        "enum": [
+                                                            "unconfigured",
+                                                            "pending",
+                                                            "failed",
+                                                            "configured"
+                                                        ],
+                                                        "readOnly": true
+                                                    },
+                                                    "tags": {
+                                                        "type": "object",
+                                                        "description": "A collection of key-value pairs containing descriptive information for the component, such as information about the component owner.",
+                                                        "additionalProperties": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "logs": {
+                                                        "type": "string",
+                                                        "description": "The link to the ARA UI with logs for this component",
+                                                        "readOnly": true
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            },
+                                            "filters": {
+                                                "description": "Information for patching multiple components.",
+                                                "type": "object",
+                                                "properties": {
+                                                    "ids": {
+                                                        "type": "string",
+                                                        "description": "A comma-separated list of component IDs"
+                                                    },
+                                                    "status": {
+                                                        "type": "string",
+                                                        "description": "All components with this status will be patched.",
+                                                        "enum": [
+                                                            "unconfigured",
+                                                            "pending",
+                                                            "failed",
+                                                            "configured",
+                                                            ""
+                                                        ]
+                                                    },
+                                                    "enabled": {
+                                                        "type": "boolean",
+                                                        "description": "Patches all components with the given \"enabled\" state."
+                                                    },
+                                                    "config_name": {
+                                                        "type": "string",
+                                                        "description": "A configuration name.  All components with this configuration set will be patched."
+                                                    },
+                                                    "tags": {
+                                                        "type": "string",
+                                                        "description": "Patches all components with the given tags.  Key-value pairs should be separated using =, and tags can be a comma-separated list.  Only components that match all tags will be patched."
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        "required": [
+                                            "patch",
+                                            "filters"
+                                        ]
+                                    },
+                                    {
+                                        "description": "An array of component configurations.",
+                                        "type": "array",
+                                        "items": {
+                                            "description": "The configuration state and desired state for a component.\n",
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string",
+                                                    "description": "The component's id. e.g. xname for hardware components",
+                                                    "minLength": 1
+                                                },
+                                                "state": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "description": "The current configuration state for a component.\n",
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "clone_url": {
+                                                                "type": "string",
+                                                                "description": "The clone URL of the configuration content repository.",
+                                                                "example": "https://api-gw-service-nmn.local/vcs/cray/config-management.git"
+                                                            },
+                                                            "playbook": {
+                                                                "type": "string",
+                                                                "description": "The Ansible playbook to run.",
+                                                                "example": "site.yml"
+                                                            },
+                                                            "commit": {
+                                                                "type": "string",
+                                                                "description": "The commit hash of the configuration repository when the state is set."
+                                                            },
+                                                            "status": {
+                                                                "type": "string",
+                                                                "description": "The status of the configuration layer.",
+                                                                "enum": [
+                                                                    "applied",
+                                                                    "failed",
+                                                                    "skipped"
+                                                                ]
+                                                            },
+                                                            "last_updated": {
+                                                                "type": "string",
+                                                                "description": "The date/time when the state was last updated in RFC 3339 format.",
+                                                                "example": "2019-07-28T03:26:00Z",
+                                                                "format": "date-time",
+                                                                "readOnly": true
+                                                            },
+                                                            "session_name": {
+                                                                "type": "string",
+                                                                "description": "The name of the CFS session that last configured the component."
+                                                            }
+                                                        },
+                                                        "additionalProperties": false
+                                                    },
+                                                    "description": "Information about the desired config and status of the layers"
+                                                },
+                                                "state_append": {
+                                                    "type": "object",
+                                                    "description": "A single state that will be appended to the list of current states.",
+                                                    "properties": {
+                                                        "clone_url": {
+                                                            "type": "string",
+                                                            "description": "The clone URL of the configuration content repository.",
+                                                            "example": "https://api-gw-service-nmn.local/vcs/cray/config-management.git"
+                                                        },
+                                                        "playbook": {
+                                                            "type": "string",
+                                                            "description": "The Ansible playbook to run.",
+                                                            "example": "site.yml"
+                                                        },
+                                                        "commit": {
+                                                            "type": "string",
+                                                            "description": "The commit hash of the configuration repository when the state is set."
+                                                        },
+                                                        "status": {
+                                                            "type": "string",
+                                                            "description": "The status of the configuration layer.",
+                                                            "enum": [
+                                                                "applied",
+                                                                "failed",
+                                                                "skipped"
+                                                            ]
+                                                        },
+                                                        "session_name": {
+                                                            "type": "string",
+                                                            "description": "The name of the CFS session that last configured the component."
+                                                        }
+                                                    },
+                                                    "additionalProperties": false,
+                                                    "writeOnly": true
+                                                },
+                                                "desired_state": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "description": "The current configuration state for a component.\n",
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "clone_url": {
+                                                                "type": "string",
+                                                                "description": "The clone URL of the configuration content repository.",
+                                                                "example": "https://api-gw-service-nmn.local/vcs/cray/config-management.git"
+                                                            },
+                                                            "playbook": {
+                                                                "type": "string",
+                                                                "description": "The Ansible playbook to run.",
+                                                                "example": "site.yml"
+                                                            },
+                                                            "commit": {
+                                                                "type": "string",
+                                                                "description": "The commit hash of the configuration repository when the state is set."
+                                                            },
+                                                            "status": {
+                                                                "type": "string",
+                                                                "description": "The status of the configuration layer.",
+                                                                "enum": [
+                                                                    "applied",
+                                                                    "failed",
+                                                                    "skipped"
+                                                                ]
+                                                            },
+                                                            "last_updated": {
+                                                                "type": "string",
+                                                                "description": "The date/time when the state was last updated in RFC 3339 format.",
+                                                                "example": "2019-07-28T03:26:00Z",
+                                                                "format": "date-time",
+                                                                "readOnly": true
+                                                            },
+                                                            "session_name": {
+                                                                "type": "string",
+                                                                "description": "The name of the CFS session that last configured the component."
+                                                            }
+                                                        },
+                                                        "additionalProperties": false
+                                                    },
+                                                    "description": "Information about the desired config and status of the layers",
+                                                    "readOnly": true
+                                                },
+                                                "desired_config": {
+                                                    "type": "string",
+                                                    "description": "A reference to a configuration",
+                                                    "minLength": 0,
+                                                    "maxLength": 60
+                                                },
+                                                "error_count": {
+                                                    "type": "integer",
+                                                    "description": "The count of failed configuration attempts."
+                                                },
+                                                "retry_policy": {
+                                                    "type": "integer",
+                                                    "description": "The maximum number retries per component when configuration fails."
+                                                },
+                                                "enabled": {
+                                                    "type": "boolean",
+                                                    "description": "A flag indicating if the component should be scheduled for configuration."
+                                                },
+                                                "configuration_status": {
+                                                    "type": "string",
+                                                    "description": "A summary of the component's configuration state.",
+                                                    "enum": [
+                                                        "unconfigured",
+                                                        "pending",
+                                                        "failed",
+                                                        "configured"
+                                                    ],
+                                                    "readOnly": true
+                                                },
+                                                "tags": {
+                                                    "type": "object",
+                                                    "description": "A collection of key-value pairs containing descriptive information for the component, such as information about the component owner.",
+                                                    "additionalProperties": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "logs": {
+                                                    "type": "string",
+                                                    "description": "The link to the ARA UI with logs for this component",
+                                                    "readOnly": true
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    }
+                                ]
                             }
                         }
                     }
@@ -18173,6 +19686,11 @@
                                                         "type": "string",
                                                         "description": "A user-defined description. This field is not used by CFS."
                                                     },
+                                                    "tenant_name": {
+                                                        "type": "string",
+                                                        "description": "The name of a tenant that owns this set of configuration.",
+                                                        "example": "blue-tenant"
+                                                    },
                                                     "last_updated": {
                                                         "type": "string",
                                                         "description": "The date/time when the state was last updated in RFC 3339 format.",
@@ -18364,6 +19882,11 @@
                                             "type": "string",
                                             "description": "A user-defined description. This field is not used by CFS."
                                         },
+                                        "tenant_name": {
+                                            "type": "string",
+                                            "description": "The name of a tenant that owns this set of configuration.",
+                                            "example": "blue-tenant"
+                                        },
                                         "last_updated": {
                                             "type": "string",
                                             "description": "The date/time when the state was last updated in RFC 3339 format.",
@@ -18536,6 +20059,11 @@
                                         "type": "string",
                                         "description": "A user-defined description. This field is not used by CFS."
                                     },
+                                    "tenant_name": {
+                                        "type": "string",
+                                        "description": "The name of a tenant that owns this set of configuration.",
+                                        "example": "blue-tenant"
+                                    },
                                     "last_updated": {
                                         "type": "string",
                                         "description": "The date/time when the state was last updated in RFC 3339 format.",
@@ -18670,6 +20198,11 @@
                                         "description": {
                                             "type": "string",
                                             "description": "A user-defined description. This field is not used by CFS."
+                                        },
+                                        "tenant_name": {
+                                            "type": "string",
+                                            "description": "The name of a tenant that owns this set of configuration.",
+                                            "example": "blue-tenant"
                                         },
                                         "last_updated": {
                                             "type": "string",
@@ -18842,6 +20375,11 @@
                                         "description": {
                                             "type": "string",
                                             "description": "A user-defined description. This field is not used by CFS."
+                                        },
+                                        "tenant_name": {
+                                            "type": "string",
+                                            "description": "The name of a tenant that owns this set of configuration.",
+                                            "example": "blue-tenant"
                                         },
                                         "last_updated": {
                                             "type": "string",
