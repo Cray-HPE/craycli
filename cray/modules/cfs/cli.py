@@ -356,11 +356,10 @@ def setup_many_components_update(cfs_cli, version):
     """
     Adds the --filter-ids, --filter-status, --filter-enabled, --filter-config-name options
     """
-    list_command = cfs_cli.commands[version].commands['components'].commands['list']
     update_command = cfs_cli.commands[version].commands['components'].commands['update']
-    command_type = type(list_command)
+    command_type = type(update_command)
     new_command = command_type("updatemany")
-    for key, value in list_command.__dict__.items():
+    for key, value in update_command.__dict__.items():
         setattr(new_command, key, value)
     cfs_cli.commands[version].commands['components'].commands['updatemany'] = new_command
     new_command.params = []
