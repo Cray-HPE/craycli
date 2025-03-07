@@ -412,12 +412,61 @@ def setup_many_components_update(cfs_cli, version):
         help="Filter by component tags.  A comma-separated list of key=value"
     )(new_command)
     option(
+        '--patch',
+        callback=_opt_callback,
+        required=False,
+        type=str,
+        default='',
+        metavar='TEXT',
+        help="JSON component data applied to all filtered components"
+    )(new_command)
+    option(
+        '--state',
+        callback=_opt_callback,
+        is_flag=True,
+        type=str,
+        metavar='TEXT',
+        help="The component state. Set to [] to clear."
+    )(new_command)
+    option(
         '--tags',
         callback=_opt_callback,
         is_flag=True,
         type=str,
         metavar='TEXT',
         help="User-defined tags.  A comma-separated list of key=value"
+    )(new_command)
+    option(
+        '--enabled',
+        callback=_opt_callback,
+        is_flag=True,
+        type=bool,
+        metavar='BOOL',
+        help="A flag indicating if the component should be scheduled for configuration."
+    )(new_command)
+    option(
+        '--retry-policy',
+        callback=_opt_callback,
+        is_flag=True,
+        type=int,
+        metavar='INT',
+        help="The number of retries to attempt if the component fails to configure."
+    )(new_command)
+    option(
+        '--error-count',
+        callback=_opt_callback,
+        is_flag=True,
+        type=int,
+        metavar='INT',
+        help="The count of unsuccessful configuration attempts."
+    )(new_command)
+    option(
+        '--desired-config',
+        callback=_opt_callback,
+        is_flag=True,
+        type=str,
+        metavar='TEXT',
+        help="A reference to a configuration."
     )(new_command)
     new_command.params += default_params
     new_command.callback = create_components_updatemany_shim(new_command.callback)
