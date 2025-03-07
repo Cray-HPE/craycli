@@ -423,7 +423,7 @@ def setup_many_components_update(cfs_cli, version):
     option(
         '--state',
         callback=_opt_callback,
-        is_flag=True,
+        required=False,
         type=str,
         metavar='TEXT',
         help="The component state. Set to [] to clear."
@@ -431,7 +431,7 @@ def setup_many_components_update(cfs_cli, version):
     option(
         '--tags',
         callback=_opt_callback,
-        is_flag=True,
+        required=False,
         type=str,
         metavar='TEXT',
         help="User-defined tags.  A comma-separated list of key=value"
@@ -439,7 +439,7 @@ def setup_many_components_update(cfs_cli, version):
     option(
         '--enabled',
         callback=_opt_callback,
-        is_flag=True,
+        required=False,
         type=bool,
         metavar='BOOL',
         help="A flag indicating if the component should be scheduled for configuration."
@@ -447,7 +447,7 @@ def setup_many_components_update(cfs_cli, version):
     option(
         '--retry-policy',
         callback=_opt_callback,
-        is_flag=True,
+        required=False,
         type=int,
         metavar='INT',
         help="The number of retries to attempt if the component fails to configure."
@@ -455,7 +455,7 @@ def setup_many_components_update(cfs_cli, version):
     option(
         '--error-count',
         callback=_opt_callback,
-        is_flag=True,
+        required=False,
         type=int,
         metavar='INT',
         help="The count of unsuccessful configuration attempts."
@@ -463,7 +463,7 @@ def setup_many_components_update(cfs_cli, version):
     option(
         '--desired-config',
         callback=_opt_callback,
-        is_flag=True,
+        required=False,
         type=str,
         metavar='TEXT',
         help="A reference to a configuration."
