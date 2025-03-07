@@ -328,8 +328,8 @@ def create_components_updatemany_shim(func):
 
         # Hack to tell the CLI we are passing our own payload; don't generate
         kwargs[FROM_FILE_TAG] = {'value': payload, 'name': FROM_FILE_TAG}
-        # return func(data_handler=updatemany_data_handler, **kwargs)
-        return func(**kwargs)
+        return func(data_handler=updatemany_data_handler, **kwargs)
+        # return func(**kwargs)
 
     return _decorator
 
