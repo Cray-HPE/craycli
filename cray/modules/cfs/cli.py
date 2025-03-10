@@ -280,15 +280,13 @@ def updatemany_data_handler(args):
 def create_components_updatemany_shim(func):
     """ Callback function to custom create our own payload """
 
-    def _decorator(filter_ids, filter_status, filter_enabled, filter_config_name,
-                   filter_tags, patch, state, tags,enabled, retry_policy, error_count, desired_config,**kwargs):
+    def _decorator(filter_ids, filter_status, filter_tags, patch,
+                   state, tags,enabled, retry_policy, error_count, desired_config,**kwargs):
         filter_ids = filter_ids["value"]
         filter_status = filter_status["value"]
-        filter_enabled = filter_enabled["value"]
-        filter_config_name = filter_config_name["value"]
         filter_tags = filter_tags["value"]
 
-        if not (filter_ids or filter_status or filter_enabled or filter_config_name or filter_tags):
+        if not (filter_ids or filter_status or filter_tags):
             raise Exception(
                 'At least one filter must be set for updates.'
             )
@@ -298,10 +296,6 @@ def create_components_updatemany_shim(func):
             payload['filters'] = {"ids": filter_ids}
         if filter_status:
             payload['filters'] = {"status": filter_status}
-        if filter_enabled:
-            payload['filters'] = {"enabled": filter_enabled}
-        if filter_config_name:
-            payload['filters'] = {"config_name": filter_config_name}
         if filter_tags:
             payload['filters'] = {"tags": filter_tags}
 
@@ -385,24 +379,6 @@ def setup_many_components_update(cfs_cli, version):
         default='',
         metavar='TEXT',
         help="Filter by component status.  A comma-separated list of statuses"
-    )(new_command)
-    option(
-        '--filter-enabled',
-        callback=_opt_callback,
-        required=False,
-        type=bool,
-        default=None,
-        metavar='BOOL',
-        help="Filter by component enabled status.  A boolean value"
-    )(new_command)
-    option(
-        '--filter-config-name',
-        callback=_opt_callback,
-        required=False,
-        type=str,
-        default='',
-        metavar='TEXT',
-        help="Filter by component configuration name.  A string value"
     )(new_command)
     option(
         '--filter-tags',
