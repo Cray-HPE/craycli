@@ -7,7 +7,7 @@
             "url": "http://www.hpe.com/"
         },
         "version": "1.0.0",
-        "description": "The Rack Resiliency Service (RRS) queries the Kubernetes cluster to provide aggregated zone information and detailed critical service status. It gathers node details across various zones and presents both high-level summaries and in-depth information for zones and critical services.\n## Resources\n\n  ### /zones\n    Retrieve aggregated zone information including:\n      - Management Master Nodes: List of master node names.\n      - Management Storage Nodes: List of storage node names.\n      - Management Worker Nodes: List of worker node names.\n      \n    Alternatively, if zones are not configured, one of the following informational messages is returned:\n      - \"No Zones configured\"\n      - \"No Ceph zones configured\"\n      - \"No K8s topology zones configured\"\n\n  ### /zones/{zone_name}\n    Retrieve detailed information for a specific zone including:\n      - zone_name: The name of the zone.\n      - no_of_masters: Number of master nodes.\n      - no_of_storage: Number of storage nodes.\n      - no_of_workers: Number of worker nodes.\n      - nodes: Detailed node data, including status and, for storage nodes, associated OSD details.\n\n  ### /criticalservices\n    Retrieve a list of critical services with basic details:\n      - name: The service name.\n      - namespace: The Kubernetes namespace.\n      - type: The service type (e.g., Deployment, StatefulSet, DaemonSet).\n\n  ### /criticalservices/{critical_service_name}\n    Retrieve detailed information for a specific critical service including:\n      - name: The name of the critical service.\n      - namespace: The namespace where the service is deployed.\n      - type: The type of the service.\n      - pods: An array of pod objects with name and status.\n      - services: An array of service names associated with the critical service.\n\n## Workflows\n\n  All endpoints in the Rack Resiliency Service API are GET requests, except for the update operation on /criticalservices.\n\n  ### Zone Information Retrieval\n\n    - GET /zones  \n      Retrieve aggregated zone configuration. The response includes detailed lists of node names for\n      each zone or an informational message if zones are not configured.\n      \n    - GET /zones/{zone_name}  \n      Retrieve detailed information for a specific zone, including node counts and statuses.\n\n  ### Critical Service Information Retrieval\n\n    - GET /criticalservices  \n      Retrieve a list of critical services with basic details (name, namespace, type).\n\n    - GET /criticalservices/{critical_service_name}  \n      Retrieve detailed information for a specific critical service, including associated pods and service components.\n\n  ### Critical Service Update\n\n    - PATCH /criticalservices  \n      Update the critical services configuration. The request body should contain a JSON string in the\n      new_services property representing the updated critical services configuration.\n"
+        "description": "The Rack Resiliency Service (RRS) queries the Kubernetes cluster to provide aggregated zone information and detailed critical service status. It gathers node details across various zones and presents both high-level summaries and in-depth information for zones and critical services.\n## Resources\n\n  ### /zones\n    Retrieve aggregated zone information including:\n      - Management Master Nodes: List of master node names.\n      - Management Storage Nodes: List of storage node names.\n      - Management Worker Nodes: List of worker node names.\n      \n    Alternatively, if zones are not configured, one of the following informational messages is returned:\n      - \"No Zones configured\"\n      - \"No Ceph zones configured\"\n      - \"No K8s topology zones configured\"\n\n  ### /zones/{zone_name}\n    Retrieve detailed information for a specific zone including:\n      - Zone Name\n      - Management Master: object with Nodes (array of node objects with Name and Status) and Type.\n      - Management Masters: number (count of master nodes).\n      - Management Storage: number (count of storage nodes).\n      - Management Worker: object with Nodes (array of node objects with Name and Status) and Type.\n      - Management Workers: number (count of worker nodes).\n\n  ### /criticalservices\n    Retrieve a list of critical services grouped by namespace.\n\n  ### /criticalservices/{critical_service_name}\n    Retrieve detailed information for a specific critical service including:\n      - Configured Instances\n      - Currently Running Instances\n      - Name\n      - Namespace\n      - Pods: array of pod objects with Name, Node, Status, Zone.\n      - Type\n\n## Workflows\n\n  All endpoints in the Rack Resiliency Service API are GET requests, except for the update operation on /criticalservices.\n\n  ### Zone Information Retrieval\n\n    - GET /zones  \n      Retrieve aggregated zone configuration.\n\n    - GET /zones/{zone_name}  \n      Retrieve detailed information for a specific zone.\n\n  ### Critical Service Information Retrieval\n\n    - GET /criticalservices  \n      Retrieve a list of critical services grouped by namespace.\n\n    - GET /criticalservices/{critical_service_name}  \n      Retrieve detailed information for a specific critical service.\n\n  ### Critical Service Update\n\n    - PATCH /criticalservices  \n      Update the critical services configuration.\n"
     },
     "servers": [
         {
@@ -22,100 +22,137 @@
                 "tags": [
                     "zones"
                 ],
-                "description": "Returns an object where each key is a zone name and the corresponding value contains:\n  - Management Master Nodes: List of master node names.\n  - Management Storage Nodes: List of storage node names.\n  - Management Worker Nodes: List of worker node names.\n\nAlternatively, if zones are not configured, one of the following informational messages is returned:\n  - \"No Zones configured\"\n  - \"No Ceph zones configured\"\n  - \"No K8s topology zones configured\"\n",
+                "description": "Returns an object with a property \"Zones\" that is an array of zones. Each zone contains:\n  - \"Zone Name\": the name of the zone.\n  - \"Kubernetes Topology Zone\": contains:\n      \"Management Master Nodes\": { \"Nodes\": [ ... ] }\n      \"Management Worker Nodes\": { \"Nodes\": [ ... ] }\n  - \"CEPH Zone\": contains:\n      \"Management Storage Nodes\": { \"Nodes\": [ ... ] }\n",
                 "operationId": "getZones",
                 "responses": {
                     "200": {
-                        "description": "Zones configuration or an informational message.",
+                        "description": "Zones configuration.",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "oneOf": [
-                                        {
-                                            "type": "object",
-                                            "additionalProperties": {
+                                    "type": "object",
+                                    "properties": {
+                                        "Zones": {
+                                            "type": "array",
+                                            "items": {
                                                 "type": "object",
                                                 "properties": {
-                                                    "Management Master Nodes": {
-                                                        "type": "array",
-                                                        "items": {
-                                                            "type": "string"
+                                                    "Zone Name": {
+                                                        "type": "string"
+                                                    },
+                                                    "Kubernetes Topology Zone": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "Management Master Nodes": {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "Nodes": {
+                                                                        "type": "array",
+                                                                        "items": {
+                                                                            "type": "string"
+                                                                        }
+                                                                    }
+                                                                }
+                                                            },
+                                                            "Management Worker Nodes": {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "Nodes": {
+                                                                        "type": "array",
+                                                                        "items": {
+                                                                            "type": "string"
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
                                                         }
                                                     },
-                                                    "Management Storage Nodes": {
-                                                        "type": "array",
-                                                        "items": {
-                                                            "type": "string"
-                                                        }
-                                                    },
-                                                    "Management Worker Nodes": {
-                                                        "type": "array",
-                                                        "items": {
-                                                            "type": "string"
+                                                    "CEPH Zone": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "Management Storage Nodes": {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "Nodes": {
+                                                                        "type": "array",
+                                                                        "items": {
+                                                                            "type": "string"
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
                                                         }
                                                     }
                                                 }
                                             }
-                                        },
-                                        {
-                                            "type": "object",
-                                            "properties": {
-                                                "Information": {
-                                                    "type": "string"
-                                                }
-                                            }
                                         }
-                                    ]
+                                    }
                                 },
                                 "examples": {
                                     "aggregated": {
                                         "value": {
-                                            "rack1": {
-                                                "Management Master Nodes": [
-                                                    "ncn-m001",
-                                                    "ncn-m002"
-                                                ],
-                                                "Management Storage Nodes": [
-                                                    "ncn-s003"
-                                                ],
-                                                "Management Worker Nodes": []
-                                            },
-                                            "rack2": {
-                                                "Management Master Nodes": [
-                                                    "ncn-m003"
-                                                ],
-                                                "Management Storage Nodes": [
-                                                    "ncn-s002",
-                                                    "ncn-s001"
-                                                ],
-                                                "Management Worker Nodes": [
-                                                    "ncn-w001",
-                                                    "ncn-w003"
-                                                ]
-                                            },
-                                            "rack3": {
-                                                "Management Master Nodes": [],
-                                                "Management Storage Nodes": [],
-                                                "Management Worker Nodes": [
-                                                    "ncn-w002",
-                                                    "ncn-w004"
-                                                ]
-                                            }
-                                        }
-                                    },
-                                    "noZones": {
-                                        "value": {
-                                            "Information": "No Zones configured"
-                                        }
-                                    },
-                                    "noCeph": {
-                                        "value": {
-                                            "Information": "No Ceph zones configured"
-                                        }
-                                    },
-                                    "noK8s": {
-                                        "value": {
-                                            "Information": "No K8s topology zones configured"
+                                            "Zones": [
+                                                {
+                                                    "Zone Name": "x3000",
+                                                    "Kubernetes Topology Zone": {
+                                                        "Management Master Nodes": {
+                                                            "Nodes": [
+                                                                "ncn-m001",
+                                                                "ncn-m002",
+                                                                "ncn-m003"
+                                                            ]
+                                                        },
+                                                        "Management Worker Nodes": {
+                                                            "Nodes": [
+                                                                "ncn-w001",
+                                                                "ncn-w002",
+                                                                "ncn-w003",
+                                                                "ncn-w004",
+                                                                "ncn-w005"
+                                                            ]
+                                                        }
+                                                    },
+                                                    "CEPH Zone": {
+                                                        "Management Storage Nodes": {
+                                                            "Nodes": [
+                                                                "ncn-s001",
+                                                                "ncn-s002",
+                                                                "ncn-s003"
+                                                            ]
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "Zone Name": "x3001",
+                                                    "Kubernetes Topology Zone": {
+                                                        "Management Master Nodes": {
+                                                            "Nodes": [
+                                                                "ncn-m001",
+                                                                "ncn-m002",
+                                                                "ncn-m003"
+                                                            ]
+                                                        },
+                                                        "Management Worker Nodes": {
+                                                            "Nodes": [
+                                                                "ncn-w001",
+                                                                "ncn-w002",
+                                                                "ncn-w003",
+                                                                "ncn-w004",
+                                                                "ncn-w005"
+                                                            ]
+                                                        }
+                                                    },
+                                                    "CEPH Zone": {
+                                                        "Management Storage Nodes": {
+                                                            "Nodes": [
+                                                                "ncn-s001",
+                                                                "ncn-s002",
+                                                                "ncn-s003"
+                                                            ]
+                                                        }
+                                                    }
+                                                }
+                                            ]
                                         }
                                     }
                                 }
@@ -134,7 +171,7 @@
                 "tags": [
                     "zones"
                 ],
-                "description": "Returns detailed information for a specific zone including:\n  - zone_name: The name of the zone.\n  - no_of_masters: Number of master nodes.\n  - no_of_storage: Number of storage nodes.\n  - no_of_workers: Number of worker nodes.\n  - nodes: An object mapping node roles (\"masters\", \"storage\", \"workers\") to lists of node details.\n",
+                "description": "Returns detailed information for a specific zone. The response includes:\n  - \"Zone Name\": the name of the zone.\n  - \"Management Master\": an object with \"Nodes\" (array of node objects with Name and Status) and \"Type\".\n  - \"Management Masters\": number (count of master nodes).\n  - \"Management Storage\": number (count of storage nodes).\n  - \"Management Worker\": an object with \"Nodes\" (array of node objects with Name and Status) and \"Type\".\n  - \"Management Workers\": number (count of worker nodes).\n",
                 "operationId": "getZoneDetails",
                 "parameters": [
                     {
@@ -149,184 +186,119 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Detailed information for the specified zone.",
+                        "description": "Detailed zone information.",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "type": "object",
                                     "properties": {
-                                        "zone_name": {
-                                            "type": "string",
-                                            "description": "The name of the zone."
+                                        "Zone Name": {
+                                            "type": "string"
                                         },
-                                        "no_of_masters": {
-                                            "type": "integer",
-                                            "description": "Number of master nodes."
-                                        },
-                                        "no_of_storage": {
-                                            "type": "integer",
-                                            "description": "Number of storage nodes."
-                                        },
-                                        "no_of_workers": {
-                                            "type": "integer",
-                                            "description": "Number of worker nodes."
-                                        },
-                                        "nodes": {
+                                        "Management Master": {
                                             "type": "object",
-                                            "description": "Mapping of node roles to lists of node details.",
                                             "properties": {
-                                                "masters": {
+                                                "Nodes": {
                                                     "type": "array",
                                                     "items": {
                                                         "type": "object",
                                                         "properties": {
-                                                            "name": {
-                                                                "type": "string",
-                                                                "description": "The node's name."
+                                                            "Name": {
+                                                                "type": "string"
                                                             },
-                                                            "status": {
-                                                                "type": "string",
-                                                                "description": "The node's status (e.g., Ready, NotReady)."
-                                                            },
-                                                            "osds": {
-                                                                "type": "array",
-                                                                "description": "List of OSD details (only applicable for storage nodes).",
-                                                                "items": {
-                                                                    "type": "object",
-                                                                    "properties": {
-                                                                        "name": {
-                                                                            "type": "string",
-                                                                            "description": "The OSD's name."
-                                                                        },
-                                                                        "status": {
-                                                                            "type": "string",
-                                                                            "description": "The OSD's status (e.g., up, down)."
-                                                                        }
-                                                                    }
-                                                                }
+                                                            "Status": {
+                                                                "type": "string"
                                                             }
                                                         }
                                                     }
                                                 },
-                                                "storage": {
-                                                    "type": "array",
-                                                    "items": {
-                                                        "type": "object",
-                                                        "properties": {
-                                                            "name": {
-                                                                "type": "string",
-                                                                "description": "The node's name."
-                                                            },
-                                                            "status": {
-                                                                "type": "string",
-                                                                "description": "The node's status (e.g., Ready, NotReady)."
-                                                            },
-                                                            "osds": {
-                                                                "type": "array",
-                                                                "description": "List of OSD details (only applicable for storage nodes).",
-                                                                "items": {
-                                                                    "type": "object",
-                                                                    "properties": {
-                                                                        "name": {
-                                                                            "type": "string",
-                                                                            "description": "The OSD's name."
-                                                                        },
-                                                                        "status": {
-                                                                            "type": "string",
-                                                                            "description": "The OSD's status (e.g., up, down)."
-                                                                        }
-                                                                    }
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                },
-                                                "workers": {
-                                                    "type": "array",
-                                                    "items": {
-                                                        "type": "object",
-                                                        "properties": {
-                                                            "name": {
-                                                                "type": "string",
-                                                                "description": "The node's name."
-                                                            },
-                                                            "status": {
-                                                                "type": "string",
-                                                                "description": "The node's status (e.g., Ready, NotReady)."
-                                                            },
-                                                            "osds": {
-                                                                "type": "array",
-                                                                "description": "List of OSD details (only applicable for storage nodes).",
-                                                                "items": {
-                                                                    "type": "object",
-                                                                    "properties": {
-                                                                        "name": {
-                                                                            "type": "string",
-                                                                            "description": "The OSD's name."
-                                                                        },
-                                                                        "status": {
-                                                                            "type": "string",
-                                                                            "description": "The OSD's status (e.g., up, down)."
-                                                                        }
-                                                                    }
-                                                                }
-                                                            }
-                                                        }
-                                                    }
+                                                "Type": {
+                                                    "type": "string"
                                                 }
                                             }
+                                        },
+                                        "Management Masters": {
+                                            "type": "integer"
+                                        },
+                                        "Management Storage": {
+                                            "type": "integer"
+                                        },
+                                        "Management Worker": {
+                                            "type": "object",
+                                            "properties": {
+                                                "Nodes": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "Name": {
+                                                                "type": "string"
+                                                            },
+                                                            "Status": {
+                                                                "type": "string"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                "Type": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        },
+                                        "Management Workers": {
+                                            "type": "integer"
                                         }
                                     }
                                 },
                                 "examples": {
                                     "zoneDetail": {
                                         "value": {
-                                            "zone_name": "rack1",
-                                            "no_of_masters": 2,
-                                            "no_of_storage": 1,
-                                            "no_of_workers": 1,
-                                            "nodes": {
-                                                "masters": [
+                                            "Zone Name": "x3000",
+                                            "Management Master": {
+                                                "Nodes": [
                                                     {
-                                                        "name": "ncn-m001",
-                                                        "status": "Ready"
+                                                        "Name": "ncn-m001",
+                                                        "Status": "Ready"
                                                     },
                                                     {
-                                                        "name": "ncn-m002",
-                                                        "status": "Ready"
+                                                        "Name": "ncn-m002",
+                                                        "Status": "Ready"
+                                                    },
+                                                    {
+                                                        "Name": "ncn-m003",
+                                                        "Status": "Ready"
                                                     }
                                                 ],
-                                                "storage": [
+                                                "Type": "Kubernetes Topology Zone"
+                                            },
+                                            "Management Masters": 3,
+                                            "Management Storage": 0,
+                                            "Management Worker": {
+                                                "Nodes": [
                                                     {
-                                                        "name": "ncn-s003",
-                                                        "status": "Ready",
-                                                        "osds": [
-                                                            {
-                                                                "name": "osd.1",
-                                                                "status": "up"
-                                                            },
-                                                            {
-                                                                "name": "osd.4",
-                                                                "status": "up"
-                                                            },
-                                                            {
-                                                                "name": "osd.7",
-                                                                "status": "up"
-                                                            },
-                                                            {
-                                                                "name": "osd.10",
-                                                                "status": "up"
-                                                            }
-                                                        ]
+                                                        "Name": "ncn-w001",
+                                                        "Status": "Ready"
+                                                    },
+                                                    {
+                                                        "Name": "ncn-w002",
+                                                        "Status": "Ready"
+                                                    },
+                                                    {
+                                                        "Name": "ncn-w003",
+                                                        "Status": "Ready"
+                                                    },
+                                                    {
+                                                        "Name": "ncn-w004",
+                                                        "Status": "Ready"
+                                                    },
+                                                    {
+                                                        "Name": "ncn-w005",
+                                                        "Status": "Ready"
                                                     }
                                                 ],
-                                                "workers": [
-                                                    {
-                                                        "name": "ncn-w001",
-                                                        "status": "Ready"
-                                                    }
-                                                ]
-                                            }
+                                                "Type": "Kubernetes Topology Zone"
+                                            },
+                                            "Management Workers": 5
                                         }
                                     }
                                 }
@@ -345,11 +317,11 @@
                 "tags": [
                     "criticalservices"
                 ],
-                "description": "Returns an object containing a list of critical services grouped by namespace.\n",
+                "description": "Returns an object with a \"critical-services\" property. The value is an object with a \"namespace\" property, which is an object where each key is a namespace and the value is an array of service objects.\n",
                 "operationId": "getCriticalServices",
                 "responses": {
                     "200": {
-                        "description": "List of critical services.",
+                        "description": "List of critical services grouped by namespace.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -358,7 +330,7 @@
                                         "critical-services": {
                                             "type": "object",
                                             "properties": {
-                                                "namespaces": {
+                                                "namespace": {
                                                     "type": "object",
                                                     "additionalProperties": {
                                                         "type": "array",
@@ -383,24 +355,14 @@
                                     "criticalServices": {
                                         "value": {
                                             "critical-services": {
-                                                "namespaces": {
+                                                "namespace": {
+                                                    "default": [
+                                                        {
+                                                            "name": "newservice",
+                                                            "type": "Deployment"
+                                                        }
+                                                    ],
                                                     "kube-system": [
-                                                        {
-                                                            "name": "coredns-x32",
-                                                            "type": "Deployment"
-                                                        },
-                                                        {
-                                                            "name": "coredns-x321111",
-                                                            "type": "Deployment"
-                                                        },
-                                                        {
-                                                            "name": "coredns-x32kv",
-                                                            "type": "Deployment"
-                                                        },
-                                                        {
-                                                            "name": "coredns-xxx",
-                                                            "type": "Deployment"
-                                                        },
                                                         {
                                                             "name": "kube-multus-ds",
                                                             "type": "DaemonSet"
@@ -412,7 +374,15 @@
                                                     ],
                                                     "nexus": [
                                                         {
+                                                            "name": "coredns",
+                                                            "type": "Deployment"
+                                                        },
+                                                        {
                                                             "name": "nexus",
+                                                            "type": "Deployment"
+                                                        },
+                                                        {
+                                                            "name": "redns",
                                                             "type": "Deployment"
                                                         }
                                                     ],
@@ -441,7 +411,7 @@
                     "criticalservices"
                 ],
                 "operationId": "patchCriticalServices",
-                "description": "Updates the critical services configuration. The request body should contain a JSON string in the new_services property representing the updated critical services configuration.\n",
+                "description": "Updates the critical services configuration. The request body should contain a JSON string in the file property representing the updated critical services configuration.\n",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -449,13 +419,13 @@
                             "schema": {
                                 "type": "object",
                                 "properties": {
-                                    "new_services": {
+                                    "file": {
                                         "type": "string",
                                         "description": "A JSON string containing the updated critical services configuration."
                                     }
                                 },
                                 "required": [
-                                    "new_services"
+                                    "file"
                                 ]
                             }
                         }
@@ -469,37 +439,31 @@
                                 "schema": {
                                     "type": "object",
                                     "properties": {
-                                        "Message for wrongly entered services": {
-                                            "type": "string",
-                                            "example": "The services entered does not have any pod attached to it in that namespace, please check the name or namespace or type provided of the service you want to add"
-                                        },
-                                        "Wrongly Entered Services": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "string"
-                                            },
-                                            "example": []
-                                        },
-                                        "added_services": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "string"
-                                            },
-                                            "example": []
-                                        },
-                                        "already_existing_services": {
+                                        "Already Existing Services": {
                                             "type": "array",
                                             "items": {
                                                 "type": "string"
                                             },
                                             "example": [
-                                                "coredns-xxx",
                                                 "kube-multus-ds"
                                             ]
                                         },
-                                        "message": {
+                                        "Message for unknown services": {
                                             "type": "string",
-                                            "example": "Update successful"
+                                            "example": "Service(s) has no associated pods in the namespace, Please verify the Information"
+                                        },
+                                        "Unknown Services": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            },
+                                            "example": [
+                                                "coredns-xxx"
+                                            ]
+                                        },
+                                        "Update": {
+                                            "type": "string",
+                                            "example": "OK"
                                         }
                                     }
                                 }
@@ -559,7 +523,7 @@
                 "tags": [
                     "criticalservices"
                 ],
-                "description": "Returns detailed information for a specific critical service including:\n  - configured_instances: Number of configured instances.\n  - currently_running_instances: Number of currently running instances.\n  - name: The name of the critical service.\n  - namespace: The namespace of the service.\n  - pods: An array of pod objects with name and status.\n  - services: An array of service names associated with the critical service.\n  - total_pods: Total number of pods.\n  - type: The type of the service (e.g., Deployment, StatefulSet, DaemonSet).\n",
+                "description": "Returns detailed information for a specific critical service. The response includes:\n  - \"Configured Instances\": number\n  - \"Currently Running Instances\": number\n  - \"Name\": string\n  - \"Namespace\": string\n  - \"Pods\": array of pod objects with \"Name\", \"Node\", \"Status\", \"Zone\"\n  - \"Type\": string\n",
                 "operationId": "getCriticalServiceDetails",
                 "parameters": [
                     {
@@ -574,7 +538,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Detailed information for the specified critical service.",
+                        "description": "Detailed critical service information.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -583,45 +547,41 @@
                                         "Critical Service": {
                                             "type": "object",
                                             "properties": {
-                                                "configured_instances": {
+                                                "Configured Instances": {
                                                     "type": "integer",
                                                     "example": 3
                                                 },
-                                                "currently_running_instances": {
+                                                "Currently Running Instances": {
                                                     "type": "integer",
                                                     "example": 3
                                                 },
-                                                "name": {
+                                                "Name": {
                                                     "type": "string"
                                                 },
-                                                "namespace": {
+                                                "Namespace": {
                                                     "type": "string"
                                                 },
-                                                "pods": {
+                                                "Pods": {
                                                     "type": "array",
                                                     "items": {
                                                         "type": "object",
                                                         "properties": {
-                                                            "name": {
+                                                            "Name": {
                                                                 "type": "string"
                                                             },
-                                                            "status": {
+                                                            "Node": {
+                                                                "type": "string"
+                                                            },
+                                                            "Status": {
+                                                                "type": "string"
+                                                            },
+                                                            "Zone": {
                                                                 "type": "string"
                                                             }
                                                         }
                                                     }
                                                 },
-                                                "services": {
-                                                    "type": "array",
-                                                    "items": {
-                                                        "type": "string"
-                                                    }
-                                                },
-                                                "total_pods": {
-                                                    "type": "integer",
-                                                    "example": 3
-                                                },
-                                                "type": {
+                                                "Type": {
                                                     "type": "string"
                                                 }
                                             }
@@ -632,31 +592,31 @@
                                     "criticalServiceDetail": {
                                         "value": {
                                             "Critical Service": {
-                                                "configured_instances": 3,
-                                                "currently_running_instances": 3,
-                                                "name": "cray-keycloak",
-                                                "namespace": "services",
-                                                "pods": [
+                                                "Configured Instances": 3,
+                                                "Currently Running Instances": 3,
+                                                "Name": "cray-keycloak",
+                                                "Namespace": "services",
+                                                "Pods": [
                                                     {
-                                                        "name": "cray-keycloak-0",
-                                                        "status": "Running"
+                                                        "Name": "cray-keycloak-0",
+                                                        "Node": "ncn-w001",
+                                                        "Status": "Running",
+                                                        "Zone": "x3000"
                                                     },
                                                     {
-                                                        "name": "cray-keycloak-1",
-                                                        "status": "Running"
+                                                        "Name": "cray-keycloak-1",
+                                                        "Node": "ncn-w004",
+                                                        "Status": "Running",
+                                                        "Zone": "x3000"
                                                     },
                                                     {
-                                                        "name": "cray-keycloak-2",
-                                                        "status": "Running"
+                                                        "Name": "cray-keycloak-2",
+                                                        "Node": "ncn-w003",
+                                                        "Status": "Running",
+                                                        "Zone": "x3000"
                                                     }
                                                 ],
-                                                "services": [
-                                                    "cray-keycloak-headless",
-                                                    "cray-keycloak-http",
-                                                    "keycloak"
-                                                ],
-                                                "total_pods": 3,
-                                                "type": "StatefulSet"
+                                                "Type": "StatefulSet"
                                             }
                                         }
                                     }
@@ -673,229 +633,185 @@
     },
     "components": {
         "schemas": {
-            "ZoneNodes": {
+            "ZonesResponse": {
                 "type": "object",
                 "properties": {
-                    "Management Master Nodes": {
+                    "Zones": {
                         "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    },
-                    "Management Storage Nodes": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    },
-                    "Management Worker Nodes": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    }
-                }
-            },
-            "ZoneConfiguration": {
-                "type": "object",
-                "additionalProperties": {
-                    "type": "object",
-                    "properties": {
-                        "Management Master Nodes": {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
-                        },
-                        "Management Storage Nodes": {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
-                        },
-                        "Management Worker Nodes": {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            },
-            "InformationResponse": {
-                "type": "object",
-                "properties": {
-                    "Information": {
-                        "type": "string"
-                    }
-                }
-            },
-            "ZoneDetail": {
-                "type": "object",
-                "properties": {
-                    "zone_name": {
-                        "type": "string",
-                        "description": "The name of the zone."
-                    },
-                    "no_of_masters": {
-                        "type": "integer",
-                        "description": "Number of master nodes."
-                    },
-                    "no_of_storage": {
-                        "type": "integer",
-                        "description": "Number of storage nodes."
-                    },
-                    "no_of_workers": {
-                        "type": "integer",
-                        "description": "Number of worker nodes."
-                    },
-                    "nodes": {
-                        "type": "object",
-                        "description": "Mapping of node roles to lists of node details.",
-                        "properties": {
-                            "masters": {
-                                "type": "array",
-                                "items": {
-                                    "type": "object",
-                                    "properties": {
-                                        "name": {
-                                            "type": "string",
-                                            "description": "The node's name."
-                                        },
-                                        "status": {
-                                            "type": "string",
-                                            "description": "The node's status (e.g., Ready, NotReady)."
-                                        },
-                                        "osds": {
-                                            "type": "array",
-                                            "description": "List of OSD details (only applicable for storage nodes).",
-                                            "items": {
-                                                "type": "object",
-                                                "properties": {
-                                                    "name": {
-                                                        "type": "string",
-                                                        "description": "The OSD's name."
-                                                    },
-                                                    "status": {
-                                                        "type": "string",
-                                                        "description": "The OSD's status (e.g., up, down)."
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            },
-                            "storage": {
-                                "type": "array",
-                                "items": {
-                                    "type": "object",
-                                    "properties": {
-                                        "name": {
-                                            "type": "string",
-                                            "description": "The node's name."
-                                        },
-                                        "status": {
-                                            "type": "string",
-                                            "description": "The node's status (e.g., Ready, NotReady)."
-                                        },
-                                        "osds": {
-                                            "type": "array",
-                                            "description": "List of OSD details (only applicable for storage nodes).",
-                                            "items": {
-                                                "type": "object",
-                                                "properties": {
-                                                    "name": {
-                                                        "type": "string",
-                                                        "description": "The OSD's name."
-                                                    },
-                                                    "status": {
-                                                        "type": "string",
-                                                        "description": "The OSD's status (e.g., up, down)."
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            },
-                            "workers": {
-                                "type": "array",
-                                "items": {
-                                    "type": "object",
-                                    "properties": {
-                                        "name": {
-                                            "type": "string",
-                                            "description": "The node's name."
-                                        },
-                                        "status": {
-                                            "type": "string",
-                                            "description": "The node's status (e.g., Ready, NotReady)."
-                                        },
-                                        "osds": {
-                                            "type": "array",
-                                            "description": "List of OSD details (only applicable for storage nodes).",
-                                            "items": {
-                                                "type": "object",
-                                                "properties": {
-                                                    "name": {
-                                                        "type": "string",
-                                                        "description": "The OSD's name."
-                                                    },
-                                                    "status": {
-                                                        "type": "string",
-                                                        "description": "The OSD's status (e.g., up, down)."
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "Node": {
-                "type": "object",
-                "properties": {
-                    "name": {
-                        "type": "string",
-                        "description": "The node's name."
-                    },
-                    "status": {
-                        "type": "string",
-                        "description": "The node's status (e.g., Ready, NotReady)."
-                    },
-                    "osds": {
-                        "type": "array",
-                        "description": "List of OSD details (only applicable for storage nodes).",
                         "items": {
                             "type": "object",
                             "properties": {
-                                "name": {
-                                    "type": "string",
-                                    "description": "The OSD's name."
+                                "Zone Name": {
+                                    "type": "string"
                                 },
-                                "status": {
-                                    "type": "string",
-                                    "description": "The OSD's status (e.g., up, down)."
+                                "Kubernetes Topology Zone": {
+                                    "type": "object",
+                                    "properties": {
+                                        "Management Master Nodes": {
+                                            "type": "object",
+                                            "properties": {
+                                                "Nodes": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        "Management Worker Nodes": {
+                                            "type": "object",
+                                            "properties": {
+                                                "Nodes": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                "CEPH Zone": {
+                                    "type": "object",
+                                    "properties": {
+                                        "Management Storage Nodes": {
+                                            "type": "object",
+                                            "properties": {
+                                                "Nodes": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
                     }
                 }
             },
-            "OSD": {
+            "ZoneItem": {
                 "type": "object",
                 "properties": {
-                    "name": {
-                        "type": "string",
-                        "description": "The OSD's name."
+                    "Zone Name": {
+                        "type": "string"
                     },
-                    "status": {
-                        "type": "string",
-                        "description": "The OSD's status (e.g., up, down)."
+                    "Kubernetes Topology Zone": {
+                        "type": "object",
+                        "properties": {
+                            "Management Master Nodes": {
+                                "type": "object",
+                                "properties": {
+                                    "Nodes": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            },
+                            "Management Worker Nodes": {
+                                "type": "object",
+                                "properties": {
+                                    "Nodes": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "CEPH Zone": {
+                        "type": "object",
+                        "properties": {
+                            "Management Storage Nodes": {
+                                "type": "object",
+                                "properties": {
+                                    "Nodes": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "ZoneDetailResponse": {
+                "type": "object",
+                "properties": {
+                    "Zone Name": {
+                        "type": "string"
+                    },
+                    "Management Master": {
+                        "type": "object",
+                        "properties": {
+                            "Nodes": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "Name": {
+                                            "type": "string"
+                                        },
+                                        "Status": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            },
+                            "Type": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "Management Masters": {
+                        "type": "integer"
+                    },
+                    "Management Storage": {
+                        "type": "integer"
+                    },
+                    "Management Worker": {
+                        "type": "object",
+                        "properties": {
+                            "Nodes": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "Name": {
+                                            "type": "string"
+                                        },
+                                        "Status": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            },
+                            "Type": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "Management Workers": {
+                        "type": "integer"
+                    }
+                }
+            },
+            "NodeDetail": {
+                "type": "object",
+                "properties": {
+                    "Name": {
+                        "type": "string"
+                    },
+                    "Status": {
+                        "type": "string"
                     }
                 }
             },
@@ -905,7 +821,7 @@
                     "critical-services": {
                         "type": "object",
                         "properties": {
-                            "namespaces": {
+                            "namespace": {
                                 "type": "object",
                                 "additionalProperties": {
                                     "type": "array",
@@ -926,17 +842,57 @@
                     }
                 }
             },
-            "CriticalService": {
+            "ServiceItem": {
                 "type": "object",
                 "properties": {
                     "name": {
                         "type": "string"
                     },
-                    "namespace": {
-                        "type": "string"
-                    },
                     "type": {
                         "type": "string"
+                    }
+                }
+            },
+            "CriticalServicesPatch": {
+                "type": "object",
+                "properties": {
+                    "file": {
+                        "type": "string",
+                        "description": "A JSON string containing the updated critical services configuration."
+                    }
+                },
+                "required": [
+                    "file"
+                ]
+            },
+            "CriticalServicesPatchResponse": {
+                "type": "object",
+                "properties": {
+                    "Already Existing Services": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "example": [
+                            "kube-multus-ds"
+                        ]
+                    },
+                    "Message for unknown services": {
+                        "type": "string",
+                        "example": "Service(s) has no associated pods in the namespace, Please verify the Information"
+                    },
+                    "Unknown Services": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "example": [
+                            "coredns-xxx"
+                        ]
+                    },
+                    "Update": {
+                        "type": "string",
+                        "example": "OK"
                     }
                 }
             },
@@ -946,45 +902,41 @@
                     "Critical Service": {
                         "type": "object",
                         "properties": {
-                            "configured_instances": {
+                            "Configured Instances": {
                                 "type": "integer",
                                 "example": 3
                             },
-                            "currently_running_instances": {
+                            "Currently Running Instances": {
                                 "type": "integer",
                                 "example": 3
                             },
-                            "name": {
+                            "Name": {
                                 "type": "string"
                             },
-                            "namespace": {
+                            "Namespace": {
                                 "type": "string"
                             },
-                            "pods": {
+                            "Pods": {
                                 "type": "array",
                                 "items": {
                                     "type": "object",
                                     "properties": {
-                                        "name": {
+                                        "Name": {
                                             "type": "string"
                                         },
-                                        "status": {
+                                        "Node": {
+                                            "type": "string"
+                                        },
+                                        "Status": {
+                                            "type": "string"
+                                        },
+                                        "Zone": {
                                             "type": "string"
                                         }
                                     }
                                 }
                             },
-                            "services": {
-                                "type": "array",
-                                "items": {
-                                    "type": "string"
-                                }
-                            },
-                            "total_pods": {
-                                "type": "integer",
-                                "example": 3
-                            },
-                            "type": {
+                            "Type": {
                                 "type": "string"
                             }
                         }
@@ -994,123 +946,61 @@
             "CriticalServiceDetail": {
                 "type": "object",
                 "properties": {
-                    "configured_instances": {
+                    "Configured Instances": {
                         "type": "integer",
                         "example": 3
                     },
-                    "currently_running_instances": {
+                    "Currently Running Instances": {
                         "type": "integer",
                         "example": 3
                     },
-                    "name": {
+                    "Name": {
                         "type": "string"
                     },
-                    "namespace": {
+                    "Namespace": {
                         "type": "string"
                     },
-                    "pods": {
+                    "Pods": {
                         "type": "array",
                         "items": {
                             "type": "object",
                             "properties": {
-                                "name": {
+                                "Name": {
                                     "type": "string"
                                 },
-                                "status": {
+                                "Node": {
+                                    "type": "string"
+                                },
+                                "Status": {
+                                    "type": "string"
+                                },
+                                "Zone": {
                                     "type": "string"
                                 }
                             }
                         }
                     },
-                    "services": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    },
-                    "total_pods": {
-                        "type": "integer",
-                        "example": 3
-                    },
-                    "type": {
+                    "Type": {
                         "type": "string"
                     }
                 }
             },
-            "Pod": {
+            "PodDetail": {
                 "type": "object",
                 "properties": {
-                    "name": {
+                    "Name": {
                         "type": "string"
                     },
-                    "status": {
+                    "Node": {
+                        "type": "string"
+                    },
+                    "Status": {
+                        "type": "string"
+                    },
+                    "Zone": {
                         "type": "string"
                     }
                 }
-            },
-            "CriticalServicesPatch": {
-                "type": "object",
-                "properties": {
-                    "new_services": {
-                        "type": "string",
-                        "description": "A JSON string containing the updated critical services configuration."
-                    }
-                },
-                "required": [
-                    "new_services"
-                ]
-            },
-            "CriticalServicesPatchResponse": {
-                "type": "object",
-                "properties": {
-                    "Message for wrongly entered services": {
-                        "type": "string",
-                        "example": "The services entered does not have any pod attached to it in that namespace, please check the name or namespace or type provided of the service you want to add"
-                    },
-                    "Wrongly Entered Services": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        },
-                        "example": []
-                    },
-                    "added_services": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        },
-                        "example": []
-                    },
-                    "already_existing_services": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        },
-                        "example": [
-                            "coredns-xxx",
-                            "kube-multus-ds"
-                        ]
-                    },
-                    "message": {
-                        "type": "string",
-                        "example": "Update successful"
-                    }
-                }
-            },
-            "CriticalServiceUpdate": {
-                "type": "object",
-                "properties": {
-                    "namespace": {
-                        "type": "string"
-                    },
-                    "type": {
-                        "type": "string"
-                    }
-                },
-                "required": [
-                    "namespace",
-                    "type"
-                ]
             }
         },
         "responses": {

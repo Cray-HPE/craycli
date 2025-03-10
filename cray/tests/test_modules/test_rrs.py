@@ -139,7 +139,7 @@ def test_cray_rrs_criticalservices_update(cli_runner, rest_mock):
     result = runner.invoke(
         cli,
         ['rrs', 'criticalservices', 'update',
-         '--new-services', newservicesfile]
+         '--file', newservicesfile]
     )
     with open(newservicesfile, encoding='utf-8') as inf:
         newservicesdata = inf.read()
@@ -148,5 +148,5 @@ def test_cray_rrs_criticalservices_update(cli_runner, rest_mock):
     assert data['method'] == 'PATCH'
     assert data['url'] == f'{config["default"]["hostname"]}/apis/rrs/criticalservices'
     assert data['body'] == {
-        'new_services': newservicesdata
+        'file': newservicesdata
     }
