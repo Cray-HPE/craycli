@@ -280,50 +280,41 @@ def updatemany_data_handler(args):
 def create_components_updatemany_shim(func):
     """ Callback function to custom create our own payload """
 
-    def _decorator(filter_ids, filter_status, filter_tags, patch,
-                   state, tags,enabled, retry_policy, error_count, desired_config,**kwargs):
-        filter_ids = filter_ids["value"]
-        filter_status = filter_status["value"]
-        filter_tags = filter_tags["value"]
-
-        if not (filter_ids or filter_status or filter_tags):
-            raise Exception(
-                'At least one filter must be set for updates.'
-            )
+    def _decorator(filter_ids, filter_status, filter_enabled, filter_config_name, filter_tags, patch,
+                   state, tags, enabled, retry_policy, error_count, desired_config, **kwargs):
         payload = defaultdict(dict)
+
+        filters = {
+            "ids": filter_ids["value"],
+            "status": filter_status["value"],
+            "tags": filter_tags["value"],
+            "enabled": filter_enabled["value"],
+            "config_name": filter_config_name["value"]
+        }
+        if not any(filters.values()):
+            raise Exception('At least one filter must be set for updates.')
+
         # Add filters to payload
-        if filter_ids:
-            payload['filters'] = {"ids": filter_ids}
-        if filter_status:
-            payload['filters'] = {"status": filter_status}
-        if filter_tags:
-            payload['filters'] = {"tags": filter_tags}
+        payload['filters'] = {k: v for k, v in filters.items() if v}
 
         # Add patch to payload
-        if patch["value"]:
-            payload['patch'] = json.loads(patch["value"])
-        else:
-            payload['patch'] = {}
+        payload['patch'] = json.loads(patch["value"]) if patch["value"] else {}
         if enabled["value"] is not None:
             payload['patch']['enabled'] = enabled["value"]
         if state["value"] is not None:
             payload['patch']['state'] = json.loads(state["value"])
         if tags["value"] is not None:
-            payload['patch']['tags'] = {
-                tag.split('=')[0].strip(): tag.split('=')[1].strip()
-                for tag in tags["value"].split(',')
-            }
+            payload['patch']['tags'] = dict(tag.split('=') for tag in tags["value"].split(','))
         if retry_policy["value"] is not None:
             payload['patch']['retry_policy'] = retry_policy["value"]
         if error_count["value"] is not None:
             payload['patch']['error_count'] = error_count["value"]
-        if desired_config["value"]is not None:
+        if desired_config["value"] is not None:
             payload['patch']['desired_config'] = desired_config["value"]
 
         # Hack to tell the CLI we are passing our own payload; don't generate
         kwargs[FROM_FILE_TAG] = {'value': payload, 'name': FROM_FILE_TAG}
         return func(data_handler=updatemany_data_handler, **kwargs)
-        # return func(**kwargs)
 
     return _decorator
 
@@ -347,106 +338,39 @@ def create_components_update_shim(func):
 
     return _decorator
 
+
 def setup_many_components_update(cfs_cli, version):
-    """
-    Adds the --filter-ids, --filter-status, --filter-enabled, --filter-config-name options
-    """
+    """ Adds the --filter-ids, --filter-status, --filter-enabled, --filter-config-name options """
     list_command = cfs_cli.commands[version].commands['components'].commands['list']
     update_command = cfs_cli.commands[version].commands['components'].commands['update']
-    command_type = type(list_command)
-    new_command = command_type("updatemany")
+    new_command = type(list_command)("updatemany")
+
+    # Copy attributes from list_command to new_command
     for key, value in list_command.__dict__.items():
         setattr(new_command, key, value)
-    cfs_cli.commands[version].commands['components'].commands['updatemany'] = new_command
-    new_command.params = []
-    default_params = [param for param in update_command.params if
-                      not param.expose_value]
 
-    option(
-        '--filter-ids',
-        callback=_opt_callback,
-        required=False,
-        type=str,
-        default='',
-        metavar='TEXT',
-        help="Filter by component IDs.  A comma-separated list of component IDs"
-    )(new_command)
-    option(
-        '--filter-status',
-        callback=_opt_callback,
-        required=False,
-        type=str,
-        default='',
-        metavar='TEXT',
-        help="Filter by component status.  A comma-separated list of statuses"
-    )(new_command)
-    option(
-        '--filter-tags',
-        callback=_opt_callback,
-        required=False,
-        type=str,
-        default='',
-        metavar='TEXT',
-        help="Filter by component tags.  A comma-separated list of key=value"
-    )(new_command)
-    option(
-        '--patch',
-        callback=_opt_callback,
-        required=False,
-        type=str,
-        default='',
-        metavar='TEXT',
-        help="JSON component data applied to all filtered components"
-    )(new_command)
-    option(
-        '--state',
-        callback=_opt_callback,
-        required=False,
-        type=str,
-        metavar='TEXT',
-        help="The component state. Set to [] to clear."
-    )(new_command)
-    option(
-        '--tags',
-        callback=_opt_callback,
-        required=False,
-        type=str,
-        metavar='TEXT',
-        help="User-defined tags.  A comma-separated list of key=value"
-    )(new_command)
-    option(
-        '--enabled',
-        callback=_opt_callback,
-        required=False,
-        type=bool,
-        metavar='BOOL',
-        help="A flag indicating if the component should be scheduled for configuration."
-    )(new_command)
-    option(
-        '--retry-policy',
-        callback=_opt_callback,
-        required=False,
-        type=int,
-        metavar='INT',
-        help="The number of retries to attempt if the component fails to configure."
-    )(new_command)
-    option(
-        '--error-count',
-        callback=_opt_callback,
-        required=False,
-        type=int,
-        metavar='INT',
-        help="The count of unsuccessful configuration attempts."
-    )(new_command)
-    option(
-        '--desired-config',
-        callback=_opt_callback,
-        required=False,
-        type=str,
-        metavar='TEXT',
-        help="A reference to a configuration."
-    )(new_command)
-    new_command.params += default_params
+    cfs_cli.commands[version].commands['components'].commands['updatemany'] = new_command
+    new_command.params = [param for param in update_command.params if not param.expose_value]
+
+    # Define options for the new command
+    options = [
+        ('--filter-ids', str, "Filter by component IDs. A comma-separated list of component IDs"),
+        ('--filter-status', str, "Filter by component status. A comma-separated list of statuses"),
+        ('--filter-enabled', bool, "Filter by component enabled status. A boolean value"),
+        ('--filter-config-name', str, "Filter by component configuration name. A string value"),
+        ('--filter-tags', str, "Filter by component tags. A comma-separated list of key=value"),
+        ('--patch', str, "JSON component data applied to all filtered components"),
+        ('--state', str, "The component state. Set to [] to clear."),
+        ('--tags', str, "User-defined tags. A comma-separated list of key=value"),
+        ('--enabled', bool, "A flag indicating if the component should be scheduled for configuration."),
+        ('--retry-policy', int, "The number of retries to attempt if the component fails to configure."),
+        ('--error-count', int, "The count of unsuccessful configuration attempts."),
+        ('--desired-config', str, "A reference to a configuration.")
+    ]
+
+    for opt, opt_type, help_text in options:
+        option(opt, callback=_opt_callback, required=False, type=opt_type, metavar='TEXT', help=help_text)(new_command)
+
     new_command.callback = create_components_updatemany_shim(new_command.callback)
 
 
