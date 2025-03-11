@@ -411,7 +411,7 @@
                     "criticalservices"
                 ],
                 "operationId": "patchCriticalServices",
-                "description": "Updates the critical services configuration. The request body should contain a JSON string in the file property representing the updated critical services configuration.\n",
+                "description": "Updates the critical services configuration. The request body should contain a JSON string in the from_file property representing the updated critical services configuration.\n",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -419,13 +419,13 @@
                             "schema": {
                                 "type": "object",
                                 "properties": {
-                                    "file": {
+                                    "from_file": {
                                         "type": "string",
                                         "description": "A JSON string containing the updated critical services configuration."
                                     }
                                 },
                                 "required": [
-                                    "file"
+                                    "from_file"
                                 ]
                             }
                         }
@@ -856,13 +856,13 @@
             "CriticalServicesPatch": {
                 "type": "object",
                 "properties": {
-                    "file": {
+                    "from_file": {
                         "type": "string",
                         "description": "A JSON string containing the updated critical services configuration."
                     }
                 },
                 "required": [
-                    "file"
+                    "from_file"
                 ]
             },
             "CriticalServicesPatchResponse": {

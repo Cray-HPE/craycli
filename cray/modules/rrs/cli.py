@@ -39,7 +39,7 @@ def _file_cb(cb):
     return _cb
 
 for p in cli.commands['criticalservices'].commands['update'].params:
-    if p.payload_name == 'file':
+    if p.payload_name == 'from_file':
         p.type = click.File(mode='r')
         p.callback = _file_cb(p.callback)
         break
