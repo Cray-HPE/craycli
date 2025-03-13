@@ -1,7 +1,7 @@
 #
 #  MIT License
 #
-#  (C) Copyright 2020-2023 Hewlett Packard Enterprise Development LP
+#  (C) Copyright 2020-2025 Hewlett Packard Enterprise Development LP
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a
 #  copy of this software and associated documentation files (the "Software"),
@@ -35,8 +35,11 @@ a payload for passing on to the API.
 
 # pylint: disable=invalid-name
 # pylint: disable=too-many-arguments
+# pylint: disable=too-many-branches
+# pylint: disable=line-too-long
 import json
 import urllib.parse
+from collections import defaultdict
 
 import click
 
@@ -67,10 +70,12 @@ def setup(cfs_cli):
     setup_sessions_create(cfs_cli, "v2")
     remove_sessions_update(cfs_cli, "v2")
     setup_components_update(cfs_cli, "v2")
+    setup_many_components_update(cfs_cli, "v2")
     setup_configurations_update(cfs_cli, "v3")
     setup_sessions_create(cfs_cli, "v3")
     remove_sessions_update(cfs_cli, "v3")
     setup_components_update(cfs_cli, "v3")
+    setup_many_components_update(cfs_cli, "v3")
     setup_sources(cfs_cli)
 
 
@@ -268,6 +273,68 @@ def setup_sessions_create(cfs_cli, version):
     command.params = new_params
     command.callback = create_sessions_create_shim(command.callback)
 
+def updatemany_data_handler(args):
+    """ Handler to override the api action taken for updatemany """
+    _, path, data = args
+    return "PATCH", path, data
+
+# Many Components
+def create_components_updatemany_shim_outer(version: str):
+    """ Outer function to pass api version to custom create the payload """
+    def create_components_updatemany_shim(func):
+        """ Callback function to custom create our own payload """
+
+        def _decorator(filter_ids, filter_status, filter_enabled,
+                       filter_config_name, filter_tags, patch,
+                       state, tags, enabled, retry_policy,
+                       error_count, desired_config, **kwargs):
+
+            payload = defaultdict(dict)
+            filters = {
+                "ids": filter_ids["value"],
+                "status": filter_status["value"],
+                "tags": filter_tags["value"],
+                "enabled": filter_enabled["value"],
+                "config_name": filter_config_name["value"]
+            }
+            if not any(filters.values()):
+                # Need to check as "--filter-enabled false" will reach here
+                if not filters["enabled"] in [True, False]:
+                    raise Exception('At least one filter must be set for updates.')
+
+            # Add filters to payload
+            payload['filters'] = {k: v for k, v in filters.items() if v}
+
+            # Add patch to payload
+            payload['patch'] = json.loads(patch["value"]) if patch["value"] else {}
+            if enabled["value"] is not None:
+                payload['patch']['enabled'] = enabled["value"]
+            if state["value"] is not None:
+                payload['patch']['state'] = json.loads(state["value"])
+            if tags["value"] is not None:
+                payload['patch']['tags'] = dict(tag.split('=') for tag in tags["value"].split(','))
+            # Add retry_policy, error_count, and desired_config to payload based on api version
+            if version == "v2":
+                if retry_policy["value"] is not None:
+                    payload['patch']['retryPolicy'] = retry_policy["value"]
+                if error_count["value"] is not None:
+                    payload['patch']['errorCount'] = error_count["value"]
+                if desired_config["value"] is not None:
+                    payload['patch']['desiredConfig'] = desired_config["value"]
+            else:
+                if retry_policy["value"] is not None:
+                    payload['patch']['retry_policy'] = retry_policy["value"]
+                if error_count["value"] is not None:
+                    payload['patch']['error_count'] = error_count["value"]
+                if desired_config["value"] is not None:
+                    payload['patch']['desired_config'] = desired_config["value"]
+
+            # Hack to tell the CLI we are passing our own payload; don't generate
+            kwargs[FROM_FILE_TAG] = {'value': payload, 'name': FROM_FILE_TAG}
+            return func(data_handler=updatemany_data_handler, **kwargs)
+
+        return _decorator
+    return create_components_updatemany_shim
 
 # COMPONENTS #
 def create_components_update_shim(func):
@@ -288,6 +355,44 @@ def create_components_update_shim(func):
         return func(component_id=component_id, **kwargs)
 
     return _decorator
+
+
+def setup_many_components_update(cfs_cli, version):
+    """ Adds the --filter-ids, --filter-status, --filter-enabled, --filter-config-name options """
+    list_command = cfs_cli.commands[version].commands['components'].commands['list']
+    update_command = cfs_cli.commands[version].commands['components'].commands['update']
+    new_command = type(list_command)("updatemany")
+
+    # Copy attributes from list_command to new_command
+    for key, value in list_command.__dict__.items():
+        setattr(new_command, key, value)
+
+    cfs_cli.commands[version].commands['components'].commands['updatemany'] = new_command
+    new_command.params = []
+    default_params = [param for param in update_command.params if not param.expose_value]
+
+    # Define options for the new command
+    options = [
+        ('--filter-ids', str, "Filter by component IDs. A comma-separated list of component IDs"),
+        ('--filter-status', str, "Filter by component status. A comma-separated list of statuses"),
+        ('--filter-enabled', bool, "Filter by component enabled status. A boolean value"),
+        ('--filter-config-name', str, "Filter by component configuration name. A string value"),
+        ('--filter-tags', str, "Filter by component tags. A comma-separated list of key=value"),
+        ('--patch', str, "JSON component data applied to all filtered components"),
+        ('--state', str, "The component state. Set to [] to clear."),
+        ('--tags', str, "User-defined tags. A comma-separated list of key=value"),
+        ('--enabled', bool, "A flag indicating if the component should be scheduled for configuration."),
+        ('--retry-policy', int, "The number of retries to attempt if the component fails to configure."),
+        ('--error-count', int, "The count of unsuccessful configuration attempts."),
+        ('--desired-config', str, "A reference to a configuration.")
+    ]
+
+    for opt, opt_type, help_text in options:
+        option(opt, callback=_opt_callback, required=False,
+               type=opt_type, metavar='TEXT', help=help_text)(new_command)
+
+    new_command.params += default_params
+    new_command.callback = create_components_updatemany_shim_outer(version)(new_command.callback)
 
 
 def setup_components_update(cfs_cli, version):
