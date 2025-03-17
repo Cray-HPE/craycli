@@ -23,9 +23,12 @@
 #
 """ Test utilities that make testing easier. """
 # pylint: disable=missing-function-docstring
+# pylint: disable=invalid-name
 import os
 import uuid
+import json
 from urllib.parse import urlparse
+from itertools import chain, combinations
 import names
 import toml
 
@@ -73,15 +76,13 @@ def strip_confirmation(output):
 
 def compare_dicts(expected, actual):
     """ Compare dictionaries because ordering can be non-deterministic """
+    assert expected.keys() == actual.keys()
     for key in expected:
-        assert key in actual
-        if isinstance(expected[key], dict):
+        if isinstance(expected[key], dict) and isinstance(actual[key], dict):
             # Handle nested dicts because they can be non-deterministic too.
             compare_dicts(expected[key], actual[key])
         else:
             assert actual[key] == expected[key]
-    for key in actual:
-        assert key in expected
 
 
 def compare_urls(expected, actual):
@@ -97,3 +98,17 @@ def compare_urls(expected, actual):
             assert term in query_act
         for term in query_act:
             assert term in query_exp
+
+def verify_commands_equal(runner, cli, expected_result_data, command_list):
+    """ Verifies that all of the specified commands pass and give the same result """
+    for command in command_list:
+        result = runner.invoke(cli, command)
+        assert result.exit_code == 0
+        data = json.loads(result.output)
+        compare_dicts(expected_result_data, data)
+
+# From Python 3 docs: https://docs.python.org/3/library/itertools.html
+def powerset(iterable):
+    """powerset([1,2,3]) → () (1,) (2,) (3,) (1,2) (1,3) (2,3) (1,2,3)"""
+    s = list(iterable)
+    return chain.from_iterable(combinations(s, r) for r in range(len(s)+1))
