@@ -68,30 +68,41 @@ info:
           - Pods: array of pod objects with Name, Node, Status, Zone.
           - Type
 
+      ### /criticalservices/status
+        Retrieve the status of all critical services. The response includes:
+          - services: an array of objects each containing:
+              - service-name: the name of the critical service.
+              - status: the current status (e.g., balanced, unbalanced).
+              - replicaDistribution: an object where each key is a zone and the value is an array of objects mapping node names to pod names.
+
+      ### /criticalservices/status/{critical_service_name}
+        Retrieve the status of a specific critical service. The response includes:
+          - service-name: the name of the critical service.
+          - status: the current status.
+          - replicaDistribution: an object where each key is a zone and the value is an array of objects mapping node names to pod names.
+
     ## Workflows
 
-      All endpoints in the Rack Resiliency Service API are GET requests, except for the update operation on /criticalservices.
+      - GET /zones  
+        Retrieve aggregated zone configuration.
 
-      ### Zone Information Retrieval
+      - GET /zones/{zone_name}  
+        Retrieve detailed information for a specific zone.
 
-        - GET /zones  
-          Retrieve aggregated zone configuration.
+      - GET /criticalservices  
+        Retrieve a list of critical services grouped by namespace.
 
-        - GET /zones/{zone_name}  
-          Retrieve detailed information for a specific zone.
+      - GET /criticalservices/{critical_service_name}  
+        Retrieve detailed information for a specific critical service.
 
-      ### Critical Service Information Retrieval
+      - PATCH /criticalservices  
+        Update the critical services configuration.
 
-        - GET /criticalservices  
-          Retrieve a list of critical services grouped by namespace.
+      - GET /criticalservices/status  
+        Retrieve the status of all critical services including service status and detailed replica distribution.
 
-        - GET /criticalservices/{critical_service_name}  
-          Retrieve detailed information for a specific critical service.
-
-      ### Critical Service Update
-
-        - PATCH /criticalservices  
-          Update the critical services configuration.
+      - GET /criticalservices/status/{critical_service_name}  
+        Retrieve the status of a specific critical service.
 servers:
   - url: 'https://api-gw-service-nmn.local/apis/rrs'
     description: The production RRS API server. Accessed from outside the mesh.
@@ -163,7 +174,6 @@ paths:
                               - "ncn-s003"
         '404':
           description: Zones not found.
-          
   /zones/{zone_name}:
     get:
       summary: Get Detailed Zone Information
@@ -224,7 +234,6 @@ paths:
                     "Management Workers": 5
         '404':
           description: Zone not found.
-          
   /criticalservices:
     get:
       summary: Get Critical Services
@@ -299,7 +308,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/responses/InternalServerError'
-          
   /criticalservices/{critical_service_name}:
     get:
       summary: Get Critical Service Details
@@ -353,7 +361,88 @@ paths:
                       Type: "StatefulSet"
         '404':
           description: Critical service not found.
-          
+  /criticalservices/status:
+    get:
+      summary: Get Critical Services Status
+      tags:
+        - criticalservices
+      description: >
+        Returns the status of all critical services. The response includes:
+          - "services": an array of objects each containing:
+              - "service-name": the name of the critical service.
+              - "status": the current status (e.g., balanced, unbalanced).
+              - "replicaDistribution": an object where each key is a zone and the value is an array of objects mapping node names to pod names.
+      operationId: getAllCriticalServicesStatus
+      responses:
+        '200':
+          description: Critical services status retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CriticalServicesStatusResponse'
+              examples:
+                statusExample:
+                  value:
+                    services:
+                      - service-name: "cray-ims"
+                        status: "balanced"
+                        replicaDistribution:
+                          x3001:
+                            - ncn-w001: "coredns-84fd866c7d-8ctmk"
+                            - ncn-w002: "coredns-84fd866c7d-8ctdk"
+                          x3002:
+                            - ncn-w003: "coredns-84fd866c7d-8ctmk"
+                            - ncn-w004: "coredns-84fd866c7d-8ctmh"
+                      - service-name: "cray-smd"
+                        status: "unbalanced"
+                        replicaDistribution:
+                          x3001:
+                            - ncn-w001: "smd-84fd866c7d-8ctmk"
+                            - ncn-w002: "smd-84fd866c7d-8ctdk"
+                            - ncn-w005: "smd-84fd866c7d-8ctdf"
+                          x3002:
+                            - ncn-w003: "smd-84fd866c7d-8ctmk"
+        '404':
+          description: Critical services status not found.
+  /criticalservices/status/{critical_service_name}:
+    get:
+      summary: Get Critical Service Status by Name
+      tags:
+        - criticalservices
+      description: >
+        Returns the status of a specific critical service. The response includes:
+          - "service-name": the name of the critical service.
+          - "status": the current status.
+          - "replicaDistribution": an object where each key is a zone and the value is an array of objects mapping node names to pod names.
+      operationId: getCriticalServiceStatus
+      parameters:
+        - name: critical_service_name
+          in: path
+          required: true
+          description: The name of the critical service.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Critical service status retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CriticalServiceStatusResponse'
+              examples:
+                criticalStatusExample:
+                  value:
+                    service-name: "cray-ims"
+                    status: "balanced"
+                    replicaDistribution:
+                      x3001:
+                        - ncn-w001: "coredns-84fd866c7d-8ctmk"
+                        - ncn-w002: "coredns-84fd866c7d-8ctdk"
+                      x3002:
+                        - ncn-w003: "coredns-84fd866c7d-8ctmk"
+                        - ncn-w004: "coredns-84fd866c7d-8ctmh"
+        '404':
+          description: Critical service status not found.
 components:
   schemas:
     ZonesResponse:
@@ -512,6 +601,43 @@ components:
           type: string
         Zone:
           type: string
+    CriticalServicesStatusResponse:
+      type: object
+      properties:
+        services:
+          type: array
+          items:
+            $ref: '#/components/schemas/CriticalServiceStatus'
+    CriticalServiceStatus:
+      type: object
+      properties:
+        service-name:
+          type: string
+        status:
+          type: string
+        replicaDistribution:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: object
+              additionalProperties:
+                type: string
+    CriticalServiceStatusResponse:
+      type: object
+      properties:
+        service-name:
+          type: string
+        status:
+          type: string
+        replicaDistribution:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: object
+              additionalProperties:
+                type: string
   responses:
     NotFound:
       description: Not found.
