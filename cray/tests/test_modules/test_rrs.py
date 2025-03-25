@@ -93,23 +93,15 @@ def test_cray_rrs_zones_describe(cli_runner, rest_mock):
     assert data['method'] == 'GET'
     assert data['url'] == f'{config["default"]["hostname"]}/apis/rrs/zones/foo'
 
-
 def test_cray_rrs_criticalservices_base(cli_runner, rest_mock):
     """ Test cray rrs criticalservices base command """
     runner, cli, _ = cli_runner
     result = runner.invoke(cli, ['rrs', 'criticalservices'])
     assert result.exit_code == 0
 
-    outputs = [
-        "Groups:",
-        "status",
-        "Commands:",
-        "describe",
-        "list",
-        "update",
-    ]
-
-    compare_output(outputs, result.output)
+    outputs = ["Groups:", "status", "Commands:", "describe", "list", "update",]
+    for txt in outputs:
+        assert txt in result.output
 
 
 def test_cray_rrs_criticalservices_list(cli_runner, rest_mock):
