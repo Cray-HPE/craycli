@@ -59,27 +59,30 @@ info:
       ### /criticalservices
         Retrieve a list of critical services grouped by namespace.
 
-      ### /criticalservices/{critical_service_name}
-        Retrieve detailed information for a specific critical service including:
+      ### /criticalservices/{critical-service-name}
+        Retrieve critical service details in a summarized format. The response includes:
+          - Configured Instances
+          - Currently Running Instances
+          - Name
+          - Namespace
+          - Type
+
+      ### /criticalservices/status
+        Retrieve the status of all critical services with distribution details.
+        Each service object may include:
+          - Service Name
+          - Status
+          - Distribution (an object mapping zones to node-to-pod arrays; optional)
+
+      ### /criticalservices/status/{critical-service-name}
+        Retrieve detailed status for a specific critical service, including pod information.
+        The response includes:
           - Configured Instances
           - Currently Running Instances
           - Name
           - Namespace
           - Pods: array of pod objects with Name, Node, Status, Zone.
           - Type
-
-      ### /criticalservices/status
-        Retrieve the status of all critical services. The response includes:
-          - services: an array of objects each containing:
-              - service-name: the name of the critical service.
-              - status: the current status (e.g., balanced, unbalanced).
-              - replicaDistribution: an object where each key is a zone and the value is an array of objects mapping node names to pod names.
-
-      ### /criticalservices/status/{critical_service_name}
-        Retrieve the status of a specific critical service. The response includes:
-          - service-name: the name of the critical service.
-          - status: the current status.
-          - replicaDistribution: an object where each key is a zone and the value is an array of objects mapping node names to pod names.
 
     ## Workflows
 
@@ -92,17 +95,17 @@ info:
       - GET /criticalservices  
         Retrieve a list of critical services grouped by namespace.
 
-      - GET /criticalservices/{critical_service_name}  
-        Retrieve detailed information for a specific critical service.
+      - GET /criticalservices/{critical-service-name}  
+        Retrieve a summarized view of a specific critical service (without pod details).
 
       - PATCH /criticalservices  
         Update the critical services configuration.
 
       - GET /criticalservices/status  
-        Retrieve the status of all critical services including service status and detailed replica distribution.
+        Retrieve the status of all critical services including service status and distribution details.
 
-      - GET /criticalservices/status/{critical_service_name}  
-        Retrieve the status of a specific critical service.
+      - GET /criticalservices/status/{critical-service-name}  
+        Retrieve detailed status for a specific critical service including pod information.
 servers:
   - url: 'https://api-gw-service-nmn.local/apis/rrs'
     description: The production RRS API server. Accessed from outside the mesh.
@@ -116,10 +119,10 @@ paths:
         Returns an object with a property "Zones" that is an array of zones. Each zone contains:
           - "Zone Name": the name of the zone.
           - "Kubernetes Topology Zone": contains:
-              "Management Master Nodes": { "Nodes": [ ... ] }
-              "Management Worker Nodes": { "Nodes": [ ... ] }
+              "Management Master Nodes": list of master node names.
+              "Management Worker Nodes": list of worker node names.
           - "CEPH Zone": contains:
-              "Management Storage Nodes": { "Nodes": [ ... ] }
+              "Management Storage Nodes": list of storage node names.
       operationId: getZones
       responses:
         '200':
@@ -135,43 +138,18 @@ paths:
                       - "Zone Name": "x3000"
                         "Kubernetes Topology Zone":
                           "Management Master Nodes":
-                            Nodes:
-                              - "ncn-m001"
-                              - "ncn-m002"
-                              - "ncn-m003"
+                            - "ncn-m001"
+                            - "ncn-m002"
+                            - "ncn-m003"
                           "Management Worker Nodes":
-                            Nodes:
-                              - "ncn-w001"
-                              - "ncn-w002"
-                              - "ncn-w003"
-                              - "ncn-w004"
-                              - "ncn-w005"
+                            - "ncn-w001"
+                            - "ncn-w002"
+                            - "ncn-w003"
+                            - "ncn-w004"
+                            - "ncn-w005"
                         "CEPH Zone":
                           "Management Storage Nodes":
-                            Nodes:
-                              - "ncn-s001"
-                              - "ncn-s002"
-                              - "ncn-s003"
-                      - "Zone Name": "x3001"
-                        "Kubernetes Topology Zone":
-                          "Management Master Nodes":
-                            Nodes:
-                              - "ncn-m001"
-                              - "ncn-m002"
-                              - "ncn-m003"
-                          "Management Worker Nodes":
-                            Nodes:
-                              - "ncn-w001"
-                              - "ncn-w002"
-                              - "ncn-w003"
-                              - "ncn-w004"
-                              - "ncn-w005"
-                        "CEPH Zone":
-                          "Management Storage Nodes":
-                            Nodes:
-                              - "ncn-s001"
-                              - "ncn-s002"
-                              - "ncn-s003"
+                            - "ncn-s001"
         '404':
           description: Zones not found.
   /zones/{zone_name}:
@@ -183,10 +161,10 @@ paths:
         Returns detailed information for a specific zone.
         The response includes:
           - "Zone Name": the name of the zone.
-          - "Management Master": an object with "Nodes" (array of node objects with Name and Status) and "Type".
+          - "Management Master": an object with "Nodes" (array of node objects with Name and Status) and Type.
           - "Management Masters": number (count of master nodes).
           - "Management Storage": number (count of storage nodes).
-          - "Management Worker": an object with "Nodes" (array of node objects with Name and Status) and "Type".
+          - "Management Worker": an object with "Nodes" (array of node objects with Name and Status) and Type.
           - "Management Workers": number (count of worker nodes).
       operationId: getZoneDetails
       parameters:
@@ -310,17 +288,16 @@ paths:
                 $ref: '#/components/responses/InternalServerError'
   /criticalservices/{critical_service_name}:
     get:
-      summary: Get Critical Service Details
+      summary: Get Critical Service Details (Summarized)
       tags:
         - criticalservices
       description: >
-        Returns detailed information for a specific critical service.
+        Returns a summarized view of a specific critical service.
         The response includes:
           - "Configured Instances": number
           - "Currently Running Instances": number
           - "Name": string
           - "Namespace": string
-          - "Pods": array of pod objects with "Name", "Node", "Status", "Zone"
           - "Type": string
       operationId: getCriticalServiceDetails
       parameters:
@@ -332,32 +309,19 @@ paths:
             type: string
       responses:
         '200':
-          description: Detailed critical service information.
+          description: Summarized critical service information.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CriticalServiceDetailResponse'
+                $ref: '#/components/schemas/CriticalServiceDetail'
               examples:
                 criticalServiceDetail:
                   value:
                     Critical Service:
                       "Configured Instances": 3
-                      "Currently Running Instances": 3
-                      Name: "cray-keycloak"
-                      Namespace: "services"
-                      Pods:
-                        - Name: "cray-keycloak-0"
-                          Node: "ncn-w001"
-                          Status: "Running"
-                          Zone: "x3000"
-                        - Name: "cray-keycloak-1"
-                          Node: "ncn-w004"
-                          Status: "Running"
-                          Zone: "x3000"
-                        - Name: "cray-keycloak-2"
-                          Node: "ncn-w003"
-                          Status: "Running"
-                          Zone: "x3000"
+                      "Currently Running Instances": 2
+                      Name: "cray-vault"
+                      Namespace: "vault"
                       Type: "StatefulSet"
         '404':
           description: Critical service not found.
@@ -367,11 +331,11 @@ paths:
       tags:
         - criticalservices
       description: >
-        Returns the status of all critical services. The response includes:
-          - "services": an array of objects each containing:
-              - "service-name": the name of the critical service.
-              - "status": the current status (e.g., balanced, unbalanced).
-              - "replicaDistribution": an object where each key is a zone and the value is an array of objects mapping node names to pod names.
+        Returns the status of all critical services with distribution details.
+        Each service object may include:
+          - "Service Name": the name of the critical service.
+          - "Status": the current status (e.g., balanced, No pods found).
+          - "Distribution": an object mapping zones to node-to-pod arrays (optional).
       operationId: getAllCriticalServicesStatus
       responses:
         '200':
@@ -384,36 +348,34 @@ paths:
                 statusExample:
                   value:
                     services:
-                      - service-name: "cray-ims"
-                        status: "balanced"
-                        replicaDistribution:
-                          x3001:
-                            - ncn-w001: "coredns-84fd866c7d-8ctmk"
-                            - ncn-w002: "coredns-84fd866c7d-8ctdk"
-                          x3002:
-                            - ncn-w003: "coredns-84fd866c7d-8ctmk"
-                            - ncn-w004: "coredns-84fd866c7d-8ctmh"
-                      - service-name: "cray-smd"
-                        status: "unbalanced"
-                        replicaDistribution:
-                          x3001:
-                            - ncn-w001: "smd-84fd866c7d-8ctmk"
-                            - ncn-w002: "smd-84fd866c7d-8ctdk"
-                            - ncn-w005: "smd-84fd866c7d-8ctdf"
-                          x3002:
-                            - ncn-w003: "smd-84fd866c7d-8ctmk"
+                      - "Service Name": "cray-dvs-mqtt-ss"
+                        Status: "No pods found"
+                      - "Service Name": "cray-sls-postgres"
+                        Status: "balanced"
+                        Distribution:
+                          x3000:
+                            ncn-w002:
+                              - "cray-sls-postgres-0"
+                            ncn-w004:
+                              - "cray-sls-postgres-1"
+                            ncn-w005:
+                              - "cray-sls-postgres-2"
         '404':
           description: Critical services status not found.
   /criticalservices/status/{critical_service_name}:
     get:
-      summary: Get Critical Service Status by Name
+      summary: Get Critical Service Status by Name (Detailed)
       tags:
         - criticalservices
       description: >
-        Returns the status of a specific critical service. The response includes:
-          - "service-name": the name of the critical service.
-          - "status": the current status.
-          - "replicaDistribution": an object where each key is a zone and the value is an array of objects mapping node names to pod names.
+        Returns detailed status for a specific critical service, including pod information.
+        The response includes:
+          - "Configured Instances": number
+          - "Currently Running Instances": number
+          - "Name": string
+          - "Namespace": string
+          - "Pods": array of pod objects with Name, Node, Status, Zone.
+          - "Type": string
       operationId: getCriticalServiceStatus
       parameters:
         - name: critical_service_name
@@ -424,23 +386,33 @@ paths:
             type: string
       responses:
         '200':
-          description: Critical service status retrieved successfully.
+          description: Detailed critical service status retrieved successfully.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CriticalServiceStatusResponse'
+                $ref: '#/components/schemas/CriticalServiceDetail'
               examples:
                 criticalStatusExample:
                   value:
-                    service-name: "cray-ims"
-                    status: "balanced"
-                    replicaDistribution:
-                      x3001:
-                        - ncn-w001: "coredns-84fd866c7d-8ctmk"
-                        - ncn-w002: "coredns-84fd866c7d-8ctdk"
-                      x3002:
-                        - ncn-w003: "coredns-84fd866c7d-8ctmk"
-                        - ncn-w004: "coredns-84fd866c7d-8ctmh"
+                    Critical Service:
+                      "Configured Instances": 3
+                      "Currently Running Instances": 2
+                      Name: "cray-vault"
+                      Namespace: "vault"
+                      Pods:
+                        - Name: "cray-vault-0"
+                          Node: "ncn-w004"
+                          Status: "Running"
+                          Zone: "x3000"
+                        - Name: "cray-vault-1"
+                          Node: "ncn-w005"
+                          Status: "Pending"
+                          Zone: "x3000"
+                        - Name: "cray-vault-2"
+                          Node: "ncn-w001"
+                          Status: "Running"
+                          Zone: "x3000"
+                      Type: "StatefulSet"
         '404':
           description: Critical service status not found.
 components:
@@ -461,29 +433,20 @@ components:
           type: object
           properties:
             "Management Master Nodes":
-              type: object
-              properties:
-                Nodes:
-                  type: array
-                  items:
-                    type: string
+              type: array
+              items:
+                type: string
             "Management Worker Nodes":
-              type: object
-              properties:
-                Nodes:
-                  type: array
-                  items:
-                    type: string
+              type: array
+              items:
+                type: string
         "CEPH Zone":
           type: object
           properties:
             "Management Storage Nodes":
-              type: object
-              properties:
-                Nodes:
-                  type: array
-                  items:
-                    type: string
+              type: array
+              items:
+                type: string
     ZoneDetailResponse:
       type: object
       properties:
@@ -566,11 +529,6 @@ components:
         Update:
           type: string
           example: "OK"
-    CriticalServiceDetailResponse:
-      type: object
-      properties:
-        "Critical Service":
-          $ref: '#/components/schemas/CriticalServiceDetail'
     CriticalServiceDetail:
       type: object
       properties:
@@ -579,7 +537,7 @@ components:
           example: 3
         "Currently Running Instances":
           type: integer
-          example: 3
+          example: 2
         Name:
           type: string
         Namespace:
@@ -588,6 +546,8 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/PodDetail'
+          description: >
+            Optional. Included only in detailed status responses.
         Type:
           type: string
     PodDetail:
@@ -611,32 +571,18 @@ components:
     CriticalServiceStatus:
       type: object
       properties:
-        service-name:
+        Service Name:
           type: string
-        status:
+        Status:
           type: string
-        replicaDistribution:
+        Distribution:
           type: object
+          description: Optional distribution details mapping zones to node-to-pod arrays.
           additionalProperties:
-            type: array
-            items:
-              type: object
-              additionalProperties:
-                type: string
-    CriticalServiceStatusResponse:
-      type: object
-      properties:
-        service-name:
-          type: string
-        status:
-          type: string
-        replicaDistribution:
-          type: object
-          additionalProperties:
-            type: array
-            items:
-              type: object
-              additionalProperties:
+            type: object
+            additionalProperties:
+              type: array
+              items:
                 type: string
   responses:
     NotFound:

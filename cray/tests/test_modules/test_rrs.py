@@ -101,6 +101,9 @@ def test_cray_rrs_criticalservices_base(cli_runner, rest_mock):
     assert result.exit_code == 0
 
     outputs = [
+        'Groups:',
+        'status',
+        'Commands:',
         "describe",
         "list",
         "update",
@@ -150,3 +153,35 @@ def test_cray_rrs_criticalservices_update(cli_runner, rest_mock):
     assert data['body'] == {
         'from_file': newservicesdata
     }
+
+def test_cray_rrs_criticalservices_status_base(cli_runner, rest_mock):
+    """ Test cray rrs criticalservices status base command """
+    runner, cli, _ = cli_runner
+    result = runner.invoke(cli, ['rrs', 'criticalservices', 'status'])
+    assert result.exit_code == 0
+
+    outputs = [
+        "describe",
+        "list",
+    ]
+
+
+def test_cray_rrs_criticalservices_status_list(cli_runner, rest_mock):
+    """ Test cray rrs criticalservices status list """
+    runner, cli, config = cli_runner
+    result = runner.invoke(cli, ['rrs', 'criticalservices', 'status', 'list'])
+    assert result.exit_code == 0
+    data = json.loads(result.output)
+    assert data['method'] == 'GET'
+    assert data['url'] == f'{config["default"]["hostname"]}/apis/rrs/criticalservices/status'
+
+
+def test_cray_rrs_criticalservices_status_describe(cli_runner, rest_mock):
+    """ Test cray rrs criticalservices status describe """
+    runner, cli, config = cli_runner
+    result = runner.invoke(cli, ['rrs', 'criticalservices', 'status', 'describe', 'foo'])
+    assert result.exit_code == 0
+    data = json.loads(result.output)
+    assert data['method'] == 'GET'
+    assert data['url'] == f'{config["default"]["hostname"]}/apis/rrs/criticalservices/status/foo'
+
