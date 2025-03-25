@@ -101,9 +101,9 @@ def test_cray_rrs_criticalservices_base(cli_runner, rest_mock):
     assert result.exit_code == 0
 
     outputs = [
-        'Groups:',
-        'status',
-        'Commands:',
+        "Groups:",
+        "status",
+        "Commands:",
         "describe",
         "list",
         "update",
@@ -165,6 +165,7 @@ def test_cray_rrs_criticalservices_status_base(cli_runner, rest_mock):
         "list",
     ]
 
+    compare_output(outputs, result.output)
 
 def test_cray_rrs_criticalservices_status_list(cli_runner, rest_mock):
     """ Test cray rrs criticalservices status list """
@@ -184,4 +185,3 @@ def test_cray_rrs_criticalservices_status_describe(cli_runner, rest_mock):
     data = json.loads(result.output)
     assert data['method'] == 'GET'
     assert data['url'] == f'{config["default"]["hostname"]}/apis/rrs/criticalservices/status/foo'
-
