@@ -75,7 +75,8 @@ def test_cray_rrs_zones_base(cli_runner: Tuple[Any, Any, Any], rest_mock: Any) -
     compare_output(outputs, result.output)
 
 
-def test_cray_rrs_zones_list(cli_runner: Tuple[Any, Any, Dict[str, Dict[str, str]]], rest_mock: Any) -> None:
+def test_cray_rrs_zones_list(
+    cli_runner: Tuple[Any, Any, Dict[str, Dict[str, str]]], rest_mock: Any) -> None:
     """ Test cray rrs zones list """
     runner, cli, config = cli_runner
     result = runner.invoke(cli, ['rrs', 'zones', 'list'])
@@ -85,7 +86,8 @@ def test_cray_rrs_zones_list(cli_runner: Tuple[Any, Any, Dict[str, Dict[str, str
     assert data['url'] == f'{config["default"]["hostname"]}/apis/rrs/zones'
 
 
-def test_cray_rrs_zones_describe(cli_runner: Tuple[Any, Any, Dict[str, Dict[str, str]]], rest_mock: Any) -> None:
+def test_cray_rrs_zones_describe(
+    cli_runner: Tuple[Any, Any, Dict[str, Dict[str, str]]], rest_mock: Any) -> None:
     """ Test cray rrs zones describe """
     runner, cli, config = cli_runner
     result = runner.invoke(cli, ['rrs', 'zones', 'describe', 'foo'])
@@ -106,7 +108,8 @@ def test_cray_rrs_criticalservices_base(cli_runner: Tuple[Any, Any, Any], rest_m
         assert txt in result.output
 
 
-def test_cray_rrs_criticalservices_list(cli_runner: Tuple[Any, Any, Dict[str, Dict[str, str]]], rest_mock: Any) -> None:
+def test_cray_rrs_criticalservices_list(
+    cli_runner: Tuple[Any, Any, Dict[str, Dict[str, str]]], rest_mock: Any) -> None:
     """ Test cray rrs criticalservices list """
     runner, cli, config = cli_runner
     result = runner.invoke(cli, ['rrs', 'criticalservices', 'list'])
@@ -116,7 +119,8 @@ def test_cray_rrs_criticalservices_list(cli_runner: Tuple[Any, Any, Dict[str, Di
     assert data['url'] == f'{config["default"]["hostname"]}/apis/rrs/criticalservices'
 
 
-def test_cray_rrs_criticalservices_update(cli_runner: Tuple[Any, Any, Dict[str, Dict[str, str]]], rest_mock: Any) -> None:
+def test_cray_rrs_criticalservices_update(
+    cli_runner: Tuple[Any, Any, Dict[str, Dict[str, str]]], rest_mock: Any) -> None:
     """ Test cray rrs criticalservices update ... happy path """
     runner, cli, config = cli_runner
     newservicesfile = os.path.join(

@@ -23,13 +23,15 @@
 #
 """ rrs """
 # pylint: disable=invalid-name
+from typing import Callable, Optional, Any
 import click
 from cray.generator import generate
-from typing import Callable, Optional, Any
 
 cli = generate(__file__)
 
-def _file_cb(cb: Optional[Callable[[click.Context, click.Parameter, str], Any]]) -> Callable[[click.Context, click.Parameter, click.File], Any]:
+def _file_cb(
+    cb: Optional[Callable[[click.Context, click.Parameter, str], Any]]
+) -> Callable[[click.Context, click.Parameter, click.File], Any]:
     def _cb(ctx: click.Context, param: click.Parameter, value: click.File) -> Any:
         data = value.read()
         if cb:
