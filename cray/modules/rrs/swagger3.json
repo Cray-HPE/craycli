@@ -1,5 +1,5 @@
 {
-    "openapi": "3.0.2",
+    "openapi": "3.1.1",
     "info": {
         "title": "Rack Resiliency Service",
         "license": {
@@ -13,6 +13,24 @@
         {
             "url": "https://api-gw-service-nmn.local/apis/rrs",
             "description": "The production RRS API server. Accessed from outside the mesh."
+        }
+    ],
+    "tags": [
+        {
+            "name": "zones",
+            "description": "Retrieve aggregated and detailed information about zones including node types and counts."
+        },
+        {
+            "name": "criticalservices",
+            "description": "Interact with critical service configurations, summaries, and runtime statuses."
+        },
+        {
+            "name": "healthz",
+            "description": "Kubernetes health check endpoints for service readiness and liveness probes."
+        },
+        {
+            "name": "version",
+            "description": "API version information endpoint."
         }
     ],
     "paths": {
@@ -741,6 +759,94 @@
                     },
                     "404": {
                         "description": "Critical service status not found."
+                    }
+                }
+            }
+        },
+        "/healthz/ready": {
+            "get": {
+                "summary": "Retrieve RRS Readiness Probe",
+                "operationId": "get_healthz_ready",
+                "tags": [
+                    "healthz",
+                    "cli_ignore"
+                ],
+                "description": "Readiness probe for RRS. This is used by Kubernetes to determine if RRS is ready to accept requests.",
+                "responses": {
+                    "200": {
+                        "description": "RRS is ready to accept requests",
+                        "content": {
+                            "application/json": {}
+                        }
+                    },
+                    "500": {
+                        "description": "RRS is not able to accept requests",
+                        "content": {
+                            "application/json": {}
+                        }
+                    }
+                }
+            }
+        },
+        "/healthz/live": {
+            "get": {
+                "summary": "Retrieve RRS Liveness Probe",
+                "operationId": "get_healthz_live",
+                "tags": [
+                    "healthz",
+                    "cli_ignore"
+                ],
+                "description": "Liveness probe for RRS. This is used by Kubernetes to determine if RRS is responsive",
+                "responses": {
+                    "200": {
+                        "description": "RRS is responsive",
+                        "content": {
+                            "application/json": {}
+                        }
+                    },
+                    "500": {
+                        "description": "RRS is not responsive",
+                        "content": {
+                            "application/json": {}
+                        }
+                    }
+                }
+            }
+        },
+        "/version": {
+            "get": {
+                "summary": "Get RRS version",
+                "tags": [
+                    "version",
+                    "cli_hidden"
+                ],
+                "description": "Retrieve the version of the RRS Service",
+                "operationId": "getVersion",
+                "responses": {
+                    "200": {
+                        "description": "RRS Version",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }

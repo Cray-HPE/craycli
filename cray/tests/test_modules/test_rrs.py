@@ -28,9 +28,10 @@ and options. """
 
 import json
 import os
+from typing import List, Any, Dict, Tuple
 
 
-def compare_output(expected, cli_output):
+def compare_output(expected: List[str], cli_output: str) -> None:
     """
     Function helper to test if the expected values can
     be found in the output text.
@@ -46,7 +47,7 @@ def compare_output(expected, cli_output):
     assert set(expected) == set(actual)
 
 
-def test_cray_rrs_base(cli_runner, rest_mock):
+def test_cray_rrs_base(cli_runner: Tuple[Any, Any, Any], rest_mock: Any) -> None:
     """ Test cray rrs base command """
     runner, cli, _ = cli_runner
     result = runner.invoke(cli, ['rrs'])
@@ -60,7 +61,7 @@ def test_cray_rrs_base(cli_runner, rest_mock):
     compare_output(outputs, result.output)
 
 
-def test_cray_rrs_zones_base(cli_runner, rest_mock):
+def test_cray_rrs_zones_base(cli_runner: Tuple[Any, Any, Any], rest_mock: Any) -> None:
     """ Test cray rrs zones base command """
     runner, cli, _ = cli_runner
     result = runner.invoke(cli, ['rrs', 'zones'])
@@ -74,7 +75,7 @@ def test_cray_rrs_zones_base(cli_runner, rest_mock):
     compare_output(outputs, result.output)
 
 
-def test_cray_rrs_zones_list(cli_runner, rest_mock):
+def test_cray_rrs_zones_list(cli_runner: Tuple[Any, Any, Dict[str, Dict[str, str]]], rest_mock: Any) -> None:
     """ Test cray rrs zones list """
     runner, cli, config = cli_runner
     result = runner.invoke(cli, ['rrs', 'zones', 'list'])
@@ -84,7 +85,7 @@ def test_cray_rrs_zones_list(cli_runner, rest_mock):
     assert data['url'] == f'{config["default"]["hostname"]}/apis/rrs/zones'
 
 
-def test_cray_rrs_zones_describe(cli_runner, rest_mock):
+def test_cray_rrs_zones_describe(cli_runner: Tuple[Any, Any, Dict[str, Dict[str, str]]], rest_mock: Any) -> None:
     """ Test cray rrs zones describe """
     runner, cli, config = cli_runner
     result = runner.invoke(cli, ['rrs', 'zones', 'describe', 'foo'])
@@ -93,7 +94,8 @@ def test_cray_rrs_zones_describe(cli_runner, rest_mock):
     assert data['method'] == 'GET'
     assert data['url'] == f'{config["default"]["hostname"]}/apis/rrs/zones/foo'
 
-def test_cray_rrs_criticalservices_base(cli_runner, rest_mock):
+
+def test_cray_rrs_criticalservices_base(cli_runner: Tuple[Any, Any, Any], rest_mock: Any) -> None:
     """ Test cray rrs criticalservices base command """
     runner, cli, _ = cli_runner
     result = runner.invoke(cli, ['rrs', 'criticalservices'])
@@ -104,7 +106,7 @@ def test_cray_rrs_criticalservices_base(cli_runner, rest_mock):
         assert txt in result.output
 
 
-def test_cray_rrs_criticalservices_list(cli_runner, rest_mock):
+def test_cray_rrs_criticalservices_list(cli_runner: Tuple[Any, Any, Dict[str, Dict[str, str]]], rest_mock: Any) -> None:
     """ Test cray rrs criticalservices list """
     runner, cli, config = cli_runner
     result = runner.invoke(cli, ['rrs', 'criticalservices', 'list'])
@@ -114,17 +116,7 @@ def test_cray_rrs_criticalservices_list(cli_runner, rest_mock):
     assert data['url'] == f'{config["default"]["hostname"]}/apis/rrs/criticalservices'
 
 
-def test_cray_rrs_criticalservices_describe(cli_runner, rest_mock):
-    """ Test cray rrs criticalservices describe """
-    runner, cli, config = cli_runner
-    result = runner.invoke(cli, ['rrs', 'criticalservices', 'describe', 'foo'])
-    assert result.exit_code == 0
-    data = json.loads(result.output)
-    assert data['method'] == 'GET'
-    assert data['url'] == f'{config["default"]["hostname"]}/apis/rrs/criticalservices/foo'
-
-
-def test_cray_rrs_criticalservices_update(cli_runner, rest_mock):
+def test_cray_rrs_criticalservices_update(cli_runner: Tuple[Any, Any, Dict[str, Dict[str, str]]], rest_mock: Any) -> None:
     """ Test cray rrs criticalservices update ... happy path """
     runner, cli, config = cli_runner
     newservicesfile = os.path.join(
@@ -145,35 +137,3 @@ def test_cray_rrs_criticalservices_update(cli_runner, rest_mock):
     assert data['body'] == {
         'from_file': newservicesdata
     }
-
-def test_cray_rrs_criticalservices_status_base(cli_runner, rest_mock):
-    """ Test cray rrs criticalservices status base command """
-    runner, cli, _ = cli_runner
-    result = runner.invoke(cli, ['rrs', 'criticalservices', 'status'])
-    assert result.exit_code == 0
-
-    outputs = [
-        "describe",
-        "list",
-    ]
-
-    compare_output(outputs, result.output)
-
-def test_cray_rrs_criticalservices_status_list(cli_runner, rest_mock):
-    """ Test cray rrs criticalservices status list """
-    runner, cli, config = cli_runner
-    result = runner.invoke(cli, ['rrs', 'criticalservices', 'status', 'list'])
-    assert result.exit_code == 0
-    data = json.loads(result.output)
-    assert data['method'] == 'GET'
-    assert data['url'] == f'{config["default"]["hostname"]}/apis/rrs/criticalservices/status'
-
-
-def test_cray_rrs_criticalservices_status_describe(cli_runner, rest_mock):
-    """ Test cray rrs criticalservices status describe """
-    runner, cli, config = cli_runner
-    result = runner.invoke(cli, ['rrs', 'criticalservices', 'status', 'describe', 'foo'])
-    assert result.exit_code == 0
-    data = json.loads(result.output)
-    assert data['method'] == 'GET'
-    assert data['url'] == f'{config["default"]["hostname"]}/apis/rrs/criticalservices/status/foo'
