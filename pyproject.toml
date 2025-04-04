@@ -56,9 +56,12 @@ dependencies = [
     'requests-toolbelt~=1.0',
     'requests~=2.31.0',
     'ruamel.yaml~=0.17',
-    'six~=1.16',
+    'six~=1.17',
     'toml~=0.10',
     'websocket-client~=1.4',
+    'websockets~=15.0.1',
+    'aioconsole~=0.8.1',
+    'asyncio~=3.4.3',
 ]
 dynamic = ['entry-points', 'scripts', 'version']
 maintainers = [
