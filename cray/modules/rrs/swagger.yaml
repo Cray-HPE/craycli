@@ -1,7 +1,7 @@
 #
 # MIT License
 #
-# (C) Copyright [2025] Hewlett Packard Enterprise Development LP
+# (C) Copyright 2025 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -30,82 +30,64 @@ info:
     url: http://www.hpe.com/
   version: 1.0.0
   description: >
-    The Rack Resiliency Service (RRS) queries the Kubernetes cluster to provide aggregated zone
+    The Rack Resiliency Service (RRS) provides a set of APIs to manage Rack Level resiliency. It queries the Kubernetes cluster to provide aggregated zone
     information and detailed critical service status. It gathers node details across various zones
-    and presents both high-level summaries and in-depth information for zones and critical services.
+    and presents both high-level summaries and in-depth information for zones and critical services
 
     ## Resources
 
-      ### /zones
-        Retrieve aggregated zone information including:
-          - Management Master Nodes: List of master node names.
-          - Management Storage Nodes: List of storage node names.
-          - Management Worker Nodes: List of worker node names.
+      ### GET /zones
+        Retrieve aggregated zone configuration showing Kubernetes Topology Zones and CEPH Zones including:
+          - Management Master Nodes
+          - Management Storage Nodes
+          - Management Worker Nodes
           
         Alternatively, if zones are not configured, one of the following informational messages is returned:
           - "No Zones configured"
           - "No Ceph zones configured"
           - "No K8s topology zones configured"
 
-      ### /zones/{zone_name}
+      ### GET /zones/{zone_name}
         Retrieve detailed information for a specific zone including:
           - Zone Name
-          - Management Master: object with Nodes (array of node objects with Name and Status) and Type.
-          - Management Masters: number (count of master nodes).
-          - Management Storage: number (count of storage nodes).
-          - Management Worker: object with Nodes (array of node objects with Name and Status) and Type.
-          - Management Workers: number (count of worker nodes).
+          - Management Masters
+          - Management Workers
+          - Management Storages
+          - Node status and OSD information
 
-      ### /criticalservices
-        Retrieve a list of critical services grouped by namespace.
+      ### GET /criticalservices
+        Retrieve a list of critical services grouped by namespace
 
-      ### /criticalservices/{critical-service-name}
-        Retrieve critical service details in a summarized format. The response includes:
+      ### GET /criticalservices/{critical-service-name}
+        Retrieve a summarized view of a specific critical service (without pod details). The response includes:
           - Configured Instances
           - Currently Running Instances
           - Name
           - Namespace
           - Type
 
-      ### /criticalservices/status
-        Retrieve the status of all critical services with distribution details.
+      ### PATCH /criticalservices
+        Update the critical services configuration based on a provided file input. This endpoint allows
+        you to modify how critical services are configured in the system
+
+      ### GET /criticalservices/status
+        Retrieve the status of all critical services including service status and distribution details.
         Each service object may include:
           - Service Name
           - Status
-          - Distribution (an object mapping zones to node-to-pod arrays; optional)
+          - Balanced: indicates whether the service is properly distributed
 
-      ### /criticalservices/status/{critical-service-name}
-        Retrieve detailed status for a specific critical service, including pod information.
+      ### GET /criticalservices/status/{critical-service-name}
+        Retrieve detailed status for a specific critical service including pod information.
         The response includes:
           - Configured Instances
           - Currently Running Instances
           - Name
           - Namespace
-          - Pods: array of pod objects with Name, Node, Status, Zone.
+          - Pods with Name, Node, Status, and Zone
           - Type
-
-    ## Workflows
-
-      - GET /zones  
-        Retrieve aggregated zone configuration.
-
-      - GET /zones/{zone_name}  
-        Retrieve detailed information for a specific zone.
-
-      - GET /criticalservices  
-        Retrieve a list of critical services grouped by namespace.
-
-      - GET /criticalservices/{critical-service-name}  
-        Retrieve a summarized view of a specific critical service (without pod details).
-
-      - PATCH /criticalservices  
-        Update the critical services configuration.
-
-      - GET /criticalservices/status  
-        Retrieve the status of all critical services including service status and distribution details.
-
-      - GET /criticalservices/status/{critical-service-name}  
-        Retrieve detailed status for a specific critical service including pod information.
+          - Status
+          - Balanced
 servers:
   - url: 'https://api-gw-service-nmn.local/apis/rrs'
     description: The production RRS API server. Accessed from outside the mesh.
@@ -118,7 +100,6 @@ tags:
     description: Kubernetes health check endpoints for service readiness and liveness probes.
   - name: version
     description: API version information endpoint.
-
 paths:
   /zones:
     get:
