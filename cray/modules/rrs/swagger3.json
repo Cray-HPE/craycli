@@ -7,7 +7,7 @@
             "url": "http://www.hpe.com/"
         },
         "version": "1.0.0",
-        "description": "The Rack Resiliency Service (RRS) queries the Kubernetes cluster to provide aggregated zone information and detailed critical service status. It gathers node details across various zones and presents both high-level summaries and in-depth information for zones and critical services.\n## Resources\n\n  ### /zones\n    Retrieve aggregated zone information including:\n      - Management Master Nodes: List of master node names.\n      - Management Storage Nodes: List of storage node names.\n      - Management Worker Nodes: List of worker node names.\n      \n    Alternatively, if zones are not configured, one of the following informational messages is returned:\n      - \"No Zones configured\"\n      - \"No Ceph zones configured\"\n      - \"No K8s topology zones configured\"\n\n  ### /zones/{zone_name}\n    Retrieve detailed information for a specific zone including:\n      - Zone Name\n      - Management Master: object with Nodes (array of node objects with Name and Status) and Type.\n      - Management Masters: number (count of master nodes).\n      - Management Storage: number (count of storage nodes).\n      - Management Worker: object with Nodes (array of node objects with Name and Status) and Type.\n      - Management Workers: number (count of worker nodes).\n\n  ### /criticalservices\n    Retrieve a list of critical services grouped by namespace.\n\n  ### /criticalservices/{critical-service-name}\n    Retrieve critical service details in a summarized format. The response includes:\n      - Configured Instances\n      - Currently Running Instances\n      - Name\n      - Namespace\n      - Type\n\n  ### /criticalservices/status\n    Retrieve the status of all critical services with distribution details.\n    Each service object may include:\n      - Service Name\n      - Status\n      - Distribution (an object mapping zones to node-to-pod arrays; optional)\n\n  ### /criticalservices/status/{critical-service-name}\n    Retrieve detailed status for a specific critical service, including pod information.\n    The response includes:\n      - Configured Instances\n      - Currently Running Instances\n      - Name\n      - Namespace\n      - Pods: array of pod objects with Name, Node, Status, Zone.\n      - Type\n\n## Workflows\n\n  - GET /zones  \n    Retrieve aggregated zone configuration.\n\n  - GET /zones/{zone_name}  \n    Retrieve detailed information for a specific zone.\n\n  - GET /criticalservices  \n    Retrieve a list of critical services grouped by namespace.\n\n  - GET /criticalservices/{critical-service-name}  \n    Retrieve a summarized view of a specific critical service (without pod details).\n\n  - PATCH /criticalservices  \n    Update the critical services configuration.\n\n  - GET /criticalservices/status  \n    Retrieve the status of all critical services including service status and distribution details.\n\n  - GET /criticalservices/status/{critical-service-name}  \n    Retrieve detailed status for a specific critical service including pod information.\n"
+        "description": "The Rack Resiliency Service (RRS) provides a set of APIs to manage Rack Level resiliency. It queries the Kubernetes cluster to provide aggregated zone information and detailed critical service status. It gathers node details across various zones and presents both high-level summaries and in-depth information for zones and critical services.\n## Resources\n\n  ### GET /zones\n    Retrieve aggregated zone configuration showing Kubernetes Topology Zones and CEPH Zones including:\n      - Management Master Nodes\n      - Management Storage Nodes\n      - Management Worker Nodes\n      \n    Alternatively, if zones are not configured, one of the following informational messages is returned:\n      - \"No K8s Topology/Ceph Zones configured\"\n      - \"No Ceph zones configured\"\n      - \"No K8s topology zones configured\"\n\n  ### GET /zones/{zone_name}\n    Retrieve detailed information for a specific zone including:\n      - Zone Name\n      - Management Masters\n      - Management Workers\n      - Management Storages\n      - Node status and OSD information\n\n  ### GET /criticalservices\n    Retrieve a list of critical services grouped by namespace\n\n  ### GET /criticalservices/{critical-service-name}\n    Retrieve a summarized view of a specific critical service (without pod details). The response includes:\n      - Configured Instances\n      - Currently Running Instances\n      - Name\n      - Namespace\n      - Type\n\n  ### PATCH /criticalservices\n    Update the critical services configuration based on a provided file input. This endpoint allows\n    you to modify how critical services are configured in the system\n\n  ### GET /criticalservices/status\n    Retrieve the status of all critical services including service status and distribution details.\n    Each service object may include:\n      - Service Name\n      - Status\n      - Balanced: indicates whether the service is properly distributed\n\n  ### GET /criticalservices/status/{critical-service-name}\n    Retrieve detailed status for a specific critical service including pod information.\n    The response includes:\n      - Configured Instances\n      - Currently Running Instances\n      - Name\n      - Namespace\n      - Pods with Name, Node, Status, and Zone\n      - Type\n      - Status\n      - Balanced\n"
     },
     "servers": [
         {
@@ -40,11 +40,11 @@
                 "tags": [
                     "zones"
                 ],
-                "description": "Returns an object with a property \"Zones\" that is an array of zones. Each zone contains:\n  - \"Zone Name\": the name of the zone.\n  - \"Kubernetes Topology Zone\": contains:\n      \"Management Master Nodes\": list of master node names.\n      \"Management Worker Nodes\": list of worker node names.\n  - \"CEPH Zone\": contains:\n      \"Management Storage Nodes\": list of storage node names.\n",
+                "description": "Returns an object with a property \"Zones\" that is an array of zones. Each zone contains:\n  - Zone Name: the name of the zone\n  - Kubernetes Topology Zone: contains:\n      Management Master Nodes: list of master node names\n      Management Worker Nodes: list of worker node names\n  - CEPH Zone: contains:\n      Management Storage Nodes: list of storage node names\n",
                 "operationId": "getZones",
                 "responses": {
                     "200": {
-                        "description": "Zones configuration.",
+                        "description": "Zones configuration",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -96,18 +96,48 @@
                                         "value": {
                                             "Zones": [
                                                 {
-                                                    "Zone Name": "x3000",
+                                                    "Zone Name": "cscs-rack-x3001",
                                                     "Kubernetes Topology Zone": {
                                                         "Management Master Nodes": [
-                                                            "ncn-m001",
-                                                            "ncn-m002",
+                                                            "ncn-m002"
+                                                        ],
+                                                        "Management Worker Nodes": [
+                                                            "ncn-w002",
+                                                            "ncn-w004"
+                                                        ]
+                                                    },
+                                                    "CEPH Zone": {
+                                                        "Management Storage Nodes": [
+                                                            "ncn-s004",
+                                                            "ncn-s003"
+                                                        ]
+                                                    }
+                                                },
+                                                {
+                                                    "Zone Name": "cscs-rack-x3002",
+                                                    "Kubernetes Topology Zone": {
+                                                        "Management Master Nodes": [
                                                             "ncn-m003"
                                                         ],
                                                         "Management Worker Nodes": [
+                                                            "ncn-w003"
+                                                        ]
+                                                    },
+                                                    "CEPH Zone": {
+                                                        "Management Storage Nodes": [
+                                                            "ncn-s005",
+                                                            "ncn-s002"
+                                                        ]
+                                                    }
+                                                },
+                                                {
+                                                    "Zone Name": "cscs-rack-x3000",
+                                                    "Kubernetes Topology Zone": {
+                                                        "Management Master Nodes": [
+                                                            "ncn-m001"
+                                                        ],
+                                                        "Management Worker Nodes": [
                                                             "ncn-w001",
-                                                            "ncn-w002",
-                                                            "ncn-w003",
-                                                            "ncn-w004",
                                                             "ncn-w005"
                                                         ]
                                                     },
@@ -125,7 +155,26 @@
                         }
                     },
                     "404": {
-                        "description": "Zones not found."
+                        "description": "Zones not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "description": "Not found",
+                                    "content": {
+                                        "application/json": {
+                                            "schema": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "error": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -136,14 +185,14 @@
                 "tags": [
                     "zones"
                 ],
-                "description": "Returns detailed information for a specific zone. The response includes:\n  - \"Zone Name\": the name of the zone.\n  - \"Management Master\": an object with \"Nodes\" (array of node objects with Name and Status) and Type.\n  - \"Management Masters\": number (count of master nodes).\n  - \"Management Storage\": number (count of storage nodes).\n  - \"Management Worker\": an object with \"Nodes\" (array of node objects with Name and Status) and Type.\n  - \"Management Workers\": number (count of worker nodes).\n",
+                "description": "Returns detailed information for a specific zone. The response includes:\n  - Zone Name: the name of the zone\n  - Management Masters: count of master nodes\n  - Management Workers: count of worker nodes\n  - Management Storages: count of storage nodes\n  - Management Master: an object with Nodes (array of node objects with Name and Status) and Type\n  - Management Worker: an object with Nodes (array of node objects with Name and Status) and Type\n  - Management Storage: an object with Nodes (array of node objects with Name, Status, and OSDs) and Type\n",
                 "operationId": "getZoneDetails",
                 "parameters": [
                     {
                         "name": "zone_name",
                         "in": "path",
                         "required": true,
-                        "description": "The name of the zone.",
+                        "description": "The name of the zone",
                         "schema": {
                             "type": "string"
                         }
@@ -151,7 +200,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Detailed zone information.",
+                        "description": "Detailed zone information",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -160,9 +209,21 @@
                                         "Zone Name": {
                                             "type": "string"
                                         },
+                                        "Management Masters": {
+                                            "type": "integer"
+                                        },
+                                        "Management Workers": {
+                                            "type": "integer"
+                                        },
+                                        "Management Storages": {
+                                            "type": "integer"
+                                        },
                                         "Management Master": {
                                             "type": "object",
                                             "properties": {
+                                                "Type": {
+                                                    "type": "string"
+                                                },
                                                 "Nodes": {
                                                     "type": "array",
                                                     "items": {
@@ -176,21 +237,15 @@
                                                             }
                                                         }
                                                     }
-                                                },
-                                                "Type": {
-                                                    "type": "string"
                                                 }
                                             }
-                                        },
-                                        "Management Masters": {
-                                            "type": "integer"
-                                        },
-                                        "Management Storage": {
-                                            "type": "integer"
                                         },
                                         "Management Worker": {
                                             "type": "object",
                                             "properties": {
+                                                "Type": {
+                                                    "type": "string"
+                                                },
                                                 "Nodes": {
                                                     "type": "array",
                                                     "items": {
@@ -204,66 +259,104 @@
                                                             }
                                                         }
                                                     }
-                                                },
-                                                "Type": {
-                                                    "type": "string"
                                                 }
                                             }
                                         },
-                                        "Management Workers": {
-                                            "type": "integer"
+                                        "Management Storage": {
+                                            "type": "object",
+                                            "properties": {
+                                                "Type": {
+                                                    "type": "string"
+                                                },
+                                                "Nodes": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "Name": {
+                                                                "type": "string"
+                                                            },
+                                                            "Status": {
+                                                                "type": "string"
+                                                            },
+                                                            "OSDs": {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "up": {
+                                                                        "type": "array",
+                                                                        "items": {
+                                                                            "type": "string"
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
                                         }
                                     }
                                 },
                                 "examples": {
                                     "zoneDetail": {
                                         "value": {
-                                            "Zone Name": "x3000",
+                                            "Zone Name": "cscs-rack-x3001",
+                                            "Management Masters": 1,
+                                            "Management Workers": 2,
+                                            "Management Storages": 2,
                                             "Management Master": {
+                                                "Type": "Kubernetes Topology Zone",
                                                 "Nodes": [
-                                                    {
-                                                        "Name": "ncn-m001",
-                                                        "Status": "Ready"
-                                                    },
                                                     {
                                                         "Name": "ncn-m002",
                                                         "Status": "Ready"
-                                                    },
-                                                    {
-                                                        "Name": "ncn-m003",
-                                                        "Status": "Ready"
                                                     }
-                                                ],
-                                                "Type": "Kubernetes Topology Zone"
+                                                ]
                                             },
-                                            "Management Masters": 3,
-                                            "Management Storage": 0,
                                             "Management Worker": {
+                                                "Type": "Kubernetes Topology Zone",
                                                 "Nodes": [
-                                                    {
-                                                        "Name": "ncn-w001",
-                                                        "Status": "Ready"
-                                                    },
                                                     {
                                                         "Name": "ncn-w002",
                                                         "Status": "Ready"
                                                     },
                                                     {
-                                                        "Name": "ncn-w003",
-                                                        "Status": "Ready"
-                                                    },
-                                                    {
                                                         "Name": "ncn-w004",
                                                         "Status": "Ready"
+                                                    }
+                                                ]
+                                            },
+                                            "Management Storage": {
+                                                "Type": "CEPH Zone",
+                                                "Nodes": [
+                                                    {
+                                                        "Name": "ncn-s004",
+                                                        "Status": "Ready",
+                                                        "OSDs": {
+                                                            "up": [
+                                                                "osd.0",
+                                                                "osd.5"
+                                                            ]
+                                                        }
                                                     },
                                                     {
-                                                        "Name": "ncn-w005",
-                                                        "Status": "Ready"
+                                                        "Name": "ncn-s003",
+                                                        "Status": "Ready",
+                                                        "OSDs": {
+                                                            "up": [
+                                                                "osd.4",
+                                                                "osd.9",
+                                                                "osd.12",
+                                                                "osd.15",
+                                                                "osd.18",
+                                                                "osd.21",
+                                                                "osd.24",
+                                                                "osd.27"
+                                                            ]
+                                                        }
                                                     }
-                                                ],
-                                                "Type": "Kubernetes Topology Zone"
-                                            },
-                                            "Management Workers": 5
+                                                ]
+                                            }
                                         }
                                     }
                                 }
@@ -271,7 +364,26 @@
                         }
                     },
                     "404": {
-                        "description": "Zone not found."
+                        "description": "Zone not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "description": "Not found",
+                                    "content": {
+                                        "application/json": {
+                                            "schema": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "error": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -282,11 +394,11 @@
                 "tags": [
                     "criticalservices"
                 ],
-                "description": "Returns an object with a \"critical-services\" property. The value is an object with a \"namespace\" property, which is an object where each key is a namespace and the value is an array of service objects.\n",
+                "description": "Returns a list of critical services grouped by namespace. The response includes  a critical-services property containing namespaces with arrays of service objects including:\n  - name: the name of the service\n  - type: the service type (Deployment, StatefulSet, DaemonSet)\n",
                 "operationId": "getCriticalServices",
                 "responses": {
                     "200": {
-                        "description": "List of critical services grouped by namespace.",
+                        "description": "List of critical services grouped by namespace",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -321,9 +433,37 @@
                                         "value": {
                                             "critical-services": {
                                                 "namespace": {
-                                                    "default": [
+                                                    "services": [
                                                         {
-                                                            "name": "newservice",
+                                                            "name": "cray-dns-powerdns",
+                                                            "type": "Deployment"
+                                                        },
+                                                        {
+                                                            "name": "cray-hbtd",
+                                                            "type": "Deployment"
+                                                        },
+                                                        {
+                                                            "name": "cray-hmnfd",
+                                                            "type": "Deployment"
+                                                        },
+                                                        {
+                                                            "name": "cray-keycloak",
+                                                            "type": "StatefulSet"
+                                                        },
+                                                        {
+                                                            "name": "cray-sls-postgres",
+                                                            "type": "StatefulSet"
+                                                        }
+                                                    ],
+                                                    "spire": [
+                                                        {
+                                                            "name": "cray-spire-server",
+                                                            "type": "StatefulSet"
+                                                        }
+                                                    ],
+                                                    "rack-resiliency": [
+                                                        {
+                                                            "name": "k8s-zone-api",
                                                             "type": "Deployment"
                                                         }
                                                     ],
@@ -331,30 +471,6 @@
                                                         {
                                                             "name": "kube-multus-ds",
                                                             "type": "DaemonSet"
-                                                        },
-                                                        {
-                                                            "name": "kube-proxy",
-                                                            "type": "DaemonSet"
-                                                        }
-                                                    ],
-                                                    "nexus": [
-                                                        {
-                                                            "name": "coredns",
-                                                            "type": "Deployment"
-                                                        },
-                                                        {
-                                                            "name": "nexus",
-                                                            "type": "Deployment"
-                                                        },
-                                                        {
-                                                            "name": "redns",
-                                                            "type": "Deployment"
-                                                        }
-                                                    ],
-                                                    "services": [
-                                                        {
-                                                            "name": "cray-keycloak",
-                                                            "type": "StatefulSet"
                                                         }
                                                     ]
                                                 }
@@ -366,81 +482,11 @@
                         }
                     },
                     "404": {
-                        "description": "Critical services not found."
-                    }
-                }
-            },
-            "patch": {
-                "summary": "Update Critical Services ConfigMap",
-                "tags": [
-                    "criticalservices"
-                ],
-                "operationId": "patchCriticalServices",
-                "description": "Updates the critical services configuration. The request body should contain a JSON string in the from_file property representing the updated critical services configuration.\n",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "object",
-                                "properties": {
-                                    "from_file": {
-                                        "type": "string",
-                                        "description": "A JSON string containing the updated critical services configuration."
-                                    }
-                                },
-                                "required": [
-                                    "from_file"
-                                ]
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "ConfigMap updated successfully.",
+                        "description": "Critical services not found",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "Already Existing Services": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "string"
-                                            },
-                                            "example": [
-                                                "kube-multus-ds"
-                                            ]
-                                        },
-                                        "Message for unknown services": {
-                                            "type": "string",
-                                            "example": "Service(s) has no associated pods in the namespace, Please verify the Information"
-                                        },
-                                        "Unknown Services": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "string"
-                                            },
-                                            "example": [
-                                                "coredns-xxx"
-                                            ]
-                                        },
-                                        "Update": {
-                                            "type": "string",
-                                            "example": "OK"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Critical services configuration not found.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "description": "Not found.",
+                                    "description": "Not found",
                                     "content": {
                                         "application/json": {
                                             "schema": {
@@ -456,13 +502,80 @@
                                 }
                             }
                         }
-                    },
-                    "500": {
-                        "description": "Internal server error.",
+                    }
+                }
+            },
+            "patch": {
+                "summary": "Update Critical Services ConfigMap",
+                "tags": [
+                    "criticalservices"
+                ],
+                "operationId": "patchCriticalServices",
+                "description": "Updates the critical services configuration. The request body should contain a JSON string in the from_file property representing the updated critical services configuration\n",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "from_file": {
+                                        "type": "string",
+                                        "description": "A JSON string containing the updated critical services configuration"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Critical Services Updated Successfully",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "description": "Internal server error.",
+                                    "type": "object",
+                                    "properties": {
+                                        "Update": {
+                                            "type": "string"
+                                        },
+                                        "Successfully Added Services": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "Already Existing Services": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                },
+                                "examples": {
+                                    "patchResponse": {
+                                        "value": {
+                                            "Update": "Successful",
+                                            "Successfully Added Services": [
+                                                "kube-api-server"
+                                            ],
+                                            "Already Existing Services": [
+                                                "coredns",
+                                                "kube-proxy"
+                                            ]
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "description": "Internal server error",
                                     "content": {
                                         "application/json": {
                                             "schema": {
@@ -488,14 +601,14 @@
                 "tags": [
                     "criticalservices"
                 ],
-                "description": "Returns a summarized view of a specific critical service. The response includes:\n  - \"Configured Instances\": number\n  - \"Currently Running Instances\": number\n  - \"Name\": string\n  - \"Namespace\": string\n  - \"Type\": string\n",
+                "description": "Returns a summarized view of a specific critical service. The response includes:\n  - Name: string\n  - Namespace: string\n  - Type: string\n  - Configured Instances: number\n  - Currently Running Instances: number\n",
                 "operationId": "getCriticalServiceDetails",
                 "parameters": [
                     {
                         "name": "critical_service_name",
                         "in": "path",
                         "required": true,
-                        "description": "The name of the critical service.",
+                        "description": "The name of the critical service",
                         "schema": {
                             "type": "string"
                         }
@@ -503,49 +616,31 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Summarized critical service information.",
+                        "description": "Summarized critical service information",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "type": "object",
                                     "properties": {
-                                        "Configured Instances": {
-                                            "type": "integer",
-                                            "example": 3
-                                        },
-                                        "Currently Running Instances": {
-                                            "type": "integer",
-                                            "example": 2
-                                        },
-                                        "Name": {
-                                            "type": "string"
-                                        },
-                                        "Namespace": {
-                                            "type": "string"
-                                        },
-                                        "Pods": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "object",
-                                                "properties": {
-                                                    "Name": {
-                                                        "type": "string"
-                                                    },
-                                                    "Node": {
-                                                        "type": "string"
-                                                    },
-                                                    "Status": {
-                                                        "type": "string"
-                                                    },
-                                                    "Zone": {
-                                                        "type": "string"
-                                                    }
+                                        "Critical Service": {
+                                            "type": "object",
+                                            "properties": {
+                                                "Name": {
+                                                    "type": "string"
+                                                },
+                                                "Namespace": {
+                                                    "type": "string"
+                                                },
+                                                "Type": {
+                                                    "type": "string"
+                                                },
+                                                "Configured Instances": {
+                                                    "type": "integer"
+                                                },
+                                                "Currently Running Instances": {
+                                                    "type": "integer"
                                                 }
-                                            },
-                                            "description": "Optional. Included only in detailed status responses.\n"
-                                        },
-                                        "Type": {
-                                            "type": "string"
+                                            }
                                         }
                                     }
                                 },
@@ -553,11 +648,11 @@
                                     "criticalServiceDetail": {
                                         "value": {
                                             "Critical Service": {
+                                                "Name": "cray-hbtd",
+                                                "Namespace": "services",
+                                                "Type": "Deployment",
                                                 "Configured Instances": 3,
-                                                "Currently Running Instances": 2,
-                                                "Name": "cray-vault",
-                                                "Namespace": "vault",
-                                                "Type": "StatefulSet"
+                                                "Currently Running Instances": 3
                                             }
                                         }
                                     }
@@ -566,7 +661,26 @@
                         }
                     },
                     "404": {
-                        "description": "Critical service not found."
+                        "description": "Critical service not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "description": "Not found",
+                                    "content": {
+                                        "application/json": {
+                                            "schema": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "error": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -577,35 +691,36 @@
                 "tags": [
                     "criticalservices"
                 ],
-                "description": "Returns the status of all critical services with distribution details. Each service object may include:\n  - \"Service Name\": the name of the critical service.\n  - \"Status\": the current status (e.g., balanced, No pods found).\n  - \"Distribution\": an object mapping zones to node-to-pod arrays (optional).\n",
+                "description": "Returns the status of all critical services with distribution details. Response provides namespaces containing services with their status information including:\n  - name: the name of the critical service\n  - type: the service type (Deployment, StatefulSet, DaemonSet)\n  - status: the current status (e.g., Configured, PartiallyConfigured)\n  - balanced: indicates whether the service is properly distributed across zones\n",
                 "operationId": "getAllCriticalServicesStatus",
                 "responses": {
                     "200": {
-                        "description": "Critical services status retrieved successfully.",
+                        "description": "Critical services status retrieved successfully",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "type": "object",
                                     "properties": {
-                                        "services": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "object",
-                                                "properties": {
-                                                    "Service Name": {
-                                                        "type": "string"
-                                                    },
-                                                    "Status": {
-                                                        "type": "string"
-                                                    },
-                                                    "Distribution": {
-                                                        "type": "object",
-                                                        "description": "Optional distribution details mapping zones to node-to-pod arrays.",
-                                                        "additionalProperties": {
+                                        "critical-services": {
+                                            "type": "object",
+                                            "properties": {
+                                                "namespace": {
+                                                    "type": "object",
+                                                    "additionalProperties": {
+                                                        "type": "array",
+                                                        "items": {
                                                             "type": "object",
-                                                            "additionalProperties": {
-                                                                "type": "array",
-                                                                "items": {
+                                                            "properties": {
+                                                                "name": {
+                                                                    "type": "string"
+                                                                },
+                                                                "type": {
+                                                                    "type": "string"
+                                                                },
+                                                                "status": {
+                                                                    "type": "string"
+                                                                },
+                                                                "balanced": {
                                                                     "type": "string"
                                                                 }
                                                             }
@@ -617,31 +732,74 @@
                                     }
                                 },
                                 "examples": {
-                                    "statusExample": {
+                                    "criticalServicesStatusExample": {
                                         "value": {
-                                            "services": [
-                                                {
-                                                    "Service Name": "cray-dvs-mqtt-ss",
-                                                    "Status": "No pods found"
-                                                },
-                                                {
-                                                    "Service Name": "cray-sls-postgres",
-                                                    "Status": "balanced",
-                                                    "Distribution": {
-                                                        "x3000": {
-                                                            "ncn-w002": [
-                                                                "cray-sls-postgres-0"
-                                                            ],
-                                                            "ncn-w004": [
-                                                                "cray-sls-postgres-1"
-                                                            ],
-                                                            "ncn-w005": [
-                                                                "cray-sls-postgres-2"
-                                                            ]
+                                            "critical-services": {
+                                                "namespace": {
+                                                    "services": [
+                                                        {
+                                                            "name": "cray-dns-powerdns",
+                                                            "type": "Deployment",
+                                                            "status": "Configured",
+                                                            "balanced": "true"
+                                                        },
+                                                        {
+                                                            "name": "cray-hbtd",
+                                                            "type": "Deployment",
+                                                            "status": "Configured",
+                                                            "balanced": "true"
+                                                        },
+                                                        {
+                                                            "name": "cray-hmnfd",
+                                                            "type": "Deployment",
+                                                            "status": "Configured",
+                                                            "balanced": "true"
+                                                        },
+                                                        {
+                                                            "name": "cray-keycloak",
+                                                            "type": "StatefulSet",
+                                                            "status": "Configured",
+                                                            "balanced": "true"
+                                                        },
+                                                        {
+                                                            "name": "cray-sls-postgres",
+                                                            "type": "StatefulSet",
+                                                            "status": "PartiallyConfigured",
+                                                            "balanced": "true"
                                                         }
-                                                    }
+                                                    ],
+                                                    "spire": [
+                                                        {
+                                                            "name": "cray-spire-server",
+                                                            "type": "StatefulSet",
+                                                            "status": "Configured",
+                                                            "balanced": "true"
+                                                        }
+                                                    ],
+                                                    "kube-system": [
+                                                        {
+                                                            "name": "coredns",
+                                                            "type": "Deployment",
+                                                            "status": "Configured",
+                                                            "balanced": "true"
+                                                        },
+                                                        {
+                                                            "name": "kube-multus-ds",
+                                                            "type": "DaemonSet",
+                                                            "status": "Configured",
+                                                            "balanced": "true"
+                                                        }
+                                                    ],
+                                                    "rack-resiliency": [
+                                                        {
+                                                            "name": "k8s-zone-api",
+                                                            "type": "Deployment",
+                                                            "status": "Configured",
+                                                            "balanced": "true"
+                                                        }
+                                                    ]
                                                 }
-                                            ]
+                                            }
                                         }
                                     }
                                 }
@@ -649,7 +807,48 @@
                         }
                     },
                     "404": {
-                        "description": "Critical services status not found."
+                        "description": "Critical services status not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "description": "Not found",
+                                    "content": {
+                                        "application/json": {
+                                            "schema": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "error": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "description": "Internal server error",
+                                    "content": {
+                                        "application/json": {
+                                            "schema": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "error": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -660,14 +859,14 @@
                 "tags": [
                     "criticalservices"
                 ],
-                "description": "Returns detailed status for a specific critical service, including pod information. The response includes:\n  - \"Configured Instances\": number\n  - \"Currently Running Instances\": number\n  - \"Name\": string\n  - \"Namespace\": string\n  - \"Pods\": array of pod objects with Name, Node, Status, Zone.\n  - \"Type\": string\n",
+                "description": "Returns detailed status for a specific critical service, including pod information. The response includes:\n  - Name: string\n  - Namespace: string\n  - Type: string\n  - Status: string\n  - Balanced: string\n  - Configured Instances: number\n  - Currently Running Instances: number\n  - Pods: array of pod objects with Name, Node, Status, Zone\n",
                 "operationId": "getCriticalServiceStatus",
                 "parameters": [
                     {
                         "name": "critical_service_name",
                         "in": "path",
                         "required": true,
-                        "description": "The name of the critical service.",
+                        "description": "The name of the critical service",
                         "schema": {
                             "type": "string"
                         }
@@ -675,81 +874,91 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Detailed critical service status retrieved successfully.",
+                        "description": "Detailed critical service status retrieved successfully",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "type": "object",
                                     "properties": {
-                                        "Configured Instances": {
-                                            "type": "integer",
-                                            "example": 3
-                                        },
-                                        "Currently Running Instances": {
-                                            "type": "integer",
-                                            "example": 2
-                                        },
-                                        "Name": {
-                                            "type": "string"
-                                        },
-                                        "Namespace": {
-                                            "type": "string"
-                                        },
-                                        "Pods": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "object",
-                                                "properties": {
-                                                    "Name": {
-                                                        "type": "string"
-                                                    },
-                                                    "Node": {
-                                                        "type": "string"
-                                                    },
-                                                    "Status": {
-                                                        "type": "string"
-                                                    },
-                                                    "Zone": {
-                                                        "type": "string"
+                                        "Critical Service": {
+                                            "type": "object",
+                                            "properties": {
+                                                "Name": {
+                                                    "type": "string"
+                                                },
+                                                "Namespace": {
+                                                    "type": "string"
+                                                },
+                                                "Type": {
+                                                    "type": "string"
+                                                },
+                                                "Status": {
+                                                    "type": "string"
+                                                },
+                                                "Balanced": {
+                                                    "type": "string"
+                                                },
+                                                "Configured Instances": {
+                                                    "type": "integer"
+                                                },
+                                                "Currently Running Instances": {
+                                                    "type": "integer"
+                                                },
+                                                "Pods": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "Name": {
+                                                                "type": "string"
+                                                            },
+                                                            "Node": {
+                                                                "type": "string"
+                                                            },
+                                                            "Status": {
+                                                                "type": "string"
+                                                            },
+                                                            "Zone": {
+                                                                "type": "string"
+                                                            }
+                                                        }
                                                     }
                                                 }
-                                            },
-                                            "description": "Optional. Included only in detailed status responses.\n"
-                                        },
-                                        "Type": {
-                                            "type": "string"
+                                            }
                                         }
                                     }
                                 },
                                 "examples": {
-                                    "criticalStatusExample": {
+                                    "criticalServiceStatusExample": {
                                         "value": {
                                             "Critical Service": {
+                                                "Name": "cray-hbtd",
+                                                "Namespace": "services",
+                                                "Type": "Deployment",
+                                                "Status": "Configured",
+                                                "Balanced": "true",
                                                 "Configured Instances": 3,
-                                                "Currently Running Instances": 2,
-                                                "Name": "cray-vault",
-                                                "Namespace": "vault",
+                                                "Currently Running Instances": 3,
                                                 "Pods": [
                                                     {
-                                                        "Name": "cray-vault-0",
-                                                        "Node": "ncn-w004",
+                                                        "Name": "cray-hbtd-6cbdbd6955-5xlfg",
                                                         "Status": "Running",
-                                                        "Zone": "x3000"
+                                                        "Node": "ncn-w002",
+                                                        "Zone": "cscs-rack-x3001"
                                                     },
                                                     {
-                                                        "Name": "cray-vault-1",
-                                                        "Node": "ncn-w005",
-                                                        "Status": "Pending",
-                                                        "Zone": "x3000"
+                                                        "Name": "cray-hbtd-6cbdbd6955-jwzgq",
+                                                        "Status": "Running",
+                                                        "Node": "ncn-w003",
+                                                        "Zone": "cscs-rack-x3002"
                                                     },
                                                     {
-                                                        "Name": "cray-vault-2",
+                                                        "Name": "cray-hbtd-6cbdbd6955-k6pkt",
+                                                        "Status": "Running",
                                                         "Node": "ncn-w001",
-                                                        "Status": "Running",
-                                                        "Zone": "x3000"
+                                                        "Zone": "cscs-rack-x3000"
                                                     }
-                                                ],
-                                                "Type": "StatefulSet"
+                                                ]
                                             }
                                         }
                                     }
@@ -758,7 +967,48 @@
                         }
                     },
                     "404": {
-                        "description": "Critical service status not found."
+                        "description": "Critical service status not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "description": "Not found",
+                                    "content": {
+                                        "application/json": {
+                                            "schema": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "error": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "description": "Internal server error",
+                                    "content": {
+                                        "application/json": {
+                                            "schema": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "error": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -771,7 +1021,7 @@
                     "healthz",
                     "cli_ignore"
                 ],
-                "description": "Readiness probe for RRS. This is used by Kubernetes to determine if RRS is ready to accept requests.",
+                "description": "Readiness probe for RRS. This is used by Kubernetes to determine if RRS is ready to accept requests",
                 "responses": {
                     "200": {
                         "description": "RRS is ready to accept requests",
@@ -834,7 +1084,7 @@
                         }
                     },
                     "500": {
-                        "description": "Internal server error.",
+                        "description": "Internal server error",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -940,9 +1190,21 @@
                     "Zone Name": {
                         "type": "string"
                     },
+                    "Management Masters": {
+                        "type": "integer"
+                    },
+                    "Management Workers": {
+                        "type": "integer"
+                    },
+                    "Management Storages": {
+                        "type": "integer"
+                    },
                     "Management Master": {
                         "type": "object",
                         "properties": {
+                            "Type": {
+                                "type": "string"
+                            },
                             "Nodes": {
                                 "type": "array",
                                 "items": {
@@ -956,21 +1218,15 @@
                                         }
                                     }
                                 }
-                            },
-                            "Type": {
-                                "type": "string"
                             }
                         }
-                    },
-                    "Management Masters": {
-                        "type": "integer"
-                    },
-                    "Management Storage": {
-                        "type": "integer"
                     },
                     "Management Worker": {
                         "type": "object",
                         "properties": {
+                            "Type": {
+                                "type": "string"
+                            },
                             "Nodes": {
                                 "type": "array",
                                 "items": {
@@ -984,14 +1240,41 @@
                                         }
                                     }
                                 }
-                            },
-                            "Type": {
-                                "type": "string"
                             }
                         }
                     },
-                    "Management Workers": {
-                        "type": "integer"
+                    "Management Storage": {
+                        "type": "object",
+                        "properties": {
+                            "Type": {
+                                "type": "string"
+                            },
+                            "Nodes": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "Name": {
+                                            "type": "string"
+                                        },
+                                        "Status": {
+                                            "type": "string"
+                                        },
+                                        "OSDs": {
+                                            "type": "object",
+                                            "properties": {
+                                                "up": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             },
@@ -1003,6 +1286,28 @@
                     },
                     "Status": {
                         "type": "string"
+                    }
+                }
+            },
+            "StorageNodeDetail": {
+                "type": "object",
+                "properties": {
+                    "Name": {
+                        "type": "string"
+                    },
+                    "Status": {
+                        "type": "string"
+                    },
+                    "OSDs": {
+                        "type": "object",
+                        "properties": {
+                            "up": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        }
                     }
                 }
             },
@@ -1049,84 +1354,103 @@
                 "properties": {
                     "from_file": {
                         "type": "string",
-                        "description": "A JSON string containing the updated critical services configuration."
+                        "description": "A JSON string containing the updated critical services configuration"
                     }
-                },
-                "required": [
-                    "from_file"
-                ]
+                }
             },
             "CriticalServicesPatchResponse": {
                 "type": "object",
                 "properties": {
+                    "Update": {
+                        "type": "string"
+                    },
+                    "Successfully Added Services": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
                     "Already Existing Services": {
                         "type": "array",
                         "items": {
                             "type": "string"
-                        },
-                        "example": [
-                            "kube-multus-ds"
-                        ]
-                    },
-                    "Message for unknown services": {
-                        "type": "string",
-                        "example": "Service(s) has no associated pods in the namespace, Please verify the Information"
-                    },
-                    "Unknown Services": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        },
-                        "example": [
-                            "coredns-xxx"
-                        ]
-                    },
-                    "Update": {
-                        "type": "string",
-                        "example": "OK"
+                        }
+                    }
+                }
+            },
+            "CriticalServiceSummary": {
+                "type": "object",
+                "properties": {
+                    "Critical Service": {
+                        "type": "object",
+                        "properties": {
+                            "Name": {
+                                "type": "string"
+                            },
+                            "Namespace": {
+                                "type": "string"
+                            },
+                            "Type": {
+                                "type": "string"
+                            },
+                            "Configured Instances": {
+                                "type": "integer"
+                            },
+                            "Currently Running Instances": {
+                                "type": "integer"
+                            }
+                        }
                     }
                 }
             },
             "CriticalServiceDetail": {
                 "type": "object",
                 "properties": {
-                    "Configured Instances": {
-                        "type": "integer",
-                        "example": 3
-                    },
-                    "Currently Running Instances": {
-                        "type": "integer",
-                        "example": 2
-                    },
-                    "Name": {
-                        "type": "string"
-                    },
-                    "Namespace": {
-                        "type": "string"
-                    },
-                    "Pods": {
-                        "type": "array",
-                        "items": {
-                            "type": "object",
-                            "properties": {
-                                "Name": {
-                                    "type": "string"
-                                },
-                                "Node": {
-                                    "type": "string"
-                                },
-                                "Status": {
-                                    "type": "string"
-                                },
-                                "Zone": {
-                                    "type": "string"
+                    "Critical Service": {
+                        "type": "object",
+                        "properties": {
+                            "Name": {
+                                "type": "string"
+                            },
+                            "Namespace": {
+                                "type": "string"
+                            },
+                            "Type": {
+                                "type": "string"
+                            },
+                            "Status": {
+                                "type": "string"
+                            },
+                            "Balanced": {
+                                "type": "string"
+                            },
+                            "Configured Instances": {
+                                "type": "integer"
+                            },
+                            "Currently Running Instances": {
+                                "type": "integer"
+                            },
+                            "Pods": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "Name": {
+                                            "type": "string"
+                                        },
+                                        "Node": {
+                                            "type": "string"
+                                        },
+                                        "Status": {
+                                            "type": "string"
+                                        },
+                                        "Zone": {
+                                            "type": "string"
+                                        }
+                                    }
                                 }
                             }
-                        },
-                        "description": "Optional. Included only in detailed status responses.\n"
-                    },
-                    "Type": {
-                        "type": "string"
+                        }
                     }
                 }
             },
@@ -1150,25 +1474,26 @@
             "CriticalServicesStatusResponse": {
                 "type": "object",
                 "properties": {
-                    "services": {
-                        "type": "array",
-                        "items": {
-                            "type": "object",
-                            "properties": {
-                                "Service Name": {
-                                    "type": "string"
-                                },
-                                "Status": {
-                                    "type": "string"
-                                },
-                                "Distribution": {
-                                    "type": "object",
-                                    "description": "Optional distribution details mapping zones to node-to-pod arrays.",
-                                    "additionalProperties": {
+                    "critical-services": {
+                        "type": "object",
+                        "properties": {
+                            "namespace": {
+                                "type": "object",
+                                "additionalProperties": {
+                                    "type": "array",
+                                    "items": {
                                         "type": "object",
-                                        "additionalProperties": {
-                                            "type": "array",
-                                            "items": {
+                                        "properties": {
+                                            "name": {
+                                                "type": "string"
+                                            },
+                                            "type": {
+                                                "type": "string"
+                                            },
+                                            "status": {
+                                                "type": "string"
+                                            },
+                                            "balanced": {
                                                 "type": "string"
                                             }
                                         }
@@ -1179,34 +1504,27 @@
                     }
                 }
             },
-            "CriticalServiceStatus": {
+            "CriticalServiceStatusItem": {
                 "type": "object",
                 "properties": {
-                    "Service Name": {
+                    "name": {
                         "type": "string"
                     },
-                    "Status": {
+                    "type": {
                         "type": "string"
                     },
-                    "Distribution": {
-                        "type": "object",
-                        "description": "Optional distribution details mapping zones to node-to-pod arrays.",
-                        "additionalProperties": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "array",
-                                "items": {
-                                    "type": "string"
-                                }
-                            }
-                        }
+                    "status": {
+                        "type": "string"
+                    },
+                    "balanced": {
+                        "type": "string"
                     }
                 }
             }
         },
         "responses": {
             "NotFound": {
-                "description": "Not found.",
+                "description": "Not found",
                 "content": {
                     "application/json": {
                         "schema": {
@@ -1221,7 +1539,7 @@
                 }
             },
             "InternalServerError": {
-                "description": "Internal server error.",
+                "description": "Internal server error",
                 "content": {
                     "application/json": {
                         "schema": {
