@@ -27,6 +27,7 @@
 import click
 
 from cray.generator import generate
+from cray.echo import echo
 
 CURRENT_VERSION = 'v3'
 SWAGGER_OPTS = {
@@ -60,8 +61,9 @@ for p in cli.commands['public-keys'].commands['create'].params:
 
 # Fix for metadata in create image.
 for p in cli.commands['images'].commands['create'].params:
+    echo(f"payload_name {p.payload_name}")
     if p.payload_name == 'metadata':
-        print(f"metadata {p.payload_name}")
+        echo(f"metadata {p.payload_name}")
         p.payload_name = {p.payload_name['key']: p.payload_name['value']}
-        print(f"Updated metadata {p.payload_name}")
+        echo(f"Updated metadata {p.payload_name}")
         break
