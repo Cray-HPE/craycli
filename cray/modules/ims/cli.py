@@ -1,7 +1,7 @@
 #
 #  MIT License
 #
-#  (C) Copyright 2020-2023 Hewlett Packard Enterprise Development LP
+#  (C) Copyright 2020-2025 Hewlett Packard Enterprise Development LP
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a
 #  copy of this software and associated documentation files (the "Software"),
@@ -56,4 +56,10 @@ for p in cli.commands['public-keys'].commands['create'].params:
     if p.payload_name == 'public_key':
         p.type = click.File(mode='r')
         p.callback = _file_cb(p.callback)
+        break
+
+# Fix for metadata in create image.
+for p in cli.commands['images'].commands['create'].params:
+    if p.payload_name == 'metadata':
+        p.payload_name = {p.payload_name['key']: p.payload_name['value']}
         break
