@@ -61,5 +61,7 @@ for p in cli.commands['public-keys'].commands['create'].params:
 # Fix for metadata in create image.
 for p in cli.commands['images'].commands['create'].params:
     if p.payload_name == 'metadata':
+        print(f"metadata {p.payload_name}")
         p.payload_name = {p.payload_name['key']: p.payload_name['value']}
+        print(f"Updated metadata {p.payload_name}")
         break
