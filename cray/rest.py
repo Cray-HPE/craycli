@@ -96,6 +96,7 @@ def request(method, route, callback=None, **kwargs):
         tenant = get_tenant(ctx=ctx)
         if tenant:
             opts.setdefault(HEADERS_ORIGIN, {})[TENANT_HEADER_NAME_KEY] = tenant
+        echo("Testing IMS changes")
         echo(f'REQUEST: {method} to {url}', ctx=ctx, level=LOG_DEBUG)
         echo(f'OPTIONS: {opts}', ctx=ctx, level=LOG_RAW)
         # TODO: Find solution for this.
