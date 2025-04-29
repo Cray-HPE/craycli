@@ -103,6 +103,12 @@
                                         "type": "integer",
                                         "example": 4096
                                     },
+                                    "vniLimit": {
+                                        "description": "Maximum number of VNIs that may be reserved in this partition",
+                                        "type": "integer",
+                                        "example": 50000,
+                                        "readOnly": true
+                                    },
                                     "vniLink": {
                                         "description": "Link to VNIs reserved in this partition",
                                         "type": "string",
@@ -155,6 +161,12 @@
                                             "description": "Last VNI in the range of VNIs",
                                             "type": "integer",
                                             "example": 4096
+                                        },
+                                        "vniLimit": {
+                                            "description": "Maximum number of VNIs that may be reserved in this partition",
+                                            "type": "integer",
+                                            "example": 50000,
+                                            "readOnly": true
                                         },
                                         "vniLink": {
                                             "description": "Link to VNIs reserved in this partition",
@@ -252,6 +264,12 @@
                                             "description": "Last VNI in the range of VNIs",
                                             "type": "integer",
                                             "example": 4096
+                                        },
+                                        "vniLimit": {
+                                            "description": "Maximum number of VNIs that may be reserved in this partition",
+                                            "type": "integer",
+                                            "example": 50000,
+                                            "readOnly": true
                                         },
                                         "vniLink": {
                                             "description": "Link to VNIs reserved in this partition",
@@ -2079,6 +2097,12 @@
                         "type": "integer",
                         "example": 4096
                     },
+                    "vniLimit": {
+                        "description": "Maximum number of VNIs that may be reserved in this partition",
+                        "type": "integer",
+                        "example": 50000,
+                        "readOnly": true
+                    },
                     "vniLink": {
                         "description": "Link to VNIs reserved in this partition",
                         "type": "string",
@@ -2584,6 +2608,12 @@
                                     "type": "integer",
                                     "example": 4096
                                 },
+                                "vniLimit": {
+                                    "description": "Maximum number of VNIs that may be reserved in this partition",
+                                    "type": "integer",
+                                    "example": 50000,
+                                    "readOnly": true
+                                },
                                 "vniLink": {
                                     "description": "Link to VNIs reserved in this partition",
                                     "type": "string",
@@ -3087,6 +3117,12 @@
                                     "description": "Last VNI in the range of VNIs",
                                     "type": "integer",
                                     "example": 4096
+                                },
+                                "vniLimit": {
+                                    "description": "Maximum number of VNIs that may be reserved in this partition",
+                                    "type": "integer",
+                                    "example": 50000,
+                                    "readOnly": true
                                 },
                                 "vniLink": {
                                     "description": "Link to VNIs reserved in this partition",
