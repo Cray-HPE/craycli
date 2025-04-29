@@ -56,9 +56,8 @@ def test_vnid_create(cli_runner, rest_mock):
         [
             "vnid",
             "create",
-            "--enforce=1",
-            "--vni-svc-limit=1",
-            "--vni-limit=2",
+            "--vni-first=1000",
+            "--vni-last=2000",
             "--description=wlm",
             "--partition-name=wlm",
         ],
@@ -70,11 +69,10 @@ def test_vnid_create(cli_runner, rest_mock):
                "url"] == f"{config['default']['hostname']}" \
                          f"/apis/vnid/fabric/vnis"
     assert data["body"] == {
-        "enforce": True,
-        "vniSvcLimit": 1,
-        "vniLimit": 2,
         "description": "wlm",
         "partitionName": "wlm",
+        "vniFirst": 1000,
+        "vniLast": 2000,
     }
 
 
@@ -151,7 +149,7 @@ def test_vnid_jobs_create(cli_runner, rest_mock):
     assert data[
                "url"] == f"{config['default']['hostname']}" \
                          f"/apis/vnid/fabric/vnis/wlm/jobs"
-    assert data["body"] == {"UID": 1, "JobID": "1.pbs-server"}
+    assert data["body"] == {"UID": 1, "jobID": "1.pbs-server"}
 
 
 def test_vnid_jobs_delete(cli_runner, rest_mock):
