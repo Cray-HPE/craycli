@@ -42,21 +42,25 @@ def test_cray_console_base(cli_runner, rest_mock):
         assert txt in result.output
 
 
-def test_cray_ims_console_interact(cli_runner, rest_mock):
+def test_cray_console_interact(cli_runner, rest_mock):
     """ Test cray console interact ... """
     runner, cli, config = cli_runner
     result = runner.invoke(cli, ['console', 'interact', 'foo'])
     assert result.exit_code == 1
+    assert result.output is not None
+    assert result.output == "Nothing"
     data = json.loads(result.output)
     assert data['method'] == 'GET'
     assert data['url'] == f'{config["default"]["hostname"]}/apis/console-operator/console-operator/interact/foo'
 
 
-def test_cray_ims_console_tail(cli_runner, rest_mock):
+def test_cray_console_tail(cli_runner, rest_mock):
     """ Test cray console tail ... """
     runner, cli, config = cli_runner
     result = runner.invoke(cli, ['console', 'tail', 'foo'])
     assert result.exit_code == 1
+    assert result.output is not None
+    assert result.output == "Nothing"
     data = json.loads(result.output)
     assert data['method'] == 'GET'
     assert data['url'] == f'{config["default"]["hostname"]}/apis/console-operator/console-operator/tail/foo'
