@@ -63,8 +63,10 @@ async def websocket_terminal_interaction(ctx, endpoint: str, headers: dict[str,s
     # add auth header
     token = ""
     if auth and auth.session and auth.session.access_token:
+        raise AssertionError("branch1")
         token = auth.session.access_token
     elif globals_ctx and globals_ctx.token.access_token:
+        raise AssertionError("branch2")
         token = globals_ctx.token.access_token
     if token != "":
         headers["Authorization"] = f"Bearer {token}"
