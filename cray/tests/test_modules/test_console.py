@@ -53,7 +53,7 @@ def test_cray_console_interact(cli_runner):
     """ Test cray console interact ... """
     runner, cli, config = cli_runner
     result = runner.invoke(cli, ['console', 'interact', 'foo'])
-    assert result.exit_code == 1
+    assert result.exit_code == 0
     assert result.output is not None
     assert result.output == "Nothing"
     data = json.loads(result.output)

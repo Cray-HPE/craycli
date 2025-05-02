@@ -51,6 +51,8 @@ async def websocket_terminal_interaction(ctx, endpoint: str, headers: dict[str,s
     # set up the return value
     errMsg = ""
 
+    raise AssertionError("Harf")
+
     # pull information from context
     config = ctx.obj['config']
     auth = ctx.obj["auth"]
