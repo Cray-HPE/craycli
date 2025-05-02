@@ -34,6 +34,7 @@ from cray.core import argument
 from cray.core import group
 from cray.core import pass_context
 from cray.core import option
+from cray.echo import echo
 
 # Header name keys for console apis
 CONSOLE_HEADER_TAIL_KEY = "Cray-Console-Lines"
@@ -50,6 +51,9 @@ def cli():
 async def websocket_terminal_interaction(ctx, endpoint: str, headers: dict[str,str]) -> str:
     # set up the return value
     errMsg = ""
+    print("dogfood")
+
+    echo("But also catfood")
 
     # pull information from context
     config = ctx.obj['config']
