@@ -65,9 +65,10 @@ async def websocket_terminal_interaction(ctx, endpoint: str, headers: dict[str,s
     if auth and auth.session and auth.session.access_token:        
         token = auth.session.access_token
     else:
-        raise AssertionError(str(globals_ctx))
-        if globals_ctx and globals_ctx.token.access_token:        
-            token = globals_ctx.token.access_token
+        try:
+            token = globals_ctx["token"]["access_token"]
+        except KeyError:
+            pass
     if token != "":
         headers["Authorization"] = f"Bearer {token}"
 
@@ -89,9 +90,6 @@ async def websocket_terminal_interaction(ctx, endpoint: str, headers: dict[str,s
 
     # build the uri from the hostname and endpoint - note secure websocket
     uri = f"wss://{hostname}/{endpoint}"
-
-    if hostname:
-        raise AssertionError("Harf")
 
     try:
         # connect to the websocket
