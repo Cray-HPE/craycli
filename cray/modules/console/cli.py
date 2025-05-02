@@ -51,24 +51,19 @@ async def websocket_terminal_interaction(ctx, endpoint: str, headers: dict[str,s
     # set up the return value
     errMsg = ""
 
-    #raise AssertionError("Harf")
-
     # pull information from context
     config = ctx.obj['config']
     auth = ctx.obj["auth"]
-    globals_ctx = ctx.obj['globals']
+    globals_token = ctx.obj.get("globals",{}).get("token",{}).get("access_token","")
     tenant = config.get('core.tenant', "")
     hostname = config.get('core.hostname', "")
 
     # add auth header
     token = ""
-    if auth and auth.session and auth.session.access_token:        
+    if auth and auth.session and auth.session.access_token:
         token = auth.session.access_token
     else:
-        try:
-            token = globals_ctx["token"]["access_token"]
-        except KeyError:
-            pass
+        token = globals_token
     if token != "":
         headers["Authorization"] = f"Bearer {token}"
 
