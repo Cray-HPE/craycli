@@ -31,6 +31,7 @@ import json
 def test_cray_console_base(cli_runner):
     """ Test cray console base command """
     runner, cli, _ = cli_runner
+    assert type(runner).__name__ == ""
     result = runner.invoke(cli, ['console'])
     assert result.exit_code == 0
 
