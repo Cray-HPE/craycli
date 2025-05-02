@@ -152,7 +152,7 @@ async def websocket_terminal_interaction(ctx, endpoint: str, headers: dict[str,s
 @argument('xname', metavar='XNAME',required=True, type=click.STRING, nargs=1)
 @pass_context
 def interact(ctx, xname):
-    """ Interact with the console. """
+    # Interact with the console.
     headers = {}
     endpoint = f"apis/console-operator/console-operator/interact/{xname}"
     errMsg = asyncio.run(websocket_terminal_interaction(ctx, endpoint, headers))
@@ -184,7 +184,7 @@ def interact(ctx, xname):
 )
 @pass_context
 def tail(ctx, xname, lines, follow):
-    """ Tail the console output. """
+    # Tail the console output.
 
     # pull out the options and load into the headers
     headers = {}

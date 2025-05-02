@@ -25,31 +25,11 @@
 and options. """
 # pylint: disable=unused-argument
 # pylint: disable=invalid-name
-
+# pylint: disable=line-too-long
 import json
-import os
-
-from cray.tests.utils import new_random_string
-
-
-def compare_output(expected, cli_output):
-    """
-    Function helper to test if the expected values can
-    be found in the output text.
-    """
-    found = False
-    actual = [elem.strip() for elem in cli_output.splitlines()]
-    for i, e in reversed(list(enumerate(actual))):
-        if ':' in e:
-            found = True
-            del actual[0:i + 1]
-            break
-    assert found
-    assert set(expected) == set(actual)
-
 
 def test_cray_console_base(cli_runner, rest_mock):
-    """ Test cray ims base command """
+    """ Test cray console base command """
     runner, cli, _ = cli_runner
     result = runner.invoke(cli, ['console'])
     assert result.exit_code == 0
@@ -58,8 +38,8 @@ def test_cray_console_base(cli_runner, rest_mock):
         "interact",
         "tail"
     ]
-
-    compare_output(outputs, result.output)
+    for txt in outputs:
+        assert txt in result.output
 
 
 def test_cray_ims_console_interact(cli_runner, rest_mock):
