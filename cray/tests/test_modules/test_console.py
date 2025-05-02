@@ -28,7 +28,7 @@ and options. """
 # pylint: disable=line-too-long
 import json
 
-def test_cray_console_base(cli_runner, rest_mock):
+def test_cray_console_base(cli_runner):
     """ Test cray console base command """
     runner, cli, _ = cli_runner
     result = runner.invoke(cli, ['console'])
@@ -41,8 +41,15 @@ def test_cray_console_base(cli_runner, rest_mock):
     for txt in outputs:
         assert txt in result.output
 
+def test_cray_console_interact_no_args(cli_runner):
+    """ Test cray console interact ... """
+    runner, cli, _ = cli_runner
+    result = runner.invoke(cli, ['console', 'interact'])
 
-def test_cray_console_interact(cli_runner, rest_mock):
+    assert result.exit_code == 2
+
+
+def test_cray_console_interact(cli_runner):
     """ Test cray console interact ... """
     runner, cli, config = cli_runner
     result = runner.invoke(cli, ['console', 'interact', 'foo'])
@@ -54,7 +61,7 @@ def test_cray_console_interact(cli_runner, rest_mock):
     assert data['url'] == f'{config["default"]["hostname"]}/apis/console-operator/console-operator/interact/foo'
 
 
-def test_cray_console_tail(cli_runner, rest_mock):
+def test_cray_console_tail(cli_runner):
     """ Test cray console tail ... """
     runner, cli, config = cli_runner
     result = runner.invoke(cli, ['console', 'tail', 'foo'])
