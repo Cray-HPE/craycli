@@ -30,10 +30,8 @@ import json
 
 def test_cray_console_base(cli_runner):
     """ Test cray console base command """
-    assert type(cli_runner).__name__ == ""
     runner, cli, _ = cli_runner
     assert type(cli).__name__ == ""
-    assert type(runner).__name__ == ""
     result = runner.invoke(cli, ['console'])
     assert result.exit_code == 0
 
