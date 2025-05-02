@@ -51,7 +51,7 @@ async def websocket_terminal_interaction(ctx, endpoint: str, headers: dict[str,s
     # set up the return value
     errMsg = ""
 
-    raise AssertionError("Harf")
+    #raise AssertionError("Harf")
 
     # pull information from context
     config = ctx.obj['config']
@@ -87,6 +87,9 @@ async def websocket_terminal_interaction(ctx, endpoint: str, headers: dict[str,s
 
     # build the uri from the hostname and endpoint - note secure websocket
     uri = f"wss://{hostname}/{endpoint}"
+
+    if hostname:
+        raise AssertionError("Harf")
 
     try:
         # connect to the websocket
