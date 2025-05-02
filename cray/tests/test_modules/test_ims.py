@@ -31,6 +31,23 @@ import os
 
 from cray.tests.utils import new_random_string
 
+def test_cray_console_interact_1(cli_runner, rest_mock):
+    """ Test cray console interact ... """
+    runner, cli, config = cli_runner
+    result = runner.invoke(cli, ['console', 'interact', 'foo'])
+    assert result.exit_code == 1
+    data = json.loads(result.output)
+    assert data['method'] == 'GET'
+    assert data['url'] == f'{config["default"]["hostname"]}/apis/console-operator/console-operator/interact/foo'
+
+def test_cray_console_tail_1(cli_runner, rest_mock):
+    """ Test cray console tail ... """
+    runner, cli, config = cli_runner
+    result = runner.invoke(cli, ['console', 'tail', 'foo'])
+    assert result.exit_code == 1
+    data = json.loads(result.output)
+    assert data['method'] == 'GET'
+    assert data['url'] == f'{config["default"]["hostname"]}/apis/console-operator/console-operator/tail/foo'
 
 def compare_output(expected, cli_output):
     """
