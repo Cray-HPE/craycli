@@ -210,13 +210,16 @@
                                             "type": "string"
                                         },
                                         "Management Masters": {
-                                            "type": "integer"
+                                            "type": "integer",
+                                            "minimum": 0
                                         },
                                         "Management Workers": {
-                                            "type": "integer"
+                                            "type": "integer",
+                                            "minimum": 0
                                         },
                                         "Management Storages": {
-                                            "type": "integer"
+                                            "type": "integer",
+                                            "minimum": 0
                                         },
                                         "Management Master": {
                                             "type": "object",
@@ -233,7 +236,12 @@
                                                                 "type": "string"
                                                             },
                                                             "Status": {
-                                                                "type": "string"
+                                                                "type": "string",
+                                                                "enum": [
+                                                                    "Ready",
+                                                                    "NotReady",
+                                                                    "Unknown"
+                                                                ]
                                                             }
                                                         }
                                                     }
@@ -255,7 +263,12 @@
                                                                 "type": "string"
                                                             },
                                                             "Status": {
-                                                                "type": "string"
+                                                                "type": "string",
+                                                                "enum": [
+                                                                    "Ready",
+                                                                    "NotReady",
+                                                                    "Unknown"
+                                                                ]
                                                             }
                                                         }
                                                     }
@@ -277,7 +290,11 @@
                                                                 "type": "string"
                                                             },
                                                             "Status": {
-                                                                "type": "string"
+                                                                "type": "string",
+                                                                "enum": [
+                                                                    "Ready",
+                                                                    "NotReady"
+                                                                ]
                                                             },
                                                             "OSDs": {
                                                                 "type": "object",
@@ -635,10 +652,12 @@
                                                     "type": "string"
                                                 },
                                                 "Configured Instances": {
-                                                    "type": "integer"
+                                                    "type": "integer",
+                                                    "minimum": 1
                                                 },
                                                 "Currently Running Instances": {
-                                                    "type": "integer"
+                                                    "type": "integer",
+                                                    "minimum": 0
                                                 }
                                             }
                                         }
@@ -718,10 +737,19 @@
                                                                     "type": "string"
                                                                 },
                                                                 "status": {
-                                                                    "type": "string"
+                                                                    "type": "string",
+                                                                    "enum": [
+                                                                        "Configured",
+                                                                        "PartiallyConfigured",
+                                                                        "Running"
+                                                                    ]
                                                                 },
                                                                 "balanced": {
-                                                                    "type": "string"
+                                                                    "type": "string",
+                                                                    "enum": [
+                                                                        "true",
+                                                                        "false"
+                                                                    ]
                                                                 }
                                                             }
                                                         }
@@ -893,16 +921,27 @@
                                                     "type": "string"
                                                 },
                                                 "Status": {
-                                                    "type": "string"
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "Configured",
+                                                        "PartiallyConfigured",
+                                                        "Running"
+                                                    ]
                                                 },
                                                 "Balanced": {
-                                                    "type": "string"
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "true",
+                                                        "false"
+                                                    ]
                                                 },
                                                 "Configured Instances": {
-                                                    "type": "integer"
+                                                    "type": "integer",
+                                                    "minimum": 1
                                                 },
                                                 "Currently Running Instances": {
-                                                    "type": "integer"
+                                                    "type": "integer",
+                                                    "minimum": 0
                                                 },
                                                 "Pods": {
                                                     "type": "array",
@@ -1191,13 +1230,16 @@
                         "type": "string"
                     },
                     "Management Masters": {
-                        "type": "integer"
+                        "type": "integer",
+                        "minimum": 0
                     },
                     "Management Workers": {
-                        "type": "integer"
+                        "type": "integer",
+                        "minimum": 0
                     },
                     "Management Storages": {
-                        "type": "integer"
+                        "type": "integer",
+                        "minimum": 0
                     },
                     "Management Master": {
                         "type": "object",
@@ -1214,7 +1256,12 @@
                                             "type": "string"
                                         },
                                         "Status": {
-                                            "type": "string"
+                                            "type": "string",
+                                            "enum": [
+                                                "Ready",
+                                                "NotReady",
+                                                "Unknown"
+                                            ]
                                         }
                                     }
                                 }
@@ -1236,7 +1283,12 @@
                                             "type": "string"
                                         },
                                         "Status": {
-                                            "type": "string"
+                                            "type": "string",
+                                            "enum": [
+                                                "Ready",
+                                                "NotReady",
+                                                "Unknown"
+                                            ]
                                         }
                                     }
                                 }
@@ -1258,7 +1310,11 @@
                                             "type": "string"
                                         },
                                         "Status": {
-                                            "type": "string"
+                                            "type": "string",
+                                            "enum": [
+                                                "Ready",
+                                                "NotReady"
+                                            ]
                                         },
                                         "OSDs": {
                                             "type": "object",
@@ -1285,7 +1341,12 @@
                         "type": "string"
                     },
                     "Status": {
-                        "type": "string"
+                        "type": "string",
+                        "enum": [
+                            "Ready",
+                            "NotReady",
+                            "Unknown"
+                        ]
                     }
                 }
             },
@@ -1296,7 +1357,11 @@
                         "type": "string"
                     },
                     "Status": {
-                        "type": "string"
+                        "type": "string",
+                        "enum": [
+                            "Ready",
+                            "NotReady"
+                        ]
                     },
                     "OSDs": {
                         "type": "object",
@@ -1394,10 +1459,12 @@
                                 "type": "string"
                             },
                             "Configured Instances": {
-                                "type": "integer"
+                                "type": "integer",
+                                "minimum": 1
                             },
                             "Currently Running Instances": {
-                                "type": "integer"
+                                "type": "integer",
+                                "minimum": 0
                             }
                         }
                     }
@@ -1419,16 +1486,27 @@
                                 "type": "string"
                             },
                             "Status": {
-                                "type": "string"
+                                "type": "string",
+                                "enum": [
+                                    "Configured",
+                                    "PartiallyConfigured",
+                                    "Running"
+                                ]
                             },
                             "Balanced": {
-                                "type": "string"
+                                "type": "string",
+                                "enum": [
+                                    "true",
+                                    "false"
+                                ]
                             },
                             "Configured Instances": {
-                                "type": "integer"
+                                "type": "integer",
+                                "minimum": 1
                             },
                             "Currently Running Instances": {
-                                "type": "integer"
+                                "type": "integer",
+                                "minimum": 0
                             },
                             "Pods": {
                                 "type": "array",
@@ -1491,10 +1569,19 @@
                                                 "type": "string"
                                             },
                                             "status": {
-                                                "type": "string"
+                                                "type": "string",
+                                                "enum": [
+                                                    "Configured",
+                                                    "PartiallyConfigured",
+                                                    "Running"
+                                                ]
                                             },
                                             "balanced": {
-                                                "type": "string"
+                                                "type": "string",
+                                                "enum": [
+                                                    "true",
+                                                    "false"
+                                                ]
                                             }
                                         }
                                     }
@@ -1514,10 +1601,19 @@
                         "type": "string"
                     },
                     "status": {
-                        "type": "string"
+                        "type": "string",
+                        "enum": [
+                            "Configured",
+                            "PartiallyConfigured",
+                            "Running"
+                        ]
                     },
                     "balanced": {
-                        "type": "string"
+                        "type": "string",
+                        "enum": [
+                            "true",
+                            "false"
+                        ]
                     }
                 }
             }

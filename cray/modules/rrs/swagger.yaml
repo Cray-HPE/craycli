@@ -606,10 +606,13 @@ components:
           type: string
         Management Masters:
           type: integer
+          minimum: 0
         Management Workers:
           type: integer
+          minimum: 0
         Management Storages:
           type: integer
+          minimum: 0
         Management Master:
           type: object
           properties:
@@ -644,6 +647,10 @@ components:
           type: string
         Status:
           type: string
+          enum:
+            - Ready
+            - NotReady
+            - Unknown
     StorageNodeDetail:
       type: object
       properties:
@@ -651,6 +658,9 @@ components:
           type: string
         Status:
           type: string
+          enum:
+            - Ready
+            - NotReady
         OSDs:
           type: object
           properties:
@@ -710,8 +720,10 @@ components:
               type: string
             Configured Instances:
               type: integer
+              minimum: 1
             Currently Running Instances:
               type: integer
+              minimum: 0
     CriticalServiceDetail:
       type: object
       properties:
@@ -726,12 +738,21 @@ components:
               type: string
             Status:
               type: string
+              enum:
+                - Configured
+                - PartiallyConfigured
+                - Running
             Balanced:
               type: string
+              enum:
+                - "true"
+                - "false"
             Configured Instances:
               type: integer
+              minimum: 1
             Currently Running Instances:
               type: integer
+              minimum: 0
             Pods:
               type: array
               items:
@@ -768,8 +789,15 @@ components:
           type: string
         status:
           type: string
+          enum:
+            - Configured
+            - PartiallyConfigured
+            - Running
         balanced:
           type: string
+          enum:
+            - "true"
+            - "false"
   responses:
     NotFound:
       description: Not found
