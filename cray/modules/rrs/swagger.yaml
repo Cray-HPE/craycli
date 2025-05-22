@@ -22,7 +22,7 @@
 # OTHER DEALINGS IN THE SOFTWARE.
 #
 # Rack Resiliency Service API Specification
-openapi: 3.1.1
+openapi: 3.0.3
 info:
   title: Rack Resiliency Service
   license:
@@ -41,7 +41,7 @@ info:
           - Management Master Nodes
           - Management Worker Nodes
           - Management Storage Nodes
-          
+
         Alternatively, if zones are not configured, one of the following informational messages is returned:
           - "No K8s Topology/Ceph Zones configured"
           - "No Ceph zones configured"
@@ -245,7 +245,7 @@ paths:
       tags:
         - criticalservices
       description: >
-        Returns a list of critical services grouped by namespace. The response includes 
+        Returns a list of critical services grouped by namespace. The response includes
         a critical-services property containing namespaces with arrays of service objects
         including:
           - name: the name of the service
@@ -618,6 +618,8 @@ components:
           properties:
             Type:
               type: string
+              enum:
+                - "Kubernetes Topology Zone"
             Nodes:
               type: array
               items:
@@ -627,6 +629,8 @@ components:
           properties:
             Type:
               type: string
+              enum:
+                - "Kubernetes Topology Zone"
             Nodes:
               type: array
               items:
@@ -636,6 +640,8 @@ components:
           properties:
             Type:
               type: string
+              enum:
+                - "CEPH Zone"
             Nodes:
               type: array
               items:
