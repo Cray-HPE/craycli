@@ -1,5 +1,5 @@
 {
-    "openapi": "3.1.1",
+    "openapi": "3.0.3",
     "info": {
         "title": "Rack Resiliency Service",
         "license": {
@@ -7,7 +7,7 @@
             "url": "http://www.hpe.com/"
         },
         "version": "1.0.0",
-        "description": "The Rack Resiliency Service (RRS) provides a set of APIs to manage Rack Level resiliency. It queries the Kubernetes cluster to provide aggregated zone information and detailed critical service status. It gathers node details across various zones and presents both high-level summaries and in-depth information for zones and critical services.\n## Resources\n\n  ### GET /zones\n    Retrieve aggregated zone configuration showing Kubernetes Topology Zones and CEPH Zones including:\n      - Management Master Nodes\n      - Management Storage Nodes\n      - Management Worker Nodes\n      \n    Alternatively, if zones are not configured, one of the following informational messages is returned:\n      - \"No K8s Topology/Ceph Zones configured\"\n      - \"No Ceph zones configured\"\n      - \"No K8s topology zones configured\"\n\n  ### GET /zones/{zone_name}\n    Retrieve detailed information for a specific zone including:\n      - Zone Name\n      - Management Masters\n      - Management Workers\n      - Management Storages\n      - Node status and OSD information\n\n  ### GET /criticalservices\n    Retrieve a list of critical services grouped by namespace\n\n  ### GET /criticalservices/{critical-service-name}\n    Retrieve a summarized view of a specific critical service (without pod details). The response includes:\n      - Configured Instances\n      - Currently Running Instances\n      - Name\n      - Namespace\n      - Type\n\n  ### PATCH /criticalservices\n    Update the critical services configuration based on a provided file input. This endpoint allows\n    you to modify how critical services are configured in the system\n\n  ### GET /criticalservices/status\n    Retrieve the status of all critical services including service status and distribution details.\n    Each service object may include:\n      - Service Name\n      - Status\n      - Balanced: indicates whether the service is properly distributed\n\n  ### GET /criticalservices/status/{critical-service-name}\n    Retrieve detailed status for a specific critical service including pod information.\n    The response includes:\n      - Configured Instances\n      - Currently Running Instances\n      - Name\n      - Namespace\n      - Pods with Name, Node, Status, and Zone\n      - Type\n      - Status\n      - Balanced\n"
+        "description": "The Rack Resiliency Service (RRS) provides a set of APIs to manage Rack Level resiliency. It queries the Kubernetes cluster to provide aggregated zone information and detailed critical service status. It gathers node details across various zones and presents both high-level summaries and in-depth information for zones and critical services.\n## Resources\n\n  ### GET /zones\n    Retrieve aggregated zone configuration showing Kubernetes Topology Zones and CEPH Zones including:\n      - Management Master Nodes\n      - Management Worker Nodes\n      - Management Storage Nodes\n\n    Alternatively, if zones are not configured, one of the following informational messages is returned:\n      - \"No K8s Topology/Ceph Zones configured\"\n      - \"No Ceph zones configured\"\n      - \"No K8s topology zones configured\"\n\n  ### GET /zones/{zone_name}\n    Retrieve detailed information for a specific zone including:\n      - Zone Name\n      - Management Master Nodes\n      - Management Worker Nodes\n      - Management Storage Nodes\n      - Node status and OSD information\n\n  ### GET /criticalservices\n    Retrieve a list of critical services grouped by namespace\n\n  ### GET /criticalservices/{critical-service-name}\n    Retrieve a summarized view of a specific critical service (without pod details). The response includes:\n      - Configured Instances\n      - Currently Running Instances\n      - Name\n      - Namespace\n      - Type\n\n  ### PATCH /criticalservices\n    Update the critical services configuration based on a provided file input. This endpoint allows\n    you to modify how critical services are configured in the system\n\n  ### GET /criticalservices/status\n    Retrieve the status of all critical services including service status and distribution details.\n    Each service object may include:\n      - Service Name\n      - Status\n      - Balanced: indicates whether the service is properly distributed\n\n  ### GET /criticalservices/status/{critical-service-name}\n    Retrieve detailed status for a specific critical service including pod information.\n    The response includes:\n      - Configured Instances\n      - Currently Running Instances\n      - Name\n      - Namespace\n      - Pods with Name, Node, Status, and Zone\n      - Type\n      - Status\n      - Balanced\n"
     },
     "servers": [
         {
@@ -225,7 +225,10 @@
                                             "type": "object",
                                             "properties": {
                                                 "Type": {
-                                                    "type": "string"
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "Kubernetes Topology Zone"
+                                                    ]
                                                 },
                                                 "Nodes": {
                                                     "type": "array",
@@ -252,7 +255,10 @@
                                             "type": "object",
                                             "properties": {
                                                 "Type": {
-                                                    "type": "string"
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "Kubernetes Topology Zone"
+                                                    ]
                                                 },
                                                 "Nodes": {
                                                     "type": "array",
@@ -279,7 +285,10 @@
                                             "type": "object",
                                             "properties": {
                                                 "Type": {
-                                                    "type": "string"
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "CEPH Zone"
+                                                    ]
                                                 },
                                                 "Nodes": {
                                                     "type": "array",
@@ -411,7 +420,7 @@
                 "tags": [
                     "criticalservices"
                 ],
-                "description": "Returns a list of critical services grouped by namespace. The response includes  a critical-services property containing namespaces with arrays of service objects including:\n  - name: the name of the service\n  - type: the service type (Deployment, StatefulSet, DaemonSet)\n",
+                "description": "Returns a list of critical services grouped by namespace. The response includes a critical-services property containing namespaces with arrays of service objects including:\n  - name: the name of the service\n  - type: the service type (Deployment, StatefulSet, DaemonSet)\n",
                 "operationId": "getCriticalServices",
                 "responses": {
                     "200": {
@@ -1245,7 +1254,10 @@
                         "type": "object",
                         "properties": {
                             "Type": {
-                                "type": "string"
+                                "type": "string",
+                                "enum": [
+                                    "Kubernetes Topology Zone"
+                                ]
                             },
                             "Nodes": {
                                 "type": "array",
@@ -1272,7 +1284,10 @@
                         "type": "object",
                         "properties": {
                             "Type": {
-                                "type": "string"
+                                "type": "string",
+                                "enum": [
+                                    "Kubernetes Topology Zone"
+                                ]
                             },
                             "Nodes": {
                                 "type": "array",
@@ -1299,7 +1314,10 @@
                         "type": "object",
                         "properties": {
                             "Type": {
-                                "type": "string"
+                                "type": "string",
+                                "enum": [
+                                    "CEPH Zone"
+                                ]
                             },
                             "Nodes": {
                                 "type": "array",
