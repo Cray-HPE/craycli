@@ -1,7 +1,7 @@
 #
 #  MIT License
 #
-#  (C) Copyright 2020-2023 Hewlett Packard Enterprise Development LP
+#  (C) Copyright 2020-2025 Hewlett Packard Enterprise Development LP
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a
 #  copy of this software and associated documentation files (the "Software"),
@@ -40,8 +40,8 @@ def test_cray_connection_error(cli_runner):
     runner, cli, _ = cli_runner
     host = 'https://localhost'
     runner.invoke(cli, ['config', 'set', 'core', f'hostname={host}'])
-    # running uas list just to force the connection failure
-    result = runner.invoke(cli, ['uas', 'list'])
+    # running bss hosts list just to force the connection failure
+    result = runner.invoke(cli, ['bss', 'hosts', 'list'])
     print(result.output)
     assert result.exit_code == 2
 
@@ -60,8 +60,8 @@ def test_cray_http_error(cli_runner):
     host = 'http://localhost'
     runner.invoke(cli, ['config', 'set', 'core', f'hostname={host}'])
 
-    # running uas list just to force the connection failure
-    result = runner.invoke(cli, ['uas', 'list', '-vvvvvvv'])
+    # running bss hosts list just to force the connection failure
+    result = runner.invoke(cli, ['bss', 'hosts', 'list', '-vvvvvvv'])
     print(result.output)
     assert result.exit_code == 2
 
