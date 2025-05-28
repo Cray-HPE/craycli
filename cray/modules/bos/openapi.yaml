@@ -155,7 +155,7 @@ components:
     BootSetRootfsProvider:
       type: string
       description: The root file system provider.
-      example: "cpss3"
+      example: "sbps"
       minLength: 1
       maxLength: 511
     BootSetRootfsProviderPassthrough:
@@ -164,7 +164,7 @@ components:
         The root file system provider passthrough.
         These are additional kernel parameters that will be appended to
         the 'rootfs=<protocol>' kernel parameter
-      example: "dvs:api-gw-service-nmn.local:300:nmn0"
+      example: "sbps:v1:iqn.2023-06.csm.iscsi:_sbps-hsn._tcp.my-system.my-site-domain:300"
       maxLength: 4096
     BootSetType:
       type: string
