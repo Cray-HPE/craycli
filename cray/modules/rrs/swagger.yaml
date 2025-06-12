@@ -37,10 +37,10 @@ info:
     ## Resources
 
       ### GET /zones
-        Retrieve aggregated zone configuration showing Kubernetes Topology Zones and CEPH Zones including:
-          - Management Master Nodes
-          - Management Worker Nodes
-          - Management Storage Nodes
+        Retrieve aggregated zone configuration showing Kubernetes_Topology_Zones and CEPH_Zones including:
+          - Management_Master_Nodes
+          - Management_Worker_Nodes
+          - Management_Storage_Nodes
 
         Alternatively, if zones are not configured, one of the following informational messages is returned:
           - "No K8s Topology/Ceph Zones configured"
@@ -49,10 +49,10 @@ info:
 
       ### GET /zones/{zone_name}
         Retrieve detailed information for a specific zone including:
-          - Zone Name
-          - Management Master Nodes
-          - Management Worker Nodes
-          - Management Storage Nodes
+          - Zone_Name
+          - Management_Master_Nodes
+          - Management_Worker_Nodes
+          - Management_Storage_Nodes
           - Node status and OSD information
 
       ### GET /criticalservices
@@ -108,12 +108,12 @@ paths:
         - zones
       description: >
         Returns an object with a property "Zones" that is an array of zones. Each zone contains:
-          - Zone Name: the name of the zone
-          - Kubernetes Topology Zone: contains:
-              Management Master Nodes: list of master node names
-              Management Worker Nodes: list of worker node names
-          - CEPH Zone: contains:
-              Management Storage Nodes: list of storage node names
+          - Zone_Name: the name of the zone
+          - Kubernetes_Topology_Zone: contains:
+              Management_Master_Nodes: list of master node names
+              Management_Worker_Nodes: list of worker node names
+          - CEPH_Zone: contains:
+              Management_Storage_Nodes: list of storage node names
       operationId: getZones
       responses:
         '200':
@@ -126,36 +126,36 @@ paths:
                 aggregated:
                   value:
                     Zones:
-                      - Zone Name: cscs-rack-x3001
-                        Kubernetes Topology Zone:
-                          Management Master Nodes:
+                      - Zone_Name: cscs-rack-x3001
+                        Kubernetes_Topology_Zone:
+                          Management_Master_Nodes:
                             - ncn-m002
-                          Management Worker Nodes:
+                          Management_Worker_Nodes:
                             - ncn-w002
                             - ncn-w004
-                        CEPH Zone:
-                          Management Storage Nodes:
+                        CEPH_Zone:
+                          Management_Storage_Nodes:
                             - ncn-s004
                             - ncn-s003
-                      - Zone Name: cscs-rack-x3002
-                        Kubernetes Topology Zone:
-                          Management Master Nodes:
+                      - Zone_Name: cscs-rack-x3002
+                        Kubernetes_Topology_Zone:
+                          Management_Master_Nodes:
                             - ncn-m003
-                          Management Worker Nodes:
+                          Management_Worker_Nodes:
                             - ncn-w003
-                        CEPH Zone:
-                          Management Storage Nodes:
+                        CEPH_Zone:
+                          Management_Storage_Nodes:
                             - ncn-s005
                             - ncn-s002
-                      - Zone Name: cscs-rack-x3000
-                        Kubernetes Topology Zone:
-                          Management Master Nodes:
+                      - Zone_Name: cscs-rack-x3000
+                        Kubernetes_Topology_Zone:
+                          Management_Master_Nodes:
                             - ncn-m001
-                          Management Worker Nodes:
+                          Management_Worker_Nodes:
                             - ncn-w001
                             - ncn-w005
-                        CEPH Zone:
-                          Management Storage Nodes:
+                        CEPH_Zone:
+                          Management_Storage_Nodes:
                             - ncn-s001
         '404':
           description: Zones not found
@@ -163,6 +163,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/responses/NotFound'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/InternalServerError'
   /zones/{zone_name}:
     get:
       summary: Get Detailed Zone Information
@@ -171,13 +177,10 @@ paths:
       description: >
         Returns detailed information for a specific zone.
         The response includes:
-          - Zone Name: the name of the zone
-          - Management Masters: count of master nodes
-          - Management Workers: count of worker nodes
-          - Management Storages: count of storage nodes
-          - Management Master: an object with Nodes (array of node objects with Name and Status) and Type
-          - Management Worker: an object with Nodes (array of node objects with Name and Status) and Type
-          - Management Storage: an object with Nodes (array of node objects with Name, Status, and OSDs) and Type
+          - Zone_Name: the name of the zone
+          - Management_Master: an object with Count, Type, and Nodes (array of node objects with Name and Status)
+          - Management_Worker: an object with Count, Type, and Nodes (array of node objects with Name and Status)
+          - Management_Storage: an object with Count, Type, and Nodes (array of node objects with Name, Status, and OSDs)
       operationId: getZoneDetails
       parameters:
         - name: zone_name
@@ -196,34 +199,34 @@ paths:
               examples:
                 zoneDetail:
                   value:
-                    Zone Name: cscs-rack-x3001
-                    Management Masters: 1
-                    Management Workers: 2
-                    Management Storages: 2
-                    Management Master:
-                      Type: Kubernetes Topology Zone
+                    Zone_Name: cscs-rack-x3001
+                    Management_Master:
+                      Count: 1
+                      Type: Kubernetes_Topology_Zone
                       Nodes:
-                        - Name: ncn-m002
-                          Status: Ready
-                    Management Worker:
-                      Type: Kubernetes Topology Zone
+                        - name: ncn-m002
+                          status: Ready
+                    Management_Worker:
+                      Count: 2
+                      Type: Kubernetes_Topology_Zone
                       Nodes:
-                        - Name: ncn-w002
-                          Status: Ready
-                        - Name: ncn-w004
-                          Status: Ready
-                    Management Storage:
-                      Type: CEPH Zone
+                        - name: ncn-w002
+                          status: Ready
+                        - name: ncn-w004
+                          status: Ready
+                    Management_Storage:
+                      Count: 2
+                      Type: CEPH_Zone
                       Nodes:
-                        - Name: ncn-s004
-                          Status: Ready
-                          OSDs:
-                            up:
+                        - name: ncn-s004
+                          status: NotReady
+                          osds:
+                            down:
                               - osd.0
                               - osd.5
-                        - Name: ncn-s003
-                          Status: Ready
-                          OSDs:
+                        - name: ncn-s003
+                          status: Ready
+                          osds:
                             up:
                               - osd.4
                               - osd.9
@@ -239,6 +242,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/responses/NotFound'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/InternalServerError'
   /criticalservices:
     get:
       summary: Get Critical Services
@@ -246,7 +255,7 @@ paths:
         - criticalservices
       description: >
         Returns a list of critical services grouped by namespace. The response includes
-        a critical-services property containing namespaces with arrays of service objects
+        a critical_services property containing namespaces with arrays of service objects
         including:
           - name: the name of the service
           - type: the service type (Deployment, StatefulSet, DaemonSet)
@@ -257,11 +266,11 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CriticalServicesList'
+                $ref: '#/components/schemas/CriticalServicesListSchema'
               examples:
                 criticalServices:
                   value:
-                    critical-services:
+                    critical_services:
                       namespace:
                         services:
                           - name: cray-dns-powerdns
@@ -289,6 +298,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/responses/NotFound'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/InternalServerError'
     patch:
       summary: Update Critical Services ConfigMap
       tags:
@@ -309,7 +324,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CriticalServicesPatchResponse'
+                $ref: '#/components/schemas/CriticalServiceUpdateSchema'
               examples:
                 patchResponse:
                   value:
@@ -319,6 +334,18 @@ paths:
                     Already Existing Services:
                       - coredns
                       - kube-proxy
+        '400':
+          description: Bad Request - No data provided
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/BadRequest'
+        '404':
+          description: Critical services not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/NotFound'
         '500':
           description: Internal server error
           content:
@@ -352,7 +379,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CriticalServiceSummary'
+                $ref: '#/components/schemas/CriticalServiceDescribeSchema'
               examples:
                 criticalServiceDetail:
                   value:
@@ -368,6 +395,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/responses/NotFound'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/InternalServerError'
   /criticalservices/status:
     get:
       summary: Get Critical Services Status
@@ -391,7 +424,7 @@ paths:
               examples:
                 criticalServicesStatusExample:
                   value:
-                    critical-services:
+                    critical_services:
                       namespace:
                         services:
                           - name: cray-dns-powerdns
@@ -526,11 +559,15 @@ paths:
         200:
           description: RRS is ready to accept requests
           content:
-            application/json: {}
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyDict'
         500:
           description: RRS is not able to accept requests
           content:
-            application/json: {}
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyDict'
   /healthz/live:
     get:
       summary: Retrieve RRS Liveness Probe
@@ -545,11 +582,15 @@ paths:
         200:
           description: RRS is responsive
           content:
-            application/json: {}
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyDict'
         500:
           description: RRS is not responsive
           content:
-            application/json: {}
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyDict'
   /version:
     get:
       summary: Get RRS version
@@ -575,109 +616,136 @@ components:
         Zones:
           type: array
           items:
-            $ref: '#/components/schemas/ZoneItem'
-    ZoneItem:
+            $ref: '#/components/schemas/ZoneItemSchema'
+    ZoneItemSchema:
+      type: object
+      required:
+        - Zone_Name
+      properties:
+        Zone_Name:
+          type: string
+        Kubernetes_Topology_Zone:
+          $ref: '#/components/schemas/KubernetesTopologyZoneSchema'
+        CEPH_Zone:
+          $ref: '#/components/schemas/CephZoneSchema'
+    KubernetesTopologyZoneSchema:
       type: object
       properties:
-        Zone Name:
-          type: string
-        Kubernetes Topology Zone:
-          type: object
-          properties:
-            Management Master Nodes:
-              type: array
-              items:
-                type: string
-            Management Worker Nodes:
-              type: array
-              items:
-                type: string
-        CEPH Zone:
-          type: object
-          properties:
-            Management Storage Nodes:
-              type: array
-              items:
-                type: string
+        Management_Master_Nodes:
+          type: array
+          items:
+            type: string
+        Management_Worker_Nodes:
+          type: array
+          items:
+            type: string
+    CephZoneSchema:
+      type: object
+      properties:
+        Management_Storage_Nodes:
+          type: array
+          items:
+            type: string
     ZoneDetailResponse:
       type: object
+      required:
+        - Zone_Name
       properties:
-        Zone Name:
+        Zone_Name:
           type: string
-        Management Masters:
+        Management_Master:
+          $ref: '#/components/schemas/ManagementMasterSchema'
+        Management_Worker:
+          $ref: '#/components/schemas/ManagementWorkerSchema'
+        Management_Storage:
+          $ref: '#/components/schemas/ManagementStorageSchema'
+    ManagementMasterSchema:
+      type: object
+      required:
+        - Count
+        - Type
+      properties:
+        Count:
           type: integer
           minimum: 0
-        Management Workers:
+        Type:
+          type: string
+          enum:
+            - "Kubernetes_Topology_Zone"
+        Nodes:
+          type: array
+          items:
+            $ref: '#/components/schemas/NodeSchema'
+    ManagementWorkerSchema:
+      type: object
+      required:
+        - Count
+        - Type
+      properties:
+        Count:
           type: integer
           minimum: 0
-        Management Storages:
+        Type:
+          type: string
+          enum:
+            - "Kubernetes_Topology_Zone"
+        Nodes:
+          type: array
+          items:
+            $ref: '#/components/schemas/NodeSchema'
+    ManagementStorageSchema:
+      type: object
+      required:
+        - Count
+        - Type
+      properties:
+        Count:
           type: integer
           minimum: 0
-        Management Master:
-          type: object
-          properties:
-            Type:
-              type: string
-              enum:
-                - "Kubernetes Topology Zone"
-            Nodes:
-              type: array
-              items:
-                $ref: '#/components/schemas/NodeDetail'
-        Management Worker:
-          type: object
-          properties:
-            Type:
-              type: string
-              enum:
-                - "Kubernetes Topology Zone"
-            Nodes:
-              type: array
-              items:
-                $ref: '#/components/schemas/NodeDetail'
-        Management Storage:
-          type: object
-          properties:
-            Type:
-              type: string
-              enum:
-                - "CEPH Zone"
-            Nodes:
-              type: array
-              items:
-                $ref: '#/components/schemas/StorageNodeDetail'
-    NodeDetail:
+        Type:
+          type: string
+          enum:
+            - "CEPH_Zone"
+        Nodes:
+          type: array
+          items:
+            $ref: '#/components/schemas/StorageNodeSchema'
+    NodeSchema:
       type: object
       properties:
-        Name:
+        name:
           type: string
-        Status:
+        status:
           type: string
           enum:
             - Ready
             - NotReady
             - Unknown
-    StorageNodeDetail:
+    StorageNodeSchema:
       type: object
       properties:
-        Name:
+        name:
           type: string
-        Status:
+        status:
           type: string
           enum:
             - Ready
             - NotReady
-        OSDs:
+        osds:
           type: object
           properties:
             up:
               type: array
               items:
                 type: string
-    CriticalServicesList:
+            down:
+              type: array
+              items:
+                type: string
+    CriticalServicesListSchema:
       type: object
       properties:
-        critical-services:
+        critical_services:
           type: object
           properties:
             namespace:
@@ -685,9 +753,12 @@ components:
               additionalProperties:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ServiceItem'
-    ServiceItem:
+                  $ref: '#/components/schemas/CriticalServiceEntrySchema'
+    CriticalServiceEntrySchema:
       type: object
+      required:
+        - name
+        - type
       properties:
         name:
           type: string
@@ -699,7 +770,7 @@ components:
         from_file:
           type: string
           description: A JSON string containing the updated critical services configuration
-    CriticalServicesPatchResponse:
+    CriticalServiceUpdateSchema:
       type: object
       properties:
         Update:
@@ -712,7 +783,7 @@ components:
           type: array
           items:
             type: string
-    CriticalServiceSummary:
+    CriticalServiceDescribeSchema:
       type: object
       properties:
         Critical Service:
@@ -762,8 +833,8 @@ components:
             Pods:
               type: array
               items:
-                $ref: '#/components/schemas/PodDetail'
-    PodDetail:
+                $ref: '#/components/schemas/PodSchema'
+    PodSchema:
       type: object
       properties:
         Name:
@@ -777,7 +848,7 @@ components:
     CriticalServicesStatusResponse:
       type: object
       properties:
-        critical-services:
+        critical_services:
           type: object
           properties:
             namespace:
@@ -804,22 +875,38 @@ components:
           enum:
             - "true"
             - "false"
+    ErrorDict:
+      type: object
+      properties:
+        error:
+          type: string
+    InformationDict:
+      type: object
+      properties:
+        Information:
+          type: string
+    EmptyDict:
+      type: object
+      description: Empty object returned by health check endpoints
+      additionalProperties: false
   responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorDict'
     NotFound:
       description: Not found
       content:
         application/json:
           schema:
-            type: object
-            properties:
-              error:
-                type: string
+            oneOf:
+              - $ref: '#/components/schemas/ErrorDict'
+              - $ref: '#/components/schemas/InformationDict'
     InternalServerError:
       description: Internal server error
       content:
         application/json:
           schema:
-            type: object
-            properties:
-              error:
-                type: string
+            $ref: '#/components/schemas/ErrorDict'
