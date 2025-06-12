@@ -349,8 +349,9 @@
                     "criticalservices"
                 ],
                 "operationId": "patchCriticalServices",
-                "description": "Updates the critical services configuration. The request body should contain a JSON string in the from_file property representing the updated critical services configuration\n",
+                "description": "Updates the critical services configuration. The request body should contain critical services mapped by service name to their configuration details.\n",
                 "requestBody": {
+                    "description": "Critical services configuration update",
                     "required": true,
                     "content": {
                         "application/json": {
@@ -373,7 +374,8 @@
                                         "value": {
                                             "Update": "Successful",
                                             "Successfully_Added_Services": [
-                                                "kube-api-server"
+                                                "k8s-zone-api",
+                                                "kube-multus-ds"
                                             ],
                                             "Already_Existing_Services": [
                                                 "coredns",
@@ -386,7 +388,7 @@
                         }
                     },
                     "400": {
-                        "description": "Bad Request - No data provided",
+                        "description": "Bad Request - Invalid data provided",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -849,43 +851,17 @@
                         "type": "string"
                     },
                     "Management_Master": {
-                        "$ref": "#/components/schemas/ManagementMasterSchema"
+                        "$ref": "#/components/schemas/ManagementKubernetesSchema"
                     },
                     "Management_Worker": {
-                        "$ref": "#/components/schemas/ManagementWorkerSchema"
+                        "$ref": "#/components/schemas/ManagementKubernetesSchema"
                     },
                     "Management_Storage": {
                         "$ref": "#/components/schemas/ManagementStorageSchema"
                     }
                 }
             },
-            "ManagementMasterSchema": {
-                "type": "object",
-                "required": [
-                    "Count",
-                    "Type",
-                    "Nodes"
-                ],
-                "properties": {
-                    "Count": {
-                        "type": "integer",
-                        "minimum": 1
-                    },
-                    "Type": {
-                        "type": "string",
-                        "enum": [
-                            "Kubernetes_Topology_Zone"
-                        ]
-                    },
-                    "Nodes": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/NodeSchema"
-                        }
-                    }
-                }
-            },
-            "ManagementWorkerSchema": {
+            "ManagementKubernetesSchema": {
                 "type": "object",
                 "required": [
                     "Count",
@@ -994,6 +970,22 @@
                     }
                 }
             },
+            "ServiceStatus": {
+                "type": "string",
+                "enum": [
+                    "Configured",
+                    "PartiallyConfigured",
+                    "Running"
+                ]
+            },
+            "ServiceBalanced": {
+                "type": "string",
+                "enum": [
+                    "true",
+                    "false",
+                    "unknown"
+                ]
+            },
             "CriticalServicesListSchema": {
                 "type": "object",
                 "required": [
@@ -1036,12 +1028,48 @@
             },
             "CriticalServicesPatch": {
                 "type": "object",
+                "description": "A collection of critical services that need to be monitored for resiliency.\nEach service is identified by name and contains namespace and type information.\n",
                 "properties": {
-                    "from_file": {
-                        "type": "string",
-                        "description": "A JSON string containing the updated critical services configuration"
+                    "critical_services": {
+                        "type": "object",
+                        "description": "Mapping from service names to service configurations.\n",
+                        "additionalProperties": {
+                            "$ref": "#/components/schemas/CriticalServiceConfig"
+                        }
                     }
-                }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "critical_services"
+                ]
+            },
+            "CriticalServiceConfig": {
+                "type": "object",
+                "description": "Configuration details for a critical service",
+                "properties": {
+                    "namespace": {
+                        "type": "string",
+                        "description": "The Kubernetes namespace where the service is deployed",
+                        "example": "rack-resiliency"
+                    },
+                    "type": {
+                        "type": "string",
+                        "description": "The type of Kubernetes resource",
+                        "example": "Deployment",
+                        "enum": [
+                            "Deployment",
+                            "DaemonSet",
+                            "StatefulSet",
+                            "Service",
+                            "Pod"
+                        ]
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "namespace",
+                    "type"
+                ]
             },
             "CriticalServiceUpdateSchema": {
                 "type": "object",
@@ -1094,7 +1122,8 @@
                             },
                             "Configured_Instances": {
                                 "type": "integer",
-                                "minimum": 1
+                                "minimum": 1,
+                                "nullable": true
                             }
                         }
                     }
@@ -1102,9 +1131,22 @@
             },
             "CriticalServiceStatusDescribeSchema": {
                 "type": "object",
+                "required": [
+                    "Critical_Service"
+                ],
                 "properties": {
                     "Critical_Service": {
                         "type": "object",
+                        "required": [
+                            "Name",
+                            "Namespace",
+                            "Type",
+                            "Status",
+                            "Balanced",
+                            "Configured_Instances",
+                            "Currently_Running_Instances",
+                            "Pods"
+                        ],
                         "properties": {
                             "Name": {
                                 "type": "string"
@@ -1116,24 +1158,15 @@
                                 "type": "string"
                             },
                             "Status": {
-                                "type": "string",
-                                "enum": [
-                                    "Configured",
-                                    "PartiallyConfigured",
-                                    "Running"
-                                ]
+                                "$ref": "#/components/schemas/ServiceStatus"
                             },
                             "Balanced": {
-                                "type": "string",
-                                "enum": [
-                                    "true",
-                                    "false",
-                                    "unknown"
-                                ]
+                                "$ref": "#/components/schemas/ServiceStatus"
                             },
                             "Configured_Instances": {
                                 "type": "integer",
-                                "minimum": 1
+                                "minimum": 1,
+                                "nullable": true
                             },
                             "Currently_Running_Instances": {
                                 "type": "integer",
@@ -1201,20 +1234,10 @@
                         "type": "string"
                     },
                     "status": {
-                        "type": "string",
-                        "enum": [
-                            "Configured",
-                            "PartiallyConfigured",
-                            "Running"
-                        ]
+                        "$ref": "#/components/schemas/ServiceStatus"
                     },
                     "balanced": {
-                        "type": "string",
-                        "enum": [
-                            "true",
-                            "false",
-                            "unknown"
-                        ]
+                        "$ref": "#/components/schemas/ServiceBalanced"
                     }
                 }
             },
