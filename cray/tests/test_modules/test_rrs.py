@@ -223,12 +223,12 @@ def test_cray_rrs_criticalservices_update(
         cli, ["rrs", "criticalservices", "update", "--from-file", newservicesfile]
     )
 
-    # Read the contents of the test file
+    # Read and parse the contents of the test file
     with open(newservicesfile, encoding="utf-8") as inf:
-        newservicesdata = inf.read()
+        newservicesdata = json.load(inf)
 
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data["method"] == "PATCH"
     assert data["url"] == f'{config["default"]["hostname"]}/apis/rrs/criticalservices'
-    assert data["body"] == {"from_file": newservicesdata}
+    assert data["body"] == newservicesdata
