@@ -1,1 +1,1 @@
-{"critical-services": {"coredns": {"namespace": "kube-system","type": "Deployment"}}}
+{"critical_services": {"coredns": {"namespace": "kube-system","type": "Deployment"}}}

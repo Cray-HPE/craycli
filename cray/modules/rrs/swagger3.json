@@ -7,7 +7,7 @@
             "url": "http://www.hpe.com/"
         },
         "version": "1.0.0",
-        "description": "The Rack Resiliency Service (RRS) provides a set of APIs to manage Rack Level resiliency. It queries the Kubernetes cluster to provide aggregated zone information and detailed critical service status. It gathers node details across various zones and presents both high-level summaries and in-depth information for zones and critical services.\n## Resources\n\n  ### GET /zones\n    Retrieve aggregated zone configuration showing Kubernetes Topology Zones and CEPH Zones including:\n      - Management Master Nodes\n      - Management Worker Nodes\n      - Management Storage Nodes\n\n    Alternatively, if zones are not configured, one of the following informational messages is returned:\n      - \"No K8s Topology/Ceph Zones configured\"\n      - \"No Ceph zones configured\"\n      - \"No K8s topology zones configured\"\n\n  ### GET /zones/{zone_name}\n    Retrieve detailed information for a specific zone including:\n      - Zone Name\n      - Management Master Nodes\n      - Management Worker Nodes\n      - Management Storage Nodes\n      - Node status and OSD information\n\n  ### GET /criticalservices\n    Retrieve a list of critical services grouped by namespace\n\n  ### GET /criticalservices/{critical-service-name}\n    Retrieve a summarized view of a specific critical service (without pod details). The response includes:\n      - Configured Instances\n      - Currently Running Instances\n      - Name\n      - Namespace\n      - Type\n\n  ### PATCH /criticalservices\n    Update the critical services configuration based on a provided file input. This endpoint allows\n    you to modify how critical services are configured in the system\n\n  ### GET /criticalservices/status\n    Retrieve the status of all critical services including service status and distribution details.\n    Each service object may include:\n      - Service Name\n      - Status\n      - Balanced: indicates whether the service is properly distributed\n\n  ### GET /criticalservices/status/{critical-service-name}\n    Retrieve detailed status for a specific critical service including pod information.\n    The response includes:\n      - Configured Instances\n      - Currently Running Instances\n      - Name\n      - Namespace\n      - Pods with Name, Node, Status, and Zone\n      - Type\n      - Status\n      - Balanced\n"
+        "description": "The Rack Resiliency Service (RRS) provides a set of APIs to manage Rack Level resiliency. It queries the Kubernetes cluster to provide aggregated zone information and detailed critical service status. It gathers node details across various zones and presents both high-level summaries and in-depth information for zones and critical services.\n## Resources\n\n  ### GET /zones\n    Retrieve aggregated zone configuration showing Kubernetes_Topology_Zones and CEPH_Zones including:\n      - Management_Master_Nodes\n      - Management_Worker_Nodes\n      - Management_Storage_Nodes\n\n    Alternatively, if zones are not configured, one of the following informational messages is returned:\n      - \"No K8s Topology/Ceph Zones configured\"\n      - \"No Ceph zones configured\"\n      - \"No K8s topology zones configured\"\n\n  ### GET /zones/{zone_name}\n    Retrieve detailed information for a specific zone including:\n      - Zone_Name\n      - Management_Master_Nodes\n      - Management_Worker_Nodes\n      - Management_Storage_Nodes\n      - Node status and OSD information\n\n  ### GET /criticalservices\n    Retrieve a list of critical services grouped by namespace\n\n  ### GET /criticalservices/{critical-service-name}\n    Retrieve a summarized view of a specific critical service (without pod details). The response includes:\n      - Configured Instances\n      - Currently Running Instances\n      - Name\n      - Namespace\n      - Type\n\n  ### PATCH /criticalservices\n    Update the critical services configuration based on a provided file input. This endpoint allows\n    you to modify how critical services are configured in the system\n\n  ### GET /criticalservices/status\n    Retrieve the status of all critical services including service status and distribution details.\n    Each service object may include:\n      - Service Name\n      - Status\n      - Balanced: indicates whether the service is properly distributed\n\n  ### GET /criticalservices/status/{critical-service-name}\n    Retrieve detailed status for a specific critical service including pod information.\n    The response includes:\n      - Configured Instances\n      - Currently Running Instances\n      - Name\n      - Namespace\n      - Pods with Name, Node, Status, and Zone\n      - Type\n      - Status\n      - Balanced\n"
     },
     "servers": [
         {
@@ -40,7 +40,7 @@
                 "tags": [
                     "zones"
                 ],
-                "description": "Returns an object with a property \"Zones\" that is an array of zones. Each zone contains:\n  - Zone Name: the name of the zone\n  - Kubernetes Topology Zone: contains:\n      Management Master Nodes: list of master node names\n      Management Worker Nodes: list of worker node names\n  - CEPH Zone: contains:\n      Management Storage Nodes: list of storage node names\n",
+                "description": "Returns an object with a property \"Zones\" that is an array of zones. Each zone contains:\n  - Zone_Name: the name of the zone\n  - Kubernetes_Topology_Zone: contains:\n      Management_Master_Nodes: list of master node names\n      Management_Worker_Nodes: list of worker node names\n  - CEPH_Zone: contains:\n      Management_Storage_Nodes: list of storage node names\n",
                 "operationId": "getZones",
                 "responses": {
                     "200": {
@@ -54,20 +54,23 @@
                                             "type": "array",
                                             "items": {
                                                 "type": "object",
+                                                "required": [
+                                                    "Zone_Name"
+                                                ],
                                                 "properties": {
-                                                    "Zone Name": {
+                                                    "Zone_Name": {
                                                         "type": "string"
                                                     },
-                                                    "Kubernetes Topology Zone": {
+                                                    "Kubernetes_Topology_Zone": {
                                                         "type": "object",
                                                         "properties": {
-                                                            "Management Master Nodes": {
+                                                            "Management_Master_Nodes": {
                                                                 "type": "array",
                                                                 "items": {
                                                                     "type": "string"
                                                                 }
                                                             },
-                                                            "Management Worker Nodes": {
+                                                            "Management_Worker_Nodes": {
                                                                 "type": "array",
                                                                 "items": {
                                                                     "type": "string"
@@ -75,10 +78,10 @@
                                                             }
                                                         }
                                                     },
-                                                    "CEPH Zone": {
+                                                    "CEPH_Zone": {
                                                         "type": "object",
                                                         "properties": {
-                                                            "Management Storage Nodes": {
+                                                            "Management_Storage_Nodes": {
                                                                 "type": "array",
                                                                 "items": {
                                                                     "type": "string"
@@ -96,53 +99,53 @@
                                         "value": {
                                             "Zones": [
                                                 {
-                                                    "Zone Name": "cscs-rack-x3001",
-                                                    "Kubernetes Topology Zone": {
-                                                        "Management Master Nodes": [
+                                                    "Zone_Name": "cscs-rack-x3001",
+                                                    "Kubernetes_Topology_Zone": {
+                                                        "Management_Master_Nodes": [
                                                             "ncn-m002"
                                                         ],
-                                                        "Management Worker Nodes": [
+                                                        "Management_Worker_Nodes": [
                                                             "ncn-w002",
                                                             "ncn-w004"
                                                         ]
                                                     },
-                                                    "CEPH Zone": {
-                                                        "Management Storage Nodes": [
+                                                    "CEPH_Zone": {
+                                                        "Management_Storage_Nodes": [
                                                             "ncn-s004",
                                                             "ncn-s003"
                                                         ]
                                                     }
                                                 },
                                                 {
-                                                    "Zone Name": "cscs-rack-x3002",
-                                                    "Kubernetes Topology Zone": {
-                                                        "Management Master Nodes": [
+                                                    "Zone_Name": "cscs-rack-x3002",
+                                                    "Kubernetes_Topology_Zone": {
+                                                        "Management_Master_Nodes": [
                                                             "ncn-m003"
                                                         ],
-                                                        "Management Worker Nodes": [
+                                                        "Management_Worker_Nodes": [
                                                             "ncn-w003"
                                                         ]
                                                     },
-                                                    "CEPH Zone": {
-                                                        "Management Storage Nodes": [
+                                                    "CEPH_Zone": {
+                                                        "Management_Storage_Nodes": [
                                                             "ncn-s005",
                                                             "ncn-s002"
                                                         ]
                                                     }
                                                 },
                                                 {
-                                                    "Zone Name": "cscs-rack-x3000",
-                                                    "Kubernetes Topology Zone": {
-                                                        "Management Master Nodes": [
+                                                    "Zone_Name": "cscs-rack-x3000",
+                                                    "Kubernetes_Topology_Zone": {
+                                                        "Management_Master_Nodes": [
                                                             "ncn-m001"
                                                         ],
-                                                        "Management Worker Nodes": [
+                                                        "Management_Worker_Nodes": [
                                                             "ncn-w001",
                                                             "ncn-w005"
                                                         ]
                                                     },
-                                                    "CEPH Zone": {
-                                                        "Management Storage Nodes": [
+                                                    "CEPH_Zone": {
+                                                        "Management_Storage_Nodes": [
                                                             "ncn-s001"
                                                         ]
                                                     }
@@ -160,6 +163,40 @@
                             "application/json": {
                                 "schema": {
                                     "description": "Not found",
+                                    "content": {
+                                        "application/json": {
+                                            "schema": {
+                                                "oneOf": [
+                                                    {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "error": {
+                                                                "type": "string"
+                                                            }
+                                                        }
+                                                    },
+                                                    {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "Information": {
+                                                                "type": "string"
+                                                            }
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "description": "Internal server error",
                                     "content": {
                                         "application/json": {
                                             "schema": {
@@ -185,7 +222,7 @@
                 "tags": [
                     "zones"
                 ],
-                "description": "Returns detailed information for a specific zone. The response includes:\n  - Zone Name: the name of the zone\n  - Management Masters: count of master nodes\n  - Management Workers: count of worker nodes\n  - Management Storages: count of storage nodes\n  - Management Master: an object with Nodes (array of node objects with Name and Status) and Type\n  - Management Worker: an object with Nodes (array of node objects with Name and Status) and Type\n  - Management Storage: an object with Nodes (array of node objects with Name, Status, and OSDs) and Type\n",
+                "description": "Returns detailed information for a specific zone. The response includes:\n  - Zone_Name: the name of the zone\n  - Management_Master: an object with Count, Type, and Nodes (array of node objects with Name and Status)\n  - Management_Worker: an object with Count, Type, and Nodes (array of node objects with Name and Status)\n  - Management_Storage: an object with Count, Type, and Nodes (array of node objects with Name, Status, and OSDs)\n",
                 "operationId": "getZoneDetails",
                 "parameters": [
                     {
@@ -205,29 +242,28 @@
                             "application/json": {
                                 "schema": {
                                     "type": "object",
+                                    "required": [
+                                        "Zone_Name"
+                                    ],
                                     "properties": {
-                                        "Zone Name": {
+                                        "Zone_Name": {
                                             "type": "string"
                                         },
-                                        "Management Masters": {
-                                            "type": "integer",
-                                            "minimum": 0
-                                        },
-                                        "Management Workers": {
-                                            "type": "integer",
-                                            "minimum": 0
-                                        },
-                                        "Management Storages": {
-                                            "type": "integer",
-                                            "minimum": 0
-                                        },
-                                        "Management Master": {
+                                        "Management_Master": {
                                             "type": "object",
+                                            "required": [
+                                                "Count",
+                                                "Type"
+                                            ],
                                             "properties": {
+                                                "Count": {
+                                                    "type": "integer",
+                                                    "minimum": 0
+                                                },
                                                 "Type": {
                                                     "type": "string",
                                                     "enum": [
-                                                        "Kubernetes Topology Zone"
+                                                        "Kubernetes_Topology_Zone"
                                                     ]
                                                 },
                                                 "Nodes": {
@@ -235,10 +271,10 @@
                                                     "items": {
                                                         "type": "object",
                                                         "properties": {
-                                                            "Name": {
+                                                            "name": {
                                                                 "type": "string"
                                                             },
-                                                            "Status": {
+                                                            "status": {
                                                                 "type": "string",
                                                                 "enum": [
                                                                     "Ready",
@@ -251,13 +287,21 @@
                                                 }
                                             }
                                         },
-                                        "Management Worker": {
+                                        "Management_Worker": {
                                             "type": "object",
+                                            "required": [
+                                                "Count",
+                                                "Type"
+                                            ],
                                             "properties": {
+                                                "Count": {
+                                                    "type": "integer",
+                                                    "minimum": 0
+                                                },
                                                 "Type": {
                                                     "type": "string",
                                                     "enum": [
-                                                        "Kubernetes Topology Zone"
+                                                        "Kubernetes_Topology_Zone"
                                                     ]
                                                 },
                                                 "Nodes": {
@@ -265,10 +309,10 @@
                                                     "items": {
                                                         "type": "object",
                                                         "properties": {
-                                                            "Name": {
+                                                            "name": {
                                                                 "type": "string"
                                                             },
-                                                            "Status": {
+                                                            "status": {
                                                                 "type": "string",
                                                                 "enum": [
                                                                     "Ready",
@@ -281,13 +325,21 @@
                                                 }
                                             }
                                         },
-                                        "Management Storage": {
+                                        "Management_Storage": {
                                             "type": "object",
+                                            "required": [
+                                                "Count",
+                                                "Type"
+                                            ],
                                             "properties": {
+                                                "Count": {
+                                                    "type": "integer",
+                                                    "minimum": 0
+                                                },
                                                 "Type": {
                                                     "type": "string",
                                                     "enum": [
-                                                        "CEPH Zone"
+                                                        "CEPH_Zone"
                                                     ]
                                                 },
                                                 "Nodes": {
@@ -295,20 +347,26 @@
                                                     "items": {
                                                         "type": "object",
                                                         "properties": {
-                                                            "Name": {
+                                                            "name": {
                                                                 "type": "string"
                                                             },
-                                                            "Status": {
+                                                            "status": {
                                                                 "type": "string",
                                                                 "enum": [
                                                                     "Ready",
                                                                     "NotReady"
                                                                 ]
                                                             },
-                                                            "OSDs": {
+                                                            "osds": {
                                                                 "type": "object",
                                                                 "properties": {
                                                                     "up": {
+                                                                        "type": "array",
+                                                                        "items": {
+                                                                            "type": "string"
+                                                                        }
+                                                                    },
+                                                                    "down": {
                                                                         "type": "array",
                                                                         "items": {
                                                                             "type": "string"
@@ -326,49 +384,49 @@
                                 "examples": {
                                     "zoneDetail": {
                                         "value": {
-                                            "Zone Name": "cscs-rack-x3001",
-                                            "Management Masters": 1,
-                                            "Management Workers": 2,
-                                            "Management Storages": 2,
-                                            "Management Master": {
-                                                "Type": "Kubernetes Topology Zone",
+                                            "Zone_Name": "cscs-rack-x3001",
+                                            "Management_Master": {
+                                                "Count": 1,
+                                                "Type": "Kubernetes_Topology_Zone",
                                                 "Nodes": [
                                                     {
-                                                        "Name": "ncn-m002",
-                                                        "Status": "Ready"
+                                                        "name": "ncn-m002",
+                                                        "status": "Ready"
                                                     }
                                                 ]
                                             },
-                                            "Management Worker": {
-                                                "Type": "Kubernetes Topology Zone",
+                                            "Management_Worker": {
+                                                "Count": 2,
+                                                "Type": "Kubernetes_Topology_Zone",
                                                 "Nodes": [
                                                     {
-                                                        "Name": "ncn-w002",
-                                                        "Status": "Ready"
+                                                        "name": "ncn-w002",
+                                                        "status": "Ready"
                                                     },
                                                     {
-                                                        "Name": "ncn-w004",
-                                                        "Status": "Ready"
+                                                        "name": "ncn-w004",
+                                                        "status": "Ready"
                                                     }
                                                 ]
                                             },
-                                            "Management Storage": {
-                                                "Type": "CEPH Zone",
+                                            "Management_Storage": {
+                                                "Count": 2,
+                                                "Type": "CEPH_Zone",
                                                 "Nodes": [
                                                     {
-                                                        "Name": "ncn-s004",
-                                                        "Status": "Ready",
-                                                        "OSDs": {
-                                                            "up": [
+                                                        "name": "ncn-s004",
+                                                        "status": "NotReady",
+                                                        "osds": {
+                                                            "down": [
                                                                 "osd.0",
                                                                 "osd.5"
                                                             ]
                                                         }
                                                     },
                                                     {
-                                                        "Name": "ncn-s003",
-                                                        "Status": "Ready",
-                                                        "OSDs": {
+                                                        "name": "ncn-s003",
+                                                        "status": "Ready",
+                                                        "osds": {
                                                             "up": [
                                                                 "osd.4",
                                                                 "osd.9",
@@ -398,6 +456,40 @@
                                     "content": {
                                         "application/json": {
                                             "schema": {
+                                                "oneOf": [
+                                                    {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "error": {
+                                                                "type": "string"
+                                                            }
+                                                        }
+                                                    },
+                                                    {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "Information": {
+                                                                "type": "string"
+                                                            }
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "description": "Internal server error",
+                                    "content": {
+                                        "application/json": {
+                                            "schema": {
                                                 "type": "object",
                                                 "properties": {
                                                     "error": {
@@ -420,7 +512,7 @@
                 "tags": [
                     "criticalservices"
                 ],
-                "description": "Returns a list of critical services grouped by namespace. The response includes a critical-services property containing namespaces with arrays of service objects including:\n  - name: the name of the service\n  - type: the service type (Deployment, StatefulSet, DaemonSet)\n",
+                "description": "Returns a list of critical services grouped by namespace. The response includes a critical_services property containing namespaces with arrays of service objects including:\n  - name: the name of the service\n  - type: the service type (Deployment, StatefulSet, DaemonSet)\n",
                 "operationId": "getCriticalServices",
                 "responses": {
                     "200": {
@@ -430,7 +522,7 @@
                                 "schema": {
                                     "type": "object",
                                     "properties": {
-                                        "critical-services": {
+                                        "critical_services": {
                                             "type": "object",
                                             "properties": {
                                                 "namespace": {
@@ -439,6 +531,10 @@
                                                         "type": "array",
                                                         "items": {
                                                             "type": "object",
+                                                            "required": [
+                                                                "name",
+                                                                "type"
+                                                            ],
                                                             "properties": {
                                                                 "name": {
                                                                     "type": "string"
@@ -457,7 +553,7 @@
                                 "examples": {
                                     "criticalServices": {
                                         "value": {
-                                            "critical-services": {
+                                            "critical_services": {
                                                 "namespace": {
                                                     "services": [
                                                         {
@@ -513,6 +609,40 @@
                             "application/json": {
                                 "schema": {
                                     "description": "Not found",
+                                    "content": {
+                                        "application/json": {
+                                            "schema": {
+                                                "oneOf": [
+                                                    {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "error": {
+                                                                "type": "string"
+                                                            }
+                                                        }
+                                                    },
+                                                    {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "Information": {
+                                                                "type": "string"
+                                                            }
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "description": "Internal server error",
                                     "content": {
                                         "application/json": {
                                             "schema": {
@@ -590,6 +720,62 @@
                                                 "coredns",
                                                 "kube-proxy"
                                             ]
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request - No data provided",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "description": "Bad request",
+                                    "content": {
+                                        "application/json": {
+                                            "schema": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "error": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Critical services not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "description": "Not found",
+                                    "content": {
+                                        "application/json": {
+                                            "schema": {
+                                                "oneOf": [
+                                                    {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "error": {
+                                                                "type": "string"
+                                                            }
+                                                        }
+                                                    },
+                                                    {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "Information": {
+                                                                "type": "string"
+                                                            }
+                                                        }
+                                                    }
+                                                ]
+                                            }
                                         }
                                     }
                                 }
@@ -697,6 +883,40 @@
                                     "content": {
                                         "application/json": {
                                             "schema": {
+                                                "oneOf": [
+                                                    {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "error": {
+                                                                "type": "string"
+                                                            }
+                                                        }
+                                                    },
+                                                    {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "Information": {
+                                                                "type": "string"
+                                                            }
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "description": "Internal server error",
+                                    "content": {
+                                        "application/json": {
+                                            "schema": {
                                                 "type": "object",
                                                 "properties": {
                                                     "error": {
@@ -729,7 +949,7 @@
                                 "schema": {
                                     "type": "object",
                                     "properties": {
-                                        "critical-services": {
+                                        "critical_services": {
                                             "type": "object",
                                             "properties": {
                                                 "namespace": {
@@ -771,7 +991,7 @@
                                 "examples": {
                                     "criticalServicesStatusExample": {
                                         "value": {
-                                            "critical-services": {
+                                            "critical_services": {
                                                 "namespace": {
                                                     "services": [
                                                         {
@@ -852,12 +1072,24 @@
                                     "content": {
                                         "application/json": {
                                             "schema": {
-                                                "type": "object",
-                                                "properties": {
-                                                    "error": {
-                                                        "type": "string"
+                                                "oneOf": [
+                                                    {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "error": {
+                                                                "type": "string"
+                                                            }
+                                                        }
+                                                    },
+                                                    {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "Information": {
+                                                                "type": "string"
+                                                            }
+                                                        }
                                                     }
-                                                }
+                                                ]
                                             }
                                         }
                                     }
@@ -1023,12 +1255,24 @@
                                     "content": {
                                         "application/json": {
                                             "schema": {
-                                                "type": "object",
-                                                "properties": {
-                                                    "error": {
-                                                        "type": "string"
+                                                "oneOf": [
+                                                    {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "error": {
+                                                                "type": "string"
+                                                            }
+                                                        }
+                                                    },
+                                                    {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "Information": {
+                                                                "type": "string"
+                                                            }
+                                                        }
                                                     }
-                                                }
+                                                ]
                                             }
                                         }
                                     }
@@ -1074,13 +1318,25 @@
                     "200": {
                         "description": "RRS is ready to accept requests",
                         "content": {
-                            "application/json": {}
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "description": "Empty object returned by health check endpoints",
+                                    "additionalProperties": false
+                                }
+                            }
                         }
                     },
                     "500": {
                         "description": "RRS is not able to accept requests",
                         "content": {
-                            "application/json": {}
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "description": "Empty object returned by health check endpoints",
+                                    "additionalProperties": false
+                                }
+                            }
                         }
                     }
                 }
@@ -1099,13 +1355,25 @@
                     "200": {
                         "description": "RRS is responsive",
                         "content": {
-                            "application/json": {}
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "description": "Empty object returned by health check endpoints",
+                                    "additionalProperties": false
+                                }
+                            }
                         }
                     },
                     "500": {
                         "description": "RRS is not responsive",
                         "content": {
-                            "application/json": {}
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "description": "Empty object returned by health check endpoints",
+                                    "additionalProperties": false
+                                }
+                            }
                         }
                     }
                 }
@@ -1159,20 +1427,23 @@
                         "type": "array",
                         "items": {
                             "type": "object",
+                            "required": [
+                                "Zone_Name"
+                            ],
                             "properties": {
-                                "Zone Name": {
+                                "Zone_Name": {
                                     "type": "string"
                                 },
-                                "Kubernetes Topology Zone": {
+                                "Kubernetes_Topology_Zone": {
                                     "type": "object",
                                     "properties": {
-                                        "Management Master Nodes": {
+                                        "Management_Master_Nodes": {
                                             "type": "array",
                                             "items": {
                                                 "type": "string"
                                             }
                                         },
-                                        "Management Worker Nodes": {
+                                        "Management_Worker_Nodes": {
                                             "type": "array",
                                             "items": {
                                                 "type": "string"
@@ -1180,10 +1451,10 @@
                                         }
                                     }
                                 },
-                                "CEPH Zone": {
+                                "CEPH_Zone": {
                                     "type": "object",
                                     "properties": {
-                                        "Management Storage Nodes": {
+                                        "Management_Storage_Nodes": {
                                             "type": "array",
                                             "items": {
                                                 "type": "string"
@@ -1196,22 +1467,25 @@
                     }
                 }
             },
-            "ZoneItem": {
+            "ZoneItemSchema": {
                 "type": "object",
+                "required": [
+                    "Zone_Name"
+                ],
                 "properties": {
-                    "Zone Name": {
+                    "Zone_Name": {
                         "type": "string"
                     },
-                    "Kubernetes Topology Zone": {
+                    "Kubernetes_Topology_Zone": {
                         "type": "object",
                         "properties": {
-                            "Management Master Nodes": {
+                            "Management_Master_Nodes": {
                                 "type": "array",
                                 "items": {
                                     "type": "string"
                                 }
                             },
-                            "Management Worker Nodes": {
+                            "Management_Worker_Nodes": {
                                 "type": "array",
                                 "items": {
                                     "type": "string"
@@ -1219,44 +1493,71 @@
                             }
                         }
                     },
-                    "CEPH Zone": {
+                    "CEPH_Zone": {
                         "type": "object",
                         "properties": {
-                            "Management Storage Nodes": {
+                            "Management_Storage_Nodes": {
                                 "type": "array",
                                 "items": {
                                     "type": "string"
                                 }
                             }
+                        }
+                    }
+                }
+            },
+            "KubernetesTopologyZoneSchema": {
+                "type": "object",
+                "properties": {
+                    "Management_Master_Nodes": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "Management_Worker_Nodes": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "CephZoneSchema": {
+                "type": "object",
+                "properties": {
+                    "Management_Storage_Nodes": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
                         }
                     }
                 }
             },
             "ZoneDetailResponse": {
                 "type": "object",
+                "required": [
+                    "Zone_Name"
+                ],
                 "properties": {
-                    "Zone Name": {
+                    "Zone_Name": {
                         "type": "string"
                     },
-                    "Management Masters": {
-                        "type": "integer",
-                        "minimum": 0
-                    },
-                    "Management Workers": {
-                        "type": "integer",
-                        "minimum": 0
-                    },
-                    "Management Storages": {
-                        "type": "integer",
-                        "minimum": 0
-                    },
-                    "Management Master": {
+                    "Management_Master": {
                         "type": "object",
+                        "required": [
+                            "Count",
+                            "Type"
+                        ],
                         "properties": {
+                            "Count": {
+                                "type": "integer",
+                                "minimum": 0
+                            },
                             "Type": {
                                 "type": "string",
                                 "enum": [
-                                    "Kubernetes Topology Zone"
+                                    "Kubernetes_Topology_Zone"
                                 ]
                             },
                             "Nodes": {
@@ -1264,10 +1565,10 @@
                                 "items": {
                                     "type": "object",
                                     "properties": {
-                                        "Name": {
+                                        "name": {
                                             "type": "string"
                                         },
-                                        "Status": {
+                                        "status": {
                                             "type": "string",
                                             "enum": [
                                                 "Ready",
@@ -1280,13 +1581,21 @@
                             }
                         }
                     },
-                    "Management Worker": {
+                    "Management_Worker": {
                         "type": "object",
+                        "required": [
+                            "Count",
+                            "Type"
+                        ],
                         "properties": {
+                            "Count": {
+                                "type": "integer",
+                                "minimum": 0
+                            },
                             "Type": {
                                 "type": "string",
                                 "enum": [
-                                    "Kubernetes Topology Zone"
+                                    "Kubernetes_Topology_Zone"
                                 ]
                             },
                             "Nodes": {
@@ -1294,10 +1603,10 @@
                                 "items": {
                                     "type": "object",
                                     "properties": {
-                                        "Name": {
+                                        "name": {
                                             "type": "string"
                                         },
-                                        "Status": {
+                                        "status": {
                                             "type": "string",
                                             "enum": [
                                                 "Ready",
@@ -1310,13 +1619,21 @@
                             }
                         }
                     },
-                    "Management Storage": {
+                    "Management_Storage": {
                         "type": "object",
+                        "required": [
+                            "Count",
+                            "Type"
+                        ],
                         "properties": {
+                            "Count": {
+                                "type": "integer",
+                                "minimum": 0
+                            },
                             "Type": {
                                 "type": "string",
                                 "enum": [
-                                    "CEPH Zone"
+                                    "CEPH_Zone"
                                 ]
                             },
                             "Nodes": {
@@ -1324,20 +1641,26 @@
                                 "items": {
                                     "type": "object",
                                     "properties": {
-                                        "Name": {
+                                        "name": {
                                             "type": "string"
                                         },
-                                        "Status": {
+                                        "status": {
                                             "type": "string",
                                             "enum": [
                                                 "Ready",
                                                 "NotReady"
                                             ]
                                         },
-                                        "OSDs": {
+                                        "osds": {
                                             "type": "object",
                                             "properties": {
                                                 "up": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "down": {
                                                     "type": "array",
                                                     "items": {
                                                         "type": "string"
@@ -1352,13 +1675,143 @@
                     }
                 }
             },
-            "NodeDetail": {
+            "ManagementMasterSchema": {
+                "type": "object",
+                "required": [
+                    "Count",
+                    "Type"
+                ],
+                "properties": {
+                    "Count": {
+                        "type": "integer",
+                        "minimum": 0
+                    },
+                    "Type": {
+                        "type": "string",
+                        "enum": [
+                            "Kubernetes_Topology_Zone"
+                        ]
+                    },
+                    "Nodes": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "type": "string"
+                                },
+                                "status": {
+                                    "type": "string",
+                                    "enum": [
+                                        "Ready",
+                                        "NotReady",
+                                        "Unknown"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "ManagementWorkerSchema": {
+                "type": "object",
+                "required": [
+                    "Count",
+                    "Type"
+                ],
+                "properties": {
+                    "Count": {
+                        "type": "integer",
+                        "minimum": 0
+                    },
+                    "Type": {
+                        "type": "string",
+                        "enum": [
+                            "Kubernetes_Topology_Zone"
+                        ]
+                    },
+                    "Nodes": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "type": "string"
+                                },
+                                "status": {
+                                    "type": "string",
+                                    "enum": [
+                                        "Ready",
+                                        "NotReady",
+                                        "Unknown"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "ManagementStorageSchema": {
+                "type": "object",
+                "required": [
+                    "Count",
+                    "Type"
+                ],
+                "properties": {
+                    "Count": {
+                        "type": "integer",
+                        "minimum": 0
+                    },
+                    "Type": {
+                        "type": "string",
+                        "enum": [
+                            "CEPH_Zone"
+                        ]
+                    },
+                    "Nodes": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "type": "string"
+                                },
+                                "status": {
+                                    "type": "string",
+                                    "enum": [
+                                        "Ready",
+                                        "NotReady"
+                                    ]
+                                },
+                                "osds": {
+                                    "type": "object",
+                                    "properties": {
+                                        "up": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "down": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "NodeSchema": {
                 "type": "object",
                 "properties": {
-                    "Name": {
+                    "name": {
                         "type": "string"
                     },
-                    "Status": {
+                    "status": {
                         "type": "string",
                         "enum": [
                             "Ready",
@@ -1368,23 +1821,29 @@
                     }
                 }
             },
-            "StorageNodeDetail": {
+            "StorageNodeSchema": {
                 "type": "object",
                 "properties": {
-                    "Name": {
+                    "name": {
                         "type": "string"
                     },
-                    "Status": {
+                    "status": {
                         "type": "string",
                         "enum": [
                             "Ready",
                             "NotReady"
                         ]
                     },
-                    "OSDs": {
+                    "osds": {
                         "type": "object",
                         "properties": {
                             "up": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "down": {
                                 "type": "array",
                                 "items": {
                                     "type": "string"
@@ -1394,10 +1853,10 @@
                     }
                 }
             },
-            "CriticalServicesList": {
+            "CriticalServicesListSchema": {
                 "type": "object",
                 "properties": {
-                    "critical-services": {
+                    "critical_services": {
                         "type": "object",
                         "properties": {
                             "namespace": {
@@ -1406,6 +1865,10 @@
                                     "type": "array",
                                     "items": {
                                         "type": "object",
+                                        "required": [
+                                            "name",
+                                            "type"
+                                        ],
                                         "properties": {
                                             "name": {
                                                 "type": "string"
@@ -1421,8 +1884,12 @@
                     }
                 }
             },
-            "ServiceItem": {
+            "CriticalServiceEntrySchema": {
                 "type": "object",
+                "required": [
+                    "name",
+                    "type"
+                ],
                 "properties": {
                     "name": {
                         "type": "string"
@@ -1441,7 +1908,7 @@
                     }
                 }
             },
-            "CriticalServicesPatchResponse": {
+            "CriticalServiceUpdateSchema": {
                 "type": "object",
                 "properties": {
                     "Update": {
@@ -1461,7 +1928,7 @@
                     }
                 }
             },
-            "CriticalServiceSummary": {
+            "CriticalServiceDescribeSchema": {
                 "type": "object",
                 "properties": {
                     "Critical Service": {
@@ -1550,7 +2017,7 @@
                     }
                 }
             },
-            "PodDetail": {
+            "PodSchema": {
                 "type": "object",
                 "properties": {
                     "Name": {
@@ -1570,7 +2037,7 @@
             "CriticalServicesStatusResponse": {
                 "type": "object",
                 "properties": {
-                    "critical-services": {
+                    "critical_services": {
                         "type": "object",
                         "properties": {
                             "namespace": {
@@ -1634,11 +2101,32 @@
                         ]
                     }
                 }
+            },
+            "ErrorDict": {
+                "type": "object",
+                "properties": {
+                    "error": {
+                        "type": "string"
+                    }
+                }
+            },
+            "InformationDict": {
+                "type": "object",
+                "properties": {
+                    "Information": {
+                        "type": "string"
+                    }
+                }
+            },
+            "EmptyDict": {
+                "type": "object",
+                "description": "Empty object returned by health check endpoints",
+                "additionalProperties": false
             }
         },
         "responses": {
-            "NotFound": {
-                "description": "Not found",
+            "BadRequest": {
+                "description": "Bad request",
                 "content": {
                     "application/json": {
                         "schema": {
@@ -1648,6 +2136,33 @@
                                     "type": "string"
                                 }
                             }
+                        }
+                    }
+                }
+            },
+            "NotFound": {
+                "description": "Not found",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "oneOf": [
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "Information": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
