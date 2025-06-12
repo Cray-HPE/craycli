@@ -23,56 +23,48 @@
 #
 """rrs"""
 # pylint: disable=invalid-name
-from typing import Callable, Optional, Any
-import click
+import json
+
+from cray.constants import FROM_FILE_TAG
+from cray.core import option
+from cray.generator import _opt_callback
 from cray.generator import generate
 
 # Generates a Click CLI from the current file
 cli = generate(__file__)
 
 
-def _file_cb(
-    cb: Optional[Callable[[click.Context, click.Parameter, str], Any]],
-) -> Callable[[click.Context, click.Parameter, click.File], Any]:
-    """
-    Creates a callback wrapper for file parameters.
+def create_templates_critical_services(func):
+    """ Callback function to custom create our own payload for critical services """
 
-    This function wraps an existing callback to handle file objects.
-    It reads the file content and passes the string data to the original callback.
+    def _decorator(from_file, **kwargs):
+        if not from_file.get('value'):
+            return func(**kwargs)
+        with open(from_file["value"], 'r', encoding='utf-8') as f:
+            data = json.loads(f.read())
+        payload = data
+        # Hack to tell the CLI we are passing our own payload; don't generate
+        kwargs[FROM_FILE_TAG] = {"value": payload, "name": FROM_FILE_TAG}
+        return func(**kwargs)
 
-    Args:
-        cb: Optional original callback function that would process string data
-
-    Returns:
-        A new callback function that accepts a file object
-    """
-
-    def _cb(ctx: click.Context, param: click.Parameter, value: click.File) -> Any:
-        """
-        File parameter callback that reads file content and passes it to the original callback.
-
-        Args:
-            ctx: Click context
-            param: Click parameter
-            value: File object opened by Click
-
-        Returns:
-            Result of the original callback or the file contents if no callback exists
-        """
-        data = value.read()
-        if cb:
-            return cb(ctx, param, data)
-        return data
-
-    return _cb
+    return _decorator
 
 
-# Find the 'from_file' parameter in the 'criticalservices update' command
-# and modify it to accept a file path and process the file content
-for p in cli.commands["criticalservices"].commands["update"].params:
-    if getattr(p, "payload_name", None) == "from_file":
-        # Change parameter type to accept a file path
-        p.type = click.File(mode="r")
-        # Set up callback to read the file and pass its contents to the original handler
-        p.callback = _file_cb(p.callback)
-        break
+def setup_critical_services_from_file(command):
+    """ Adds a --from-file parameter for critical services update """
+    option(
+        '--from-file', callback=_opt_callback, type=str, default='', metavar='TEXT',
+        help="A file containing the JSON for critical services configuration"
+    )(command)
+    params = [command.params[-1]]
+    for param in command.params[:-1]:
+        if not getattr(param, 'help', None) or 'DEPRECATED' not in param.help:
+            params.append(param)
+    command.params = params
+    command.callback = create_templates_critical_services(command.callback)
+
+
+# Setup the file-based critical services update
+setup_critical_services_from_file(
+    cli.commands['criticalservices'].commands['update']
+)
