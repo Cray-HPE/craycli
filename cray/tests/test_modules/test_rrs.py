@@ -217,18 +217,18 @@ def test_cray_rrs_criticalservices_update(
     """
     runner, cli, config = cli_runner
     # Path to the test file containing new services configuration
-    newservicesfile = os.path.join(os.path.dirname(__file__), "../files/test.txt")
+    newServicesFile = os.path.join(os.path.dirname(__file__), "../files/test.txt")
 
     result = runner.invoke(
-        cli, ["rrs", "criticalservices", "update", "--from-file", newservicesfile]
+        cli, ["rrs", "criticalservices", "update", "--from-file", newServicesFile]
     )
 
     # Read and parse the contents of the test file
-    with open(newservicesfile, encoding="utf-8") as inf:
-        newservicesdata = json.load(inf)
+    with open(newServicesFile, encoding="utf-8") as inf:
+        newServicesData = json.load(inf)
 
     assert result.exit_code == 0
     data = json.loads(result.output)
     assert data["method"] == "PATCH"
     assert data["url"] == f'{config["default"]["hostname"]}/apis/rrs/criticalservices'
-    assert data["body"] == newservicesdata
+    assert data["body"] == newServicesData
