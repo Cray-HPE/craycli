@@ -3,7 +3,7 @@ openapi: "3.0.3"
 
 info:
   title: "Boot Orchestration Service"
-  version: "2.30.0"
+  version: "2.48.0"
   description: |
     The Boot Orchestration Service (BOS) provides coordinated provisioning actions
     over defined hardware sets to enable boot, reboot, shutdown, configuration and
@@ -263,39 +263,6 @@ components:
         example: "Compute"
         minLength: 1
         maxLength: 127
-    ProblemDetails:
-      description: An error response for RFC 7807 problem details.
-      type: object
-      properties:
-        type:
-          description: |
-            Relative URI reference to the type of problem which includes human
-            readable documentation.
-          type: string
-          format: uri
-          default: "about:blank"
-        title:
-          description: |
-            Short, human-readable summary of the problem, should not change by
-            occurrence.
-          type: string
-        status:
-          description: HTTP status code
-          type: integer
-          example: 400
-        instance:
-          description: |
-            A relative URI reference that identifies the specific occurrence of
-            the problem
-          format: uri
-          type: string
-        detail:
-          description: |
-            A human-readable explanation specific to this occurrence of the
-            problem. Focus on helping correct the problem, rather than giving
-            debugging information.
-          type: string
-      additionalProperties: false
     SessionLimit:
       type: string
       description: |
@@ -420,6 +387,29 @@ components:
           $ref: '#/components/schemas/LinkListReadOnly'
       additionalProperties: false
       required: [ boot_sets ]
+    V2SessionTemplatePatch:
+      type: object
+      description: Data to update an existing Session Template record.
+      properties:
+        description:
+          $ref: '#/components/schemas/SessionTemplateDescription'
+        enable_cfs:
+          $ref: '#/components/schemas/EnableCfs'
+        cfs:
+          $ref: '#/components/schemas/V2CfsParameters'
+        boot_sets:
+          type: object
+          description: |
+            Mapping from Boot Set names to Boot Sets.
+
+            * Boot Set names must be 1-127 characters in length.
+            * Boot Set names must use only letters, digits, periods (.), dashes (-), and underscores (_).
+            * Boot Set names must begin and end with a letter or digit.
+          minProperties: 1
+          maxProperties: 127
+          additionalProperties:
+            $ref: '#/components/schemas/V2BootSet'
+      additionalProperties: false
     V2SessionTemplateValidation:
       description: |
         Message describing errors or incompleteness in a Session Template.
@@ -661,6 +651,19 @@ components:
           description: |
             The current duration of the ongoing Session or final duration of the completed Session.
       additionalProperties: false
+    V2SessionExtendedStatusErrorComponents:
+      type: object
+      description: Summary of Components impacted by an error.
+      properties:
+        count:
+          type: integer
+          description: The number of Components impacted by the error.
+        list:
+          type: string
+          description: |
+            A comma-separated list of the impacted Components.
+            If more than 10 Components are impacted, the first 10 are shown, following by a trailing '...'
+      additionalProperties: false
     V2SessionExtendedStatus:
       type: object
       description: |
@@ -689,7 +692,9 @@ components:
         error_summary:
           type: object
           description: |
-            A summary of the errors currently listed by all Components
+            A mapping from error messages to a summary of the impacted Components.
+          additionalProperties:
+            $ref: '#/components/schemas/V2SessionExtendedStatusErrorComponents'
         timing:
           $ref: '#/components/schemas/V2SessionExtendedStatusTiming'
       additionalProperties: false
@@ -777,9 +782,7 @@ components:
         last_updated:
           $ref: '#/components/schemas/V2ComponentLastUpdated'
         action:
-          type: string
-          description: A description of the most recent operator/action to impact the Component.
-          maxLength: 1024
+          $ref: '#/components/schemas/V2ComponentAction'
         failed:
           type: boolean
           description: Denotes if the last action failed to accomplish its task
@@ -805,10 +808,14 @@ components:
           minimum: 0
           maximum: 1048576
       additionalProperties: false
+    V2ComponentAction:
+        type: string
+        description: A description of the most recent operator/action to impact the Component.
+        enum: ['actual_state_cleanup', 'apply_staged', 'newly_discovered', 'powering_off_forcefully', 'powering_off_gracefully', 'powering_on', 'session_setup']
     V2ComponentPhase:
       type: string
       description: The current phase of the Component in the boot process.
-      maxLength: 128
+      enum: ['configuring', 'powering_off', 'powering_on', '']
     V2ComponentStatus:
       description: Status information for the Component
       type: object
@@ -1016,11 +1023,6 @@ components:
           example: 1
           minimum: 0
           maximum: 1048576
-        disable_components_on_completion:
-          type: boolean
-          description: |
-            If true, when a Session has brought a Component to its desired state, that Component will be marked as disabled in BOS.
-            If false, BOS will continue to maintain the state of the nodes declaratively, even after a Session finishes.
         discovery_frequency:
           type: integer
           description: How frequently the BOS discovery agent syncs new Components from HSM (in seconds)
@@ -1113,6 +1115,104 @@ components:
       additionalProperties: true
       minProperties: 1
       maxProperties: 1024
+
+    # Error response schemas
+    ProblemDetails:
+      description: An error response for RFC 7807 problem details.
+      type: object
+      properties:
+        type:
+          description: |
+            Relative URI reference to the type of problem which includes human
+            readable documentation.
+          type: string
+          format: uri
+          default: "about:blank"
+        title:
+          description: |
+            Short, human-readable summary of the problem, should not change by
+            occurrence.
+          type: string
+        status:
+          description: HTTP status code
+          type: integer
+          example: 400
+        instance:
+          description: |
+            A relative URI reference that identifies the specific occurrence of
+            the problem
+          format: uri
+          type: string
+        detail:
+          description: |
+            A human-readable explanation specific to this occurrence of the
+            problem. Focus on helping correct the problem, rather than giving
+            debugging information.
+          type: string
+      additionalProperties: false
+    # OAS 3.0 does not support constant values
+    # The closest we can do is single-value enum + default
+    ProblemAlreadyExists:
+      type: object
+      properties:
+        title:
+          type: string
+          enum: [ "The resource to be created already exists" ]
+          default: "The resource to be created already exists"
+        status:
+          type: integer
+          enum: [ 409 ]
+          default: 409
+      additionalProperties: true
+    ProblemBadRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          enum: [ "Bad Request" ]
+          default: "Bad Request"
+        status:
+          type: integer
+          enum: [ 400 ]
+          default: 400
+      additionalProperties: true
+    ProblemResourceNotFound:
+      type: object
+      properties:
+        title:
+          type: string
+          enum: [ "The resource was not found" ]
+          default: "The resource was not found"
+        status:
+          type: integer
+          enum: [ 404 ]
+          default: 404
+      additionalProperties: true
+    ProblemUpdateConflict:
+      type: object
+      properties:
+        title:
+          type: string
+          enum: [ "The update was not allowed due to a conflict" ]
+          default: "The update was not allowed due to a conflict"
+      additionalProperties: true
+    ProblemServiceUnavailable:
+      type: object
+      properties:
+        title:
+          type: string
+          enum: [ "Service Unavailable" ]
+          default: "Service Unavailable"
+      additionalProperties: true
+    ProblemInternalError:
+      type: object
+      properties:
+        title:
+          type: string
+          enum: [ "An Internal Server Error occurred handling the request" ]
+          default: "An Internal Server Error occurred handling the request"
+      additionalProperties: true
+
 
   requestBodies:
     V2sessionCreateRequest:
@@ -1246,57 +1346,56 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/V2Options'
+
     # Errors
     AlreadyExists:
       description: The resource to be created already exists
       content:
         application/problem+json:
           schema:
-            $ref: '#/components/schemas/ProblemDetails'
+            allOf:
+              - $ref: '#/components/schemas/ProblemDetails'
+              - $ref: '#/components/schemas/ProblemAlreadyExists'
     BadRequest:
       description: Bad Request
       content:
         application/problem+json:
           schema:
-            $ref: '#/components/schemas/ProblemDetails'
-    BadRequestOrMultiTenancyNotSupported:
-      description: |
-        Multi-tenancy is not supported for this request.
-        If no tenant was specified, then the request was bad for another reason.
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/ProblemDetails'
-    MultiTenancyNotSupported:
-      description: Multi-tenancy is not supported for this BOS request.
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/ProblemDetails'
+            allOf:
+              - $ref: '#/components/schemas/ProblemDetails'
+              - $ref: '#/components/schemas/ProblemBadRequest'
     ResourceNotFound:
       description: The resource was not found.
       content:
         application/problem+json:
           schema:
-            $ref: '#/components/schemas/ProblemDetails'
+            allOf:
+              - $ref: '#/components/schemas/ProblemDetails'
+              - $ref: '#/components/schemas/ProblemResourceNotFound'
     UpdateConflict:
       description: The update was not allowed due to a conflict.
       content:
         application/problem+json:
           schema:
-            $ref: '#/components/schemas/ProblemDetails'
+            allOf:
+              - $ref: '#/components/schemas/ProblemDetails'
+              - $ref: '#/components/schemas/ProblemUpdateConflict'
     ServiceUnavailable:
       description: Service Unavailable
       content:
         application/problem+json:
           schema:
-            $ref: '#/components/schemas/ProblemDetails'
+            allOf:
+              - $ref: '#/components/schemas/ProblemDetails'
+              - $ref: '#/components/schemas/ProblemServiceUnavailable'
     InternalError:
       description: An Internal Server Error occurred handling the request.
       content:
         application/problem+json:
           schema:
-            $ref: '#/components/schemas/ProblemDetails'
+            allOf:
+              - $ref: '#/components/schemas/ProblemDetails'
+              - $ref: '#/components/schemas/ProblemInternalError'
 
   parameters:
     TemplateIdPathParam:
@@ -1493,7 +1592,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/V2SessionTemplate'
+              $ref: '#/components/schemas/V2SessionTemplatePatch'
       responses:
         200:
           $ref: '#/components/responses/V2SessionTemplateDetails'
@@ -1550,6 +1649,8 @@ paths:
           $ref: '#/components/responses/V2SessionDetails'
         400:
           $ref: '#/components/responses/BadRequest'
+        409:
+          $ref: '#/components/responses/AlreadyExists'
     get:
       summary: List Sessions
       parameters:
@@ -1711,6 +1812,21 @@ paths:
           in: query
           description: |-
             Retrieve the Components with the given status.
+        - name: start_after_id
+          schema:
+            $ref: '#/components/schemas/V2ComponentId'
+          in: query
+          description: |-
+            Begin listing Components after the specified ID. Used for paging.
+        - name: page_size
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 1048576
+          in: query
+          description: |-
+            Maximum number of Components to include in response. Used for paging. 0 means no limit
+            (which is the same as not specifying this parameter).
       description: |-
         Retrieve the full collection of Components in the form of a
         ComponentArray. Full results can also be filtered by query
@@ -1746,6 +1862,19 @@ paths:
           $ref: '#/components/responses/BadRequest'
     post:
       summary: Update a collection of Components
+      parameters:
+        - name: skip_bad_ids
+          schema:
+            type: boolean
+            default: false
+          in: query
+          description: |-
+            If false, if the patch request explicitly lists a BOS component ID that
+            does not exist, it will be considered a fatal error. The patch operation
+            will fail and return a 404 status.
+            If true, the patch request will skip any IDs that do not exist, and
+            patch the remaining items. The response will only include the components
+            that were actually updated.
       description: Update the state for a collection of Components in the BOS database
       tags:
         - v2
