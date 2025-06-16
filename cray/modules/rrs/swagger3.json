@@ -7,7 +7,7 @@
             "url": "http://www.hpe.com/"
         },
         "version": "1.0.0",
-        "description": "The Rack Resiliency Service (RRS) provides a set of APIs to manage Rack Level resiliency. It queries the Kubernetes cluster to provide aggregated zone information and detailed critical service status. It gathers node details across various zones and presents both high-level summaries and in-depth information for zones and critical services.\n## Resources\n\n  ### GET /zones\n    Retrieve aggregated zone configuration showing Kubernetes_Topology_Zones and CEPH_Zones including:\n      - Management_Master_Nodes\n      - Management_Worker_Nodes\n      - Management_Storage_Nodes\n\n    Alternatively, if zones are not configured, one of the following informational messages is returned:\n      - \"No K8s Topology/Ceph Zones configured\"\n      - \"No Ceph zones configured\"\n      - \"No K8s topology zones configured\"\n\n  ### GET /zones/{zone_name}\n    Retrieve detailed information for a specific zone including:\n      - Zone_Name\n      - Management_Master_Nodes\n      - Management_Worker_Nodes\n      - Management_Storage_Nodes\n      - Node status and OSD information\n\n  ### GET /criticalservices\n    Retrieve a list of critical services grouped by namespace\n\n  ### GET /criticalservices/{critical-service-name}\n    Retrieve a summarized view of a specific critical service (without pod details). The response includes:\n      - Configured Instances\n      - Name\n      - Namespace\n      - Type\n\n  ### PATCH /criticalservices\n    Update the critical services configuration based on a provided file input. This endpoint allows\n    you to modify how critical services are configured in the system\n\n  ### GET /criticalservices/status\n    Retrieve the status of all critical services including service status and distribution details.\n    Each service object may include:\n      - Service Name\n      - Status\n      - Balanced: indicates whether the service is properly distributed\n\n  ### GET /criticalservices/status/{critical-service-name}\n    Retrieve detailed status for a specific critical service including pod information.\n    The response includes:\n      - Configured Instances\n      - Currently Running Instances\n      - Name\n      - Namespace\n      - Pods with Name, Node, Status, and Zone\n      - Type\n      - Status\n      - Balanced\n"
+        "description": "The Rack Resiliency Service (RRS) provides a set of APIs to manage Rack Level resiliency. It queries the Kubernetes cluster to provide aggregated zone information and detailed critical service status. It gathers node details across various zones and presents both high-level summaries and in-depth information for zones and critical services.\n## Resources\n\n  ### GET /zones\n    Retrieve aggregated zone configuration showing Kubernetes_Topology_Zones and CEPH_Zones including:\n      - Management_Master_Nodes\n      - Management_Worker_Nodes\n      - Management_Storage_Nodes\n\n    Alternatively, if zones are not configured, one of the following informational messages is returned:\n      - \"No K8s Topology/Ceph Zones configured\"\n      - \"No Ceph zones configured\"\n      - \"No K8s topology zones configured\"\n\n  ### GET /zones/{zone_name}\n    Retrieve detailed information for a specific zone including:\n      - Zone_Name\n      - Management_Master_Nodes\n      - Management_Worker_Nodes\n      - Management_Storage_Nodes\n      - Node status and OSD information\n\n  ### GET /criticalservices\n    Retrieve a list of critical services grouped by namespace\n\n  ### GET /criticalservices/{critical-service-name}\n    Retrieve a summarized view of a specific critical service (without pod details). The response includes:\n      - configured_instances\n      - name\n      - namespace\n      - type\n\n  ### PATCH /criticalservices\n    Update the critical services configuration based on provided input. This endpoint\n    modifies which critical services are monitored.\n\n  ### GET /criticalservices/status\n    Retrieve the status of all critical services including service status and distribution details.\n    Each service object may include:\n      - Service Name\n      - status\n      - balanced: indicates whether the service is properly distributed\n\n  ### GET /criticalservices/status/{critical-service-name}\n    Retrieve detailed status for a specific critical service including pod information.\n    The response includes:\n      - configured_instances\n      - currently_running_instances\n      - name\n      - namespace\n      - pods with name, node, status, and zone\n      - type\n      - status\n      - balanced\n"
     },
     "servers": [
         {
@@ -114,24 +114,10 @@
                         }
                     },
                     "404": {
-                        "description": "Zones not found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/responses/NotFound"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/NotFound"
                     },
                     "500": {
-                        "description": "Internal Server Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/responses/InternalServerError"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/InternalServerError"
                     }
                 }
             }
@@ -142,7 +128,7 @@
                 "tags": [
                     "zones"
                 ],
-                "description": "Returns detailed information for a specific zone. The response includes:\n  - Zone_Name: the name of the zone\n  - Management_Master: an object with Count, Type, and Nodes (array of node objects with Name and Status)\n  - Management_Worker: an object with Count, Type, and Nodes (array of node objects with Name and Status)\n  - Management_Storage: an object with Count, Type, and Nodes (array of node objects with Name, Status, and OSDs)\n",
+                "description": "Returns detailed information for a specific zone. The response includes:\n  - Zone_Name: the name of the zone\n  - Management_Master: an object with Count, Type, and Nodes (array of node objects with name and status)\n  - Management_Worker: an object with Count, Type, and Nodes (array of node objects with name and status)\n  - Management_Storage: an object with Count, Type, and Nodes (array of node objects with name, status, and osds)\n",
                 "operationId": "getZoneDetails",
                 "parameters": [
                     {
@@ -230,24 +216,10 @@
                         }
                     },
                     "404": {
-                        "description": "Zone not found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/responses/NotFound"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/NotFound"
                     },
                     "500": {
-                        "description": "Internal Server Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/responses/InternalServerError"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/InternalServerError"
                     }
                 }
             }
@@ -258,7 +230,7 @@
                 "tags": [
                     "criticalservices"
                 ],
-                "description": "Returns a list of critical services grouped by namespace. The response includes a critical_services property containing namespaces with arrays of service objects including:\n  - name: the name of the service\n  - type: the service type (Deployment, StatefulSet, DaemonSet)\n",
+                "description": "Returns a list of critical services grouped by namespace. The response includes a critical_services property containing namespaces with arrays of service objects including:\n  - name: the name of the service\n  - type: the service type (Deployment, StatefulSet)\n",
                 "operationId": "getCriticalServices",
                 "responses": {
                     "200": {
@@ -306,12 +278,6 @@
                                                             "name": "k8s-zone-api",
                                                             "type": "Deployment"
                                                         }
-                                                    ],
-                                                    "kube-system": [
-                                                        {
-                                                            "name": "kube-multus-ds",
-                                                            "type": "DaemonSet"
-                                                        }
                                                     ]
                                                 }
                                             }
@@ -322,24 +288,10 @@
                         }
                     },
                     "404": {
-                        "description": "Critical services not found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/responses/NotFound"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/NotFound"
                     },
                     "500": {
-                        "description": "Internal Server Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/responses/InternalServerError"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/InternalServerError"
                     }
                 }
             },
@@ -356,7 +308,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/CriticalServicesPatch"
+                                "$ref": "#/components/schemas/CriticalServiceCmStaticType"
                             }
                         }
                     }
@@ -388,34 +340,13 @@
                         }
                     },
                     "400": {
-                        "description": "Bad Request - Invalid data provided",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/responses/BadRequest"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/BadRequest"
                     },
                     "404": {
-                        "description": "Critical services not found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/responses/NotFound"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/NotFound"
                     },
                     "500": {
-                        "description": "Internal server error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/responses/InternalServerError"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/InternalServerError"
                     }
                 }
             }
@@ -426,7 +357,7 @@
                 "tags": [
                     "criticalservices"
                 ],
-                "description": "Returns a summarized view of a specific critical service. The response includes:\n  - Name: string\n  - Namespace: string\n  - Type: string\n  - Configured Instances: number\n",
+                "description": "Returns a summarized view of a specific critical service. The response includes:\n  - name: string\n  - namespace: string\n  - type: string\n  - configured_instances: number\n",
                 "operationId": "getCriticalServiceDetails",
                 "parameters": [
                     {
@@ -450,11 +381,11 @@
                                 "examples": {
                                     "criticalServiceDetail": {
                                         "value": {
-                                            "Critical_Service": {
-                                                "Name": "cray-hbtd",
-                                                "Namespace": "services",
-                                                "Type": "Deployment",
-                                                "Configured_Instances": 3
+                                            "critical_service": {
+                                                "name": "cray-hbtd",
+                                                "namespace": "services",
+                                                "type": "Deployment",
+                                                "configured_instances": 3
                                             }
                                         }
                                     }
@@ -463,24 +394,10 @@
                         }
                     },
                     "404": {
-                        "description": "Critical service not found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/responses/NotFound"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/NotFound"
                     },
                     "500": {
-                        "description": "Internal server error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/responses/InternalServerError"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/InternalServerError"
                     }
                 }
             }
@@ -491,7 +408,7 @@
                 "tags": [
                     "criticalservices"
                 ],
-                "description": "Returns the status of all critical services with distribution details. Response provides namespaces containing services with their status information including:\n  - name: the name of the critical service\n  - type: the service type (Deployment, StatefulSet, DaemonSet)\n  - status: the current status (e.g., Configured, PartiallyConfigured)\n  - balanced: indicates whether the service is properly distributed across zones\n",
+                "description": "Returns the status of all critical services with distribution details. Response provides namespaces containing services with their status information including:\n  - name: the name of the critical service\n  - type: the service type (Deployment, StatefulSet)\n  - status: the current status (e.g., Configured, PartiallyConfigured)\n  - balanced: indicates whether the service is properly distributed across zones\n",
                 "operationId": "getAllCriticalServicesStatus",
                 "responses": {
                     "200": {
@@ -499,7 +416,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/CriticalServicesStatusResponse"
+                                    "$ref": "#/components/schemas/CriticalServicesStatusListSchema"
                                 },
                                 "examples": {
                                     "criticalServicesStatusExample": {
@@ -552,12 +469,6 @@
                                                             "type": "Deployment",
                                                             "status": "Configured",
                                                             "balanced": "true"
-                                                        },
-                                                        {
-                                                            "name": "kube-multus-ds",
-                                                            "type": "DaemonSet",
-                                                            "status": "Configured",
-                                                            "balanced": "true"
                                                         }
                                                     ],
                                                     "rack-resiliency": [
@@ -577,24 +488,10 @@
                         }
                     },
                     "404": {
-                        "description": "Critical services status not found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/responses/NotFound"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/NotFound"
                     },
                     "500": {
-                        "description": "Internal server error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/responses/InternalServerError"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/InternalServerError"
                     }
                 }
             }
@@ -605,7 +502,7 @@
                 "tags": [
                     "criticalservices"
                 ],
-                "description": "Returns detailed status for a specific critical service, including pod information. The response includes:\n  - Name: string\n  - Namespace: string\n  - Type: string\n  - Status: string\n  - Balanced: string\n  - Configured Instances: number\n  - Currently Running Instances: number\n  - Pods: array of pod objects with Name, Node, Status, Zone\n",
+                "description": "Returns detailed status for a specific critical service, including pod information. The response includes:\n  - name: string\n  - namespace: string\n  - type: string\n  - status: string\n  - balanced: string\n  - configured_instances: number\n  - currently_running_instances: number\n  - pods: array of pod objects with name, node, status, zone\n",
                 "operationId": "getCriticalServiceStatus",
                 "parameters": [
                     {
@@ -629,32 +526,32 @@
                                 "examples": {
                                     "criticalServiceStatusExample": {
                                         "value": {
-                                            "Critical_Service": {
-                                                "Name": "cray-hbtd",
-                                                "Namespace": "services",
-                                                "Type": "Deployment",
-                                                "Status": "Configured",
-                                                "Balanced": "true",
-                                                "Configured_Instances": 3,
-                                                "Currently_Running_Instances": 3,
-                                                "Pods": [
+                                            "critical_service": {
+                                                "name": "cray-hbtd",
+                                                "namespace": "services",
+                                                "type": "Deployment",
+                                                "status": "Configured",
+                                                "balanced": "true",
+                                                "configured_instances": 3,
+                                                "currently_running_instances": 3,
+                                                "pods": [
                                                     {
-                                                        "Name": "cray-hbtd-6cbdbd6955-5xlfg",
-                                                        "Status": "Running",
-                                                        "Node": "ncn-w002",
-                                                        "Zone": "cscs-rack-x3001"
+                                                        "name": "cray-hbtd-6cbdbd6955-5xlfg",
+                                                        "status": "Running",
+                                                        "node": "ncn-w002",
+                                                        "zone": "cscs-rack-x3001"
                                                     },
                                                     {
-                                                        "Name": "cray-hbtd-6cbdbd6955-jwzgq",
-                                                        "Status": "Running",
-                                                        "Node": "ncn-w003",
-                                                        "Zone": "cscs-rack-x3002"
+                                                        "name": "cray-hbtd-6cbdbd6955-jwzgq",
+                                                        "status": "Running",
+                                                        "node": "ncn-w003",
+                                                        "zone": "cscs-rack-x3002"
                                                     },
                                                     {
-                                                        "Name": "cray-hbtd-6cbdbd6955-k6pkt",
-                                                        "Status": "Running",
-                                                        "Node": "ncn-w001",
-                                                        "Zone": "cscs-rack-x3000"
+                                                        "name": "cray-hbtd-6cbdbd6955-k6pkt",
+                                                        "status": "Running",
+                                                        "node": "ncn-w001",
+                                                        "zone": "cscs-rack-x3000"
                                                     }
                                                 ]
                                             }
@@ -665,24 +562,10 @@
                         }
                     },
                     "404": {
-                        "description": "Critical service status not found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/responses/NotFound"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/NotFound"
                     },
                     "500": {
-                        "description": "Internal server error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/responses/InternalServerError"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/InternalServerError"
                     }
                 }
             }
@@ -768,7 +651,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "string"
+                                    "$ref": "#/components/schemas/VersionSchema"
                                 }
                             }
                         }
@@ -787,9 +670,11 @@
                 "required": [
                     "Zones"
                 ],
+                "description": "Response containing all configured zones in the system with their associated node configurations",
                 "properties": {
                     "Zones": {
                         "type": "array",
+                        "description": "Array of zone configurations showing Kubernetes topology and CEPH zone details",
                         "items": {
                             "$ref": "#/components/schemas/ZoneItemSchema"
                         }
@@ -801,9 +686,11 @@
                 "required": [
                     "Zone_Name"
                 ],
+                "description": "Configuration details for a single zone including Kubernetes topology and CEPH zone information",
                 "properties": {
                     "Zone_Name": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Unique identifier name for the zone"
                     },
                     "Kubernetes_Topology_Zone": {
                         "$ref": "#/components/schemas/KubernetesTopologyZoneSchema"
@@ -815,15 +702,18 @@
             },
             "KubernetesTopologyZoneSchema": {
                 "type": "object",
+                "description": "Kubernetes topology zone configuration containing master and worker node assignments",
                 "properties": {
                     "Management_Master_Nodes": {
                         "type": "array",
+                        "description": "List of Kubernetes master node names assigned to this zone",
                         "items": {
                             "type": "string"
                         }
                     },
                     "Management_Worker_Nodes": {
                         "type": "array",
+                        "description": "List of Kubernetes worker node names assigned to this zone",
                         "items": {
                             "type": "string"
                         }
@@ -832,9 +722,14 @@
             },
             "CephZoneSchema": {
                 "type": "object",
+                "required": [
+                    "Management_Storage_Nodes"
+                ],
+                "description": "CEPH zone configuration containing storage node assignments",
                 "properties": {
                     "Management_Storage_Nodes": {
                         "type": "array",
+                        "description": "List of CEPH storage node names assigned to this zone",
                         "items": {
                             "type": "string"
                         }
@@ -846,9 +741,11 @@
                 "required": [
                     "Zone_Name"
                 ],
+                "description": "Detailed information about a specific zone including node counts, types, and individual node status",
                 "properties": {
                     "Zone_Name": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Name of the zone being described"
                     },
                     "Management_Master": {
                         "$ref": "#/components/schemas/ManagementKubernetesSchema"
@@ -868,19 +765,23 @@
                     "Type",
                     "Nodes"
                 ],
+                "description": "Management information for Kubernetes nodes (master or worker) including count and individual node details",
                 "properties": {
                     "Count": {
                         "type": "integer",
-                        "minimum": 1
+                        "minimum": 1,
+                        "description": "Total number of nodes of this type in the zone"
                     },
                     "Type": {
                         "type": "string",
+                        "description": "Type classification indicating this is a Kubernetes topology zone",
                         "enum": [
                             "Kubernetes_Topology_Zone"
                         ]
                     },
                     "Nodes": {
                         "type": "array",
+                        "description": "Detailed information about each individual node",
                         "items": {
                             "$ref": "#/components/schemas/NodeSchema"
                         }
@@ -894,19 +795,23 @@
                     "Type",
                     "Nodes"
                 ],
+                "description": "Management information for CEPH storage nodes including count and individual node details with OSD information",
                 "properties": {
                     "Count": {
                         "type": "integer",
-                        "minimum": 1
+                        "minimum": 1,
+                        "description": "Total number of storage nodes in the zone"
                     },
                     "Type": {
                         "type": "string",
+                        "description": "Type classification indicating this is a CEPH zone",
                         "enum": [
                             "CEPH_Zone"
                         ]
                     },
                     "Nodes": {
                         "type": "array",
+                        "description": "Detailed information about each storage node including OSD status",
                         "items": {
                             "$ref": "#/components/schemas/StorageNodeSchema"
                         }
@@ -919,12 +824,15 @@
                     "name",
                     "status"
                 ],
+                "description": "Basic node information including name and operational status",
                 "properties": {
                     "name": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Unique name identifier for the node"
                     },
                     "status": {
                         "type": "string",
+                        "description": "Current operational status of the node",
                         "enum": [
                             "Ready",
                             "NotReady",
@@ -940,50 +848,72 @@
                     "status",
                     "osds"
                 ],
+                "description": "Storage node information including CEPH OSD (Object Storage Daemon) status details",
                 "properties": {
                     "name": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Unique name identifier for the storage node"
                     },
                     "status": {
                         "type": "string",
+                        "description": "Current operational status of the storage node",
                         "enum": [
                             "Ready",
                             "NotReady"
                         ]
                     },
                     "osds": {
-                        "type": "object",
-                        "properties": {
-                            "up": {
-                                "type": "array",
-                                "items": {
-                                    "type": "string"
-                                }
-                            },
-                            "down": {
-                                "type": "array",
-                                "items": {
-                                    "type": "string"
-                                }
-                            }
+                        "$ref": "#/components/schemas/OSDStatesSchema"
+                    }
+                }
+            },
+            "OSDStatesSchema": {
+                "type": "object",
+                "description": "Object Storage Daemon status information showing which OSDs are operational and non-operational",
+                "properties": {
+                    "up": {
+                        "type": "array",
+                        "description": "List of OSD identifiers that are currently operational",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "down": {
+                        "type": "array",
+                        "description": "List of OSD identifiers that are currently non-operational",
+                        "items": {
+                            "type": "string"
                         }
                     }
                 }
             },
-            "ServiceStatus": {
-                "type": "string",
-                "enum": [
-                    "Configured",
-                    "PartiallyConfigured",
-                    "Running"
-                ]
-            },
             "ServiceBalanced": {
                 "type": "string",
+                "description": "Indicates whether a service is properly distributed across zones for high availability",
                 "enum": [
                     "true",
                     "false",
-                    "unknown"
+                    "NA"
+                ]
+            },
+            "ServiceStatus": {
+                "type": "string",
+                "description": "Current operational status of a critical service indicating its configuration and runtime state",
+                "enum": [
+                    "error",
+                    "Configured",
+                    "PartiallyConfigured",
+                    "NotConfigured",
+                    "Running",
+                    "Unconfigured"
+                ]
+            },
+            "ServiceType": {
+                "type": "string",
+                "description": "Kubernetes resource type of the service",
+                "enum": [
+                    "Deployment",
+                    "StatefulSet"
                 ]
             },
             "CriticalServicesListSchema": {
@@ -991,15 +921,18 @@
                 "required": [
                     "critical_services"
                 ],
+                "description": "Response containing all critical services organized by namespace",
                 "properties": {
                     "critical_services": {
                         "type": "object",
                         "required": [
                             "namespace"
                         ],
+                        "description": "Critical services grouped by their Kubernetes namespaces",
                         "properties": {
                             "namespace": {
                                 "type": "object",
+                                "description": "Mapping of namespace names to their contained critical services",
                                 "additionalProperties": {
                                     "type": "array",
                                     "items": {
@@ -1017,24 +950,26 @@
                     "name",
                     "type"
                 ],
+                "description": "Basic information about a critical service including its name and Kubernetes resource type",
                 "properties": {
                     "name": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Name of the critical service"
                     },
                     "type": {
-                        "type": "string"
+                        "$ref": "#/components/schemas/ServiceType"
                     }
                 }
             },
-            "CriticalServicesPatch": {
+            "CriticalServiceCmStaticType": {
                 "type": "object",
-                "description": "A collection of critical services that need to be monitored for resiliency.\nEach service is identified by name and contains namespace and type information.\n",
+                "description": "Configuration payload for updating critical services in the system. Contains service definitions that need to be monitored for resiliency",
                 "properties": {
                     "critical_services": {
                         "type": "object",
-                        "description": "Mapping from service names to service configurations.\n",
+                        "description": "Mapping from service names to their configuration details for monitoring",
                         "additionalProperties": {
-                            "$ref": "#/components/schemas/CriticalServiceConfig"
+                            "$ref": "#/components/schemas/CriticalServiceCmStaticSchema"
                         }
                     }
                 },
@@ -1043,9 +978,9 @@
                     "critical_services"
                 ]
             },
-            "CriticalServiceConfig": {
+            "CriticalServiceCmStaticSchema": {
                 "type": "object",
-                "description": "Configuration details for a critical service",
+                "description": "Static configuration details for a critical service that needs to be monitored",
                 "properties": {
                     "namespace": {
                         "type": "string",
@@ -1053,16 +988,7 @@
                         "example": "rack-resiliency"
                     },
                     "type": {
-                        "type": "string",
-                        "description": "The type of Kubernetes resource",
-                        "example": "Deployment",
-                        "enum": [
-                            "Deployment",
-                            "DaemonSet",
-                            "StatefulSet",
-                            "Service",
-                            "Pod"
-                        ]
+                        "$ref": "#/components/schemas/ServiceType"
                     }
                 },
                 "additionalProperties": false,
@@ -1075,21 +1001,25 @@
                 "type": "object",
                 "required": [
                     "Update",
-                    "Successfully_Added_Service",
-                    "Already_Existing_Service"
+                    "Successfully_Added_Services",
+                    "Already_Existing_Services"
                 ],
+                "description": "Response indicating the result of updating critical services configuration",
                 "properties": {
                     "Update": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Overall status of the update operation"
                     },
                     "Successfully_Added_Services": {
                         "type": "array",
+                        "description": "List of service names that were successfully added to the configuration",
                         "items": {
                             "type": "string"
                         }
                     },
                     "Already_Existing_Services": {
                         "type": "array",
+                        "description": "List of service names that were already present in the configuration",
                         "items": {
                             "type": "string"
                         }
@@ -1099,31 +1029,36 @@
             "CriticalServiceDescribeSchema": {
                 "type": "object",
                 "required": [
-                    "Critical_Service"
+                    "critical_service"
                 ],
+                "description": "Summarized view of a critical service without runtime details",
                 "properties": {
-                    "Critical_Service": {
+                    "critical_service": {
                         "type": "object",
                         "required": [
-                            "Name",
-                            "Namespace",
-                            "Type",
-                            "Configured_Instances"
+                            "name",
+                            "namespace",
+                            "type",
+                            "configured_instances"
                         ],
+                        "description": "Basic configuration information about the critical service",
                         "properties": {
-                            "Name": {
-                                "type": "string"
+                            "name": {
+                                "type": "string",
+                                "description": "Name of the critical service"
                             },
-                            "Namespace": {
-                                "type": "string"
+                            "namespace": {
+                                "type": "string",
+                                "description": "Kubernetes namespace where the service is deployed"
                             },
-                            "Type": {
-                                "type": "string"
+                            "type": {
+                                "$ref": "#/components/schemas/ServiceType"
                             },
-                            "Configured_Instances": {
+                            "configured_instances": {
                                 "type": "integer",
                                 "minimum": 1,
-                                "nullable": true
+                                "nullable": true,
+                                "description": "Number of instances configured for this service (replicas for Deployments/StatefulSets, pod count for Pods)"
                             }
                         }
                     }
@@ -1132,48 +1067,55 @@
             "CriticalServiceStatusDescribeSchema": {
                 "type": "object",
                 "required": [
-                    "Critical_Service"
+                    "critical_service"
                 ],
+                "description": "Detailed status information for a critical service including runtime details and pod information",
                 "properties": {
-                    "Critical_Service": {
+                    "critical_service": {
                         "type": "object",
                         "required": [
-                            "Name",
-                            "Namespace",
-                            "Type",
-                            "Status",
-                            "Balanced",
-                            "Configured_Instances",
-                            "Currently_Running_Instances",
-                            "Pods"
+                            "name",
+                            "namespace",
+                            "type",
+                            "status",
+                            "balanced",
+                            "configured_instances",
+                            "currently_running_instances",
+                            "pods"
                         ],
+                        "description": "Complete status information including configuration and runtime details",
                         "properties": {
-                            "Name": {
-                                "type": "string"
+                            "name": {
+                                "type": "string",
+                                "description": "Name of the critical service"
                             },
-                            "Namespace": {
-                                "type": "string"
+                            "namespace": {
+                                "type": "string",
+                                "description": "Kubernetes namespace where the service is deployed"
                             },
-                            "Type": {
-                                "type": "string"
+                            "type": {
+                                "$ref": "#/components/schemas/ServiceType"
                             },
-                            "Status": {
+                            "status": {
                                 "$ref": "#/components/schemas/ServiceStatus"
                             },
-                            "Balanced": {
-                                "$ref": "#/components/schemas/ServiceStatus"
+                            "balanced": {
+                                "$ref": "#/components/schemas/ServiceBalanced"
                             },
-                            "Configured_Instances": {
+                            "configured_instances": {
                                 "type": "integer",
                                 "minimum": 1,
-                                "nullable": true
+                                "nullable": true,
+                                "description": "Number of instances configured for this service"
                             },
-                            "Currently_Running_Instances": {
+                            "currently_running_instances": {
                                 "type": "integer",
-                                "minimum": 0
+                                "minimum": 0,
+                                "description": "Number of instances currently running and healthy"
                             },
-                            "Pods": {
+                            "pods": {
                                 "type": "array",
+                                "description": "Detailed information about each pod instance of this service",
                                 "items": {
                                     "$ref": "#/components/schemas/PodSchema"
                                 }
@@ -1185,34 +1127,54 @@
             "PodSchema": {
                 "type": "object",
                 "required": [
-                    "Name",
-                    "Node",
-                    "Status",
-                    "Zone"
+                    "name",
+                    "node",
+                    "status",
+                    "zone"
                 ],
+                "description": "Information about an individual pod instance including its location and status",
                 "properties": {
-                    "Name": {
-                        "type": "string"
+                    "name": {
+                        "type": "string",
+                        "description": "Unique name of the pod instance"
                     },
-                    "Node": {
-                        "type": "string"
+                    "node": {
+                        "type": "string",
+                        "description": "Kubernetes node where the pod is scheduled to run"
                     },
-                    "Status": {
-                        "type": "string"
+                    "status": {
+                        "type": "string",
+                        "description": "Current operational status of the pod",
+                        "enum": [
+                            "Running",
+                            "Pending",
+                            "Failed",
+                            "Terminating"
+                        ]
                     },
-                    "Zone": {
-                        "type": "string"
+                    "zone": {
+                        "type": "string",
+                        "description": "Zone where the pod is located based on its assigned node"
                     }
                 }
             },
-            "CriticalServicesStatusResponse": {
+            "CriticalServicesStatusListSchema": {
                 "type": "object",
+                "description": "Status overview of all critical services organized by namespace, showing their operational state and distribution",
+                "required": [
+                    "critical_services"
+                ],
                 "properties": {
                     "critical_services": {
                         "type": "object",
+                        "description": "Critical services grouped by namespace with their status information",
+                        "required": [
+                            "namespace"
+                        ],
                         "properties": {
                             "namespace": {
                                 "type": "object",
+                                "description": "Mapping of namespace names to their contained critical services with status",
                                 "additionalProperties": {
                                     "type": "array",
                                     "items": {
@@ -1226,12 +1188,20 @@
             },
             "CriticalServiceStatusItemSchema": {
                 "type": "object",
+                "description": "Status summary for a critical service showing its operational state and distribution across zones",
+                "required": [
+                    "name",
+                    "type",
+                    "status",
+                    "balanced"
+                ],
                 "properties": {
                     "name": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Name of the critical service"
                     },
                     "type": {
-                        "type": "string"
+                        "$ref": "#/components/schemas/ServiceType"
                     },
                     "status": {
                         "$ref": "#/components/schemas/ServiceStatus"
@@ -1241,14 +1211,30 @@
                     }
                 }
             },
+            "VersionSchema": {
+                "type": "object",
+                "required": [
+                    "version"
+                ],
+                "description": "Version information for the Rack Resiliency Service",
+                "properties": {
+                    "version": {
+                        "type": "string",
+                        "description": "The current version of the RRS Service",
+                        "example": "1.0.0"
+                    }
+                }
+            },
             "ErrorDict": {
                 "type": "object",
                 "required": [
                     "error"
                 ],
+                "description": "Error response containing details about what went wrong",
                 "properties": {
                     "error": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Human-readable error message describing the failure"
                     }
                 }
             },
@@ -1257,15 +1243,17 @@
                 "required": [
                     "Information"
                 ],
+                "description": "Informational response providing context about the request or system state",
                 "properties": {
                     "Information": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Human-readable informational message"
                     }
                 }
             },
             "EmptyDict": {
                 "type": "object",
-                "description": "Empty object returned by health check endpoints",
+                "description": "Empty response object typically returned by health check endpoints to indicate successful operation",
                 "additionalProperties": false
             }
         },
