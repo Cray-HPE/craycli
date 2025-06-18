@@ -1111,6 +1111,7 @@
                             "currently_running_instances": {
                                 "type": "integer",
                                 "minimum": 0,
+                                "nullable": true,
                                 "description": "Number of instances currently running and healthy"
                             },
                             "pods": {
@@ -1225,29 +1226,37 @@
                     }
                 }
             },
-            "ErrorDict": {
+            "ProblemDetails": {
+                "description": "An error response for RFC 7807 problem details.",
                 "type": "object",
-                "required": [
-                    "error"
-                ],
-                "description": "Error response containing details about what went wrong",
                 "properties": {
-                    "error": {
-                        "type": "string",
-                        "description": "Human-readable error message describing the failure"
-                    }
-                }
-            },
-            "InformationDict": {
-                "type": "object",
-                "required": [
-                    "Information"
-                ],
-                "description": "Informational response providing context about the request or system state",
-                "properties": {
-                    "Information": {
-                        "type": "string",
-                        "description": "Human-readable informational message"
+                    "detail": {
+                        "description": "A human-readable explanation specific to this occurrence of the problem. Focus on helping correct the problem, rather than giving debugging information.",
+                        "type": "string"
+                    },
+                    "errors": {
+                        "description": "An object denoting field-specific errors. Only present on error responses when field input is specified for the request.",
+                        "type": "object"
+                    },
+                    "instance": {
+                        "description": "A relative URI reference that identifies the specific occurrence of the problem",
+                        "format": "uri",
+                        "type": "string"
+                    },
+                    "status": {
+                        "description": "HTTP status code",
+                        "example": 400,
+                        "type": "integer"
+                    },
+                    "title": {
+                        "description": "Short, human-readable summary of the problem, should not change by occurrence.",
+                        "type": "string"
+                    },
+                    "type": {
+                        "default": "about:blank",
+                        "description": "Relative URI reference to the type of problem which includes human-readable documentation.",
+                        "format": "uri",
+                        "type": "string"
                     }
                 }
             },
@@ -1263,7 +1272,7 @@
                 "content": {
                     "application/json": {
                         "schema": {
-                            "$ref": "#/components/schemas/ErrorDict"
+                            "$ref": "#/components/schemas/ProblemDetails"
                         }
                     }
                 }
@@ -1273,14 +1282,7 @@
                 "content": {
                     "application/json": {
                         "schema": {
-                            "oneOf": [
-                                {
-                                    "$ref": "#/components/schemas/ErrorDict"
-                                },
-                                {
-                                    "$ref": "#/components/schemas/InformationDict"
-                                }
-                            ]
+                            "$ref": "#/components/schemas/ProblemDetails"
                         }
                     }
                 }
@@ -1290,7 +1292,7 @@
                 "content": {
                     "application/json": {
                         "schema": {
-                            "$ref": "#/components/schemas/ErrorDict"
+                            "$ref": "#/components/schemas/ProblemDetails"
                         }
                     }
                 }
