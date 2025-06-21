@@ -23,56 +23,97 @@
 #
 """rrs"""
 # pylint: disable=invalid-name
-from typing import Callable, Optional, Any
-import click
+import json
+from typing import Callable, Any, Dict
+
+from cray.constants import FROM_FILE_TAG
+from cray.core import option
+from cray.generator import _opt_callback
 from cray.generator import generate
 
 # Generates a Click CLI from the current file
 cli = generate(__file__)
 
 
-def _file_cb(
-    cb: Optional[Callable[[click.Context, click.Parameter, str], Any]],
-) -> Callable[[click.Context, click.Parameter, click.File], Any]:
+def create_templates_critical_services(func: Callable) -> Callable:
     """
-    Creates a callback wrapper for file parameters.
+    Creates a callback wrapper that handles file-based critical services configuration.
 
-    This function wraps an existing callback to handle file objects.
-    It reads the file content and passes the string data to the original callback.
+    This function wraps the original command callback to intercept the --from-file parameter,
+    read JSON data from the specified file, and pass it as a payload to the API call.
 
     Args:
-        cb: Optional original callback function that would process string data
+        func: The original command callback function to be wrapped
 
     Returns:
-        A new callback function that accepts a file object
+        A decorated function that handles file input for critical services configuration
     """
 
-    def _cb(ctx: click.Context, param: click.Parameter, value: click.File) -> Any:
+    def _decorator(from_file: Dict[str, Any], **kwargs: Dict[str, Any]) -> Any:
         """
-        File parameter callback that reads file content and passes it to the original callback.
+        Decorator function that processes the --from-file parameter.
+
+        If no file is specified, it calls the original function unchanged.
+        If a file is specified, it reads the JSON content and passes it as payload.
 
         Args:
-            ctx: Click context
-            param: Click parameter
-            value: File object opened by Click
+            from_file: Dictionary containing the file path value from --from-file option
+            **kwargs: Additional keyword arguments passed to the original function
 
         Returns:
-            Result of the original callback or the file contents if no callback exists
+            Result of the original function call
         """
-        data = value.read()
-        if cb:
-            return cb(ctx, param, data)
-        return data
+        # If no file specified, proceed with normal operation
+        if not from_file.get("value"):
+            return func(**kwargs)
 
-    return _cb
+        # Read and parse JSON data from the specified file
+        with open(from_file["value"], "r", encoding="utf-8") as f:
+            data = json.loads(f.read())
+        payload = data
+        # Hack to tell the CLI we are passing our own payload; don't generate
+        kwargs[FROM_FILE_TAG] = {"value": payload, "name": FROM_FILE_TAG}
+        return func(**kwargs)
+
+    return _decorator
 
 
-# Find the 'from_file' parameter in the 'criticalservices update' command
-# and modify it to accept a file path and process the file content
-for p in cli.commands["criticalservices"].commands["update"].params:
-    if getattr(p, "payload_name", None) == "from_file":
-        # Change parameter type to accept a file path
-        p.type = click.File(mode="r")
-        # Set up callback to read the file and pass its contents to the original handler
-        p.callback = _file_cb(p.callback)
-        break
+def setup_critical_services_from_file(command: Any) -> None:
+    """
+    Adds a --from-file parameter to a command for JSON file input.
+
+    This function modifies an existing CLI command by:
+    1. Adding a --from-file option that accepts a file path
+    2. Reordering parameters to place the new option first
+    3. Filtering out deprecated parameters
+    4. Wrapping the original callback with file handling logic
+
+    Args:
+        command: The CLI command object to be modified
+    """
+    # Add the --from-file option to the command
+    option(
+        "--from-file",
+        callback=_opt_callback,
+        type=str,
+        default="",
+        metavar="TEXT",
+        help="A file containing the JSON for critical services configuration",
+    )(command)
+
+    # Reorder parameters: put the new --from-file parameter first,
+    # followed by non-deprecated existing parameters
+    params = [command.params[-1]]  # The newly added --from-file parameter
+    for param in command.params[:-1]:
+        # Only include parameters that are not marked as deprecated
+        if not getattr(param, "help", None) or "DEPRECATED" not in param.help:
+            params.append(param)
+    command.params = params
+
+    # Wrap the original callback with file handling functionality
+    command.callback = create_templates_critical_services(command.callback)
+
+
+# Apply the file-based configuration setup to the criticalservices update command
+# This enables users to use: cray rrs criticalservices update --from-file <json_file>
+setup_critical_services_from_file(cli.commands["criticalservices"].commands["update"])
