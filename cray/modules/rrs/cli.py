@@ -31,10 +31,8 @@ from cray.core import option
 from cray.generator import _opt_callback
 from cray.generator import generate
 
-SWAGGER_OPTS = {}
-
 # Generates a Click CLI from the current file
-cli = generate(__file__, swagger_opts=SWAGGER_OPTS)
+cli = generate(__file__)
 
 
 def create_templates_critical_services(func: Callable) -> Callable:

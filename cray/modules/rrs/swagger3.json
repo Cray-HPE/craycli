@@ -48,7 +48,68 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ZonesResponse"
+                                    "type": "object",
+                                    "required": [
+                                        "Zones"
+                                    ],
+                                    "description": "Response containing all configured zones in the system with their associated node configurations",
+                                    "properties": {
+                                        "Zones": {
+                                            "type": "array",
+                                            "description": "Array of zone configurations showing Kubernetes topology and CEPH zone details",
+                                            "items": {
+                                                "type": "object",
+                                                "required": [
+                                                    "Zone_Name"
+                                                ],
+                                                "description": "Configuration details for a single zone including Kubernetes topology and CEPH zone information",
+                                                "properties": {
+                                                    "Zone_Name": {
+                                                        "type": "string",
+                                                        "description": "Unique identifier name for the zone",
+                                                        "minLength": 1,
+                                                        "maxLength": 1000
+                                                    },
+                                                    "Kubernetes_Topology_Zone": {
+                                                        "type": "object",
+                                                        "description": "Kubernetes topology zone configuration containing master and worker node assignments",
+                                                        "properties": {
+                                                            "Management_Master_Nodes": {
+                                                                "type": "array",
+                                                                "description": "List of Kubernetes master node names assigned to this zone",
+                                                                "items": {
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            "Management_Worker_Nodes": {
+                                                                "type": "array",
+                                                                "description": "List of Kubernetes worker node names assigned to this zone",
+                                                                "items": {
+                                                                    "type": "string"
+                                                                }
+                                                            }
+                                                        }
+                                                    },
+                                                    "CEPH_Zone": {
+                                                        "type": "object",
+                                                        "required": [
+                                                            "Management_Storage_Nodes"
+                                                        ],
+                                                        "description": "CEPH zone configuration containing storage node assignments",
+                                                        "properties": {
+                                                            "Management_Storage_Nodes": {
+                                                                "type": "array",
+                                                                "description": "List of CEPH storage node names assigned to this zone",
+                                                                "items": {
+                                                                    "type": "string"
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
                                 },
                                 "examples": {
                                     "aggregated": {
@@ -114,10 +175,90 @@
                         }
                     },
                     "404": {
-                        "$ref": "#/components/responses/NotFound"
+                        "description": "Not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "description": "An error response for RFC 7807 problem details.",
+                                    "type": "object",
+                                    "properties": {
+                                        "detail": {
+                                            "description": "A human-readable explanation specific to this occurrence of the problem. Focus on helping correct the problem, rather than giving debugging information.",
+                                            "type": "string"
+                                        },
+                                        "errors": {
+                                            "description": "An object denoting field-specific errors. Only present on error responses when field input is specified for the request.",
+                                            "type": "object"
+                                        },
+                                        "instance": {
+                                            "description": "A relative URI reference that identifies the specific occurrence of the problem",
+                                            "format": "uri",
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "description": "HTTP status code",
+                                            "examples": [
+                                                400
+                                            ],
+                                            "type": "integer"
+                                        },
+                                        "title": {
+                                            "description": "Short, human-readable summary of the problem, should not change by occurrence.",
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "default": "about:blank",
+                                            "description": "Relative URI reference to the type of problem which includes human-readable documentation.",
+                                            "format": "uri",
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     },
                     "500": {
-                        "$ref": "#/components/responses/InternalServerError"
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "description": "An error response for RFC 7807 problem details.",
+                                    "type": "object",
+                                    "properties": {
+                                        "detail": {
+                                            "description": "A human-readable explanation specific to this occurrence of the problem. Focus on helping correct the problem, rather than giving debugging information.",
+                                            "type": "string"
+                                        },
+                                        "errors": {
+                                            "description": "An object denoting field-specific errors. Only present on error responses when field input is specified for the request.",
+                                            "type": "object"
+                                        },
+                                        "instance": {
+                                            "description": "A relative URI reference that identifies the specific occurrence of the problem",
+                                            "format": "uri",
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "description": "HTTP status code",
+                                            "examples": [
+                                                400
+                                            ],
+                                            "type": "integer"
+                                        },
+                                        "title": {
+                                            "description": "Short, human-readable summary of the problem, should not change by occurrence.",
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "default": "about:blank",
+                                            "description": "Relative URI reference to the type of problem which includes human-readable documentation.",
+                                            "format": "uri",
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -137,7 +278,10 @@
                         "required": true,
                         "description": "The name of the zone",
                         "schema": {
-                            "$ref": "#/components/schemas/ZoneName"
+                            "type": "string",
+                            "description": "Unique identifier name for the zone",
+                            "minLength": 1,
+                            "maxLength": 1000
                         }
                     }
                 ],
@@ -147,7 +291,189 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ZoneDetailResponse"
+                                    "type": "object",
+                                    "required": [
+                                        "Zone_Name"
+                                    ],
+                                    "description": "Detailed information about a specific zone including node counts, types, and individual node status",
+                                    "properties": {
+                                        "Zone_Name": {
+                                            "type": "string",
+                                            "description": "Unique identifier name for the zone",
+                                            "minLength": 1,
+                                            "maxLength": 1000
+                                        },
+                                        "Management_Master": {
+                                            "type": "object",
+                                            "required": [
+                                                "Count",
+                                                "Type",
+                                                "Nodes"
+                                            ],
+                                            "description": "Management information for Kubernetes nodes (master or worker) including count and individual node details",
+                                            "properties": {
+                                                "Count": {
+                                                    "type": "integer",
+                                                    "minimum": 1,
+                                                    "description": "Total number of nodes of this type in the zone"
+                                                },
+                                                "Type": {
+                                                    "type": "string",
+                                                    "description": "Type classification indicating this is a Kubernetes topology zone",
+                                                    "enum": [
+                                                        "Kubernetes_Topology_Zone"
+                                                    ]
+                                                },
+                                                "Nodes": {
+                                                    "type": "array",
+                                                    "description": "Detailed information about each individual node",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "required": [
+                                                            "name",
+                                                            "status"
+                                                        ],
+                                                        "description": "Basic node information including name and operational status",
+                                                        "properties": {
+                                                            "name": {
+                                                                "type": "string",
+                                                                "description": "Unique name identifier for the node"
+                                                            },
+                                                            "status": {
+                                                                "type": "string",
+                                                                "description": "Current operational status of the node",
+                                                                "enum": [
+                                                                    "Ready",
+                                                                    "NotReady",
+                                                                    "Unknown"
+                                                                ]
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        "Management_Worker": {
+                                            "type": "object",
+                                            "required": [
+                                                "Count",
+                                                "Type",
+                                                "Nodes"
+                                            ],
+                                            "description": "Management information for Kubernetes nodes (master or worker) including count and individual node details",
+                                            "properties": {
+                                                "Count": {
+                                                    "type": "integer",
+                                                    "minimum": 1,
+                                                    "description": "Total number of nodes of this type in the zone"
+                                                },
+                                                "Type": {
+                                                    "type": "string",
+                                                    "description": "Type classification indicating this is a Kubernetes topology zone",
+                                                    "enum": [
+                                                        "Kubernetes_Topology_Zone"
+                                                    ]
+                                                },
+                                                "Nodes": {
+                                                    "type": "array",
+                                                    "description": "Detailed information about each individual node",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "required": [
+                                                            "name",
+                                                            "status"
+                                                        ],
+                                                        "description": "Basic node information including name and operational status",
+                                                        "properties": {
+                                                            "name": {
+                                                                "type": "string",
+                                                                "description": "Unique name identifier for the node"
+                                                            },
+                                                            "status": {
+                                                                "type": "string",
+                                                                "description": "Current operational status of the node",
+                                                                "enum": [
+                                                                    "Ready",
+                                                                    "NotReady",
+                                                                    "Unknown"
+                                                                ]
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        "Management_Storage": {
+                                            "type": "object",
+                                            "required": [
+                                                "Count",
+                                                "Type",
+                                                "Nodes"
+                                            ],
+                                            "description": "Management information for CEPH storage nodes including count and individual node details with OSD information",
+                                            "properties": {
+                                                "Count": {
+                                                    "type": "integer",
+                                                    "minimum": 1,
+                                                    "description": "Total number of storage nodes in the zone"
+                                                },
+                                                "Type": {
+                                                    "type": "string",
+                                                    "description": "Type classification indicating this is a CEPH zone",
+                                                    "enum": [
+                                                        "CEPH_Zone"
+                                                    ]
+                                                },
+                                                "Nodes": {
+                                                    "type": "array",
+                                                    "description": "Detailed information about each storage node including OSD status",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "required": [
+                                                            "name",
+                                                            "status",
+                                                            "osds"
+                                                        ],
+                                                        "description": "Storage node information including CEPH OSD (Object Storage Daemon) status details",
+                                                        "properties": {
+                                                            "name": {
+                                                                "type": "string",
+                                                                "description": "Unique name identifier for the storage node"
+                                                            },
+                                                            "status": {
+                                                                "type": "string",
+                                                                "description": "Current operational status of the storage node",
+                                                                "enum": [
+                                                                    "Ready",
+                                                                    "NotReady"
+                                                                ]
+                                                            },
+                                                            "osds": {
+                                                                "type": "object",
+                                                                "description": "Object Storage Daemon status information showing which OSDs are operational and non-operational",
+                                                                "properties": {
+                                                                    "up": {
+                                                                        "type": "array",
+                                                                        "description": "List of OSD identifiers that are currently operational",
+                                                                        "items": {
+                                                                            "type": "string"
+                                                                        }
+                                                                    },
+                                                                    "down": {
+                                                                        "type": "array",
+                                                                        "description": "List of OSD identifiers that are currently non-operational",
+                                                                        "items": {
+                                                                            "type": "string"
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
                                 },
                                 "examples": {
                                     "zoneDetail": {
@@ -216,13 +542,133 @@
                         }
                     },
                     "400": {
-                        "$ref": "#/components/responses/BadRequest"
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "description": "An error response for RFC 7807 problem details.",
+                                    "type": "object",
+                                    "properties": {
+                                        "detail": {
+                                            "description": "A human-readable explanation specific to this occurrence of the problem. Focus on helping correct the problem, rather than giving debugging information.",
+                                            "type": "string"
+                                        },
+                                        "errors": {
+                                            "description": "An object denoting field-specific errors. Only present on error responses when field input is specified for the request.",
+                                            "type": "object"
+                                        },
+                                        "instance": {
+                                            "description": "A relative URI reference that identifies the specific occurrence of the problem",
+                                            "format": "uri",
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "description": "HTTP status code",
+                                            "examples": [
+                                                400
+                                            ],
+                                            "type": "integer"
+                                        },
+                                        "title": {
+                                            "description": "Short, human-readable summary of the problem, should not change by occurrence.",
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "default": "about:blank",
+                                            "description": "Relative URI reference to the type of problem which includes human-readable documentation.",
+                                            "format": "uri",
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     },
                     "404": {
-                        "$ref": "#/components/responses/NotFound"
+                        "description": "Not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "description": "An error response for RFC 7807 problem details.",
+                                    "type": "object",
+                                    "properties": {
+                                        "detail": {
+                                            "description": "A human-readable explanation specific to this occurrence of the problem. Focus on helping correct the problem, rather than giving debugging information.",
+                                            "type": "string"
+                                        },
+                                        "errors": {
+                                            "description": "An object denoting field-specific errors. Only present on error responses when field input is specified for the request.",
+                                            "type": "object"
+                                        },
+                                        "instance": {
+                                            "description": "A relative URI reference that identifies the specific occurrence of the problem",
+                                            "format": "uri",
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "description": "HTTP status code",
+                                            "examples": [
+                                                400
+                                            ],
+                                            "type": "integer"
+                                        },
+                                        "title": {
+                                            "description": "Short, human-readable summary of the problem, should not change by occurrence.",
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "default": "about:blank",
+                                            "description": "Relative URI reference to the type of problem which includes human-readable documentation.",
+                                            "format": "uri",
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     },
                     "500": {
-                        "$ref": "#/components/responses/InternalServerError"
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "description": "An error response for RFC 7807 problem details.",
+                                    "type": "object",
+                                    "properties": {
+                                        "detail": {
+                                            "description": "A human-readable explanation specific to this occurrence of the problem. Focus on helping correct the problem, rather than giving debugging information.",
+                                            "type": "string"
+                                        },
+                                        "errors": {
+                                            "description": "An object denoting field-specific errors. Only present on error responses when field input is specified for the request.",
+                                            "type": "object"
+                                        },
+                                        "instance": {
+                                            "description": "A relative URI reference that identifies the specific occurrence of the problem",
+                                            "format": "uri",
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "description": "HTTP status code",
+                                            "examples": [
+                                                400
+                                            ],
+                                            "type": "integer"
+                                        },
+                                        "title": {
+                                            "description": "Short, human-readable summary of the problem, should not change by occurrence.",
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "default": "about:blank",
+                                            "description": "Relative URI reference to the type of problem which includes human-readable documentation.",
+                                            "format": "uri",
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -241,7 +687,67 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/CriticalServicesListSchema"
+                                    "type": "object",
+                                    "required": [
+                                        "critical_services"
+                                    ],
+                                    "description": "Response containing all critical services organized by namespace",
+                                    "properties": {
+                                        "critical_services": {
+                                            "type": "object",
+                                            "required": [
+                                                "namespace"
+                                            ],
+                                            "description": "Critical services grouped by their Kubernetes namespaces",
+                                            "properties": {
+                                                "namespace": {
+                                                    "type": "object",
+                                                    "description": "Mapping of namespace names to their contained critical services",
+                                                    "additionalProperties": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "object",
+                                                            "required": [
+                                                                "name",
+                                                                "type"
+                                                            ],
+                                                            "description": "Basic information about a critical service including its name and Kubernetes resource type",
+                                                            "properties": {
+                                                                "name": {
+                                                                    "type": "string",
+                                                                    "description": "Name of the critical service",
+                                                                    "examples": [
+                                                                        "cray-dns-powerdns",
+                                                                        "cray-keycloak"
+                                                                    ],
+                                                                    "maxLength": 253,
+                                                                    "minLength": 1
+                                                                },
+                                                                "type": {
+                                                                    "type": "string",
+                                                                    "description": "Kubernetes resource type of the service",
+                                                                    "enum": [
+                                                                        "Deployment",
+                                                                        "StatefulSet"
+                                                                    ]
+                                                                }
+                                                            }
+                                                        }
+                                                    },
+                                                    "propertyNames": {
+                                                        "type": "string",
+                                                        "description": "Kubernetes namespace name where a service is deployed",
+                                                        "examples": [
+                                                            "rack-resiliency",
+                                                            "services"
+                                                        ],
+                                                        "minLength": 1,
+                                                        "maxLength": 63
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
                                 },
                                 "examples": {
                                     "criticalServices": {
@@ -291,10 +797,90 @@
                         }
                     },
                     "404": {
-                        "$ref": "#/components/responses/NotFound"
+                        "description": "Not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "description": "An error response for RFC 7807 problem details.",
+                                    "type": "object",
+                                    "properties": {
+                                        "detail": {
+                                            "description": "A human-readable explanation specific to this occurrence of the problem. Focus on helping correct the problem, rather than giving debugging information.",
+                                            "type": "string"
+                                        },
+                                        "errors": {
+                                            "description": "An object denoting field-specific errors. Only present on error responses when field input is specified for the request.",
+                                            "type": "object"
+                                        },
+                                        "instance": {
+                                            "description": "A relative URI reference that identifies the specific occurrence of the problem",
+                                            "format": "uri",
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "description": "HTTP status code",
+                                            "examples": [
+                                                400
+                                            ],
+                                            "type": "integer"
+                                        },
+                                        "title": {
+                                            "description": "Short, human-readable summary of the problem, should not change by occurrence.",
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "default": "about:blank",
+                                            "description": "Relative URI reference to the type of problem which includes human-readable documentation.",
+                                            "format": "uri",
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     },
                     "500": {
-                        "$ref": "#/components/responses/InternalServerError"
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "description": "An error response for RFC 7807 problem details.",
+                                    "type": "object",
+                                    "properties": {
+                                        "detail": {
+                                            "description": "A human-readable explanation specific to this occurrence of the problem. Focus on helping correct the problem, rather than giving debugging information.",
+                                            "type": "string"
+                                        },
+                                        "errors": {
+                                            "description": "An object denoting field-specific errors. Only present on error responses when field input is specified for the request.",
+                                            "type": "object"
+                                        },
+                                        "instance": {
+                                            "description": "A relative URI reference that identifies the specific occurrence of the problem",
+                                            "format": "uri",
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "description": "HTTP status code",
+                                            "examples": [
+                                                400
+                                            ],
+                                            "type": "integer"
+                                        },
+                                        "title": {
+                                            "description": "Short, human-readable summary of the problem, should not change by occurrence.",
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "default": "about:blank",
+                                            "description": "Relative URI reference to the type of problem which includes human-readable documentation.",
+                                            "format": "uri",
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             },
@@ -311,7 +897,58 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/CriticalServiceCmStaticType"
+                                "type": "object",
+                                "description": "Configuration payload for updating critical services in the system. Contains service definitions that need to be monitored for resiliency",
+                                "properties": {
+                                    "critical_services": {
+                                        "type": "object",
+                                        "description": "Mapping from service names to their configuration details for monitoring",
+                                        "additionalProperties": {
+                                            "type": "object",
+                                            "description": "Static configuration details for a critical service that needs to be monitored",
+                                            "properties": {
+                                                "namespace": {
+                                                    "type": "string",
+                                                    "description": "Kubernetes namespace name where a service is deployed",
+                                                    "examples": [
+                                                        "rack-resiliency",
+                                                        "services"
+                                                    ],
+                                                    "minLength": 1,
+                                                    "maxLength": 63
+                                                },
+                                                "type": {
+                                                    "type": "string",
+                                                    "description": "Kubernetes resource type of the service",
+                                                    "enum": [
+                                                        "Deployment",
+                                                        "StatefulSet"
+                                                    ]
+                                                }
+                                            },
+                                            "additionalProperties": false,
+                                            "required": [
+                                                "namespace",
+                                                "type"
+                                            ]
+                                        },
+                                        "maxProperties": 1000,
+                                        "propertyNames": {
+                                            "type": "string",
+                                            "description": "Kubernetes namespace name where a service is deployed",
+                                            "examples": [
+                                                "rack-resiliency",
+                                                "services"
+                                            ],
+                                            "minLength": 1,
+                                            "maxLength": 63
+                                        }
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "critical_services"
+                                ]
                             }
                         }
                     }
@@ -322,7 +959,55 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/CriticalServiceUpdateSchema"
+                                    "type": "object",
+                                    "required": [
+                                        "Update",
+                                        "Successfully_Added_Services",
+                                        "Already_Existing_Services"
+                                    ],
+                                    "description": "Response indicating the result of updating critical services configuration",
+                                    "properties": {
+                                        "Update": {
+                                            "type": "string",
+                                            "description": "Overall status of the update operation",
+                                            "enum": [
+                                                "Successful",
+                                                "Services Already Exist"
+                                            ],
+                                            "examples": [
+                                                "Successful",
+                                                "Services Already Exist"
+                                            ]
+                                        },
+                                        "Successfully_Added_Services": {
+                                            "type": "array",
+                                            "description": "List of service names that were successfully added to the configuration",
+                                            "items": {
+                                                "type": "string",
+                                                "description": "Name of the critical service",
+                                                "examples": [
+                                                    "cray-dns-powerdns",
+                                                    "cray-keycloak"
+                                                ],
+                                                "maxLength": 253,
+                                                "minLength": 1
+                                            }
+                                        },
+                                        "Already_Existing_Services": {
+                                            "type": "array",
+                                            "description": "List of service names that were already present in the configuration",
+                                            "items": {
+                                                "type": "string",
+                                                "description": "Name of the critical service",
+                                                "examples": [
+                                                    "cray-dns-powerdns",
+                                                    "cray-keycloak"
+                                                ],
+                                                "maxLength": 253,
+                                                "minLength": 1
+                                            }
+                                        }
+                                    }
                                 },
                                 "examples": {
                                     "patchResponse": {
@@ -343,13 +1028,133 @@
                         }
                     },
                     "400": {
-                        "$ref": "#/components/responses/BadRequest"
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "description": "An error response for RFC 7807 problem details.",
+                                    "type": "object",
+                                    "properties": {
+                                        "detail": {
+                                            "description": "A human-readable explanation specific to this occurrence of the problem. Focus on helping correct the problem, rather than giving debugging information.",
+                                            "type": "string"
+                                        },
+                                        "errors": {
+                                            "description": "An object denoting field-specific errors. Only present on error responses when field input is specified for the request.",
+                                            "type": "object"
+                                        },
+                                        "instance": {
+                                            "description": "A relative URI reference that identifies the specific occurrence of the problem",
+                                            "format": "uri",
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "description": "HTTP status code",
+                                            "examples": [
+                                                400
+                                            ],
+                                            "type": "integer"
+                                        },
+                                        "title": {
+                                            "description": "Short, human-readable summary of the problem, should not change by occurrence.",
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "default": "about:blank",
+                                            "description": "Relative URI reference to the type of problem which includes human-readable documentation.",
+                                            "format": "uri",
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     },
                     "404": {
-                        "$ref": "#/components/responses/NotFound"
+                        "description": "Not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "description": "An error response for RFC 7807 problem details.",
+                                    "type": "object",
+                                    "properties": {
+                                        "detail": {
+                                            "description": "A human-readable explanation specific to this occurrence of the problem. Focus on helping correct the problem, rather than giving debugging information.",
+                                            "type": "string"
+                                        },
+                                        "errors": {
+                                            "description": "An object denoting field-specific errors. Only present on error responses when field input is specified for the request.",
+                                            "type": "object"
+                                        },
+                                        "instance": {
+                                            "description": "A relative URI reference that identifies the specific occurrence of the problem",
+                                            "format": "uri",
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "description": "HTTP status code",
+                                            "examples": [
+                                                400
+                                            ],
+                                            "type": "integer"
+                                        },
+                                        "title": {
+                                            "description": "Short, human-readable summary of the problem, should not change by occurrence.",
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "default": "about:blank",
+                                            "description": "Relative URI reference to the type of problem which includes human-readable documentation.",
+                                            "format": "uri",
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     },
                     "500": {
-                        "$ref": "#/components/responses/InternalServerError"
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "description": "An error response for RFC 7807 problem details.",
+                                    "type": "object",
+                                    "properties": {
+                                        "detail": {
+                                            "description": "A human-readable explanation specific to this occurrence of the problem. Focus on helping correct the problem, rather than giving debugging information.",
+                                            "type": "string"
+                                        },
+                                        "errors": {
+                                            "description": "An object denoting field-specific errors. Only present on error responses when field input is specified for the request.",
+                                            "type": "object"
+                                        },
+                                        "instance": {
+                                            "description": "A relative URI reference that identifies the specific occurrence of the problem",
+                                            "format": "uri",
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "description": "HTTP status code",
+                                            "examples": [
+                                                400
+                                            ],
+                                            "type": "integer"
+                                        },
+                                        "title": {
+                                            "description": "Short, human-readable summary of the problem, should not change by occurrence.",
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "default": "about:blank",
+                                            "description": "Relative URI reference to the type of problem which includes human-readable documentation.",
+                                            "format": "uri",
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -364,7 +1169,20 @@
                 "operationId": "getCriticalServiceDetails",
                 "parameters": [
                     {
-                        "$ref": "#/components/parameters/ServiceNamePathParam"
+                        "name": "critical_service_name",
+                        "in": "path",
+                        "required": true,
+                        "description": "The name of the critical service",
+                        "schema": {
+                            "type": "string",
+                            "description": "Name of the critical service",
+                            "examples": [
+                                "cray-dns-powerdns",
+                                "cray-keycloak"
+                            ],
+                            "maxLength": 253,
+                            "minLength": 1
+                        }
                     }
                 ],
                 "responses": {
@@ -373,7 +1191,61 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/CriticalServiceDescribeSchema"
+                                    "type": "object",
+                                    "required": [
+                                        "critical_service"
+                                    ],
+                                    "description": "Summarized view of a critical service without runtime details",
+                                    "properties": {
+                                        "critical_service": {
+                                            "type": "object",
+                                            "required": [
+                                                "name",
+                                                "namespace",
+                                                "type",
+                                                "configured_instances"
+                                            ],
+                                            "description": "Basic configuration information about the critical service",
+                                            "properties": {
+                                                "name": {
+                                                    "type": "string",
+                                                    "description": "Name of the critical service",
+                                                    "examples": [
+                                                        "cray-dns-powerdns",
+                                                        "cray-keycloak"
+                                                    ],
+                                                    "maxLength": 253,
+                                                    "minLength": 1
+                                                },
+                                                "namespace": {
+                                                    "type": "string",
+                                                    "description": "Kubernetes namespace name where a service is deployed",
+                                                    "examples": [
+                                                        "rack-resiliency",
+                                                        "services"
+                                                    ],
+                                                    "minLength": 1,
+                                                    "maxLength": 63
+                                                },
+                                                "type": {
+                                                    "type": "string",
+                                                    "description": "Kubernetes resource type of the service",
+                                                    "enum": [
+                                                        "Deployment",
+                                                        "StatefulSet"
+                                                    ]
+                                                },
+                                                "configured_instances": {
+                                                    "types": [
+                                                        "integer",
+                                                        "null"
+                                                    ],
+                                                    "minimum": 1,
+                                                    "description": "Number of instances configured for this service (replicas for Deployments/StatefulSets)"
+                                                }
+                                            }
+                                        }
+                                    }
                                 },
                                 "examples": {
                                     "criticalServiceDetail": {
@@ -391,13 +1263,133 @@
                         }
                     },
                     "400": {
-                        "$ref": "#/components/responses/BadRequest"
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "description": "An error response for RFC 7807 problem details.",
+                                    "type": "object",
+                                    "properties": {
+                                        "detail": {
+                                            "description": "A human-readable explanation specific to this occurrence of the problem. Focus on helping correct the problem, rather than giving debugging information.",
+                                            "type": "string"
+                                        },
+                                        "errors": {
+                                            "description": "An object denoting field-specific errors. Only present on error responses when field input is specified for the request.",
+                                            "type": "object"
+                                        },
+                                        "instance": {
+                                            "description": "A relative URI reference that identifies the specific occurrence of the problem",
+                                            "format": "uri",
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "description": "HTTP status code",
+                                            "examples": [
+                                                400
+                                            ],
+                                            "type": "integer"
+                                        },
+                                        "title": {
+                                            "description": "Short, human-readable summary of the problem, should not change by occurrence.",
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "default": "about:blank",
+                                            "description": "Relative URI reference to the type of problem which includes human-readable documentation.",
+                                            "format": "uri",
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     },
                     "404": {
-                        "$ref": "#/components/responses/NotFound"
+                        "description": "Not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "description": "An error response for RFC 7807 problem details.",
+                                    "type": "object",
+                                    "properties": {
+                                        "detail": {
+                                            "description": "A human-readable explanation specific to this occurrence of the problem. Focus on helping correct the problem, rather than giving debugging information.",
+                                            "type": "string"
+                                        },
+                                        "errors": {
+                                            "description": "An object denoting field-specific errors. Only present on error responses when field input is specified for the request.",
+                                            "type": "object"
+                                        },
+                                        "instance": {
+                                            "description": "A relative URI reference that identifies the specific occurrence of the problem",
+                                            "format": "uri",
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "description": "HTTP status code",
+                                            "examples": [
+                                                400
+                                            ],
+                                            "type": "integer"
+                                        },
+                                        "title": {
+                                            "description": "Short, human-readable summary of the problem, should not change by occurrence.",
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "default": "about:blank",
+                                            "description": "Relative URI reference to the type of problem which includes human-readable documentation.",
+                                            "format": "uri",
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     },
                     "500": {
-                        "$ref": "#/components/responses/InternalServerError"
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "description": "An error response for RFC 7807 problem details.",
+                                    "type": "object",
+                                    "properties": {
+                                        "detail": {
+                                            "description": "A human-readable explanation specific to this occurrence of the problem. Focus on helping correct the problem, rather than giving debugging information.",
+                                            "type": "string"
+                                        },
+                                        "errors": {
+                                            "description": "An object denoting field-specific errors. Only present on error responses when field input is specified for the request.",
+                                            "type": "object"
+                                        },
+                                        "instance": {
+                                            "description": "A relative URI reference that identifies the specific occurrence of the problem",
+                                            "format": "uri",
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "description": "HTTP status code",
+                                            "examples": [
+                                                400
+                                            ],
+                                            "type": "integer"
+                                        },
+                                        "title": {
+                                            "description": "Short, human-readable summary of the problem, should not change by occurrence.",
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "default": "about:blank",
+                                            "description": "Relative URI reference to the type of problem which includes human-readable documentation.",
+                                            "format": "uri",
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -416,7 +1408,90 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/CriticalServicesStatusListSchema"
+                                    "type": "object",
+                                    "description": "Status overview of all critical services organized by namespace, showing their operational state and distribution",
+                                    "required": [
+                                        "critical_services"
+                                    ],
+                                    "properties": {
+                                        "critical_services": {
+                                            "type": "object",
+                                            "description": "Critical services grouped by namespace with their status information",
+                                            "required": [
+                                                "namespace"
+                                            ],
+                                            "properties": {
+                                                "namespace": {
+                                                    "type": "object",
+                                                    "description": "Mapping of namespace names to their contained critical services with status",
+                                                    "additionalProperties": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "object",
+                                                            "description": "Status summary for a critical service showing its operational state and distribution across zones",
+                                                            "required": [
+                                                                "name",
+                                                                "type",
+                                                                "status",
+                                                                "balanced"
+                                                            ],
+                                                            "properties": {
+                                                                "name": {
+                                                                    "type": "string",
+                                                                    "description": "Name of the critical service",
+                                                                    "examples": [
+                                                                        "cray-dns-powerdns",
+                                                                        "cray-keycloak"
+                                                                    ],
+                                                                    "maxLength": 253,
+                                                                    "minLength": 1
+                                                                },
+                                                                "type": {
+                                                                    "type": "string",
+                                                                    "description": "Kubernetes resource type of the service",
+                                                                    "enum": [
+                                                                        "Deployment",
+                                                                        "StatefulSet"
+                                                                    ]
+                                                                },
+                                                                "status": {
+                                                                    "type": "string",
+                                                                    "description": "Current operational status of a critical service indicating its configuration and runtime state",
+                                                                    "enum": [
+                                                                        "error",
+                                                                        "Configured",
+                                                                        "PartiallyConfigured",
+                                                                        "NotConfigured",
+                                                                        "Running",
+                                                                        "Unconfigured"
+                                                                    ]
+                                                                },
+                                                                "balanced": {
+                                                                    "type": "string",
+                                                                    "description": "Indicates whether a service is properly distributed across zones for high availability",
+                                                                    "enum": [
+                                                                        "true",
+                                                                        "false",
+                                                                        "NA"
+                                                                    ]
+                                                                }
+                                                            }
+                                                        }
+                                                    },
+                                                    "propertyNames": {
+                                                        "type": "string",
+                                                        "description": "Kubernetes namespace name where a service is deployed",
+                                                        "examples": [
+                                                            "rack-resiliency",
+                                                            "services"
+                                                        ],
+                                                        "minLength": 1,
+                                                        "maxLength": 63
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
                                 },
                                 "examples": {
                                     "criticalServicesStatusExample": {
@@ -488,10 +1563,90 @@
                         }
                     },
                     "404": {
-                        "$ref": "#/components/responses/NotFound"
+                        "description": "Not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "description": "An error response for RFC 7807 problem details.",
+                                    "type": "object",
+                                    "properties": {
+                                        "detail": {
+                                            "description": "A human-readable explanation specific to this occurrence of the problem. Focus on helping correct the problem, rather than giving debugging information.",
+                                            "type": "string"
+                                        },
+                                        "errors": {
+                                            "description": "An object denoting field-specific errors. Only present on error responses when field input is specified for the request.",
+                                            "type": "object"
+                                        },
+                                        "instance": {
+                                            "description": "A relative URI reference that identifies the specific occurrence of the problem",
+                                            "format": "uri",
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "description": "HTTP status code",
+                                            "examples": [
+                                                400
+                                            ],
+                                            "type": "integer"
+                                        },
+                                        "title": {
+                                            "description": "Short, human-readable summary of the problem, should not change by occurrence.",
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "default": "about:blank",
+                                            "description": "Relative URI reference to the type of problem which includes human-readable documentation.",
+                                            "format": "uri",
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     },
                     "500": {
-                        "$ref": "#/components/responses/InternalServerError"
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "description": "An error response for RFC 7807 problem details.",
+                                    "type": "object",
+                                    "properties": {
+                                        "detail": {
+                                            "description": "A human-readable explanation specific to this occurrence of the problem. Focus on helping correct the problem, rather than giving debugging information.",
+                                            "type": "string"
+                                        },
+                                        "errors": {
+                                            "description": "An object denoting field-specific errors. Only present on error responses when field input is specified for the request.",
+                                            "type": "object"
+                                        },
+                                        "instance": {
+                                            "description": "A relative URI reference that identifies the specific occurrence of the problem",
+                                            "format": "uri",
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "description": "HTTP status code",
+                                            "examples": [
+                                                400
+                                            ],
+                                            "type": "integer"
+                                        },
+                                        "title": {
+                                            "description": "Short, human-readable summary of the problem, should not change by occurrence.",
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "default": "about:blank",
+                                            "description": "Relative URI reference to the type of problem which includes human-readable documentation.",
+                                            "format": "uri",
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -506,7 +1661,20 @@
                 "operationId": "getCriticalServiceStatus",
                 "parameters": [
                     {
-                        "$ref": "#/components/parameters/ServiceNamePathParam"
+                        "name": "critical_service_name",
+                        "in": "path",
+                        "required": true,
+                        "description": "The name of the critical service",
+                        "schema": {
+                            "type": "string",
+                            "description": "Name of the critical service",
+                            "examples": [
+                                "cray-dns-powerdns",
+                                "cray-keycloak"
+                            ],
+                            "maxLength": 253,
+                            "minLength": 1
+                        }
                     }
                 ],
                 "responses": {
@@ -515,7 +1683,132 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/CriticalServiceStatusDescribeSchema"
+                                    "type": "object",
+                                    "required": [
+                                        "critical_service"
+                                    ],
+                                    "description": "Detailed status information for a critical service including runtime details and pod information",
+                                    "properties": {
+                                        "critical_service": {
+                                            "type": "object",
+                                            "required": [
+                                                "name",
+                                                "namespace",
+                                                "type",
+                                                "status",
+                                                "balanced",
+                                                "configured_instances",
+                                                "currently_running_instances",
+                                                "pods"
+                                            ],
+                                            "description": "Complete status information including configuration and runtime details",
+                                            "properties": {
+                                                "name": {
+                                                    "type": "string",
+                                                    "description": "Name of the critical service",
+                                                    "examples": [
+                                                        "cray-dns-powerdns",
+                                                        "cray-keycloak"
+                                                    ],
+                                                    "maxLength": 253,
+                                                    "minLength": 1
+                                                },
+                                                "namespace": {
+                                                    "type": "string",
+                                                    "description": "Kubernetes namespace name where a service is deployed",
+                                                    "examples": [
+                                                        "rack-resiliency",
+                                                        "services"
+                                                    ],
+                                                    "minLength": 1,
+                                                    "maxLength": 63
+                                                },
+                                                "type": {
+                                                    "type": "string",
+                                                    "description": "Kubernetes resource type of the service",
+                                                    "enum": [
+                                                        "Deployment",
+                                                        "StatefulSet"
+                                                    ]
+                                                },
+                                                "status": {
+                                                    "type": "string",
+                                                    "description": "Current operational status of a critical service indicating its configuration and runtime state",
+                                                    "enum": [
+                                                        "error",
+                                                        "Configured",
+                                                        "PartiallyConfigured",
+                                                        "NotConfigured",
+                                                        "Running",
+                                                        "Unconfigured"
+                                                    ]
+                                                },
+                                                "balanced": {
+                                                    "type": "string",
+                                                    "description": "Indicates whether a service is properly distributed across zones for high availability",
+                                                    "enum": [
+                                                        "true",
+                                                        "false",
+                                                        "NA"
+                                                    ]
+                                                },
+                                                "configured_instances": {
+                                                    "types": [
+                                                        "integer",
+                                                        "null"
+                                                    ],
+                                                    "minimum": 1,
+                                                    "description": "Number of instances configured for this service"
+                                                },
+                                                "currently_running_instances": {
+                                                    "types": [
+                                                        "integer",
+                                                        "null"
+                                                    ],
+                                                    "minimum": 0,
+                                                    "description": "Number of instances currently running and healthy"
+                                                },
+                                                "pods": {
+                                                    "type": "array",
+                                                    "description": "Detailed information about each pod instance of this service",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "required": [
+                                                            "name",
+                                                            "node",
+                                                            "status",
+                                                            "zone"
+                                                        ],
+                                                        "description": "Information about an individual pod instance including its location and status",
+                                                        "properties": {
+                                                            "name": {
+                                                                "type": "string",
+                                                                "description": "Unique name of the pod instance"
+                                                            },
+                                                            "node": {
+                                                                "type": "string",
+                                                                "description": "Kubernetes node where the pod is scheduled to run"
+                                                            },
+                                                            "status": {
+                                                                "type": "string",
+                                                                "description": "Current operational status of the pod",
+                                                                "enum": [
+                                                                    "Running",
+                                                                    "Pending",
+                                                                    "Failed",
+                                                                    "Terminating"
+                                                                ]
+                                                            },
+                                                            "zone": {
+                                                                "type": "string",
+                                                                "description": "Zone where the pod is located based on its assigned node"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
                                 },
                                 "examples": {
                                     "criticalServiceStatusExample": {
@@ -556,13 +1849,133 @@
                         }
                     },
                     "400": {
-                        "$ref": "#/components/responses/BadRequest"
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "description": "An error response for RFC 7807 problem details.",
+                                    "type": "object",
+                                    "properties": {
+                                        "detail": {
+                                            "description": "A human-readable explanation specific to this occurrence of the problem. Focus on helping correct the problem, rather than giving debugging information.",
+                                            "type": "string"
+                                        },
+                                        "errors": {
+                                            "description": "An object denoting field-specific errors. Only present on error responses when field input is specified for the request.",
+                                            "type": "object"
+                                        },
+                                        "instance": {
+                                            "description": "A relative URI reference that identifies the specific occurrence of the problem",
+                                            "format": "uri",
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "description": "HTTP status code",
+                                            "examples": [
+                                                400
+                                            ],
+                                            "type": "integer"
+                                        },
+                                        "title": {
+                                            "description": "Short, human-readable summary of the problem, should not change by occurrence.",
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "default": "about:blank",
+                                            "description": "Relative URI reference to the type of problem which includes human-readable documentation.",
+                                            "format": "uri",
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     },
                     "404": {
-                        "$ref": "#/components/responses/NotFound"
+                        "description": "Not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "description": "An error response for RFC 7807 problem details.",
+                                    "type": "object",
+                                    "properties": {
+                                        "detail": {
+                                            "description": "A human-readable explanation specific to this occurrence of the problem. Focus on helping correct the problem, rather than giving debugging information.",
+                                            "type": "string"
+                                        },
+                                        "errors": {
+                                            "description": "An object denoting field-specific errors. Only present on error responses when field input is specified for the request.",
+                                            "type": "object"
+                                        },
+                                        "instance": {
+                                            "description": "A relative URI reference that identifies the specific occurrence of the problem",
+                                            "format": "uri",
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "description": "HTTP status code",
+                                            "examples": [
+                                                400
+                                            ],
+                                            "type": "integer"
+                                        },
+                                        "title": {
+                                            "description": "Short, human-readable summary of the problem, should not change by occurrence.",
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "default": "about:blank",
+                                            "description": "Relative URI reference to the type of problem which includes human-readable documentation.",
+                                            "format": "uri",
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     },
                     "500": {
-                        "$ref": "#/components/responses/InternalServerError"
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "description": "An error response for RFC 7807 problem details.",
+                                    "type": "object",
+                                    "properties": {
+                                        "detail": {
+                                            "description": "A human-readable explanation specific to this occurrence of the problem. Focus on helping correct the problem, rather than giving debugging information.",
+                                            "type": "string"
+                                        },
+                                        "errors": {
+                                            "description": "An object denoting field-specific errors. Only present on error responses when field input is specified for the request.",
+                                            "type": "object"
+                                        },
+                                        "instance": {
+                                            "description": "A relative URI reference that identifies the specific occurrence of the problem",
+                                            "format": "uri",
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "description": "HTTP status code",
+                                            "examples": [
+                                                400
+                                            ],
+                                            "type": "integer"
+                                        },
+                                        "title": {
+                                            "description": "Short, human-readable summary of the problem, should not change by occurrence.",
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "default": "about:blank",
+                                            "description": "Relative URI reference to the type of problem which includes human-readable documentation.",
+                                            "format": "uri",
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -582,7 +1995,9 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/EmptyDict"
+                                    "type": "object",
+                                    "description": "Empty response object typically returned by health check endpoints to indicate successful operation",
+                                    "additionalProperties": false
                                 }
                             }
                         }
@@ -592,7 +2007,9 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/EmptyDict"
+                                    "type": "object",
+                                    "description": "Empty response object typically returned by health check endpoints to indicate successful operation",
+                                    "additionalProperties": false
                                 }
                             }
                         }
@@ -615,7 +2032,9 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/EmptyDict"
+                                    "type": "object",
+                                    "description": "Empty response object typically returned by health check endpoints to indicate successful operation",
+                                    "additionalProperties": false
                                 }
                             }
                         }
@@ -625,7 +2044,9 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/EmptyDict"
+                                    "type": "object",
+                                    "description": "Empty response object typically returned by health check endpoints to indicate successful operation",
+                                    "additionalProperties": false
                                 }
                             }
                         }
@@ -648,13 +2069,66 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/VersionSchema"
+                                    "type": "object",
+                                    "required": [
+                                        "version"
+                                    ],
+                                    "description": "Version information for the Rack Resiliency Service",
+                                    "properties": {
+                                        "version": {
+                                            "type": "string",
+                                            "description": "The current version of the RRS Service",
+                                            "examples": [
+                                                "1.0.0"
+                                            ]
+                                        }
+                                    }
                                 }
                             }
                         }
                     },
                     "500": {
-                        "$ref": "#/components/responses/InternalServerError"
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "description": "An error response for RFC 7807 problem details.",
+                                    "type": "object",
+                                    "properties": {
+                                        "detail": {
+                                            "description": "A human-readable explanation specific to this occurrence of the problem. Focus on helping correct the problem, rather than giving debugging information.",
+                                            "type": "string"
+                                        },
+                                        "errors": {
+                                            "description": "An object denoting field-specific errors. Only present on error responses when field input is specified for the request.",
+                                            "type": "object"
+                                        },
+                                        "instance": {
+                                            "description": "A relative URI reference that identifies the specific occurrence of the problem",
+                                            "format": "uri",
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "description": "HTTP status code",
+                                            "examples": [
+                                                400
+                                            ],
+                                            "type": "integer"
+                                        },
+                                        "title": {
+                                            "description": "Short, human-readable summary of the problem, should not change by occurrence.",
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "default": "about:blank",
+                                            "description": "Relative URI reference to the type of problem which includes human-readable documentation.",
+                                            "format": "uri",
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -679,7 +2153,55 @@
                         "type": "array",
                         "description": "Array of zone configurations showing Kubernetes topology and CEPH zone details",
                         "items": {
-                            "$ref": "#/components/schemas/ZoneItemSchema"
+                            "type": "object",
+                            "required": [
+                                "Zone_Name"
+                            ],
+                            "description": "Configuration details for a single zone including Kubernetes topology and CEPH zone information",
+                            "properties": {
+                                "Zone_Name": {
+                                    "type": "string",
+                                    "description": "Unique identifier name for the zone",
+                                    "minLength": 1,
+                                    "maxLength": 1000
+                                },
+                                "Kubernetes_Topology_Zone": {
+                                    "type": "object",
+                                    "description": "Kubernetes topology zone configuration containing master and worker node assignments",
+                                    "properties": {
+                                        "Management_Master_Nodes": {
+                                            "type": "array",
+                                            "description": "List of Kubernetes master node names assigned to this zone",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "Management_Worker_Nodes": {
+                                            "type": "array",
+                                            "description": "List of Kubernetes worker node names assigned to this zone",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                },
+                                "CEPH_Zone": {
+                                    "type": "object",
+                                    "required": [
+                                        "Management_Storage_Nodes"
+                                    ],
+                                    "description": "CEPH zone configuration containing storage node assignments",
+                                    "properties": {
+                                        "Management_Storage_Nodes": {
+                                            "type": "array",
+                                            "description": "List of CEPH storage node names assigned to this zone",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -692,13 +2214,46 @@
                 "description": "Configuration details for a single zone including Kubernetes topology and CEPH zone information",
                 "properties": {
                     "Zone_Name": {
-                        "$ref": "#/components/schemas/ZoneName"
+                        "type": "string",
+                        "description": "Unique identifier name for the zone",
+                        "minLength": 1,
+                        "maxLength": 1000
                     },
                     "Kubernetes_Topology_Zone": {
-                        "$ref": "#/components/schemas/KubernetesTopologyZoneSchema"
+                        "type": "object",
+                        "description": "Kubernetes topology zone configuration containing master and worker node assignments",
+                        "properties": {
+                            "Management_Master_Nodes": {
+                                "type": "array",
+                                "description": "List of Kubernetes master node names assigned to this zone",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "Management_Worker_Nodes": {
+                                "type": "array",
+                                "description": "List of Kubernetes worker node names assigned to this zone",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        }
                     },
                     "CEPH_Zone": {
-                        "$ref": "#/components/schemas/CephZoneSchema"
+                        "type": "object",
+                        "required": [
+                            "Management_Storage_Nodes"
+                        ],
+                        "description": "CEPH zone configuration containing storage node assignments",
+                        "properties": {
+                            "Management_Storage_Nodes": {
+                                "type": "array",
+                                "description": "List of CEPH storage node names assigned to this zone",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        }
                     }
                 }
             },
@@ -746,16 +2301,180 @@
                 "description": "Detailed information about a specific zone including node counts, types, and individual node status",
                 "properties": {
                     "Zone_Name": {
-                        "$ref": "#/components/schemas/ZoneName"
+                        "type": "string",
+                        "description": "Unique identifier name for the zone",
+                        "minLength": 1,
+                        "maxLength": 1000
                     },
                     "Management_Master": {
-                        "$ref": "#/components/schemas/ManagementKubernetesSchema"
+                        "type": "object",
+                        "required": [
+                            "Count",
+                            "Type",
+                            "Nodes"
+                        ],
+                        "description": "Management information for Kubernetes nodes (master or worker) including count and individual node details",
+                        "properties": {
+                            "Count": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "description": "Total number of nodes of this type in the zone"
+                            },
+                            "Type": {
+                                "type": "string",
+                                "description": "Type classification indicating this is a Kubernetes topology zone",
+                                "enum": [
+                                    "Kubernetes_Topology_Zone"
+                                ]
+                            },
+                            "Nodes": {
+                                "type": "array",
+                                "description": "Detailed information about each individual node",
+                                "items": {
+                                    "type": "object",
+                                    "required": [
+                                        "name",
+                                        "status"
+                                    ],
+                                    "description": "Basic node information including name and operational status",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Unique name identifier for the node"
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "description": "Current operational status of the node",
+                                            "enum": [
+                                                "Ready",
+                                                "NotReady",
+                                                "Unknown"
+                                            ]
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     },
                     "Management_Worker": {
-                        "$ref": "#/components/schemas/ManagementKubernetesSchema"
+                        "type": "object",
+                        "required": [
+                            "Count",
+                            "Type",
+                            "Nodes"
+                        ],
+                        "description": "Management information for Kubernetes nodes (master or worker) including count and individual node details",
+                        "properties": {
+                            "Count": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "description": "Total number of nodes of this type in the zone"
+                            },
+                            "Type": {
+                                "type": "string",
+                                "description": "Type classification indicating this is a Kubernetes topology zone",
+                                "enum": [
+                                    "Kubernetes_Topology_Zone"
+                                ]
+                            },
+                            "Nodes": {
+                                "type": "array",
+                                "description": "Detailed information about each individual node",
+                                "items": {
+                                    "type": "object",
+                                    "required": [
+                                        "name",
+                                        "status"
+                                    ],
+                                    "description": "Basic node information including name and operational status",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Unique name identifier for the node"
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "description": "Current operational status of the node",
+                                            "enum": [
+                                                "Ready",
+                                                "NotReady",
+                                                "Unknown"
+                                            ]
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     },
                     "Management_Storage": {
-                        "$ref": "#/components/schemas/ManagementStorageSchema"
+                        "type": "object",
+                        "required": [
+                            "Count",
+                            "Type",
+                            "Nodes"
+                        ],
+                        "description": "Management information for CEPH storage nodes including count and individual node details with OSD information",
+                        "properties": {
+                            "Count": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "description": "Total number of storage nodes in the zone"
+                            },
+                            "Type": {
+                                "type": "string",
+                                "description": "Type classification indicating this is a CEPH zone",
+                                "enum": [
+                                    "CEPH_Zone"
+                                ]
+                            },
+                            "Nodes": {
+                                "type": "array",
+                                "description": "Detailed information about each storage node including OSD status",
+                                "items": {
+                                    "type": "object",
+                                    "required": [
+                                        "name",
+                                        "status",
+                                        "osds"
+                                    ],
+                                    "description": "Storage node information including CEPH OSD (Object Storage Daemon) status details",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Unique name identifier for the storage node"
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "description": "Current operational status of the storage node",
+                                            "enum": [
+                                                "Ready",
+                                                "NotReady"
+                                            ]
+                                        },
+                                        "osds": {
+                                            "type": "object",
+                                            "description": "Object Storage Daemon status information showing which OSDs are operational and non-operational",
+                                            "properties": {
+                                                "up": {
+                                                    "type": "array",
+                                                    "description": "List of OSD identifiers that are currently operational",
+                                                    "items": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "down": {
+                                                    "type": "array",
+                                                    "description": "List of OSD identifiers that are currently non-operational",
+                                                    "items": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             },
@@ -784,7 +2503,27 @@
                         "type": "array",
                         "description": "Detailed information about each individual node",
                         "items": {
-                            "$ref": "#/components/schemas/NodeSchema"
+                            "type": "object",
+                            "required": [
+                                "name",
+                                "status"
+                            ],
+                            "description": "Basic node information including name and operational status",
+                            "properties": {
+                                "name": {
+                                    "type": "string",
+                                    "description": "Unique name identifier for the node"
+                                },
+                                "status": {
+                                    "type": "string",
+                                    "description": "Current operational status of the node",
+                                    "enum": [
+                                        "Ready",
+                                        "NotReady",
+                                        "Unknown"
+                                    ]
+                                }
+                            }
                         }
                     }
                 }
@@ -814,7 +2553,47 @@
                         "type": "array",
                         "description": "Detailed information about each storage node including OSD status",
                         "items": {
-                            "$ref": "#/components/schemas/StorageNodeSchema"
+                            "type": "object",
+                            "required": [
+                                "name",
+                                "status",
+                                "osds"
+                            ],
+                            "description": "Storage node information including CEPH OSD (Object Storage Daemon) status details",
+                            "properties": {
+                                "name": {
+                                    "type": "string",
+                                    "description": "Unique name identifier for the storage node"
+                                },
+                                "status": {
+                                    "type": "string",
+                                    "description": "Current operational status of the storage node",
+                                    "enum": [
+                                        "Ready",
+                                        "NotReady"
+                                    ]
+                                },
+                                "osds": {
+                                    "type": "object",
+                                    "description": "Object Storage Daemon status information showing which OSDs are operational and non-operational",
+                                    "properties": {
+                                        "up": {
+                                            "type": "array",
+                                            "description": "List of OSD identifiers that are currently operational",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "down": {
+                                            "type": "array",
+                                            "description": "List of OSD identifiers that are currently non-operational",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -864,7 +2643,24 @@
                         ]
                     },
                     "osds": {
-                        "$ref": "#/components/schemas/OSDStatesSchema"
+                        "type": "object",
+                        "description": "Object Storage Daemon status information showing which OSDs are operational and non-operational",
+                        "properties": {
+                            "up": {
+                                "type": "array",
+                                "description": "List of OSD identifiers that are currently operational",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "down": {
+                                "type": "array",
+                                "description": "List of OSD identifiers that are currently non-operational",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        }
                     }
                 }
             },
@@ -957,11 +2753,43 @@
                                 "additionalProperties": {
                                     "type": "array",
                                     "items": {
-                                        "$ref": "#/components/schemas/CriticalServiceItemSchema"
+                                        "type": "object",
+                                        "required": [
+                                            "name",
+                                            "type"
+                                        ],
+                                        "description": "Basic information about a critical service including its name and Kubernetes resource type",
+                                        "properties": {
+                                            "name": {
+                                                "type": "string",
+                                                "description": "Name of the critical service",
+                                                "examples": [
+                                                    "cray-dns-powerdns",
+                                                    "cray-keycloak"
+                                                ],
+                                                "maxLength": 253,
+                                                "minLength": 1
+                                            },
+                                            "type": {
+                                                "type": "string",
+                                                "description": "Kubernetes resource type of the service",
+                                                "enum": [
+                                                    "Deployment",
+                                                    "StatefulSet"
+                                                ]
+                                            }
+                                        }
                                     }
                                 },
                                 "propertyNames": {
-                                    "$ref": "#/components/schemas/NamespaceName"
+                                    "type": "string",
+                                    "description": "Kubernetes namespace name where a service is deployed",
+                                    "examples": [
+                                        "rack-resiliency",
+                                        "services"
+                                    ],
+                                    "minLength": 1,
+                                    "maxLength": 63
                                 }
                             }
                         }
@@ -977,10 +2805,22 @@
                 "description": "Basic information about a critical service including its name and Kubernetes resource type",
                 "properties": {
                     "name": {
-                        "$ref": "#/components/schemas/ServiceName"
+                        "type": "string",
+                        "description": "Name of the critical service",
+                        "examples": [
+                            "cray-dns-powerdns",
+                            "cray-keycloak"
+                        ],
+                        "maxLength": 253,
+                        "minLength": 1
                     },
                     "type": {
-                        "$ref": "#/components/schemas/ServiceType"
+                        "type": "string",
+                        "description": "Kubernetes resource type of the service",
+                        "enum": [
+                            "Deployment",
+                            "StatefulSet"
+                        ]
                     }
                 }
             },
@@ -992,11 +2832,44 @@
                         "type": "object",
                         "description": "Mapping from service names to their configuration details for monitoring",
                         "additionalProperties": {
-                            "$ref": "#/components/schemas/CriticalServiceCmStaticSchema"
+                            "type": "object",
+                            "description": "Static configuration details for a critical service that needs to be monitored",
+                            "properties": {
+                                "namespace": {
+                                    "type": "string",
+                                    "description": "Kubernetes namespace name where a service is deployed",
+                                    "examples": [
+                                        "rack-resiliency",
+                                        "services"
+                                    ],
+                                    "minLength": 1,
+                                    "maxLength": 63
+                                },
+                                "type": {
+                                    "type": "string",
+                                    "description": "Kubernetes resource type of the service",
+                                    "enum": [
+                                        "Deployment",
+                                        "StatefulSet"
+                                    ]
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "namespace",
+                                "type"
+                            ]
                         },
                         "maxProperties": 1000,
                         "propertyNames": {
-                            "$ref": "#/components/schemas/NamespaceName"
+                            "type": "string",
+                            "description": "Kubernetes namespace name where a service is deployed",
+                            "examples": [
+                                "rack-resiliency",
+                                "services"
+                            ],
+                            "minLength": 1,
+                            "maxLength": 63
                         }
                     }
                 },
@@ -1010,10 +2883,22 @@
                 "description": "Static configuration details for a critical service that needs to be monitored",
                 "properties": {
                     "namespace": {
-                        "$ref": "#/components/schemas/NamespaceName"
+                        "type": "string",
+                        "description": "Kubernetes namespace name where a service is deployed",
+                        "examples": [
+                            "rack-resiliency",
+                            "services"
+                        ],
+                        "minLength": 1,
+                        "maxLength": 63
                     },
                     "type": {
-                        "$ref": "#/components/schemas/ServiceType"
+                        "type": "string",
+                        "description": "Kubernetes resource type of the service",
+                        "enum": [
+                            "Deployment",
+                            "StatefulSet"
+                        ]
                     }
                 },
                 "additionalProperties": false,
@@ -1047,14 +2932,28 @@
                         "type": "array",
                         "description": "List of service names that were successfully added to the configuration",
                         "items": {
-                            "$ref": "#/components/schemas/ServiceName"
+                            "type": "string",
+                            "description": "Name of the critical service",
+                            "examples": [
+                                "cray-dns-powerdns",
+                                "cray-keycloak"
+                            ],
+                            "maxLength": 253,
+                            "minLength": 1
                         }
                     },
                     "Already_Existing_Services": {
                         "type": "array",
                         "description": "List of service names that were already present in the configuration",
                         "items": {
-                            "$ref": "#/components/schemas/ServiceName"
+                            "type": "string",
+                            "description": "Name of the critical service",
+                            "examples": [
+                                "cray-dns-powerdns",
+                                "cray-keycloak"
+                            ],
+                            "maxLength": 253,
+                            "minLength": 1
                         }
                     }
                 }
@@ -1077,13 +2976,32 @@
                         "description": "Basic configuration information about the critical service",
                         "properties": {
                             "name": {
-                                "$ref": "#/components/schemas/ServiceName"
+                                "type": "string",
+                                "description": "Name of the critical service",
+                                "examples": [
+                                    "cray-dns-powerdns",
+                                    "cray-keycloak"
+                                ],
+                                "maxLength": 253,
+                                "minLength": 1
                             },
                             "namespace": {
-                                "$ref": "#/components/schemas/NamespaceName"
+                                "type": "string",
+                                "description": "Kubernetes namespace name where a service is deployed",
+                                "examples": [
+                                    "rack-resiliency",
+                                    "services"
+                                ],
+                                "minLength": 1,
+                                "maxLength": 63
                             },
                             "type": {
-                                "$ref": "#/components/schemas/ServiceType"
+                                "type": "string",
+                                "description": "Kubernetes resource type of the service",
+                                "enum": [
+                                    "Deployment",
+                                    "StatefulSet"
+                                ]
                             },
                             "configured_instances": {
                                 "types": [
@@ -1119,19 +3037,53 @@
                         "description": "Complete status information including configuration and runtime details",
                         "properties": {
                             "name": {
-                                "$ref": "#/components/schemas/ServiceName"
+                                "type": "string",
+                                "description": "Name of the critical service",
+                                "examples": [
+                                    "cray-dns-powerdns",
+                                    "cray-keycloak"
+                                ],
+                                "maxLength": 253,
+                                "minLength": 1
                             },
                             "namespace": {
-                                "$ref": "#/components/schemas/NamespaceName"
+                                "type": "string",
+                                "description": "Kubernetes namespace name where a service is deployed",
+                                "examples": [
+                                    "rack-resiliency",
+                                    "services"
+                                ],
+                                "minLength": 1,
+                                "maxLength": 63
                             },
                             "type": {
-                                "$ref": "#/components/schemas/ServiceType"
+                                "type": "string",
+                                "description": "Kubernetes resource type of the service",
+                                "enum": [
+                                    "Deployment",
+                                    "StatefulSet"
+                                ]
                             },
                             "status": {
-                                "$ref": "#/components/schemas/ServiceStatus"
+                                "type": "string",
+                                "description": "Current operational status of a critical service indicating its configuration and runtime state",
+                                "enum": [
+                                    "error",
+                                    "Configured",
+                                    "PartiallyConfigured",
+                                    "NotConfigured",
+                                    "Running",
+                                    "Unconfigured"
+                                ]
                             },
                             "balanced": {
-                                "$ref": "#/components/schemas/ServiceBalanced"
+                                "type": "string",
+                                "description": "Indicates whether a service is properly distributed across zones for high availability",
+                                "enum": [
+                                    "true",
+                                    "false",
+                                    "NA"
+                                ]
                             },
                             "configured_instances": {
                                 "types": [
@@ -1153,7 +3105,38 @@
                                 "type": "array",
                                 "description": "Detailed information about each pod instance of this service",
                                 "items": {
-                                    "$ref": "#/components/schemas/PodSchema"
+                                    "type": "object",
+                                    "required": [
+                                        "name",
+                                        "node",
+                                        "status",
+                                        "zone"
+                                    ],
+                                    "description": "Information about an individual pod instance including its location and status",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Unique name of the pod instance"
+                                        },
+                                        "node": {
+                                            "type": "string",
+                                            "description": "Kubernetes node where the pod is scheduled to run"
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "description": "Current operational status of the pod",
+                                            "enum": [
+                                                "Running",
+                                                "Pending",
+                                                "Failed",
+                                                "Terminating"
+                                            ]
+                                        },
+                                        "zone": {
+                                            "type": "string",
+                                            "description": "Zone where the pod is located based on its assigned node"
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -1214,11 +3197,66 @@
                                 "additionalProperties": {
                                     "type": "array",
                                     "items": {
-                                        "$ref": "#/components/schemas/CriticalServiceStatusItemSchema"
+                                        "type": "object",
+                                        "description": "Status summary for a critical service showing its operational state and distribution across zones",
+                                        "required": [
+                                            "name",
+                                            "type",
+                                            "status",
+                                            "balanced"
+                                        ],
+                                        "properties": {
+                                            "name": {
+                                                "type": "string",
+                                                "description": "Name of the critical service",
+                                                "examples": [
+                                                    "cray-dns-powerdns",
+                                                    "cray-keycloak"
+                                                ],
+                                                "maxLength": 253,
+                                                "minLength": 1
+                                            },
+                                            "type": {
+                                                "type": "string",
+                                                "description": "Kubernetes resource type of the service",
+                                                "enum": [
+                                                    "Deployment",
+                                                    "StatefulSet"
+                                                ]
+                                            },
+                                            "status": {
+                                                "type": "string",
+                                                "description": "Current operational status of a critical service indicating its configuration and runtime state",
+                                                "enum": [
+                                                    "error",
+                                                    "Configured",
+                                                    "PartiallyConfigured",
+                                                    "NotConfigured",
+                                                    "Running",
+                                                    "Unconfigured"
+                                                ]
+                                            },
+                                            "balanced": {
+                                                "type": "string",
+                                                "description": "Indicates whether a service is properly distributed across zones for high availability",
+                                                "enum": [
+                                                    "true",
+                                                    "false",
+                                                    "NA"
+                                                ]
+                                            }
+                                        }
                                     }
                                 },
                                 "propertyNames": {
-                                    "$ref": "#/components/schemas/NamespaceName"
+                                    "type": "string",
+                                    "description": "Kubernetes namespace name where a service is deployed",
+                                    "examples": [
+                                        "rack-resiliency",
+                                        "services"
+                                    ],
+                                    "minLength": 1,
+                                    "maxLength": 63
                                 }
                             }
                         }
@@ -1236,16 +3274,43 @@
                 ],
                 "properties": {
                     "name": {
-                        "$ref": "#/components/schemas/ServiceName"
+                        "type": "string",
+                        "description": "Name of the critical service",
+                        "examples": [
+                            "cray-dns-powerdns",
+                            "cray-keycloak"
+                        ],
+                        "maxLength": 253,
+                        "minLength": 1
                     },
                     "type": {
-                        "$ref": "#/components/schemas/ServiceType"
+                        "type": "string",
+                        "description": "Kubernetes resource type of the service",
+                        "enum": [
+                            "Deployment",
+                            "StatefulSet"
+                        ]
                     },
                     "status": {
-                        "$ref": "#/components/schemas/ServiceStatus"
+                        "type": "string",
+                        "description": "Current operational status of a critical service indicating its configuration and runtime state",
+                        "enum": [
+                            "error",
+                            "Configured",
+                            "PartiallyConfigured",
+                            "NotConfigured",
+                            "Running",
+                            "Unconfigured"
+                        ]
                     },
                     "balanced": {
-                        "$ref": "#/components/schemas/ServiceBalanced"
+                        "type": "string",
+                        "description": "Indicates whether a service is properly distributed across zones for high availability",
+                        "enum": [
+                            "true",
+                            "false",
+                            "NA"
+                        ]
                     }
                 }
             },
@@ -1314,7 +3379,14 @@
                 "required": true,
                 "description": "The name of the critical service",
                 "schema": {
-                    "$ref": "#/components/schemas/ServiceName"
+                    "type": "string",
+                    "description": "Name of the critical service",
+                    "examples": [
+                        "cray-dns-powerdns",
+                        "cray-keycloak"
+                    ],
+                    "maxLength": 253,
+                    "minLength": 1
                 }
             }
         },
@@ -1324,7 +3396,40 @@
                 "content": {
                     "application/json": {
                         "schema": {
-                            "$ref": "#/components/schemas/ProblemDetails"
+                            "description": "An error response for RFC 7807 problem details.",
+                            "type": "object",
+                            "properties": {
+                                "detail": {
+                                    "description": "A human-readable explanation specific to this occurrence of the problem. Focus on helping correct the problem, rather than giving debugging information.",
+                                    "type": "string"
+                                },
+                                "errors": {
+                                    "description": "An object denoting field-specific errors. Only present on error responses when field input is specified for the request.",
+                                    "type": "object"
+                                },
+                                "instance": {
+                                    "description": "A relative URI reference that identifies the specific occurrence of the problem",
+                                    "format": "uri",
+                                    "type": "string"
+                                },
+                                "status": {
+                                    "description": "HTTP status code",
+                                    "examples": [
+                                        400
+                                    ],
+                                    "type": "integer"
+                                },
+                                "title": {
+                                    "description": "Short, human-readable summary of the problem, should not change by occurrence.",
+                                    "type": "string"
+                                },
+                                "type": {
+                                    "default": "about:blank",
+                                    "description": "Relative URI reference to the type of problem which includes human-readable documentation.",
+                                    "format": "uri",
+                                    "type": "string"
+                                }
+                            }
                         }
                     }
                 }
@@ -1334,7 +3439,40 @@
                 "content": {
                     "application/json": {
                         "schema": {
-                            "$ref": "#/components/schemas/ProblemDetails"
+                            "description": "An error response for RFC 7807 problem details.",
+                            "type": "object",
+                            "properties": {
+                                "detail": {
+                                    "description": "A human-readable explanation specific to this occurrence of the problem. Focus on helping correct the problem, rather than giving debugging information.",
+                                    "type": "string"
+                                },
+                                "errors": {
+                                    "description": "An object denoting field-specific errors. Only present on error responses when field input is specified for the request.",
+                                    "type": "object"
+                                },
+                                "instance": {
+                                    "description": "A relative URI reference that identifies the specific occurrence of the problem",
+                                    "format": "uri",
+                                    "type": "string"
+                                },
+                                "status": {
+                                    "description": "HTTP status code",
+                                    "examples": [
+                                        400
+                                    ],
+                                    "type": "integer"
+                                },
+                                "title": {
+                                    "description": "Short, human-readable summary of the problem, should not change by occurrence.",
+                                    "type": "string"
+                                },
+                                "type": {
+                                    "default": "about:blank",
+                                    "description": "Relative URI reference to the type of problem which includes human-readable documentation.",
+                                    "format": "uri",
+                                    "type": "string"
+                                }
+                            }
                         }
                     }
                 }
@@ -1344,7 +3482,40 @@
                 "content": {
                     "application/json": {
                         "schema": {
-                            "$ref": "#/components/schemas/ProblemDetails"
+                            "description": "An error response for RFC 7807 problem details.",
+                            "type": "object",
+                            "properties": {
+                                "detail": {
+                                    "description": "A human-readable explanation specific to this occurrence of the problem. Focus on helping correct the problem, rather than giving debugging information.",
+                                    "type": "string"
+                                },
+                                "errors": {
+                                    "description": "An object denoting field-specific errors. Only present on error responses when field input is specified for the request.",
+                                    "type": "object"
+                                },
+                                "instance": {
+                                    "description": "A relative URI reference that identifies the specific occurrence of the problem",
+                                    "format": "uri",
+                                    "type": "string"
+                                },
+                                "status": {
+                                    "description": "HTTP status code",
+                                    "examples": [
+                                        400
+                                    ],
+                                    "type": "integer"
+                                },
+                                "title": {
+                                    "description": "Short, human-readable summary of the problem, should not change by occurrence.",
+                                    "type": "string"
+                                },
+                                "type": {
+                                    "default": "about:blank",
+                                    "description": "Relative URI reference to the type of problem which includes human-readable documentation.",
+                                    "format": "uri",
+                                    "type": "string"
+                                }
+                            }
                         }
                     }
                 }
