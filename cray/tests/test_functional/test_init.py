@@ -1,7 +1,7 @@
 #
 #  MIT License
 #
-#  (C) Copyright 2020-2023 Hewlett Packard Enterprise Development LP
+#  (C) Copyright 2020-2025 Hewlett Packard Enterprise Development LP
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a
 #  copy of this software and associated documentation files (the "Software"),
@@ -111,7 +111,7 @@ def test_cray_init_verify_no_auth(cli_runner, rest_mock):
     tenant = config['tenant']
     result = runner.invoke(cli, ['init', '--hostname', hostname, '--no-auth', '--tenant', tenant])
     assert result.exit_code == 0
-    result = runner.invoke(cli, ['uas', 'list'])
+    result = runner.invoke(cli, ['bss', 'hosts', 'list'])
     print(result.output)
     assert result.exit_code == 0
 
