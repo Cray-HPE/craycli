@@ -22,7 +22,7 @@
 # OTHER DEALINGS IN THE SOFTWARE.
 #
 # Rack Resiliency Service API Specification
-openapi: 3.0.3
+openapi: 3.1.1
 info:
   title: Rack Resiliency Service
   license:
@@ -180,6 +180,8 @@ paths:
           description: The name of the zone
           schema:
             type: string
+            minLength: 1
+            maxLength: 1000
       responses:
         '200':
           description: Detailed zone information
@@ -328,12 +330,7 @@ paths:
           - configured_instances: number
       operationId: getCriticalServiceDetails
       parameters:
-        - name: critical_service_name
-          in: path
-          required: true
-          description: The name of the critical service
-          schema:
-            type: string
+        - $ref: '#/components/parameters/ServiceNamePathParam'
       responses:
         '200':
           description: Summarized critical service information
@@ -436,12 +433,7 @@ paths:
           - pods: array of pod objects with name, node, status, zone
       operationId: getCriticalServiceStatus
       parameters:
-        - name: critical_service_name
-          in: path
-          required: true
-          description: The name of the critical service
-          schema:
-            type: string
+        - $ref: '#/components/parameters/ServiceNamePathParam'
       responses:
         '200':
           description: Detailed critical service status retrieved successfully
@@ -693,6 +685,24 @@ components:
           description: List of OSD identifiers that are currently non-operational
           items:
             type: string
+    NamespaceName:
+      type: string
+      description: Kubernetes namespace name where a service is deployed
+      examples:
+        - "rack-resiliency"
+        - "services"
+      # Legal Kubernetes namespace names are 1-63 characters
+      minLength: 1
+      maxLength: 63
+    ServiceName:
+      type: string
+      description: Name of the critical service
+      examples:
+        - "cray-dns-powerdns"
+        - "cray-keycloak"
+      # Legal Kubernetes service names are 1-253 characters
+      maxLength: 253
+      minLength: 1
     ServiceBalanced:
       type: string
       description: Indicates whether a service is properly distributed across zones for high availability
@@ -733,6 +743,8 @@ components:
                 type: array
                 items:
                   $ref: '#/components/schemas/CriticalServiceItemSchema'
+              propertyNames:
+                $ref: '#/components/schemas/NamespaceName'
     CriticalServiceItemSchema:
       type: object
       required:
@@ -741,8 +753,7 @@ components:
       description: Basic information about a critical service including its name and Kubernetes resource type
       properties:
         name:
-          type: string
-          description: Name of the critical service
+          $ref: '#/components/schemas/ServiceName'
         type:
           $ref: '#/components/schemas/ServiceType'
     CriticalServiceCmStaticType:
@@ -754,17 +765,17 @@ components:
           description: Mapping from service names to their configuration details for monitoring
           additionalProperties:
             $ref: '#/components/schemas/CriticalServiceCmStaticSchema'
+          maxProperties: 1000
+          propertyNames:
+            $ref: '#/components/schemas/NamespaceName'
       additionalProperties: false
       required: [critical_services]
-      
     CriticalServiceCmStaticSchema:
       type: object
       description: Static configuration details for a critical service that needs to be monitored
       properties:
         namespace:
-          type: string
-          description: The Kubernetes namespace where the service is deployed
-          example: "rack-resiliency"
+          $ref: '#/components/schemas/NamespaceName'
         type:
           $ref: '#/components/schemas/ServiceType'
       additionalProperties: false
@@ -778,16 +789,18 @@ components:
         Update:
           type: string
           description: Overall status of the update operation
+          enum: ["Successful", "Services Already Exist"]
+          examples: ["Successful", "Services Already Exist"]
         Successfully_Added_Services:
           type: array
           description: List of service names that were successfully added to the configuration
           items:
-            type: string
+            $ref: '#/components/schemas/ServiceName'
         Already_Existing_Services:
           type: array
           description: List of service names that were already present in the configuration
           items:
-            type: string
+            $ref: '#/components/schemas/ServiceName'
     CriticalServiceDescribeSchema:
       type: object
       required: [critical_service]
@@ -799,18 +812,17 @@ components:
           description: Basic configuration information about the critical service
           properties:
             name:
-              type: string
-              description: Name of the critical service
+              $ref: '#/components/schemas/ServiceName'
             namespace:
-              type: string
-              description: Kubernetes namespace where the service is deployed
+              $ref: '#/components/schemas/NamespaceName'
             type:
               $ref: '#/components/schemas/ServiceType'
             configured_instances:
-              type: integer
+              types:
+                - "integer"
+                - "null"
               minimum: 1
-              nullable: true
-              description: Number of instances configured for this service (replicas for Deployments/StatefulSets, pod count for Pods)
+              description: Number of instances configured for this service (replicas for Deployments/StatefulSets)
     CriticalServiceStatusDescribeSchema:
       type: object
       required: [critical_service]
@@ -822,11 +834,9 @@ components:
           description: Complete status information including configuration and runtime details
           properties:
             name:
-              type: string
-              description: Name of the critical service
+              $ref: '#/components/schemas/ServiceName'
             namespace:
-              type: string
-              description: Kubernetes namespace where the service is deployed
+              $ref: '#/components/schemas/NamespaceName'
             type:
               $ref: '#/components/schemas/ServiceType'
             status:
@@ -834,14 +844,16 @@ components:
             balanced:
               $ref: '#/components/schemas/ServiceBalanced'
             configured_instances:
-              type: integer
+              types:
+                - "integer"
+                - "null"
               minimum: 1
-              nullable: true
               description: Number of instances configured for this service
             currently_running_instances:
-              type: integer
+              types:
+                - "integer"
+                - "null"
               minimum: 0
-              nullable: true
               description: Number of instances currently running and healthy
             pods:
               type: array
@@ -887,14 +899,15 @@ components:
                 type: array
                 items:
                   $ref: '#/components/schemas/CriticalServiceStatusItemSchema'
+              propertyNames:
+                $ref: '#/components/schemas/NamespaceName'
     CriticalServiceStatusItemSchema:
       type: object
       description: Status summary for a critical service showing its operational state and distribution across zones
       required: [name, type, status, balanced]
       properties:
         name:
-          type: string
-          description: Name of the critical service
+          $ref: '#/components/schemas/ServiceName'
         type:
           $ref: '#/components/schemas/ServiceType'
         status:
@@ -909,7 +922,8 @@ components:
         version:
           type: string
           description: The current version of the RRS Service
-          example: "1.0.0"    
+          examples:
+            - "1.0.0"    
     ProblemDetails:
       description: An error response for RFC 7807 problem details.
       type: object
@@ -930,7 +944,8 @@ components:
           type: string
         status:
           description: HTTP status code
-          example: 400
+          examples:
+            - 400
           type: integer
         title:
           description: Short, human-readable summary of the problem, should not change by occurrence.
@@ -939,11 +954,19 @@ components:
           default: 'about:blank'
           description: Relative URI reference to the type of problem which includes human-readable documentation.
           format: uri
-          type: string    
+          type: string
     EmptyDict:
       type: object
       description: Empty response object typically returned by health check endpoints to indicate successful operation
       additionalProperties: false
+  parameters:
+    ServiceNamePathParam:
+      name: critical_service_name
+      in: path
+      required: true
+      description: The name of the critical service
+      schema:
+        $ref: '#/components/schemas/ServiceName'
   responses:
     BadRequest:
       description: Bad request
