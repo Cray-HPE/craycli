@@ -48,7 +48,7 @@ dependencies = [
     # DO NOT UPDATE the above boto3 and botocore - Breaks cray artifacts bucket list
     # DO NOT UPDATE the below urllib3 - Breaks cray artifacts list <bucket> pagination
     # https://github.com/boto/botocore/issues/2926
-    'urllib3>=1.25.4,<1.27',
+    'urllib3>=1.25.4,<2.6',
     # DO NOT UPDATE the above urllib3 - Breaks cray artifacts list <bucket> pagination
     'click==7.1.2',
     'oauthlib~=3.2',
