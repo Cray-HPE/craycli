@@ -137,9 +137,7 @@
                         "required": true,
                         "description": "The name of the zone",
                         "schema": {
-                            "type": "string",
-                            "minLength": 1,
-                            "maxLength": 1000
+                            "$ref": "#/components/schemas/ZoneName"
                         }
                     }
                 ],
@@ -216,6 +214,9 @@
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
                     },
                     "404": {
                         "$ref": "#/components/responses/NotFound"
@@ -389,6 +390,9 @@
                             }
                         }
                     },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    },
                     "404": {
                         "$ref": "#/components/responses/NotFound"
                     },
@@ -551,6 +555,9 @@
                             }
                         }
                     },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    },
                     "404": {
                         "$ref": "#/components/responses/NotFound"
                     },
@@ -655,6 +662,12 @@
     },
     "components": {
         "schemas": {
+            "ZoneName": {
+                "type": "string",
+                "description": "Unique identifier name for the zone",
+                "minLength": 1,
+                "maxLength": 1000
+            },
             "ZonesResponse": {
                 "type": "object",
                 "required": [
@@ -679,8 +692,7 @@
                 "description": "Configuration details for a single zone including Kubernetes topology and CEPH zone information",
                 "properties": {
                     "Zone_Name": {
-                        "type": "string",
-                        "description": "Unique identifier name for the zone"
+                        "$ref": "#/components/schemas/ZoneName"
                     },
                     "Kubernetes_Topology_Zone": {
                         "$ref": "#/components/schemas/KubernetesTopologyZoneSchema"
@@ -734,8 +746,7 @@
                 "description": "Detailed information about a specific zone including node counts, types, and individual node status",
                 "properties": {
                     "Zone_Name": {
-                        "type": "string",
-                        "description": "Name of the zone being described"
+                        "$ref": "#/components/schemas/ZoneName"
                     },
                     "Management_Master": {
                         "$ref": "#/components/schemas/ManagementKubernetesSchema"
