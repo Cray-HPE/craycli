@@ -31,6 +31,7 @@ authors = [
     { name = 'Mitch Harding', email = 'mitchell.harding@hpe.com' },
     { name = 'Mitchell Schooler', email = 'mitchell.schooler@hpe.com' },
     { name = 'Ryan Bak', email = 'ryan.bak@hpe.com' },
+    { name = 'Arka Pramanik', email = 'arka.pramanik@hpe.com' },
 ]
 classifiers = [
     'License :: OSI Approved :: MIT License',
