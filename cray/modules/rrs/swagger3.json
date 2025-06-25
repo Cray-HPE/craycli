@@ -1,5 +1,5 @@
 {
-    "openapi": "3.0.3",
+    "openapi": "3.1.1",
     "info": {
         "title": "Rack Resiliency Service",
         "license": {
@@ -137,7 +137,9 @@
                         "required": true,
                         "description": "The name of the zone",
                         "schema": {
-                            "type": "string"
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 1000
                         }
                     }
                 ],
@@ -361,13 +363,7 @@
                 "operationId": "getCriticalServiceDetails",
                 "parameters": [
                     {
-                        "name": "critical_service_name",
-                        "in": "path",
-                        "required": true,
-                        "description": "The name of the critical service",
-                        "schema": {
-                            "type": "string"
-                        }
+                        "$ref": "#/components/parameters/ServiceNamePathParam"
                     }
                 ],
                 "responses": {
@@ -506,13 +502,7 @@
                 "operationId": "getCriticalServiceStatus",
                 "parameters": [
                     {
-                        "name": "critical_service_name",
-                        "in": "path",
-                        "required": true,
-                        "description": "The name of the critical service",
-                        "schema": {
-                            "type": "string"
-                        }
+                        "$ref": "#/components/parameters/ServiceNamePathParam"
                     }
                 ],
                 "responses": {
@@ -887,6 +877,26 @@
                     }
                 }
             },
+            "NamespaceName": {
+                "type": "string",
+                "description": "Kubernetes namespace name where a service is deployed",
+                "examples": [
+                    "rack-resiliency",
+                    "services"
+                ],
+                "minLength": 1,
+                "maxLength": 63
+            },
+            "ServiceName": {
+                "type": "string",
+                "description": "Name of the critical service",
+                "examples": [
+                    "cray-dns-powerdns",
+                    "cray-keycloak"
+                ],
+                "maxLength": 253,
+                "minLength": 1
+            },
             "ServiceBalanced": {
                 "type": "string",
                 "description": "Indicates whether a service is properly distributed across zones for high availability",
@@ -938,6 +948,9 @@
                                     "items": {
                                         "$ref": "#/components/schemas/CriticalServiceItemSchema"
                                     }
+                                },
+                                "propertyNames": {
+                                    "$ref": "#/components/schemas/NamespaceName"
                                 }
                             }
                         }
@@ -953,8 +966,7 @@
                 "description": "Basic information about a critical service including its name and Kubernetes resource type",
                 "properties": {
                     "name": {
-                        "type": "string",
-                        "description": "Name of the critical service"
+                        "$ref": "#/components/schemas/ServiceName"
                     },
                     "type": {
                         "$ref": "#/components/schemas/ServiceType"
@@ -970,6 +982,10 @@
                         "description": "Mapping from service names to their configuration details for monitoring",
                         "additionalProperties": {
                             "$ref": "#/components/schemas/CriticalServiceCmStaticSchema"
+                        },
+                        "maxProperties": 1000,
+                        "propertyNames": {
+                            "$ref": "#/components/schemas/NamespaceName"
                         }
                     }
                 },
@@ -983,9 +999,7 @@
                 "description": "Static configuration details for a critical service that needs to be monitored",
                 "properties": {
                     "namespace": {
-                        "type": "string",
-                        "description": "The Kubernetes namespace where the service is deployed",
-                        "example": "rack-resiliency"
+                        "$ref": "#/components/schemas/NamespaceName"
                     },
                     "type": {
                         "$ref": "#/components/schemas/ServiceType"
@@ -1008,20 +1022,28 @@
                 "properties": {
                     "Update": {
                         "type": "string",
-                        "description": "Overall status of the update operation"
+                        "description": "Overall status of the update operation",
+                        "enum": [
+                            "Successful",
+                            "Services Already Exist"
+                        ],
+                        "examples": [
+                            "Successful",
+                            "Services Already Exist"
+                        ]
                     },
                     "Successfully_Added_Services": {
                         "type": "array",
                         "description": "List of service names that were successfully added to the configuration",
                         "items": {
-                            "type": "string"
+                            "$ref": "#/components/schemas/ServiceName"
                         }
                     },
                     "Already_Existing_Services": {
                         "type": "array",
                         "description": "List of service names that were already present in the configuration",
                         "items": {
-                            "type": "string"
+                            "$ref": "#/components/schemas/ServiceName"
                         }
                     }
                 }
@@ -1044,21 +1066,21 @@
                         "description": "Basic configuration information about the critical service",
                         "properties": {
                             "name": {
-                                "type": "string",
-                                "description": "Name of the critical service"
+                                "$ref": "#/components/schemas/ServiceName"
                             },
                             "namespace": {
-                                "type": "string",
-                                "description": "Kubernetes namespace where the service is deployed"
+                                "$ref": "#/components/schemas/NamespaceName"
                             },
                             "type": {
                                 "$ref": "#/components/schemas/ServiceType"
                             },
                             "configured_instances": {
-                                "type": "integer",
+                                "types": [
+                                    "integer",
+                                    "null"
+                                ],
                                 "minimum": 1,
-                                "nullable": true,
-                                "description": "Number of instances configured for this service (replicas for Deployments/StatefulSets, pod count for Pods)"
+                                "description": "Number of instances configured for this service (replicas for Deployments/StatefulSets)"
                             }
                         }
                     }
@@ -1086,12 +1108,10 @@
                         "description": "Complete status information including configuration and runtime details",
                         "properties": {
                             "name": {
-                                "type": "string",
-                                "description": "Name of the critical service"
+                                "$ref": "#/components/schemas/ServiceName"
                             },
                             "namespace": {
-                                "type": "string",
-                                "description": "Kubernetes namespace where the service is deployed"
+                                "$ref": "#/components/schemas/NamespaceName"
                             },
                             "type": {
                                 "$ref": "#/components/schemas/ServiceType"
@@ -1103,15 +1123,19 @@
                                 "$ref": "#/components/schemas/ServiceBalanced"
                             },
                             "configured_instances": {
-                                "type": "integer",
+                                "types": [
+                                    "integer",
+                                    "null"
+                                ],
                                 "minimum": 1,
-                                "nullable": true,
                                 "description": "Number of instances configured for this service"
                             },
                             "currently_running_instances": {
-                                "type": "integer",
+                                "types": [
+                                    "integer",
+                                    "null"
+                                ],
                                 "minimum": 0,
-                                "nullable": true,
                                 "description": "Number of instances currently running and healthy"
                             },
                             "pods": {
@@ -1181,6 +1205,9 @@
                                     "items": {
                                         "$ref": "#/components/schemas/CriticalServiceStatusItemSchema"
                                     }
+                                },
+                                "propertyNames": {
+                                    "$ref": "#/components/schemas/NamespaceName"
                                 }
                             }
                         }
@@ -1198,8 +1225,7 @@
                 ],
                 "properties": {
                     "name": {
-                        "type": "string",
-                        "description": "Name of the critical service"
+                        "$ref": "#/components/schemas/ServiceName"
                     },
                     "type": {
                         "$ref": "#/components/schemas/ServiceType"
@@ -1222,7 +1248,9 @@
                     "version": {
                         "type": "string",
                         "description": "The current version of the RRS Service",
-                        "example": "1.0.0"
+                        "examples": [
+                            "1.0.0"
+                        ]
                     }
                 }
             },
@@ -1245,7 +1273,9 @@
                     },
                     "status": {
                         "description": "HTTP status code",
-                        "example": 400,
+                        "examples": [
+                            400
+                        ],
                         "type": "integer"
                     },
                     "title": {
@@ -1264,6 +1294,17 @@
                 "type": "object",
                 "description": "Empty response object typically returned by health check endpoints to indicate successful operation",
                 "additionalProperties": false
+            }
+        },
+        "parameters": {
+            "ServiceNamePathParam": {
+                "name": "critical_service_name",
+                "in": "path",
+                "required": true,
+                "description": "The name of the critical service",
+                "schema": {
+                    "$ref": "#/components/schemas/ServiceName"
+                }
             }
         },
         "responses": {
