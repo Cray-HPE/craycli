@@ -35,7 +35,7 @@ MODULE_PATH_TEMPLATE = 'cray/modules/{}'
 # The version available in python 3.4 doesn't support this.
 # So we have to hack around it for the Jenkins pipelines.
 if vars(nox).get('options'):
-    nox.options.keywords = 'not generate'
+    nox.options.keywords = ['not generate']
     external = {"external": True}
 else:
     ERROR_ON_GENERATE = False
