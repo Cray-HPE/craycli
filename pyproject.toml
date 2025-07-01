@@ -84,7 +84,7 @@ docs = [
     'recommonmark~=0.7.1',
     'sphinx~=7.4.7',
     'sphinx-click~=4.4.0',
-    'sphinx-markdown-builder~=0.5.5',
+    'sphinx-markdown-builder~=0.6.8',
 ]
 lint = [
     'pylint~=2.15',
