@@ -68,7 +68,7 @@
                                                         "type": "string",
                                                         "description": "Unique identifier name for the zone",
                                                         "minLength": 1,
-                                                        "maxLength": 1000
+                                                        "maxLength": 63
                                                     },
                                                     "Kubernetes_Topology_Zone": {
                                                         "type": "object",
@@ -281,7 +281,7 @@
                             "type": "string",
                             "description": "Unique identifier name for the zone",
                             "minLength": 1,
-                            "maxLength": 1000
+                            "maxLength": 63
                         }
                     }
                 ],
@@ -301,7 +301,7 @@
                                             "type": "string",
                                             "description": "Unique identifier name for the zone",
                                             "minLength": 1,
-                                            "maxLength": 1000
+                                            "maxLength": 63
                                         },
                                         "Management_Master": {
                                             "type": "object",
@@ -2140,7 +2140,7 @@
                 "type": "string",
                 "description": "Unique identifier name for the zone",
                 "minLength": 1,
-                "maxLength": 1000
+                "maxLength": 63
             },
             "ZonesResponse": {
                 "type": "object",
@@ -2163,7 +2163,7 @@
                                     "type": "string",
                                     "description": "Unique identifier name for the zone",
                                     "minLength": 1,
-                                    "maxLength": 1000
+                                    "maxLength": 63
                                 },
                                 "Kubernetes_Topology_Zone": {
                                     "type": "object",
@@ -2217,7 +2217,7 @@
                         "type": "string",
                         "description": "Unique identifier name for the zone",
                         "minLength": 1,
-                        "maxLength": 1000
+                        "maxLength": 63
                     },
                     "Kubernetes_Topology_Zone": {
                         "type": "object",
@@ -2304,7 +2304,7 @@
                         "type": "string",
                         "description": "Unique identifier name for the zone",
                         "minLength": 1,
-                        "maxLength": 1000
+                        "maxLength": 63
                     },
                     "Management_Master": {
                         "type": "object",
