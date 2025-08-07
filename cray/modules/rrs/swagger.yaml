@@ -542,7 +542,7 @@ components:
       type: string
       description: Unique identifier name for the zone
       minLength: 1
-      maxLength: 1000
+      maxLength: 63
     ZonesResponse:
       type: object
       required: [Zones]
